@@ -13,7 +13,7 @@ const SHOW_AFTER_MS = 1_500;
 
 // 배너 노출 제외 경로 — 입구/인증 페이지에선 하단 액션 버튼을 가릴 수 있어 차단.
 // 로그인 후 앱 내부 화면(/, /schedule, /community, /my/*, ...)에서만 노출.
-const EXCLUDED_PATHS = ["/landing", "/login", "/onboarding"];
+const EXCLUDED_PATHS = ["/login", "/onboarding"];
 function isExcludedPath(pathname: string | null): boolean {
   if (!pathname) return false;
   if (pathname.startsWith("/auth")) return true; // /auth/callback 등

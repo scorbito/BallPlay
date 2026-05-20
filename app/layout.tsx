@@ -38,28 +38,29 @@ import "@/styles/live-result.css";
 import "@/styles/dark-install.css";
 import "@/styles/dark-profile-popover.css";
 import "@/styles/dark-season-level.css";
+import "@/styles/dark-lineup.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://talkpark.vercel.app";
-const SITE_TITLE = "톡구장";
-const SITE_DESCRIPTION = "톡구장에서 KBO 실시간 경기톡을 나누고 야구팬 친구들과 소통하세요. 10개 구단 경기 일정 및 실시간 채팅 지원.";
+const SITE_TITLE = "야구놀이터";
+const SITE_DESCRIPTION = "야구놀이터에서 승리팀 예측, 라인업 짜기 등 야구 미니 게임을 가볍게 즐겨보세요.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_TITLE} - KBO 실시간 경기톡 & 커뮤니티`,
+    default: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
     template: `%s | ${SITE_TITLE}`
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    "톡구장",
-    "톡구장 앱",
-    "talkpark",
-    "KBO 경기톡",
-    "야구 실시간 채팅",
-    "프로야구 커뮤니티",
-    "야구팬 커뮤니티"
+    "야구놀이터",
+    "ballplay",
+    "KBO 예측",
+    "승리팀 예측",
+    "야구 라인업",
+    "야구 미니게임",
+    "프로야구 놀이"
   ],
-  authors: [{ name: "톡구장" }],
+  authors: [{ name: "야구놀이터" }],
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -79,20 +80,20 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: SITE_URL,
     siteName: SITE_TITLE,
-    title: `${SITE_TITLE} - KBO 실시간 경기톡 & 커뮤니티`,
+    title: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: "/assets/mainherobg.png",
         width: 1448,
         height: 1086,
-        alt: "톡구장 - 야구팬 실시간 경기톡 커뮤니티"
+        alt: "야구놀이터 - 야구 미니 게임 & 예측"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_TITLE} - KBO 실시간 경기톡 & 커뮤니티`,
+    title: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
     description: SITE_DESCRIPTION,
     images: ["/assets/mainherobg.png"]
   },
@@ -144,7 +145,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div className="initial-loader-mascot" />
             <div className="initial-loader-shadow" aria-hidden="true" />
           </div>
-          <span className="initial-loader-text">톡구장</span>
+          <span className="initial-loader-text">야구놀이터</span>
           <span className="initial-loader-dots" aria-hidden="true">
             <span className="initial-loader-dot" />
             <span className="initial-loader-dot" />

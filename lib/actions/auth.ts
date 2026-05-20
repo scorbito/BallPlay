@@ -86,7 +86,8 @@ export async function emailAuthAction(formData: FormData) {
 export async function signOutAction() {
   const supabase = createSupabaseServerClient();
   await supabase.auth.signOut();
-  redirect("/landing");
+  // 로그아웃 후엔 "/"로 — 미들웨어가 자동으로 새 익명 세션을 부여한다.
+  redirect("/");
 }
 
 /**

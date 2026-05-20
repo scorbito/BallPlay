@@ -224,8 +224,7 @@ export async function getMatchPostByIdFromDb(id: string): Promise<MatchPost | nu
     { data: game },
     { count: likeCount },
     { count: commentCount },
-    { data: myLike },
-    { data: attendance }
+    { data: myLike }
   ] = await Promise.all([
     admin.from("profiles")
       .select("id,nickname,main_team_id,avatar_image_url")
@@ -247,12 +246,7 @@ export async function getMatchPostByIdFromDb(id: string): Promise<MatchPost | nu
           .eq("match_post_id", row.id)
           .eq("user_id", viewerId)
           .maybeSingle()
-      : Promise.resolve({ data: null }),
-    admin.from("attendances")
-      .select("id")
-      .eq("user_id", row.user_id)
-      .eq("game_id", row.game_id)
-      .maybeSingle()
+      : Promise.resolve({ data: null })
   ]);
 
   return {
@@ -271,7 +265,6 @@ export async function getMatchPostByIdFromDb(id: string): Promise<MatchPost | nu
     authorNickname: profile?.nickname ?? "승요팬",
     authorTeamId: profile?.main_team_id ?? "lg",
     authorAvatarUrl: profile?.avatar_image_url ?? null,
-    authorAttended: Boolean(attendance),
     game: {
       date: game?.game_date ?? "",
       homeTeamId: game?.home_team_id ?? "",

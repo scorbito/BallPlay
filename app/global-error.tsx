@@ -64,7 +64,7 @@ export default function GlobalError({
               type="button"
               onClick={() => {
                 if (typeof window !== "undefined") {
-                  window.location.href = "/landing";
+                  window.location.href = "/";
                 }
               }}
               style={{

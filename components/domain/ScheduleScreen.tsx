@@ -1,18 +1,15 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
-import { AppModals, type ModalKind } from "@/components/domain/AppModals";
-import { getTeam } from "@/lib/constants/teams";
+import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import type { Game } from "@/lib/types/domain";
 
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
-
-type ViewMode = "basic" | "series";
+const WEEKDAYS_SUN = ["일", "월", "화", "수", "목", "금", "토"];
 
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
@@ -32,7 +29,6 @@ const getMonthDates = (visibleMonth: Date): CalendarDate[] => {
   const month = visibleMonth.getMonth();
   const firstDay = new Date(year, month, 1);
   const start = new Date(year, month, 1 - firstDay.getDay());
-  // 그 달의 마지막 날을 포함하는 주의 토요일까지 — 4·5·6주 가변
   const lastDay = new Date(year, month + 1, 0);
   const end = new Date(lastDay);
   end.setDate(end.getDate() + (6 - lastDay.getDay()));
@@ -44,51 +40,43 @@ const getMonthDates = (visibleMonth: Date): CalendarDate[] => {
   });
 };
 
-const getMainTeamResult = (game: Game, mainTeamId: string): "win" | "lose" | "draw" | null => {
+const getTeamResult = (game: Game, teamId: string): "win" | "lose" | "draw" | null => {
   if (game.status !== "finished" || game.homeScore == null || game.awayScore == null) return null;
   if (game.homeScore === game.awayScore) return "draw";
-  const isHome = game.homeTeamId === mainTeamId;
-  const isAway = game.awayTeamId === mainTeamId;
+  const isHome = game.homeTeamId === teamId;
+  const isAway = game.awayTeamId === teamId;
   if (!isHome && !isAway) return null;
   return (isHome ? game.homeScore > game.awayScore : game.awayScore > game.homeScore) ? "win" : "lose";
 };
 
-type DayMark = {
-  opponentId: string;
-  isHome: boolean;
-  attended: boolean;
-  result: "win" | "lose" | "draw" | null;
-  canceled: boolean;
+type ScheduleScreenProps = {
+  games?: Game[];
 };
-
-const getDayMark = (games: Game[], mainTeamId: string, attendedKeys: Set<string>): DayMark | null => {
-  const myGame = games.find((g) => g.homeTeamId === mainTeamId || g.awayTeamId === mainTeamId);
-  if (!myGame) return null;
-  const isHome = myGame.homeTeamId === mainTeamId;
-  return {
-    opponentId: isHome ? myGame.awayTeamId : myGame.homeTeamId,
-    isHome,
-    attended: attendedKeys.has(myGame.date),
-    result: getMainTeamResult(myGame, mainTeamId),
-    canceled: myGame.status === "canceled"
-  };
-};
-
-type ScheduleScreenProps = { games?: Game[] };
 
 export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
-  const { profile, attendances } = useAppState();
+  const { profile } = useAppState();
   const today = new Date();
+
+  const [selectedTeamId, setSelectedTeamId] = useState(profile.mainTeamId);
+  const [teamMenuOpen, setTeamMenuOpen] = useState(false);
+  const teamPickerRef = useRef<HTMLDivElement | null>(null);
+
+  // 외부 클릭 시 팀 드롭다운 닫기
+  useEffect(() => {
+    if (!teamMenuOpen) return;
+    const handler = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (target && teamPickerRef.current && !teamPickerRef.current.contains(target)) {
+        setTeamMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [teamMenuOpen]);
+
+  // 월간(시리즈) 보기 상태
   const [visibleMonth, setVisibleMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), today.getDate()));
-  const [modal, setModal] = useState<ModalKind>(null);
-  const [view, setView] = useState<ViewMode>("series");
-
-  const calendarDates = useMemo(() => getMonthDates(visibleMonth), [visibleMonth]);
-  const calendarWeeks = useMemo(
-    () => Array.from({ length: Math.ceil(calendarDates.length / 7) }, (_, i) => calendarDates.slice(i * 7, i * 7 + 7)),
-    [calendarDates]
-  );
 
   const gamesByDate = useMemo(() => {
     const map = new Map<string, Game[]>();
@@ -100,13 +88,12 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
     return map;
   }, [games]);
 
-  const attendedKeys = useMemo(() => {
-    const set = new Set<string>();
-    attendances.forEach((a) => set.add(a.date));
-    return set;
-  }, [attendances]);
+  const calendarDates = useMemo(() => getMonthDates(visibleMonth), [visibleMonth]);
+  const calendarWeeks = useMemo(
+    () => Array.from({ length: Math.ceil(calendarDates.length / 7) }, (_, i) => calendarDates.slice(i * 7, i * 7 + 7)),
+    [calendarDates]
+  );
 
-  // 우리 팀 시리즈 (연속 같은 상대 + 같은 홈/원정) + 결과 집계
   const teamSeries = useMemo(() => {
     type Series = {
       startDate: Date;
@@ -120,13 +107,12 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
       finishedGames: number;
     };
     const myGames = games
-      .filter((g) => g.homeTeamId === profile.mainTeamId || g.awayTeamId === profile.mainTeamId)
+      .filter((g) => g.homeTeamId === selectedTeamId || g.awayTeamId === selectedTeamId)
       .map((g) => ({
-        rawDate: g.date,
         date: parseDotDate(g.date),
-        isHome: g.homeTeamId === profile.mainTeamId,
-        opponentTeamId: g.homeTeamId === profile.mainTeamId ? g.awayTeamId : g.homeTeamId,
-        result: getMainTeamResult(g, profile.mainTeamId),
+        isHome: g.homeTeamId === selectedTeamId,
+        opponentTeamId: g.homeTeamId === selectedTeamId ? g.awayTeamId : g.homeTeamId,
+        result: getTeamResult(g, selectedTeamId),
         finished: g.status === "finished" && g.homeScore != null && g.awayScore != null
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -163,9 +149,8 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
       }
     }
     return series;
-  }, [games, profile.mainTeamId]);
+  }, [games, selectedTeamId]);
 
-  // 시리즈 결과 라벨/종류
   const getSeriesResult = (s: { myWins: number; myLosses: number; draws: number; totalGames: number; finishedGames: number }) => {
     const ended = s.totalGames > 0 && s.finishedGames === s.totalGames;
     if (!ended) {
@@ -210,11 +195,11 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   const selectedGames = useMemo(() => {
     const list = gamesByDate.get(selectedKey) ?? [];
     return [...list].sort((a, b) => {
-      const aMine = a.homeTeamId === profile.mainTeamId || a.awayTeamId === profile.mainTeamId ? -1 : 0;
-      const bMine = b.homeTeamId === profile.mainTeamId || b.awayTeamId === profile.mainTeamId ? -1 : 0;
+      const aMine = a.homeTeamId === selectedTeamId || a.awayTeamId === selectedTeamId ? -1 : 0;
+      const bMine = b.homeTeamId === selectedTeamId || b.awayTeamId === selectedTeamId ? -1 : 0;
       return aMine - bMine;
     });
-  }, [gamesByDate, profile.mainTeamId, selectedKey]);
+  }, [gamesByDate, selectedTeamId, selectedKey]);
 
   const moveMonth = (dir: -1 | 1) => {
     setVisibleMonth((current) => {
@@ -231,13 +216,11 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
     }
   };
 
-  const selectedTitle = `${selectedDate.getMonth() + 1}.${selectedDate.getDate()} (${WEEKDAYS[selectedDate.getDay()]})`;
+  const selectedTitle = `${selectedDate.getMonth() + 1}.${selectedDate.getDate()} (${WEEKDAYS_SUN[selectedDate.getDay()]})`;
 
-  const renderCell = (date: Date, inMonth: boolean, compact: boolean) => {
+  const renderMonthCell = (date: Date, inMonth: boolean) => {
     const dateKey = toDateKey(date);
     const isSelected = isSameDate(date, selectedDate);
-    const dayList = gamesByDate.get(dateKey) ?? [];
-    const mark = compact ? null : getDayMark(dayList, profile.mainTeamId, attendedKeys);
     const dayOfWeek = date.getDay();
     const dayClass = dayOfWeek === 0 ? "sched-cell-sun" : dayOfWeek === 6 ? "sched-cell-sat" : "";
 
@@ -245,51 +228,63 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
       <button
         key={dateKey}
         type="button"
-        className={`sched-cell ${compact ? "sched-cell-compact" : ""} ${dayClass} ${isSelected ? "sched-cell-selected" : ""} ${!inMonth ? "sched-cell-out" : ""}`}
+        className={`sched-cell sched-cell-compact ${dayClass} ${isSelected ? "sched-cell-selected" : ""} ${!inMonth ? "sched-cell-out" : ""}`}
         onClick={() => selectDate(date)}
       >
         <span className="sched-date">{date.getDate()}</span>
-        {mark ? <TeamBadge teamId={mark.opponentId} size="sm" /> : null}
-        {mark && (mark.attended || mark.result || mark.canceled) ? (
-          <span className="sched-marks">
-            {mark.attended ? (
-              <span className="sched-mark sched-mark-attended" aria-label="직관">
-                <Check size={11} strokeWidth={3.5} />
-              </span>
-            ) : null}
-            {mark.result ? (
-              <span
-                className={`sched-mark-dot sched-mark-${mark.result === "lose" ? "loss" : mark.result}`}
-                aria-label={mark.result}
-              />
-            ) : null}
-            {mark.canceled ? (
-              <span className="sched-mark-dot sched-mark-canceled" aria-label="경기취소" />
-            ) : null}
-          </span>
-        ) : null}
       </button>
     );
   };
 
+  const selectedTeam = getTeam(selectedTeamId);
+
   return (
     <AppShell activeTab="schedule" title="일정" theme="dark" hideHeader>
-      <div className="sched-view-switch">
-        <button
-          type="button"
-          className={view === "basic" ? "sched-view-tab sched-view-tab-active" : "sched-view-tab"}
-          onClick={() => setView("basic")}
-        >
-          기본 보기
-        </button>
-        <button
-          type="button"
-          className={view === "series" ? "sched-view-tab sched-view-tab-active" : "sched-view-tab"}
-          onClick={() => setView("series")}
-        >
-          시리즈 보기
-        </button>
-        <Link className="sched-view-tab" href="/rankings" prefetch>팀 순위</Link>
+      {/* 상단: 팀 선택 드롭다운 + 팀 순위 버튼 */}
+      <div className="sched-top-bar">
+        <div className="sched-team-picker" ref={teamPickerRef}>
+          <button
+            type="button"
+            className="sched-team-picker-trigger"
+            aria-haspopup="listbox"
+            aria-expanded={teamMenuOpen}
+            onClick={() => setTeamMenuOpen((open) => !open)}
+          >
+            <TeamBadge teamId={selectedTeamId} size="sm" />
+            <strong>{selectedTeam.shortName}</strong>
+            <ChevronDown size={16} className={teamMenuOpen ? "sched-team-picker-chevron-open" : ""} />
+          </button>
+          {teamMenuOpen ? (
+            <ul className="sched-team-picker-menu" role="listbox" aria-label="팀 선택">
+              {teams.map((team) => {
+                const active = team.id === selectedTeamId;
+                return (
+                  <li key={team.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={active ? "sched-team-picker-item sched-team-picker-item-active" : "sched-team-picker-item"}
+                      onClick={() => {
+                        setSelectedTeamId(team.id);
+                        setTeamMenuOpen(false);
+                      }}
+                    >
+                      <TeamBadge teamId={team.id} size="sm" />
+                      <span>{team.name}</span>
+                      {active ? <Check size={14} strokeWidth={3} className="sched-team-picker-check" /> : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
+
+        <Link className="sched-rank-btn" href="/rankings" prefetch>
+          <Trophy size={14} />
+          <span>팀 순위</span>
+        </Link>
       </div>
 
       <section className="sched-card">
@@ -306,72 +301,63 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
         </div>
 
         <div className="sched-weeknames">
-          {WEEKDAYS.map((day) => (
+          {WEEKDAYS_SUN.map((day) => (
             <span key={day}>{day}</span>
           ))}
         </div>
 
-        {view === "basic" ? (
-          <div className="sched-grid">
-            {calendarDates.map(({ date, inMonth }) => renderCell(date, inMonth, false))}
-          </div>
-        ) : (
-          <div className="sched-series-grid">
-            {calendarWeeks.map((week, weekIndex) => (
-              <div className="sched-week" key={`${visibleMonth.toISOString()}-w${weekIndex}`}>
-                <div className="sched-week-cells">
-                  {week.map(({ date, inMonth }) => renderCell(date, inMonth, true))}
-                </div>
-                {(() => {
-                  const segments = getSeriesSegmentsForWeek(week);
-                  return (
-                    <>
-                      <div className="sched-series-row">
-                        {segments.map((s, idx) => {
-                          const opponent = getTeam(s.opponentTeamId);
-                          return (
-                            <span
-                              key={`${weekIndex}-${s.opponentTeamId}-${s.startDay}-${idx}`}
-                              className={`sched-series-bar sched-series-${s.venue === "홈" ? "home" : "away"} ${s.continuesFromPreviousWeek ? "sched-series-cont-start" : ""} ${s.continuesToNextWeek ? "sched-series-cont-end" : ""}`}
-                              style={{
-                                "--series-color": opponent.color,
-                                gridColumn: `${s.startDay} / span ${s.span}`
-                              } as CSSProperties}
-                            >
-                              {!s.continuesFromPreviousWeek ? <small>{s.venue}</small> : null}
-                              <strong>{opponent.shortName}{s.span > 1 ? "전" : ""}</strong>
-                            </span>
-                          );
-                        })}
-                      </div>
-                      <div className="sched-series-result-row">
-                        {segments
-                          .filter((s) => !s.continuesFromPreviousWeek && s.result)
-                          .map((s, idx) => (
-                            <span
-                              key={`r-${weekIndex}-${s.opponentTeamId}-${s.startDay}-${idx}`}
-                              className={`sched-series-result sched-series-result-${s.result!.kind}`}
-                              style={{ gridColumn: `${s.startDay} / span ${s.span}` } as CSSProperties}
-                            >
-                              {s.result!.label}
-                            </span>
-                          ))}
-                      </div>
-                    </>
-                  );
-                })()}
+        <div className="sched-series-grid">
+          {calendarWeeks.map((week, weekIndex) => (
+            <div className="sched-week" key={`${visibleMonth.toISOString()}-w${weekIndex}`}>
+              <div className="sched-week-cells">
+                {week.map(({ date, inMonth }) => renderMonthCell(date, inMonth))}
               </div>
-            ))}
-          </div>
-        )}
+              {(() => {
+                const segments = getSeriesSegmentsForWeek(week);
+                return (
+                  <>
+                    <div className="sched-series-row">
+                      {segments.map((s, idx) => {
+                        const opponent = getTeam(s.opponentTeamId);
+                        return (
+                          <span
+                            key={`${weekIndex}-${s.opponentTeamId}-${s.startDay}-${idx}`}
+                            className={`sched-series-bar sched-series-${s.venue === "홈" ? "home" : "away"} ${s.continuesFromPreviousWeek ? "sched-series-cont-start" : ""} ${s.continuesToNextWeek ? "sched-series-cont-end" : ""}`}
+                            style={{
+                              "--series-color": opponent.color,
+                              gridColumn: `${s.startDay} / span ${s.span}`
+                            } as CSSProperties}
+                          >
+                            {!s.continuesFromPreviousWeek ? <small>{s.venue}</small> : null}
+                            <strong>{opponent.shortName}{s.span > 1 ? "전" : ""}</strong>
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div className="sched-series-result-row">
+                      {segments
+                        .filter((s) => !s.continuesFromPreviousWeek && s.result)
+                        .map((s, idx) => (
+                          <span
+                            key={`r-${weekIndex}-${s.opponentTeamId}-${s.startDay}-${idx}`}
+                            className={`sched-series-result sched-series-result-${s.result!.kind}`}
+                            style={{ gridColumn: `${s.startDay} / span ${s.span}` } as CSSProperties}
+                          >
+                            {s.result!.label}
+                          </span>
+                        ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="sched-card sched-day-card">
         <div className="sched-day-head">
           <strong className="sched-day-title">{selectedTitle}</strong>
-          <button type="button" className="sched-attendance-btn" onClick={() => setModal("attendance")}>
-            <Plus size={14} strokeWidth={3} /> 직관 등록
-          </button>
         </div>
 
         <div className="sched-game-list">
@@ -379,9 +365,9 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
             selectedGames.map((game) => {
               const home = getTeam(game.homeTeamId);
               const away = getTeam(game.awayTeamId);
-              const isMine = game.homeTeamId === profile.mainTeamId || game.awayTeamId === profile.mainTeamId;
+              const isMine = game.homeTeamId === selectedTeamId || game.awayTeamId === selectedTeamId;
               const center = game.status === "finished"
-                ? <span className="sched-game-score">{game.homeScore} : {game.awayScore}</span>
+                ? <span className="sched-game-score">{game.awayScore} : {game.homeScore}</span>
                 : game.status === "canceled"
                   ? <span className="sched-game-vs">취소</span>
                   : <span className="sched-game-vs">VS</span>;
@@ -423,8 +409,6 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
           )}
         </div>
       </section>
-
-      <AppModals open={modal} setOpen={setModal} initialGames={games} initialDate={selectedKey} />
     </AppShell>
   );
 }

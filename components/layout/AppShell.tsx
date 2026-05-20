@@ -5,7 +5,7 @@ import { BottomTabs } from "@/components/layout/BottomTabs";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 
 type AppShellProps = {
-  activeTab?: "home" | "schedule" | "community" | "my";
+  activeTab?: "home" | "schedule" | "play" | "my";
   title?: string;
   showBeta?: boolean;
   theme?: "default" | "dark";
@@ -19,7 +19,7 @@ type AppShellProps = {
 
 export function AppShell({
   activeTab = "home",
-  title = "톡구장",
+  title = "야구놀이터",
   showBeta = false,
   theme = "default",
   headerAction,
@@ -29,7 +29,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <main className="app-backdrop">
-      <section className={`phone-frame${theme === "dark" ? " phone-frame-dark" : ""}`} aria-label="톡구장 앱 화면">
+      <section className={`phone-frame${theme === "dark" ? " phone-frame-dark" : ""}`} aria-label="야구놀이터 앱 화면">
         <div className="app-scroll">
           {hideHeader ? null : (
             <header className="app-header">

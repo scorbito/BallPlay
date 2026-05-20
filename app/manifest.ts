@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "톡구장",
-    short_name: "톡구장",
-    description: "KBO 실시간 경기톡 및 야구팬 커뮤니티 웹앱",
+    name: "야구놀이터",
+    short_name: "야구놀이터",
+    description: "야구 미니 게임 & 예측 콘텐츠 웹앱",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

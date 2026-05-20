@@ -96,7 +96,7 @@ export function MatchPostDetailScreen({ post: initialPost, initialComments, curr
   };
 
   return (
-    <AppShell activeTab="community" title="경기톡" theme="dark" backHref="/community?tab=match-talk">
+    <AppShell activeTab="home" title="경기톡" theme="dark" backHref="/">
       <MatchPostCard
         post={post}
         currentUserId={currentUserId}

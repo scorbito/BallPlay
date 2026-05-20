@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-// 인증 미가입 사용자가 진입 시 /landing으로 리다이렉트해야 하는 보호 경로.
+// 비인증 사용자가 메인 진입 시 익명 세션을 자동 생성하기 위한 부트스트랩 경로 매칭.
 // 서버 컴포넌트의 redirect() 호출이 Next.js App Router의 React #310 버그를 트리거하므로
 // (https://github.com/vercel/next.js/issues/78396), 미들웨어에서 HTTP 레벨로 처리.
-const PROTECTED_HOME_PATHS = ["/"];
+const ANON_BOOTSTRAP_PATHS = ["/"];
 
 export async function updateSupabaseSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -35,11 +35,13 @@ export async function updateSupabaseSession(request: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
 
-  // 보호 경로에 비인증 사용자가 진입하면 미들웨어 단에서 /landing으로 리다이렉트.
-  // page.tsx의 redirect("/landing") 호출이 일으키던 React #310 회피.
-  if (!data?.user && PROTECTED_HOME_PATHS.includes(request.nextUrl.pathname)) {
+  // 비인증 사용자가 메인 진입 시 익명 세션 부트스트랩 라우트로 보낸다.
+  // 부트스트랩이 익명 가입 + 기본 프로필 생성 후 다시 "/"(혹은 next)로 복귀시키므로,
+  // 사용자는 랜딩 페이지 없이 곧장 메인으로 진입하게 됨.
+  if (!data?.user && ANON_BOOTSTRAP_PATHS.includes(request.nextUrl.pathname)) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/landing";
+    redirectUrl.pathname = "/api/anon-bootstrap";
+    redirectUrl.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(redirectUrl);
   }
 

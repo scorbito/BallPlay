@@ -1,5 +1,5 @@
-﻿import type { ProfileStats, UserProfileRecord } from "@/lib/types/api-contracts";
-import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import type { UserProfileRecord } from "@/lib/types/api-contracts";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type AuthAccountInfo = {
   provider: "google" | "kakao" | "email" | "anonymous" | "unknown";
@@ -20,9 +20,6 @@ export async function getCurrentAuthAccountInfo(): Promise<AuthAccountInfo | nul
     return { provider: "anonymous", identifier: null, isAnonymous: true };
   }
 
-  // identities 배열에서 가장 최근 link된 OAuth identity 우선.
-  // 카카오는 identity_data.email이 fake(@kakao.supabase 등)일 수 있어
-  // user_name / nickname / preferred_username을 우선.
   const identities = user.identities ?? [];
   const oauth = identities.find((i) => i.provider === "google" || i.provider === "kakao");
 
@@ -39,7 +36,6 @@ export async function getCurrentAuthAccountInfo(): Promise<AuthAccountInfo | nul
     return { provider: "kakao", identifier: nickname, isAnonymous: false };
   }
 
-  // 이메일/비번 가입
   if (identities.some((i) => i.provider === "email") || user.email) {
     return { provider: "email", identifier: user.email ?? null, isAnonymous: false };
   }
@@ -83,36 +79,3 @@ export async function getCurrentProfileFromDb(): Promise<UserProfileRecord | nul
     updatedAt: data.updated_at
   };
 }
-
-export async function getCurrentProfileStatsFromDb(): Promise<ProfileStats | null> {
-  const ssr = createSupabaseServerClient();
-  const { data: authData, error: authError } = await ssr.auth.getUser();
-
-  if (authError || !authData.user) {
-    return null;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("profile_stats")
-    .select("attendance_count,wins,losses,draws,win_rate")
-    .eq("user_id", authData.user.id)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`Failed to load profile stats: ${error.message}`);
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  return {
-    attendanceCount: data.attendance_count,
-    wins: data.wins,
-    losses: data.losses,
-    draws: data.draws,
-    winRate: data.win_rate > 0 ? `.${Math.round(data.win_rate * 1000).toString().padStart(3, "0")}` : ".000"
-  };
-}
-

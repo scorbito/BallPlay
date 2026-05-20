@@ -319,3 +319,165 @@
   margin-top: 0;
 }
 
+/* ============================================================
+ * 일정 페이지 상단 바 — 팀 드롭다운 + 팀 순위 버튼
+ * ============================================================ */
+.phone-frame-dark .sched-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* .app-content의 18px flex gap 상쇄 — top-bar와 캘린더 간격 ~4px로 좁힘 */
+  margin: 0 0 -14px;
+}
+
+.phone-frame-dark .sched-rank-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 9px 14px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  transition: background 0.15s ease;
+}
+
+.phone-frame-dark .sched-rank-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.phone-frame-dark .sched-rank-btn svg {
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .sched-team-picker {
+  position: relative;
+  /* 좌측 드롭다운은 내용에 맞춰 좁게 — 팀 약칭만 보이도록. */
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.phone-frame-dark .sched-team-picker-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .sched-team-picker-trigger:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.phone-frame-dark .sched-team-picker-trigger strong {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-dark .sched-team-picker-trigger svg {
+  color: var(--hd-text-secondary);
+  transition: transform 0.18s ease;
+}
+
+.phone-frame-dark .sched-team-picker-chevron-open {
+  transform: rotate(180deg);
+}
+
+.phone-frame-dark .sched-team-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--hd-bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+  min-width: 180px;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .sched-team-picker-menu li {
+  margin: 0;
+}
+
+.phone-frame-dark .sched-team-picker-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--hd-text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* 팀 배지는 원형 유지 — flex container 안에서 가로/세로 비율 강제.
+ * 글자 폭이 다른 팀(LG/KT/SSG 등)에서도 동일한 원형이 되도록 모든 사이즈 속성을 못박는다. */
+.phone-frame-dark .sched-team-picker-item .team-badge-wrap,
+.phone-frame-dark .sched-team-picker-trigger .team-badge-wrap {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  max-width: 26px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.phone-frame-dark .sched-team-picker-item .team-badge,
+.phone-frame-dark .sched-team-picker-trigger .team-badge {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px;
+  max-width: 26px;
+  flex: 0 0 auto;
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  border-radius: 999px;
+}
+
+.phone-frame-dark .sched-team-picker-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.phone-frame-dark .sched-team-picker-item span {
+  flex: 1;
+}
+
+.phone-frame-dark .sched-team-picker-item-active {
+  background: rgba(255, 106, 43, 0.10);
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .sched-team-picker-item-active:hover {
+  background: rgba(255, 106, 43, 0.16);
+}
+
+.phone-frame-dark .sched-team-picker-check {
+  color: var(--hd-accent, #ff6a2b);
+  flex-shrink: 0;
+}
+

@@ -4,15 +4,13 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Bookmark, Camera, Check, ChevronRight, Download, ListChecks, MessageSquareText, Settings, Ticket, UserPlus } from "lucide-react";
+import { Camera, Check, ChevronRight, Download, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { Card } from "@/components/common/Card";
 import { ModalShell } from "@/components/common/ModalShell";
 import { Button } from "@/components/common/Button";
 import { InstallAppModal } from "@/components/domain/InstallAppModal";
-import { SeasonLevelCard } from "@/components/domain/SeasonLevelCard";
-import type { SeasonLevelState } from "@/lib/season-level/types";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { useInstallPrompt } from "@/lib/hooks/useInstallPrompt";
@@ -20,21 +18,11 @@ import { updateAvatarAction, updateProfileAction } from "@/lib/actions/profile";
 import { uploadUserFile } from "@/lib/supabase/storage-client";
 
 const menuItems = [
-  { label: "내 직관 리스트", href: "/my/attendances", icon: ListChecks },
-  { label: "내 티켓 컬렉션", href: "/my/tickets", icon: Ticket },
-  { label: "내 후기 모음", href: "/my/reviews", icon: MessageSquareText },
-  { label: "저장한 후기", href: "/my/saved", icon: Bookmark },
-  { label: "친구 관리", href: "/my/friends", icon: UserPlus },
   { label: "설정", href: "/my/settings", icon: Settings }
 ];
 
-type MyScreenProps = {
-  friendsCount?: number;
-  seasonLevel?: SeasonLevelState | null;
-};
-
-export function MyScreen({ friendsCount = 0, seasonLevel = null }: MyScreenProps) {
-  const { profile, attendances, reviews, savedReviewIds, isAnonymous, updateProfile, showToast } = useAppState();
+export function MyScreen() {
+  const { profile, isAnonymous, updateProfile, showToast } = useAppState();
   const { isStandalone } = useInstallPrompt();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -46,12 +34,9 @@ export function MyScreen({ friendsCount = 0, seasonLevel = null }: MyScreenProps
   const [uploading, startUpload] = useTransition();
   const [savingProfile, startSaveProfile] = useTransition();
   const profileTeam = getTeam(profile.mainTeamId);
-  const verifiedAttendanceCount = attendances.filter((item) => item.verified).length;
 
   useEffect(() => {
-    if (!editing) {
-      return;
-    }
+    if (!editing) return;
     setNickname(profile.nickname);
     setSelectedTeamId(profile.mainTeamId);
     setAvatarUrl(profile.avatarUrl);
@@ -114,24 +99,6 @@ export function MyScreen({ friendsCount = 0, seasonLevel = null }: MyScreenProps
             + 자기소개 추가하기
           </button>
         )}
-        {seasonLevel ? <SeasonLevelCard state={seasonLevel} /> : null}
-        <div className="profile-stat-grid" aria-label="내 직관 통계">
-          <span>
-            <em>직관</em>
-            <b>{profile.attendanceCount}</b>
-            <i>인증 {verifiedAttendanceCount}</i>
-          </span>
-          <span>
-            <em>승리</em>
-            <b>{profile.wins}</b>
-            <i>{profile.losses}패 {profile.draws}무</i>
-          </span>
-          <span>
-            <em>승률</em>
-            <b>{profile.winRate}</b>
-            <i>시즌 기준</i>
-          </span>
-        </div>
         {isAnonymous ? (
           <Link className="profile-anon-cta" href="/login" prefetch>
             정식 계정으로 전환하면 다른 기기에서도 볼 수 있어요 →
@@ -141,18 +108,11 @@ export function MyScreen({ friendsCount = 0, seasonLevel = null }: MyScreenProps
       <section className="menu-list">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          let count: number | null = null;
-          if (item.label === "내 직관 리스트") count = attendances.length;
-          else if (item.label === "내 티켓 컬렉션") count = attendances.filter((a) => a.verified).length;
-          else if (item.label === "내 후기 모음") count = reviews.length;
-          else if (item.label === "저장한 후기") count = savedReviewIds.length;
-          else if (item.label === "친구 관리") count = friendsCount;
-
           return (
             <Link href={item.href} key={item.label} prefetch>
               <Icon size={18} />
               <strong>{item.label}</strong>
-              {count !== null ? <span className="menu-count">({count})</span> : <span className="menu-count" />}
+              <span className="menu-count" />
               <ChevronRight size={18} />
             </Link>
           );
@@ -206,7 +166,6 @@ export function MyScreen({ friendsCount = 0, seasonLevel = null }: MyScreenProps
               maxLength={150}
               placeholder="한 줄로 나를 소개해보세요 (선택)"
               onChange={(event) => {
-                // 줄바꿈 차단 — 한 줄로만 입력
                 const next = event.target.value.replace(/[\r\n]+/g, " ");
                 setBio(next);
               }}
@@ -232,7 +191,6 @@ export function MyScreen({ friendsCount = 0, seasonLevel = null }: MyScreenProps
                 );
               })}
             </div>
-            <p className="field-hint">실서비스에서는 팀 변경을 하루 1회로 제한할 예정이에요. 지금은 테스트라 자유롭게 바꿀 수 있습니다.</p>
           </div>
           <Button disabled={savingProfile} onClick={() => {
             const nextNickname = nickname.trim() || profile.nickname;

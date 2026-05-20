@@ -175,11 +175,6 @@ export function MatchPostCard({ post, currentUserId, onToggleLike, onClickGameFi
             <div className="match-post-author-meta">
               <div className="match-post-author-name">
                 <strong>{post.authorNickname}</strong>
-                {post.authorAttended ? (
-                  <span className="match-post-attended-badge" title="직관 인증">
-                    <Check size={11} strokeWidth={3} /> 직관
-                  </span>
-                ) : null}
               </div>
               <span className="match-post-time">{post.timeAgo}</span>
             </div>

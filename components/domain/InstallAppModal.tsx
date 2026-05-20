@@ -45,7 +45,7 @@ export function InstallAppModal({ open, onClose }: Props) {
             height={92}
             className="install-modal-mascot"
           />
-          <h2>톡구장을<br />홈 화면에 추가해 보세요</h2>
+          <h2>야구놀이터를<br />홈 화면에 추가해 보세요</h2>
           <p>
             URL 바 없이 풀스크린으로 사용할 수 있고,<br />
             아이콘 하나로 빠르게 진입할 수 있어요.

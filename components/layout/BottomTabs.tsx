@@ -1,11 +1,11 @@
 "use client";
 
-import { CalendarDays, Home, MessageCircle, UserRound } from "lucide-react";
+import { CalendarDays, Gamepad2, Home, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type TabId = "home" | "schedule" | "community" | "my";
+type TabId = "home" | "schedule" | "play" | "my";
 
 type BottomTabsProps = {
   activeTab: TabId;
@@ -14,7 +14,7 @@ type BottomTabsProps = {
 const tabs = [
   { id: "home", label: "홈", icon: Home, href: "/" },
   { id: "schedule", label: "일정", icon: CalendarDays, href: "/schedule" },
-  { id: "community", label: "직관", icon: MessageCircle, href: "/community" },
+  { id: "play", label: "놀이", icon: Gamepad2, href: "/play" },
   { id: "my", label: "마이", icon: UserRound, href: "/my" }
 ] as const;
 

@@ -38,8 +38,6 @@ export function GameCard({ game, compact = false, highlighted = false }: GameCar
         </span>
       </div>
       <div className="game-card-status">
-        {game.verified ? <span className="status-verified">인증</span> : null}
-        {game.attended && !game.verified ? <span className="status-attended">직관</span> : null}
         {game.status === "scheduled" ? <span className="status-muted">경기전</span> : null}
       </div>
     </div>

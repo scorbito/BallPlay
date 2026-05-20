@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { Check, Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Trash2 } from "lucide-react";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
@@ -337,7 +337,6 @@ function MatchTalkTimelineItem({ post, currentUserId, onToggleLike, onDeleted, o
               <div>
                 <div className="match-talk-timeline-name-row">
                   <strong>{post.authorNickname}</strong>
-                  {post.authorAttended ? <Check size={12} strokeWidth={3} /> : null}
                 </div>
                 <span>{post.timeAgo}</span>
               </div>

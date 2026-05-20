@@ -10,9 +10,9 @@ const SUPPORT_EMAIL = "daedanbiz@gmail.com";
 export function ContactScreen() {
   const [copied, setCopied] = useState(false);
 
-  const subject = "[톡구장] 문의드립니다";
+  const subject = "[야구놀이터] 문의드립니다";
   const body =
-    "안녕하세요, 톡구장 운영팀입니다. 아래 양식으로 작성해 주시면 빠르게 답변드릴게요.\n\n" +
+    "안녕하세요, 야구놀이터 운영팀입니다. 아래 양식으로 작성해 주시면 빠르게 답변드릴게요.\n\n" +
     "■ 사용 기기 / 브라우저:\n■ 닉네임:\n■ 발생한 상황:\n■ 기대했던 동작:\n■ 스크린샷 (있다면 첨부):\n\n--- 위 안내 문구는 자유롭게 지우고 작성해 주세요 ---";
 
   const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

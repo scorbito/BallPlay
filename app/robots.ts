@@ -11,7 +11,6 @@ export default function robots(): MetadataRoute.Robots {
           "/",
           "/robots.txt",
           "/sitemap.xml",
-          "/landing",
           "/login",
           "/my/help",
           "/my/contact",
@@ -20,18 +19,13 @@ export default function robots(): MetadataRoute.Robots {
         ],
         disallow: [
           "/my/",               // 마이 하위 페이지 (auth 필요, 공개 도움말/문의는 allow 우선)
-          "/my/attendances",
-          "/my/reviews",
-          "/my/tickets",
-          "/my/friends",
           "/my/notices",
           "/my/settings",
           "/onboarding",
           "/schedule",
           "/community",
           "/rankings",
-          "/reviews/",          // 후기 상세 (현재 auth 필요)
-          "/api/",              // API 라우트
+          "/api/",              // API 라우트 (anon-bootstrap 포함)
           "/auth/"              // OAuth callback
         ]
       },
@@ -42,7 +36,6 @@ export default function robots(): MetadataRoute.Robots {
           "/",
           "/robots.txt",
           "/sitemap.xml",
-          "/landing",
           "/login",
           "/my/help",
           "/my/contact",
