@@ -93,16 +93,95 @@
   color: var(--hd-text-secondary);
 }
 
-/* ── 라인업 페이지 헤더 ── */
+/* ── 라인업 페이지 헤더 — [< 뒤로] [팀 드롭다운 중앙] [타자/투수 토글] ── */
 .phone-frame-dark .lineup-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 4px 0 12px;
+  padding: 4px 0 0;
+  /* .app-content의 18px gap을 상쇄 — 헤더와 그라운드 사이 간격 좁힘 */
+  margin-bottom: -14px;
 }
 
-.phone-frame-dark .lineup-back,
-.phone-frame-dark .lineup-reset-btn {
+/* 뒤로가기 버튼이 없는 모드 — 팀 선택을 헤더 정중앙에 두고, 모드 토글은 오른쪽에 절대 배치.
+   1fr-auto 그리드로는 팀 피커가 모드 토글 너비만큼 왼쪽으로 밀려 중앙이 안 됨. */
+.phone-frame-dark .lineup-header-no-back {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+}
+
+.phone-frame-dark .lineup-header-no-back .lineup-mode-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.phone-frame-dark .lineup-header > .sched-team-picker {
+  justify-self: center;
+}
+
+.phone-frame-dark .lineup-header-spacer {
+  display: block;
+}
+
+/* 타자/투수 세그먼트 토글 */
+.phone-frame-dark .lineup-mode-toggle {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.phone-frame-dark .lineup-mode-tab {
+  padding: 6px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--hd-text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .lineup-mode-tab:hover {
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .lineup-mode-tab-active {
+  background: var(--hd-accent, #ff6a2b);
+  color: #ffffff;
+}
+
+/* 정적 라벨 (선발/불펜) — 클릭 안 되는 표시용 */
+.phone-frame-dark .lineup-slot-pos-static {
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--hd-text-primary);
+  flex-shrink: 0;
+}
+
+/* 선발 라벨/순서는 오렌지 강조 */
+.phone-frame-dark .lineup-slot-pos-starter,
+.phone-frame-dark .lineup-slot-order-starter {
+  background: rgba(255, 106, 43, 0.18);
+  border-color: rgba(255, 106, 43, 0.4);
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .lineup-back {
   width: 36px;
   height: 36px;
   display: inline-flex;
@@ -115,52 +194,115 @@
   cursor: pointer;
 }
 
-.phone-frame-dark .lineup-back:hover,
-.phone-frame-dark .lineup-reset-btn:hover {
+.phone-frame-dark .lineup-back:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.phone-frame-dark .lineup-header h1 {
-  flex: 1;
-  margin: 0;
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--hd-text-primary);
-  letter-spacing: -0.2px;
+/* ── 라인업 페이지 레이아웃 (다이아몬드/힌트/타순/대기 — grid-area로 PC에서 재배치 가능) ── */
+.phone-frame-dark .lineup-layout {
+  display: grid;
+  gap: 8px;
+  /* 모바일/태블릿 기본: 다이아몬드(전체폭) → 힌트(전체폭) → [타순|대기] */
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "diamond diamond"
+    "hint    hint"
+    "slots   pool";
 }
 
-.phone-frame-dark .lineup-top-bar {
+.phone-frame-dark .lineup-diamond-card { grid-area: diamond; }
+/* .lineup-action-hint는 .lineup-action-row 안으로 들어가므로 grid-area는 행에서 지정 */
+.phone-frame-dark .lineup-slots-card { grid-area: slots; }
+.phone-frame-dark .lineup-pool-card-side { grid-area: pool; }
+
+/* 다이아몬드와 타순/대기 사이 사용법 안내 — 텍스트만, 좌측 정렬.
+   안내 텍스트 + 우측 액션 버튼(저장/공유)을 한 줄에 배치 */
+.phone-frame-dark .lineup-action-row {
+  grid-area: hint;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 -10px;
+  min-width: 0;
 }
 
-.phone-frame-dark .lineup-dh-toggle {
+.phone-frame-dark .lineup-action-hint {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0 2px;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  text-align: left;
+}
+
+.phone-frame-dark .lineup-action-hint strong {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 800;
+}
+
+.phone-frame-dark .lineup-action-buttons {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
-  padding: 8px 12px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.phone-frame-dark .lineup-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
   color: var(--hd-text-primary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
   cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+  white-space: nowrap;
 }
 
-.phone-frame-dark .lineup-dh-toggle input {
-  accent-color: var(--hd-accent, #ff6a2b);
-  margin: 0;
+.phone-frame-dark .lineup-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* ── 타순 + 다이아몬드 좌우 레이아웃 ── */
-.phone-frame-dark .lineup-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.phone-frame-dark .lineup-action-btn:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.phone-frame-dark .lineup-action-btn-primary {
+  background: rgba(255, 106, 43, 0.18);
+  border-color: rgba(255, 106, 43, 0.4);
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .lineup-action-btn-primary:hover {
+  background: rgba(255, 106, 43, 0.26);
+}
+
+/* PC 와이드 모드 — 다이아몬드/타순 상단 좌우, 힌트 가운데, 대기 선수 하단 풀폭 */
+@media (min-width: 1025px) {
+  .phone-frame-wide .lineup-layout {
+    grid-template-columns: minmax(360px, 1.3fr) minmax(280px, 1fr);
+    grid-template-areas:
+      "diamond slots"
+      "hint    hint"
+      "pool    pool";
+    gap: 14px;
+  }
+  .phone-frame-wide .lineup-pool-list {
+    /* 대기 선수는 그리드로 펼쳐서 한 번에 많이 노출 */
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 /* ── 라인업 슬롯 카드 ── */
@@ -189,9 +331,38 @@
 
 .phone-frame-dark .lineup-section-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 10px;
+}
+
+.phone-frame-dark .lineup-clear-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  background: rgba(244, 67, 54, 0.12);
+  border: 1px solid rgba(244, 67, 54, 0.32);
+  border-radius: 7px;
+  color: #ff7c7c;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+
+.phone-frame-dark .lineup-clear-btn:hover {
+  background: rgba(244, 67, 54, 0.2);
+}
+
+.phone-frame-dark .lineup-clear-btn:active {
+  background: rgba(244, 67, 54, 0.28);
 }
 
 .phone-frame-dark .lineup-section-head strong {
@@ -250,6 +421,87 @@
   font-size: 10px;
   font-weight: 800;
   flex-shrink: 0;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* 슬롯 선택 버튼 — 번호 + 이름 통합 클릭 영역 */
+.phone-frame-dark .lineup-slot-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.phone-frame-dark .lineup-slot-main:hover .lineup-slot-order {
+  background: rgba(255, 106, 43, 0.28);
+}
+
+/* 선택된 슬롯 전체 — 옅은 노란 배경 + 보더로 강조 */
+.phone-frame-dark .lineup-slot-selected {
+  background: rgba(255, 221, 51, 0.1) !important;
+  border-color: rgba(255, 221, 51, 0.4) !important;
+}
+
+/* 타순 교체 source 선택 — 노란색 강조 (다이아몬드 선택과 동일 톤) */
+.phone-frame-dark .lineup-slot-order-selected {
+  background: #ffdd33 !important;
+  color: #1a2640 !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 221, 51, 0.4),
+    0 0 8px rgba(255, 221, 51, 0.6);
+}
+
+.phone-frame-dark .lineup-slot-main:hover .lineup-slot-order-selected {
+  background: #ffdd33 !important;
+}
+
+/* 타순 swap 직후 슬롯 행 — 위/아래에서 들어오는 듯한 모션 + 노란 플래시 */
+.phone-frame-dark .lineup-slot-swap-from-down {
+  animation: lineup-slot-swap-from-down 0.42s cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+.phone-frame-dark .lineup-slot-swap-from-up {
+  animation: lineup-slot-swap-from-up 0.42s cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+@keyframes lineup-slot-swap-from-down {
+  0% {
+    transform: translateY(36px);
+    background: rgba(255, 221, 51, 0.32);
+    opacity: 0.65;
+  }
+  60% {
+    background: rgba(255, 221, 51, 0.18);
+  }
+  100% {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 1;
+  }
+}
+
+@keyframes lineup-slot-swap-from-up {
+  0% {
+    transform: translateY(-36px);
+    background: rgba(255, 221, 51, 0.32);
+    opacity: 0.65;
+  }
+  60% {
+    background: rgba(255, 221, 51, 0.18);
+  }
+  100% {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 1;
+  }
 }
 
 .phone-frame-dark .lineup-slot-player {
@@ -257,12 +509,8 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  background: transparent;
-  border: 0;
   color: var(--hd-text-primary);
-  cursor: pointer;
   text-align: left;
-  padding: 0;
 }
 
 .phone-frame-dark .lineup-slot-name {
@@ -284,6 +532,29 @@
   color: var(--hd-text-primary);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+/* 슬롯 우측 X 제거 버튼 — 명확하게 분리된 액션 */
+.phone-frame-dark .lineup-slot-remove {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.42);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-dark .lineup-slot-remove:hover {
+  background: rgba(244, 67, 54, 0.16);
+  color: #ff7c7c;
 }
 
 .phone-frame-dark .lineup-slot-pos:hover {
@@ -332,18 +603,145 @@
   object-fit: cover;
   pointer-events: none;
   user-select: none;
+  z-index: 1;
 }
 
 .phone-frame-dark .lineup-field-marker {
   position: absolute;
   transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  pointer-events: none;
-  /* 마커 텍스트 가독성: 이미지 위에 항상 또렷하게 */
+  /* flex column 제거 — 이름이 있을 때도 원의 중심이 좌표에 고정되도록.
+   * 이름은 .lineup-field-marker-name이 absolute로 빠져나가 레이아웃에 영향 없음. */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  z-index: 2;
+  /* button(인터랙티브)과 div(정적) 양쪽에서 동일한 padding을 가져야 이름 라벨의
+   * top: calc(100% - 6px) 기준이 일치한다. 모드 전환 시 이름 위치 흔들림 방지. */
+  padding: 8px;
+  box-sizing: content-box;
+}
+
+/* 클릭 가능한 마커 — 브라우저 기본 동작 완전 차단 (padding은 base에서 통일됨) */
+.phone-frame-dark button.lineup-field-marker {
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  /* 위치는 항상 고정 — 어떤 pseudo-class도 transform 못 바꿈 */
+  transform: translate(-50%, -50%) !important;
+}
+
+.phone-frame-dark button.lineup-field-marker:focus,
+.phone-frame-dark button.lineup-field-marker:focus-visible,
+.phone-frame-dark button.lineup-field-marker:active,
+.phone-frame-dark button.lineup-field-marker:hover {
+  background: transparent !important;
+  outline: none !important;
+  border: 0 !important;
+}
+
+.phone-frame-dark .lineup-field-marker-interactive .lineup-field-marker-circle {
+  transition: none;
+}
+
+/* 첫 번째로 선택된 포지션 — 정적 노란 강조 (애니메이션/transform 일체 없음) */
+.phone-frame-dark .lineup-field-marker-selected .lineup-field-marker-circle {
+  background: #ffdd33 !important;
+  color: #1a2640 !important;
+  border-color: #ffffff !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 221, 51, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.phone-frame-dark .lineup-field-marker-selected .lineup-field-marker-name {
+  color: #ffdd33;
+  font-weight: 900;
+}
+
+/* ── swap 애니메이션 고스트 ──
+ * 두 포지션을 교환할 때 한 선수가 from 좌표에서 to 좌표로 날아가는 캡슐.
+ * 정적 마커의 이름 라벨은 from/to 위치에서 일시적으로 숨겨지고, 끝나면 다시 노출. */
+.phone-frame-dark .lineup-swap-ghost {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  background: #ffdd33;
+  color: #1a2640;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  border-radius: 999px;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(255, 221, 51, 0.7);
+  z-index: 5;
+  pointer-events: none;
+  animation: lineup-swap-travel 0.65s cubic-bezier(0.45, 0.05, 0.25, 1) forwards;
+}
+
+@keyframes lineup-swap-travel {
+  0% {
+    left: var(--ghost-from-left);
+    top: var(--ghost-from-top);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  82% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  100% {
+    left: var(--ghost-to-left);
+    top: var(--ghost-to-top);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+}
+
+/* 선택 상태 안내 배너 — 다이아몬드 카드 하단에 표시 */
+.phone-frame-dark .lineup-field-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 221, 51, 0.14);
+  border-top: 1px solid rgba(255, 221, 51, 0.4);
+  color: #ffdd33;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.phone-frame-dark .lineup-field-hint strong {
+  padding: 2px 6px;
+  background: #ffdd33;
+  color: #1a2640;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-dark .lineup-field-hint-cancel {
+  margin-left: auto;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 221, 51, 0.5);
+  border-radius: 6px;
+  color: #ffdd33;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .phone-frame-dark .lineup-field-marker-circle {
@@ -368,11 +766,18 @@
 }
 
 .phone-frame-dark .lineup-field-marker-name {
+  position: absolute;
+  /* 버튼 padding 8px + 텍스트 line-box 여백 보정. 원 바로 아래에 붙음. */
+  top: calc(100% - 6px);
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 11px;
   font-weight: 800;
+  line-height: 1;
   color: #ffffff;
   letter-spacing: -0.2px;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .phone-frame-dark .lineup-field-marker-dh {
@@ -393,7 +798,7 @@
   flex-direction: column;
   gap: 4px;
   /* 타순 9슬롯 높이에 맞춰 스크롤 */
-  max-height: 360px;
+  max-height: 370px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.18) transparent;
@@ -436,6 +841,44 @@
 .phone-frame-dark .lineup-pool-row-blocked {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ── 투/타 뱃지 (좌타/우타/양타, 좌투/우투) ── */
+.phone-frame-dark .lineup-hand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.phone-frame-dark .lineup-hand-L {
+  background: rgba(64, 156, 255, 0.18);
+  color: #6db4ff;
+}
+
+.phone-frame-dark .lineup-hand-R {
+  background: rgba(255, 124, 124, 0.18);
+  color: #ff9c9c;
+}
+
+.phone-frame-dark .lineup-hand-S {
+  background: rgba(180, 120, 255, 0.2);
+  color: #c8a4ff;
+}
+
+/* 슬롯 안의 hand badge — 이름 옆에 살짝 떨어져 표시 */
+.phone-frame-dark .lineup-slot-player .lineup-hand-badge {
+  margin-left: 6px;
+}
+
+/* 풀 row의 hand badge — 우측 끝으로 밀어내기 */
+.phone-frame-dark .lineup-pool-row .lineup-hand-badge {
+  margin-left: auto;
 }
 
 .phone-frame-dark .lineup-pool-row .lineup-pool-pos {
@@ -535,18 +978,143 @@
   cursor: not-allowed;
 }
 
-/* ── 포지션 변경 모달 ── */
-.phone-frame-dark .lineup-pos-modal-panel {
-  padding: 18px;
+/* ── 라인업 비우기 확인 모달 (다크 카드형) ── */
+.modal-backdrop:has(.lineup-confirm-modal-panel) {
+  align-items: center;
+  padding: 16px;
 }
 
-.phone-frame-dark .lineup-pos-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+.modal-panel.lineup-confirm-modal-panel {
+  width: calc(100% - 32px);
+  max-width: 340px;
+  background: #0d1a30;
+  color: #f7f9fc;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.lineup-confirm-modal-panel .modal-header {
+  background: #0d1a30;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f7f9fc;
+}
+
+.lineup-confirm-modal-panel .modal-header strong {
+  color: #f7f9fc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.lineup-confirm-modal-panel .modal-close {
+  color: rgba(247, 249, 252, 0.72);
+  background: transparent;
+  border: 0;
+}
+
+.lineup-confirm-modal-panel .modal-body {
+  background: #0d1a30;
+  padding: 18px 18px 20px;
+}
+
+.lineup-confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lineup-confirm-msg {
+  margin: 0;
+  color: #f7f9fc;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: -0.1px;
+}
+
+.lineup-confirm-actions {
+  display: flex;
   gap: 8px;
 }
 
-.phone-frame-dark .lineup-pos-choice {
+.lineup-confirm-cancel,
+.lineup-confirm-destruct {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 10px;
+  border: 1px solid;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lineup-confirm-cancel {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f7f9fc;
+}
+
+.lineup-confirm-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lineup-confirm-destruct {
+  background: rgba(244, 67, 54, 0.85);
+  border-color: rgba(244, 67, 54, 0.85);
+  color: #ffffff;
+}
+
+.lineup-confirm-destruct:hover {
+  background: rgba(244, 67, 54, 1);
+}
+
+/* ── 포지션 변경 모달 (다크 카드형, phone-frame 밖에서도 동작) ── */
+.modal-backdrop:has(.lineup-pos-modal-panel) {
+  align-items: center;
+  padding: 16px;
+}
+
+.modal-panel.lineup-pos-modal-panel {
+  width: calc(100% - 32px);
+  max-width: 380px;
+  background: #0d1a30;
+  color: #f7f9fc;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.lineup-pos-modal-panel .modal-header {
+  background: #0d1a30;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f7f9fc;
+}
+
+.lineup-pos-modal-panel .modal-header strong {
+  color: #f7f9fc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.lineup-pos-modal-panel .modal-close {
+  color: rgba(247, 249, 252, 0.72);
+  background: transparent;
+  border: 0;
+}
+
+.lineup-pos-modal-panel .modal-body {
+  background: #0d1a30;
+  padding: 16px 16px 20px;
+}
+
+.lineup-pos-modal-panel .lineup-pos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.lineup-pos-modal-panel .lineup-pos-choice {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -556,39 +1124,161 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: var(--hd-text-primary);
+  color: #f7f9fc;
   cursor: pointer;
   font: inherit;
   gap: 2px;
 }
 
-.phone-frame-dark .lineup-pos-choice:hover {
+.lineup-pos-modal-panel .lineup-pos-choice:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.phone-frame-dark .lineup-pos-choice strong {
+.lineup-pos-modal-panel .lineup-pos-choice strong {
   font-size: 13px;
   font-weight: 800;
+  color: #f7f9fc;
 }
 
-.phone-frame-dark .lineup-pos-choice span {
+.lineup-pos-modal-panel .lineup-pos-choice span {
   font-size: 10px;
-  color: var(--hd-text-muted);
+  color: rgba(247, 249, 252, 0.6);
   font-weight: 600;
 }
 
-.phone-frame-dark .lineup-pos-choice-active {
+.lineup-pos-modal-panel .lineup-pos-choice-active {
   background: rgba(255, 106, 43, 0.18);
   border-color: rgba(255, 106, 43, 0.5);
 }
 
-.phone-frame-dark .lineup-pos-choice-active strong {
-  color: var(--hd-accent, #ff6a2b);
+.lineup-pos-modal-panel .lineup-pos-choice-active strong {
+  color: #ff6a2b;
 }
 
-.phone-frame-dark .lineup-pos-check {
+.lineup-pos-modal-panel .lineup-pos-check {
   position: absolute;
   top: 4px;
   right: 4px;
+  color: #ff6a2b;
+}
+
+/* ── 라인업 공유 모달 ── */
+.modal-backdrop:has(.share-lineup-modal-panel) {
+  align-items: center;
+  padding: 16px;
+}
+
+.modal-panel.share-lineup-modal-panel {
+  width: calc(100% - 32px);
+  max-width: 360px;
+  background: #0d1a30;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.share-lineup-modal-panel .modal-header {
+  background: #0d1a30;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f7f9fc;
+}
+
+.share-lineup-modal-panel .modal-header strong {
+  color: #f7f9fc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.share-lineup-modal-panel .modal-close {
+  color: rgba(247, 249, 252, 0.72);
+  background: transparent;
+  border: 0;
+}
+
+.share-lineup-modal-panel .modal-close:hover {
+  color: #ffffff;
+}
+
+.share-lineup-modal-panel .modal-body {
+  background: #0d1a30;
+  padding: 16px 16px 20px;
+}
+
+.share-lineup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0 0;
+}
+
+.share-lineup-preview {
+  display: flex;
+  justify-content: center;
+  background: #06091a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.share-lineup-preview-canvas {
+  display: block;
+  width: 100%;
+  max-width: 270px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.share-lineup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.share-lineup-primary,
+.share-lineup-secondary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.share-lineup-primary {
+  background: var(--hd-accent, #ff6a2b);
+  border: 1px solid var(--hd-accent, #ff6a2b);
+  color: #ffffff;
+}
+
+.share-lineup-primary:hover {
+  background: #ff7e47;
+}
+
+.share-lineup-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.share-lineup-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--hd-text-primary);
+}
+
+.share-lineup-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.share-lineup-status {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--hd-accent, #ff6a2b);
 }

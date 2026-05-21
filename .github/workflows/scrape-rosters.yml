@@ -1,0 +1,43 @@
+name: Sync KBO Rosters
+
+# 매주 월요일 09:00 KST (= 00:00 UTC) 자동 실행 + 수동 트리거 가능.
+# KBO는 보통 월요일이 휴식일이라 주말 경기 결과까지 반영된 상태로 갱신됨.
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # commit + push 권한 (data/rosters/*.json 갱신)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run KBO roster scraper
+        run: npm run scrape:rosters
+
+      - name: Commit if rosters changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n $(git status --porcelain data/rosters/) ]]; then
+            git add data/rosters/
+            git commit -m "chore: weekly KBO roster sync ($(date -u +%Y-%m-%d))"
+            git push
+            echo "Roster changes committed."
+          else
+            echo "No roster changes — skipping commit."
+          fi

@@ -197,6 +197,16 @@
   color: var(--hd-accent-orange);
 }
 
+.phone-frame-dark .tab-item-disabled {
+  color: var(--hd-text-muted);
+  opacity: 0.4;
+}
+
+.phone-frame-dark .tab-item-badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.55);
+}
+
 /* ── Common card ── */
 .phone-frame-dark .hd-card {
   position: relative;

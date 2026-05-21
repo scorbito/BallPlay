@@ -99,6 +99,17 @@ button {
   }
 }
 
+/* PC 와이드 모드 — 라인업 등 일부 페이지는 phone-frame을 더 넓혀 가로 공간 활용.
+ * .phone-frame-wide 클래스가 있을 때만 적용. 기본 phone-frame은 그대로 414px 유지. */
+@media (min-width: 1025px) {
+  .phone-frame.phone-frame-wide {
+    width: min(95vw, 1100px);
+    max-width: 1100px;
+    height: min(900px, calc(100dvh - 48px));
+    min-height: min(640px, calc(100dvh - 48px));
+  }
+}
+
 /* 태블릿 — phone-frame을 화면 높이에 꽉 맞추고, 폰 비율(414:896) 유지 */
 @media (min-width: 481px) and (max-width: 1024px) {
   .app-backdrop {
@@ -218,6 +229,28 @@ button {
 
 .tab-item-active {
   color: var(--primary-strong);
+}
+
+.tab-item-disabled {
+  position: relative;
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.tab-item-badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(4px);
+  padding: 1px 5px;
+  background: rgba(120, 120, 130, 0.22);
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #767b85;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+  line-height: 1.3;
 }
 
 .button {

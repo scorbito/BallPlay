@@ -14,6 +14,8 @@ type AppShellProps = {
   /** 상단 헤더(타이틀바)를 완전히 숨김. 뒤로가기·타이틀·헤더 액션 모두 함께 사라짐.
    *  일정/커뮤니티/마이 상위 페이지처럼 헤더 없이 콘텐츠를 위로 올리고 싶을 때 사용. */
   hideHeader?: boolean;
+  /** PC(≥1025px)에서 phone-frame을 와이드로 확장. 콘텐츠가 가로로 더 펼쳐져야 하는 페이지(라인업 등)용. */
+  wide?: boolean;
   children: ReactNode;
 };
 
@@ -25,11 +27,17 @@ export function AppShell({
   headerAction,
   backHref,
   hideHeader = false,
+  wide = false,
   children
 }: AppShellProps) {
+  const frameClasses = [
+    "phone-frame",
+    theme === "dark" ? "phone-frame-dark" : "",
+    wide ? "phone-frame-wide" : ""
+  ].filter(Boolean).join(" ");
   return (
     <main className="app-backdrop">
-      <section className={`phone-frame${theme === "dark" ? " phone-frame-dark" : ""}`} aria-label="야구놀이터 앱 화면">
+      <section className={frameClasses} aria-label="야구놀이터 앱 화면">
         <div className="app-scroll">
           {hideHeader ? null : (
             <header className="app-header">

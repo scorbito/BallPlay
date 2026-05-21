@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "scrape:rosters": "node scripts/scrape-kbo-rosters.mjs",
+    "scrape:rosters:debug": "node scripts/scrape-kbo-rosters.mjs --debug --dry-run"
   },
   "dependencies": {
     "@google/genai": "^1.52.0",

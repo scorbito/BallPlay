@@ -1,0 +1,898 @@
+{
+  "teamId": "kia",
+  "teamName": "KIA 타이거즈",
+  "_scrapedAt": "2026-05-21T06:50:35.683Z",
+  "_source": "https://www.koreabaseball.com/Player/Search.aspx",
+  "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
+  "players": [
+    {
+      "id": "kia-0",
+      "name": "곽도규",
+      "jerseyNumber": 0,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 1
+    },
+    {
+      "id": "kia-1",
+      "name": "박정우",
+      "jerseyNumber": 1,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 32
+    },
+    {
+      "id": "kia-2",
+      "name": "박민",
+      "jerseyNumber": 2,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 34
+    },
+    {
+      "id": "kia-3",
+      "name": "김선빈",
+      "jerseyNumber": 3,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 43
+    },
+    {
+      "id": "kia-4",
+      "name": "유지성",
+      "jerseyNumber": 4,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-5",
+      "name": "김도영",
+      "jerseyNumber": 5,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 44
+    },
+    {
+      "id": "kia-8",
+      "name": "이창진",
+      "jerseyNumber": 8,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
+    },
+    {
+      "id": "kia-9",
+      "name": "정해원",
+      "jerseyNumber": 9,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-10",
+      "name": "김태형",
+      "jerseyNumber": 10,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 8
+    },
+    {
+      "id": "kia-11",
+      "name": "조상우",
+      "jerseyNumber": 11,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 21
+    },
+    {
+      "id": "kia-12",
+      "name": "정현창",
+      "jerseyNumber": 12,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 36
+    },
+    {
+      "id": "kia-13",
+      "name": "윤영철",
+      "jerseyNumber": 13,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-14",
+      "name": "김규성",
+      "jerseyNumber": 14,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 39
+    },
+    {
+      "id": "kia-15",
+      "name": "박재현",
+      "jerseyNumber": 15,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 41
+    },
+    {
+      "id": "kia-16",
+      "name": "윤도현",
+      "jerseyNumber": 16,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 10
+    },
+    {
+      "id": "kia-17",
+      "name": "김현수",
+      "jerseyNumber": 17,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-19",
+      "name": "윤중현",
+      "jerseyNumber": 19,
+      "primaryPosition": "P",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-20",
+      "name": "이준영",
+      "jerseyNumber": 20,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-21",
+      "name": "김사윤",
+      "jerseyNumber": 21,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-22",
+      "name": "주효상",
+      "jerseyNumber": 22,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 5
+    },
+    {
+      "id": "kia-23",
+      "name": "최정용",
+      "jerseyNumber": 23,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-24",
+      "name": "아데를린",
+      "jerseyNumber": 24,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 13
+    },
+    {
+      "id": "kia-25",
+      "name": "한준수",
+      "jerseyNumber": 25,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 37
+    },
+    {
+      "id": "kia-26",
+      "name": "카스트로",
+      "jerseyNumber": 26,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 23
+    },
+    {
+      "id": "kia-27",
+      "name": "김호령",
+      "jerseyNumber": 27,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 43
+    },
+    {
+      "id": "kia-28",
+      "name": "이형범",
+      "jerseyNumber": 28,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 5
+    },
+    {
+      "id": "kia-29",
+      "name": "변우혁",
+      "jerseyNumber": 29,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-31",
+      "name": "한승연",
+      "jerseyNumber": 31,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 12
+    },
+    {
+      "id": "kia-32",
+      "name": "데일",
+      "jerseyNumber": 32,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 34
+    },
+    {
+      "id": "kia-33",
+      "name": "올러",
+      "jerseyNumber": 33,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 9
+    },
+    {
+      "id": "kia-34",
+      "name": "황대인",
+      "jerseyNumber": 34,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-35",
+      "name": "김석환",
+      "jerseyNumber": 35,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-36",
+      "name": "이호연",
+      "jerseyNumber": 36,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 6
+    },
+    {
+      "id": "kia-37",
+      "name": "김민규",
+      "jerseyNumber": 37,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-38",
+      "name": "장재혁",
+      "jerseyNumber": 38,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 3
+    },
+    {
+      "id": "kia-39",
+      "name": "최지민",
+      "jerseyNumber": 39,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 17
+    },
+    {
+      "id": "kia-40",
+      "name": "네일",
+      "jerseyNumber": 40,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 9
+    },
+    {
+      "id": "kia-41",
+      "name": "황동하",
+      "jerseyNumber": 41,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 11
+    },
+    {
+      "id": "kia-42",
+      "name": "김태군",
+      "jerseyNumber": 42,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 20
+    },
+    {
+      "id": "kia-43",
+      "name": "김건국",
+      "jerseyNumber": 43,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 5
+    },
+    {
+      "id": "kia-44",
+      "name": "이태양",
+      "jerseyNumber": 44,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 10
+    },
+    {
+      "id": "kia-45",
+      "name": "정찬화",
+      "jerseyNumber": 45,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-46",
+      "name": "김정엽",
+      "jerseyNumber": 46,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-47",
+      "name": "나성범",
+      "jerseyNumber": 47,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 40
+    },
+    {
+      "id": "kia-48",
+      "name": "이의리",
+      "jerseyNumber": 48,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 9
+    },
+    {
+      "id": "kia-49",
+      "name": "김범수",
+      "jerseyNumber": 49,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 22
+    },
+    {
+      "id": "kia-50",
+      "name": "박상준",
+      "jerseyNumber": 50,
+      "primaryPosition": "3B",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 15
+    },
+    {
+      "id": "kia-51",
+      "name": "전상현",
+      "jerseyNumber": 51,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 4
+    },
+    {
+      "id": "kia-52",
+      "name": "홍건희",
+      "jerseyNumber": 52,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 3
+    },
+    {
+      "id": "kia-53",
+      "name": "김기훈",
+      "jerseyNumber": 53,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 2
+    },
+    {
+      "id": "kia-54",
+      "name": "양현종",
+      "jerseyNumber": 54,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 8
+    },
+    {
+      "id": "kia-55",
+      "name": "한재승",
+      "jerseyNumber": 55,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 16
+    },
+    {
+      "id": "kia-56",
+      "name": "오선우",
+      "jerseyNumber": 56,
+      "primaryPosition": "3B",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 12
+    },
+    {
+      "id": "kia-57",
+      "name": "고종욱",
+      "jerseyNumber": 57,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 16
+    },
+    {
+      "id": "kia-58",
+      "name": "이성원",
+      "jerseyNumber": 58,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-60",
+      "name": "김도현",
+      "jerseyNumber": 60,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-61",
+      "name": "김시훈",
+      "jerseyNumber": 61,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 2
+    },
+    {
+      "id": "kia-62",
+      "name": "정해영",
+      "jerseyNumber": 62,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 13
+    },
+    {
+      "id": "kia-64",
+      "name": "김현수",
+      "jerseyNumber": 64,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-65",
+      "name": "성영탁",
+      "jerseyNumber": 65,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 16
+    },
+    {
+      "id": "kia-66",
+      "name": "이도현",
+      "jerseyNumber": 66,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-67",
+      "name": "홍민규",
+      "jerseyNumber": 67,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 13
+    },
+    {
+      "id": "kia-69",
+      "name": "김대유",
+      "jerseyNumber": 69,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-101",
+      "name": "장시현",
+      "jerseyNumber": 101,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-102",
+      "name": "강이준",
+      "jerseyNumber": 102,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-103",
+      "name": "권다결",
+      "jerseyNumber": 103,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-104",
+      "name": "김민수",
+      "jerseyNumber": 104,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-106",
+      "name": "장민기",
+      "jerseyNumber": 106,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-107",
+      "name": "오정환",
+      "jerseyNumber": 107,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-108",
+      "name": "이승재",
+      "jerseyNumber": 108,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-109",
+      "name": "이영재",
+      "jerseyNumber": 109,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-111",
+      "name": "이준범",
+      "jerseyNumber": 111,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-112",
+      "name": "조건호",
+      "jerseyNumber": 112,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-113",
+      "name": "박헌",
+      "jerseyNumber": 113,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-115",
+      "name": "김태윤",
+      "jerseyNumber": 115,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-116",
+      "name": "김선우",
+      "jerseyNumber": 116,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-117",
+      "name": "김세일",
+      "jerseyNumber": 117,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-118",
+      "name": "김경묵",
+      "jerseyNumber": 118,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-119",
+      "name": "한준희",
+      "jerseyNumber": 119,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-120",
+      "name": "송호정",
+      "jerseyNumber": 120,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-121",
+      "name": "김상범",
+      "jerseyNumber": 121,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-122",
+      "name": "오규석",
+      "jerseyNumber": 122,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-123",
+      "name": "이송찬",
+      "jerseyNumber": 123,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-124",
+      "name": "이호진",
+      "jerseyNumber": 124,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-126",
+      "name": "정다훈",
+      "jerseyNumber": 126,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-127",
+      "name": "황석민",
+      "jerseyNumber": 127,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-128",
+      "name": "최건희",
+      "jerseyNumber": 128,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-129",
+      "name": "나연우",
+      "jerseyNumber": 129,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-131",
+      "name": "엄준현",
+      "jerseyNumber": 131,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-132",
+      "name": "지현",
+      "jerseyNumber": 132,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-133",
+      "name": "박종혁",
+      "jerseyNumber": 133,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-134",
+      "name": "차상현",
+      "jerseyNumber": 134,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-135",
+      "name": "이도훈",
+      "jerseyNumber": 135,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-136",
+      "name": "천정민",
+      "jerseyNumber": 136,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-138",
+      "name": "곽동효",
+      "jerseyNumber": 138,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-142",
+      "name": "신명승",
+      "jerseyNumber": 142,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-145",
+      "name": "김양수",
+      "jerseyNumber": 145,
+      "primaryPosition": "P",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-147",
+      "name": "최유찬",
+      "jerseyNumber": 147,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kia-148",
+      "name": "유승철",
+      "jerseyNumber": 148,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "S",
+      "seasonGames": 0
+    }
+  ]
+}

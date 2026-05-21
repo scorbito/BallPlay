@@ -16,6 +16,9 @@ coverage/
 .vercel
 .vs/
 
+# 개인 편집기 설정 (로컬 전용)
+.vscode/
+
 # Claude Code 대화 메모리 (로컬 전용)
 .claude/
 

@@ -1,32 +1,798 @@
 {
   "teamId": "doosan",
   "teamName": "두산 베어스",
-  "_note": "샘플 시드 — 등번호/세부 포지션은 실제와 다를 수 있음. 실시즌 명단으로 갱신 필요.",
+  "_scrapedAt": "2026-05-21T06:48:48.344Z",
+  "_source": "https://www.koreabaseball.com/Player/Search.aspx",
+  "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
   "players": [
-    { "id": "doosan-43", "name": "곽빈", "jerseyNumber": 43, "primaryPosition": "P", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-29", "name": "최승용", "jerseyNumber": 29, "primaryPosition": "P", "throwingHand": "L", "battingHand": "L" },
-    { "id": "doosan-15", "name": "이영하", "jerseyNumber": 15, "primaryPosition": "P", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-58", "name": "정철원", "jerseyNumber": 58, "primaryPosition": "P", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-39", "name": "홍건희", "jerseyNumber": 39, "primaryPosition": "P", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-46", "name": "김명신", "jerseyNumber": 46, "primaryPosition": "P", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-21", "name": "최원준", "jerseyNumber": 21, "primaryPosition": "P", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-25", "name": "양의지", "jerseyNumber": 25, "primaryPosition": "C", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-22", "name": "박세혁", "jerseyNumber": 22, "primaryPosition": "C", "throwingHand": "R", "battingHand": "L" },
-    { "id": "doosan-27", "name": "장승현", "jerseyNumber": 27, "primaryPosition": "C", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-53", "name": "양석환", "jerseyNumber": 53, "primaryPosition": "1B", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-7", "name": "강승호", "jerseyNumber": 7, "primaryPosition": "2B", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-13", "name": "허경민", "jerseyNumber": 13, "primaryPosition": "3B", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-3", "name": "박계범", "jerseyNumber": 3, "primaryPosition": "SS", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-2", "name": "안재석", "jerseyNumber": 2, "primaryPosition": "SS", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-19", "name": "김민혁", "jerseyNumber": 19, "primaryPosition": "2B", "throwingHand": "R", "battingHand": "L" },
-    { "id": "doosan-37", "name": "박준영", "jerseyNumber": 37, "primaryPosition": "3B", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-32", "name": "김재환", "jerseyNumber": 32, "primaryPosition": "LF", "throwingHand": "R", "battingHand": "L" },
-    { "id": "doosan-31", "name": "정수빈", "jerseyNumber": 31, "primaryPosition": "CF", "throwingHand": "L", "battingHand": "L" },
-    { "id": "doosan-50", "name": "김인태", "jerseyNumber": 50, "primaryPosition": "RF", "throwingHand": "R", "battingHand": "L" },
-    { "id": "doosan-51", "name": "조수행", "jerseyNumber": 51, "primaryPosition": "CF", "throwingHand": "L", "battingHand": "L" },
-    { "id": "doosan-8", "name": "박지호", "jerseyNumber": 8, "primaryPosition": "RF", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-60", "name": "양찬열", "jerseyNumber": 60, "primaryPosition": "LF", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-10", "name": "헨리 라모스", "jerseyNumber": 10, "primaryPosition": "RF", "throwingHand": "R", "battingHand": "R" },
-    { "id": "doosan-99", "name": "호세 미란다", "jerseyNumber": 99, "primaryPosition": "DH", "throwingHand": "R", "battingHand": "R" }
+    {
+      "id": "doosan-1",
+      "name": "박치국",
+      "jerseyNumber": 1,
+      "primaryPosition": "P",
+      "battingHand": "R",
+      "seasonGames": 13
+    },
+    {
+      "id": "doosan-2",
+      "name": "김민석",
+      "jerseyNumber": 2,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 39
+    },
+    {
+      "id": "doosan-3",
+      "name": "임종성",
+      "jerseyNumber": 3,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 5
+    },
+    {
+      "id": "doosan-5",
+      "name": "박성재",
+      "jerseyNumber": 5,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
+    },
+    {
+      "id": "doosan-6",
+      "name": "오명진",
+      "jerseyNumber": 6,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 22
+    },
+    {
+      "id": "doosan-7",
+      "name": "박찬호",
+      "jerseyNumber": 7,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 44
+    },
+    {
+      "id": "doosan-8",
+      "name": "손아섭",
+      "jerseyNumber": 8,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 17
+    },
+    {
+      "id": "doosan-9",
+      "name": "전다민",
+      "jerseyNumber": 9,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-10",
+      "name": "김민혁",
+      "jerseyNumber": 10,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-11",
+      "name": "김동준",
+      "jerseyNumber": 11,
+      "primaryPosition": "3B",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-13",
+      "name": "이유찬",
+      "jerseyNumber": 13,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 28
+    },
+    {
+      "id": "doosan-14",
+      "name": "류승민",
+      "jerseyNumber": 14,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 1
+    },
+    {
+      "id": "doosan-15",
+      "name": "최주형",
+      "jerseyNumber": 15,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 5
+    },
+    {
+      "id": "doosan-16",
+      "name": "김정우",
+      "jerseyNumber": 16,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 19
+    },
+    {
+      "id": "doosan-17",
+      "name": "박정수",
+      "jerseyNumber": 17,
+      "primaryPosition": "P",
+      "battingHand": "L",
+      "seasonGames": 4
+    },
+    {
+      "id": "doosan-18",
+      "name": "타무라",
+      "jerseyNumber": 18,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 15
+    },
+    {
+      "id": "doosan-19",
+      "name": "김민규",
+      "jerseyNumber": 19,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-20",
+      "name": "김성재",
+      "jerseyNumber": 20,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-22",
+      "name": "김기연",
+      "jerseyNumber": 22,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 14
+    },
+    {
+      "id": "doosan-23",
+      "name": "강승호",
+      "jerseyNumber": 23,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 29
+    },
+    {
+      "id": "doosan-24",
+      "name": "카메론",
+      "jerseyNumber": 24,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 44
+    },
+    {
+      "id": "doosan-25",
+      "name": "양의지",
+      "jerseyNumber": 25,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 42
+    },
+    {
+      "id": "doosan-26",
+      "name": "박민준",
+      "jerseyNumber": 26,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-27",
+      "name": "윤준호",
+      "jerseyNumber": 27,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 26
+    },
+    {
+      "id": "doosan-28",
+      "name": "최승용",
+      "jerseyNumber": 28,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 9
+    },
+    {
+      "id": "doosan-29",
+      "name": "이병헌",
+      "jerseyNumber": 29,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 24
+    },
+    {
+      "id": "doosan-30",
+      "name": "양재훈",
+      "jerseyNumber": 30,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 21
+    },
+    {
+      "id": "doosan-31",
+      "name": "정수빈",
+      "jerseyNumber": 31,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 43
+    },
+    {
+      "id": "doosan-32",
+      "name": "김대한",
+      "jerseyNumber": 32,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-33",
+      "name": "김인태",
+      "jerseyNumber": 33,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 22
+    },
+    {
+      "id": "doosan-34",
+      "name": "홍성호",
+      "jerseyNumber": 34,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 3
+    },
+    {
+      "id": "doosan-35",
+      "name": "이주호",
+      "jerseyNumber": 35,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-37",
+      "name": "박지훈",
+      "jerseyNumber": 37,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 40
+    },
+    {
+      "id": "doosan-38",
+      "name": "신우열",
+      "jerseyNumber": 38,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-39",
+      "name": "잭로그",
+      "jerseyNumber": 39,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 9
+    },
+    {
+      "id": "doosan-40",
+      "name": "최종인",
+      "jerseyNumber": 40,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-41",
+      "name": "서준오",
+      "jerseyNumber": 41,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-42",
+      "name": "최지강",
+      "jerseyNumber": 42,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 7
+    },
+    {
+      "id": "doosan-43",
+      "name": "이주엽",
+      "jerseyNumber": 43,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-44",
+      "name": "장규빈",
+      "jerseyNumber": 44,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-45",
+      "name": "이용찬",
+      "jerseyNumber": 45,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 7
+    },
+    {
+      "id": "doosan-46",
+      "name": "김명신",
+      "jerseyNumber": 46,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 3
+    },
+    {
+      "id": "doosan-47",
+      "name": "곽빈",
+      "jerseyNumber": 47,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 9
+    },
+    {
+      "id": "doosan-48",
+      "name": "벤자민",
+      "jerseyNumber": 48,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 5
+    },
+    {
+      "id": "doosan-49",
+      "name": "박신지",
+      "jerseyNumber": 49,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 9
+    },
+    {
+      "id": "doosan-50",
+      "name": "이영하",
+      "jerseyNumber": 50,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 14
+    },
+    {
+      "id": "doosan-51",
+      "name": "조수행",
+      "jerseyNumber": 51,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 31
+    },
+    {
+      "id": "doosan-52",
+      "name": "박준순",
+      "jerseyNumber": 52,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 39
+    },
+    {
+      "id": "doosan-53",
+      "name": "양석환",
+      "jerseyNumber": 53,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 27
+    },
+    {
+      "id": "doosan-55",
+      "name": "김유성",
+      "jerseyNumber": 55,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-56",
+      "name": "김호준",
+      "jerseyNumber": 56,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-57",
+      "name": "박웅",
+      "jerseyNumber": 57,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-58",
+      "name": "천현재",
+      "jerseyNumber": 58,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-59",
+      "name": "최준호",
+      "jerseyNumber": 59,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 7
+    },
+    {
+      "id": "doosan-61",
+      "name": "최원준",
+      "jerseyNumber": 61,
+      "primaryPosition": "P",
+      "battingHand": "R",
+      "seasonGames": 2
+    },
+    {
+      "id": "doosan-62",
+      "name": "안재석",
+      "jerseyNumber": 62,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 23
+    },
+    {
+      "id": "doosan-63",
+      "name": "김택연",
+      "jerseyNumber": 63,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 9
+    },
+    {
+      "id": "doosan-65",
+      "name": "윤태호",
+      "jerseyNumber": 65,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 12
+    },
+    {
+      "id": "doosan-66",
+      "name": "김주오",
+      "jerseyNumber": 66,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-67",
+      "name": "류현준",
+      "jerseyNumber": 67,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-68",
+      "name": "최민석",
+      "jerseyNumber": 68,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 8
+    },
+    {
+      "id": "doosan-77",
+      "name": "플렉센",
+      "jerseyNumber": 77,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 2
+    },
+    {
+      "id": "doosan-93",
+      "name": "제환유",
+      "jerseyNumber": 93,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-95",
+      "name": "김한중",
+      "jerseyNumber": 95,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-100",
+      "name": "양현진",
+      "jerseyNumber": 100,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-101",
+      "name": "최우인",
+      "jerseyNumber": 101,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-102",
+      "name": "김문수",
+      "jerseyNumber": 102,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-103",
+      "name": "신민철",
+      "jerseyNumber": 103,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-104",
+      "name": "김지윤",
+      "jerseyNumber": 104,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-105",
+      "name": "지강혁",
+      "jerseyNumber": 105,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-106",
+      "name": "장우진",
+      "jerseyNumber": 106,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-107",
+      "name": "황희천",
+      "jerseyNumber": 107,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-108",
+      "name": "이선우",
+      "jerseyNumber": 108,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-109",
+      "name": "한다현",
+      "jerseyNumber": 109,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-110",
+      "name": "김준상",
+      "jerseyNumber": 110,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-111",
+      "name": "주양준",
+      "jerseyNumber": 111,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-112",
+      "name": "백승우",
+      "jerseyNumber": 112,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-114",
+      "name": "엄지민",
+      "jerseyNumber": 114,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-115",
+      "name": "임종훈",
+      "jerseyNumber": 115,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-116",
+      "name": "임현철",
+      "jerseyNumber": 116,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-117",
+      "name": "심건보",
+      "jerseyNumber": 117,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-118",
+      "name": "남태웅",
+      "jerseyNumber": 118,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-119",
+      "name": "정성헌",
+      "jerseyNumber": 119,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-120",
+      "name": "안치호",
+      "jerseyNumber": 120,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-121",
+      "name": "이희성",
+      "jerseyNumber": 121,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-122",
+      "name": "안민겸",
+      "jerseyNumber": 122,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-123",
+      "name": "이기석",
+      "jerseyNumber": 123,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-126",
+      "name": "이종혁",
+      "jerseyNumber": 126,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    }
   ]
 }

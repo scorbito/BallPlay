@@ -1,0 +1,772 @@
+{
+  "teamId": "ssg",
+  "teamName": "SSG 랜더스",
+  "_scrapedAt": "2026-05-21T06:49:52.560Z",
+  "_source": "https://www.koreabaseball.com/Player/Search.aspx",
+  "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
+  "players": [
+    {
+      "id": "ssg-0",
+      "name": "긴지로",
+      "jerseyNumber": 0,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 2
+    },
+    {
+      "id": "ssg-1",
+      "name": "김민",
+      "jerseyNumber": 1,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 23
+    },
+    {
+      "id": "ssg-2",
+      "name": "박성한",
+      "jerseyNumber": 2,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 44
+    },
+    {
+      "id": "ssg-3",
+      "name": "김준영",
+      "jerseyNumber": 3,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-4",
+      "name": "이기순",
+      "jerseyNumber": 4,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 7
+    },
+    {
+      "id": "ssg-5",
+      "name": "김수윤",
+      "jerseyNumber": 5,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-6",
+      "name": "김성현",
+      "jerseyNumber": 6,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-7",
+      "name": "박명현",
+      "jerseyNumber": 7,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-8",
+      "name": "현원회",
+      "jerseyNumber": 8,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-9",
+      "name": "김현재",
+      "jerseyNumber": 9,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-10",
+      "name": "안상현",
+      "jerseyNumber": 10,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 31
+    },
+    {
+      "id": "ssg-11",
+      "name": "김성민",
+      "jerseyNumber": 11,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-12",
+      "name": "윤태현",
+      "jerseyNumber": 12,
+      "primaryPosition": "P",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-13",
+      "name": "하재훈",
+      "jerseyNumber": 13,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-14",
+      "name": "최정",
+      "jerseyNumber": 14,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 42
+    },
+    {
+      "id": "ssg-15",
+      "name": "채현우",
+      "jerseyNumber": 15,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 27
+    },
+    {
+      "id": "ssg-16",
+      "name": "이건욱",
+      "jerseyNumber": 16,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-18",
+      "name": "고명준",
+      "jerseyNumber": 18,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 17
+    },
+    {
+      "id": "ssg-19",
+      "name": "조병현",
+      "jerseyNumber": 19,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 17
+    },
+    {
+      "id": "ssg-20",
+      "name": "조형우",
+      "jerseyNumber": 20,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 31
+    },
+    {
+      "id": "ssg-21",
+      "name": "장지훈",
+      "jerseyNumber": 21,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 12
+    },
+    {
+      "id": "ssg-22",
+      "name": "서진용",
+      "jerseyNumber": 22,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-23",
+      "name": "타케다",
+      "jerseyNumber": 23,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 8
+    },
+    {
+      "id": "ssg-24",
+      "name": "김민식",
+      "jerseyNumber": 24,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 6
+    },
+    {
+      "id": "ssg-25",
+      "name": "신범수",
+      "jerseyNumber": 25,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-27",
+      "name": "에레디아",
+      "jerseyNumber": 27,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "R",
+      "seasonGames": 44
+    },
+    {
+      "id": "ssg-28",
+      "name": "전영준",
+      "jerseyNumber": 28,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 12
+    },
+    {
+      "id": "ssg-29",
+      "name": "김광현",
+      "jerseyNumber": 29,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-30",
+      "name": "최민준",
+      "jerseyNumber": 30,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 8
+    },
+    {
+      "id": "ssg-31",
+      "name": "김성욱",
+      "jerseyNumber": 31,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 27
+    },
+    {
+      "id": "ssg-32",
+      "name": "김재환",
+      "jerseyNumber": 32,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 36
+    },
+    {
+      "id": "ssg-33",
+      "name": "이정범",
+      "jerseyNumber": 33,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 3
+    },
+    {
+      "id": "ssg-34",
+      "name": "한두솔",
+      "jerseyNumber": 34,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 17
+    },
+    {
+      "id": "ssg-35",
+      "name": "한유섬",
+      "jerseyNumber": 35,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 28
+    },
+    {
+      "id": "ssg-36",
+      "name": "김태윤",
+      "jerseyNumber": 36,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-37",
+      "name": "오태곤",
+      "jerseyNumber": 37,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 39
+    },
+    {
+      "id": "ssg-38",
+      "name": "노경은",
+      "jerseyNumber": 38,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 23
+    },
+    {
+      "id": "ssg-39",
+      "name": "김건우",
+      "jerseyNumber": 39,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 9
+    },
+    {
+      "id": "ssg-40",
+      "name": "김민준",
+      "jerseyNumber": 40,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-41",
+      "name": "베니지아노",
+      "jerseyNumber": 41,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 9
+    },
+    {
+      "id": "ssg-42",
+      "name": "문승원",
+      "jerseyNumber": 42,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 19
+    },
+    {
+      "id": "ssg-43",
+      "name": "김택형",
+      "jerseyNumber": 43,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 1
+    },
+    {
+      "id": "ssg-45",
+      "name": "류효승",
+      "jerseyNumber": 45,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 7
+    },
+    {
+      "id": "ssg-46",
+      "name": "김요셉",
+      "jerseyNumber": 46,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-47",
+      "name": "김민준",
+      "jerseyNumber": 47,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 2
+    },
+    {
+      "id": "ssg-48",
+      "name": "김정민",
+      "jerseyNumber": 48,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 11
+    },
+    {
+      "id": "ssg-49",
+      "name": "장재율",
+      "jerseyNumber": 49,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-50",
+      "name": "박종훈",
+      "jerseyNumber": 50,
+      "primaryPosition": "P",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-51",
+      "name": "정동윤",
+      "jerseyNumber": 51,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 2
+    },
+    {
+      "id": "ssg-52",
+      "name": "석정우",
+      "jerseyNumber": 52,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 3
+    },
+    {
+      "id": "ssg-53",
+      "name": "문상준",
+      "jerseyNumber": 53,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-54",
+      "name": "최지훈",
+      "jerseyNumber": 54,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 44
+    },
+    {
+      "id": "ssg-55",
+      "name": "화이트",
+      "jerseyNumber": 55,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 6
+    },
+    {
+      "id": "ssg-56",
+      "name": "이지영",
+      "jerseyNumber": 56,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 28
+    },
+    {
+      "id": "ssg-57",
+      "name": "박시후",
+      "jerseyNumber": 57,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 13
+    },
+    {
+      "id": "ssg-58",
+      "name": "박정빈",
+      "jerseyNumber": 58,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-59",
+      "name": "백승건",
+      "jerseyNumber": 59,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 5
+    },
+    {
+      "id": "ssg-60",
+      "name": "신지환",
+      "jerseyNumber": 60,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-61",
+      "name": "김도현",
+      "jerseyNumber": 61,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 4
+    },
+    {
+      "id": "ssg-62",
+      "name": "최수호",
+      "jerseyNumber": 62,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-63",
+      "name": "임근우",
+      "jerseyNumber": 63,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
+    },
+    {
+      "id": "ssg-64",
+      "name": "김창평",
+      "jerseyNumber": 64,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 5
+    },
+    {
+      "id": "ssg-65",
+      "name": "최윤석",
+      "jerseyNumber": 65,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-66",
+      "name": "박기호",
+      "jerseyNumber": 66,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-67",
+      "name": "최용준",
+      "jerseyNumber": 67,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-90",
+      "name": "이준기",
+      "jerseyNumber": 90,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
+    },
+    {
+      "id": "ssg-92",
+      "name": "이로운",
+      "jerseyNumber": 92,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 23
+    },
+    {
+      "id": "ssg-97",
+      "name": "홍대인",
+      "jerseyNumber": 97,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 21
+    },
+    {
+      "id": "ssg-98",
+      "name": "조요한",
+      "jerseyNumber": 98,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-100",
+      "name": "이원준",
+      "jerseyNumber": 100,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-101",
+      "name": "박세직",
+      "jerseyNumber": 101,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-102",
+      "name": "윤성보",
+      "jerseyNumber": 102,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-103",
+      "name": "변건우",
+      "jerseyNumber": 103,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-104",
+      "name": "류현곤",
+      "jerseyNumber": 104,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-105",
+      "name": "조재우",
+      "jerseyNumber": 105,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-106",
+      "name": "이승빈",
+      "jerseyNumber": 106,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-107",
+      "name": "오시후",
+      "jerseyNumber": 107,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-108",
+      "name": "신상연",
+      "jerseyNumber": 108,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-109",
+      "name": "김태현",
+      "jerseyNumber": 109,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-110",
+      "name": "김재훈",
+      "jerseyNumber": 110,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-111",
+      "name": "안재연",
+      "jerseyNumber": 111,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-113",
+      "name": "이주형",
+      "jerseyNumber": 113,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-114",
+      "name": "김준모",
+      "jerseyNumber": 114,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-115",
+      "name": "김민범",
+      "jerseyNumber": 115,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-116",
+      "name": "이명원",
+      "jerseyNumber": 116,
+      "primaryPosition": "C",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    }
+  ]
+}
