@@ -323,18 +323,45 @@
  * 일정 페이지 상단 바 — 팀 드롭다운 + 팀 순위 버튼
  * ============================================================ */
 .phone-frame-dark .sched-top-bar {
+  position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   /* .app-content의 18px flex gap 상쇄 — top-bar와 캘린더 간격 ~4px로 좁힘 */
   margin: 0 0 -14px;
 }
 
+.phone-frame-dark .sched-back-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  color: var(--hd-text-primary);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.phone-frame-dark .sched-back-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .phone-frame-dark .sched-rank-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
   padding: 9px 14px;
   background: var(--hd-bg-card);
   border: 1px solid var(--hd-border-soft);

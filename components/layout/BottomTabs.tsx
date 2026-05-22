@@ -1,22 +1,22 @@
 "use client";
 
-import { CalendarDays, Home, ListChecks, Sparkles } from "lucide-react";
+import { Home, ListChecks, Swords, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-// v1 BottomTabs — 4탭. 라인업 짜기/경기일정 활성, 경기 예측·미니게임 공사중(비클릭).
-// 마이/로그인 탭은 v1에서 비활성. 추후 SSO 도입 시 추가.
-type TabId = "home" | "schedule" | "play" | "my" | "prediction";
+// v1 BottomTabs — §5.1 4탭 구조 (홈 / 라인업 짜기 / 경기장 / 마이)
+// 경기장은 §5.3 4단계 플로우 구현 전까지 공사중 비활성.
+type TabId = "home" | "play" | "stadium" | "my";
 
 type BottomTabsProps = {
-  activeTab: TabId;
+  activeTab: TabId | (string & {});
 };
 
 type TabDef = {
   id: TabId;
   label: string;
-  icon: typeof CalendarDays;
+  icon: typeof Home;
   href: string;
   disabled?: boolean;
   badge?: string;
@@ -25,8 +25,8 @@ type TabDef = {
 const tabs: readonly TabDef[] = [
   { id: "home", label: "홈", icon: Home, href: "/" },
   { id: "play", label: "라인업 짜기", icon: ListChecks, href: "/play/lineup" },
-  { id: "schedule", label: "일정&순위", icon: CalendarDays, href: "/schedule" },
-  { id: "prediction", label: "경기 예측", icon: Sparkles, href: "#", disabled: true, badge: "공사중" }
+  { id: "stadium", label: "경기장", icon: Swords, href: "/stadium/lobby" },
+  { id: "my", label: "마이", icon: User, href: "/my" }
 ] as const;
 
 export function BottomTabs({ activeTab }: BottomTabsProps) {

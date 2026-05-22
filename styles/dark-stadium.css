@@ -1,0 +1,1223 @@
+/* ============================================================
+ * 경기장 (Stadium) 4단계 흐름 — dark theme
+ * 로비 → 입장 → 시뮬레이션 → 결과
+ * ============================================================ */
+
+.phone-frame-dark .stadium-h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--hd-text-primary);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-dark .stadium-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-loading {
+  margin-top: 80px;
+  text-align: center;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-replay-error {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-replay-error svg {
+  color: #fca5a5;
+}
+
+.phone-frame-dark .stadium-replay-error strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-replay-error p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hd-text-secondary);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.phone-frame-dark .stadium-error {
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+/* ── 공통 CTA ── */
+.phone-frame-dark .stadium-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--hd-accent, #ff6a2b);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.phone-frame-dark .stadium-cta-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.phone-frame-dark .stadium-cta-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.phone-frame-dark .stadium-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.phone-frame-dark .stadium-cta-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── 로비 ── */
+.phone-frame-dark .stadium-lobby-header {
+  padding: 4px 4px 12px;
+}
+
+.phone-frame-dark .stadium-lobby-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.phone-frame-dark .stadium-lobby-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 14px 22px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+  color: var(--hd-text-primary);
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-dark .stadium-lobby-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--hd-border-strong);
+}
+
+.phone-frame-dark .stadium-lobby-card-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+}
+
+.phone-frame-dark .stadium-lobby-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-dark .stadium-lobby-card-body strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-lobby-card-body span {
+  font-size: 12px;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-lobby-card-icon {
+  color: var(--hd-accent, #ff6a2b);
+}
+
+/* ── 로비: 친구와 대결 진입점 (2-up) ── */
+.phone-frame-dark .stadium-lobby-live-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.phone-frame-dark .stadium-lobby-live {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(255, 106, 43, 0.18), rgba(255, 106, 43, 0.04));
+  border: 1px solid rgba(255, 106, 43, 0.45);
+  border-radius: 12px;
+  color: var(--hd-text-primary);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-dark .stadium-lobby-live-secondary {
+  background: var(--hd-bg-card);
+  border-color: var(--hd-border-strong);
+}
+
+.phone-frame-dark .stadium-lobby-live-secondary .stadium-lobby-live-icon {
+  background: transparent;
+  border: 1px solid var(--hd-border-strong);
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-lobby-live:hover {
+  transform: translateY(-1px);
+  border-color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .stadium-lobby-live-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--hd-accent, #ff6a2b);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.phone-frame-dark .stadium-lobby-live-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-dark .stadium-lobby-live-body strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-lobby-live-body span {
+  font-size: 12px;
+  color: var(--hd-text-secondary);
+}
+
+/* ── 라이브 매치 (생성/참여/대기) ── */
+.phone-frame-dark .stadium-live,
+.phone-frame-dark .stadium-live-create {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.phone-frame-dark .stadium-live-rules {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-secondary);
+  font-size: 12px;
+}
+
+.phone-frame-dark .stadium-live-rules svg {
+  color: var(--hd-accent, #ff6a2b);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.phone-frame-dark .stadium-live-rules ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phone-frame-dark .stadium-live-host,
+.phone-frame-dark .stadium-live-join,
+.phone-frame-dark .stadium-live-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+}
+
+.phone-frame-dark .stadium-live-host-title,
+.phone-frame-dark .stadium-live-join-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-live-host-sub,
+.phone-frame-dark .stadium-live-join-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--hd-text-secondary);
+  line-height: 1.5;
+}
+
+.phone-frame-dark .stadium-live-invite {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--hd-border-strong);
+  border-radius: 10px;
+}
+
+.phone-frame-dark .stadium-live-invite-url {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-live-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: var(--hd-accent, #ff6a2b);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.phone-frame-dark .stadium-live-copy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.phone-frame-dark .stadium-live-invite-code {
+  margin: 0;
+  font-size: 12px;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-live-invite-code strong {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 14px;
+  color: var(--hd-text-primary);
+  letter-spacing: 1px;
+}
+
+.phone-frame-dark .stadium-live-status p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-live-status-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4ade80 !important;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-live-status-hint {
+  color: var(--hd-text-secondary) !important;
+  font-size: 12px !important;
+  line-height: 1.5;
+}
+
+.phone-frame-dark .stadium-spin {
+  animation: stadium-spin 0.9s linear infinite;
+}
+
+@keyframes stadium-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── 라이브 매치: 카운트다운 + PlayScreen 잠금 배지 ── */
+.phone-frame-dark .stadium-live-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 12px;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, rgba(255, 106, 43, 0.25), rgba(255, 106, 43, 0.08));
+  border: 1px solid rgba(255, 106, 43, 0.5);
+  border-radius: 12px;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-live-countdown span {
+  font-size: 12px;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-live-countdown strong {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--hd-accent, #ff6a2b);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.phone-frame-dark .stadium-play-live-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: rgba(255, 106, 43, 0.12);
+  border: 1px solid rgba(255, 106, 43, 0.4);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff6a2b;
+  box-shadow: 0 0 0 0 rgba(255, 106, 43, 0.6);
+  animation: stadium-live-pulse 1.4s ease-out infinite;
+}
+
+@keyframes stadium-live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 106, 43, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 106, 43, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 106, 43, 0); }
+}
+
+/* ── 코드로 참여 입력 폼 ── */
+.phone-frame-dark .stadium-code-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+}
+
+.phone-frame-dark .stadium-code-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-code-input {
+  width: 100%;
+  padding: 14px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--hd-border-strong);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.phone-frame-dark .stadium-code-input:focus {
+  outline: none;
+  border-color: var(--hd-accent, #ff6a2b);
+  background: rgba(255, 106, 43, 0.06);
+}
+
+.phone-frame-dark .stadium-code-input[aria-invalid="true"] {
+  border-color: rgba(220, 38, 38, 0.6);
+}
+
+.phone-frame-dark .stadium-code-hint {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--hd-text-secondary);
+}
+
+/* ── 입장 ── */
+.phone-frame-dark .stadium-enter {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.phone-frame-dark .stadium-enter-head {
+  padding: 4px 4px 0;
+}
+
+.phone-frame-dark .stadium-enter-vs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 12px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-dark .stadium-enter-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.phone-frame-dark .stadium-enter-team-label {
+  font-size: 11px;
+  color: var(--hd-text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.phone-frame-dark .stadium-enter-team strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-enter-empty {
+  font-size: 13px;
+  color: var(--hd-text-muted, #6b7280);
+}
+
+.phone-frame-dark .stadium-enter-vs-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .stadium-enter-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-dark .stadium-enter-picker-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+  letter-spacing: 0.3px;
+}
+
+.phone-frame-dark .stadium-enter-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phone-frame-dark .stadium-enter-picker-item {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  min-width: 0;
+}
+
+.phone-frame-dark .stadium-enter-picker-item.is-active {
+  border-color: var(--hd-accent, #ff6a2b);
+  background: rgba(255, 106, 43, 0.12);
+}
+
+.phone-frame-dark .stadium-enter-picker-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .stadium-enter-picker-team {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-enter-team-sub {
+  font-size: 11px;
+  color: var(--hd-text-secondary);
+  margin-top: -2px;
+}
+
+.phone-frame-dark .stadium-enter-empty-box {
+  padding: 18px 16px;
+  background: var(--hd-bg-card);
+  border: 1px dashed var(--hd-border-soft);
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-frame-dark .stadium-enter-empty-box p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-enter-empty-hint {
+  font-size: 11px !important;
+  color: var(--hd-text-muted, #6b7280) !important;
+}
+
+.phone-frame-dark .stadium-enter-picker-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  background: rgba(255, 106, 43, 0.18);
+  border-radius: 999px;
+  color: var(--hd-accent, #ff6a2b);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-enter-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--hd-text-muted, #6b7280);
+  line-height: 1.5;
+}
+
+/* ── 시뮬레이션 (play) v2 ── */
+.phone-frame-dark .stadium-play-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 라인스코어 */
+.phone-frame-dark .stadium-linescore {
+  padding: 10px 8px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.phone-frame-dark .stadium-linescore table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.phone-frame-dark .stadium-linescore th,
+.phone-frame-dark .stadium-linescore td {
+  padding: 4px 2px;
+  text-align: center;
+  min-width: 18px;
+}
+
+.phone-frame-dark .stadium-linescore thead th {
+  color: var(--hd-text-muted, #6b7280);
+  font-weight: 700;
+  border-bottom: 1px solid var(--hd-border-soft);
+}
+
+.phone-frame-dark .stadium-linescore th.is-current,
+.phone-frame-dark .stadium-linescore td.is-current {
+  color: var(--hd-accent, #ff6a2b);
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-linescore .team-cell {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 11px;
+  white-space: nowrap;
+  min-width: 56px;
+}
+
+.phone-frame-dark .stadium-linescore .team-cell span {
+  font-size: 11px;
+}
+
+.phone-frame-dark .stadium-linescore .rh {
+  border-left: 1px solid var(--hd-border-soft);
+  padding-left: 6px;
+  padding-right: 4px;
+  font-weight: 800;
+  color: var(--hd-text-primary);
+}
+
+/* 스코어보드 가운데 — 다이아몬드 + 아웃카운트 + 회차 */
+.phone-frame-dark .stadium-play-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-frame-dark .stadium-play-inning-label {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--hd-accent, #ff6a2b);
+  letter-spacing: 0.3px;
+}
+
+/* 다이아몬드 (1·2·3루 + 홈) */
+.phone-frame-dark .stadium-diamond {
+  position: relative;
+  width: 52px;
+  height: 52px;
+}
+
+.phone-frame-dark .stadium-base {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border: 1.5px solid var(--hd-border-strong, rgba(255, 255, 255, 0.3));
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.phone-frame-dark .stadium-base.is-on {
+  background: var(--hd-accent, #ff6a2b);
+  border-color: var(--hd-accent, #ff6a2b);
+  box-shadow: 0 0 6px rgba(255, 106, 43, 0.5);
+}
+
+/* 다이아몬드 네 꼭지점 배치 — 45도 회전한 사각형 */
+.phone-frame-dark .stadium-base-2nd {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+}
+.phone-frame-dark .stadium-base-3rd {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+.phone-frame-dark .stadium-base-1st {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+.phone-frame-dark .stadium-base-home {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-color: rgba(255, 255, 255, 0.5);
+  width: 10px;
+  height: 10px;
+}
+
+/* 아웃카운트 점 */
+.phone-frame-dark .stadium-outs {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.phone-frame-dark .stadium-outs span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--hd-border-strong, rgba(255, 255, 255, 0.3));
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.phone-frame-dark .stadium-outs span.is-out {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+/* 1줄 상황판 (narration) — 좌측 정렬로 텍스트 깜빡임 방지 */
+.phone-frame-dark .stadium-play-narration {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 38px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--hd-text-primary);
+  text-align: left;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.phone-frame-dark .stadium-play-narration.is-inning {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.45);
+  color: #fca5a5;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-play-narration.is-pitcher {
+  background: rgba(255, 106, 43, 0.15);
+  border-color: rgba(255, 106, 43, 0.5);
+  color: var(--hd-accent, #ff6a2b);
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-play-narration.is-walkoff {
+  background: linear-gradient(135deg, rgba(255, 106, 43, 0.3), rgba(255, 106, 43, 0.1));
+  border-color: var(--hd-accent, #ff6a2b);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+/* 양 팀 라인업 — 2분할 (좌: 원정/초 공격, 우: 홈/말 공격) */
+.phone-frame-dark .stadium-play-lineups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.phone-frame-dark .stadium-play-batting-card {
+  padding: 10px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  min-width: 0;
+}
+
+/* 현재 공격 중인 팀 카드는 약간 강조 */
+.phone-frame-dark .stadium-play-batting-card.is-offense {
+  border-color: rgba(255, 106, 43, 0.4);
+  background: rgba(255, 106, 43, 0.03);
+}
+
+.phone-frame-dark .stadium-play-batting-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--hd-border-soft);
+  min-width: 0;
+}
+
+.phone-frame-dark .stadium-play-batting-pitcher {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--hd-text-primary);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.phone-frame-dark .stadium-play-lineup {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-frame-dark .stadium-play-lineup-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 4px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  min-width: 0;
+}
+
+.phone-frame-dark .stadium-play-lineup-outcome {
+  color: var(--hd-text-primary);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: rgba(255, 106, 43, 0.18);
+  border-radius: 999px;
+  white-space: nowrap;
+  animation: stadium-outcome-pop 0.25s ease;
+}
+
+.phone-frame-dark .stadium-play-lineup-outcome.is-pending {
+  background: transparent;
+  color: var(--hd-accent, #ff6a2b);
+  font-weight: 800;
+  letter-spacing: 1px;
+  animation: stadium-ab-dot 0.8s ease-in-out infinite;
+}
+
+.phone-frame-dark .stadium-play-lineup-outcome.is-hit {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.phone-frame-dark .stadium-play-lineup-outcome.is-hr {
+  background: rgba(255, 106, 43, 0.5);
+  color: #fff;
+  font-weight: 900;
+}
+
+@keyframes stadium-outcome-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes stadium-ab-dot {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.phone-frame-dark .stadium-play-lineup-row:last-child {
+  border-bottom: none;
+}
+
+.phone-frame-dark .stadium-play-lineup-row.is-current {
+  background: rgba(255, 106, 43, 0.18);
+  border-left: 3px solid var(--hd-accent, #ff6a2b);
+  padding-left: 4px;
+  margin-left: -7px;
+  border-radius: 4px;
+}
+
+.phone-frame-dark .stadium-play-lineup-order {
+  color: var(--hd-text-muted, #6b7280);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-play-lineup-row.is-current .stadium-play-lineup-order {
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .stadium-play-lineup-name {
+  color: var(--hd-text-primary);
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 레거시 v1 play 레이아웃 (남겨두기, 사용 X) */
+.phone-frame-dark .stadium-play {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+}
+
+.phone-frame-dark .stadium-play-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-dark .stadium-play-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-dark .stadium-play-team-right {
+  justify-content: flex-end;
+}
+
+.phone-frame-dark .stadium-play-team span {
+  font-size: 13px;
+  color: var(--hd-text-secondary);
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-play-team strong {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.phone-frame-dark .stadium-play-vs {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--hd-accent, #ff6a2b);
+  white-space: nowrap;
+}
+
+.phone-frame-dark .stadium-play-feed {
+  flex: 1;
+  min-height: 280px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.phone-frame-dark .stadium-play-feed-pending {
+  margin: auto;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-play-feed-row {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  animation: stadium-feed-in 0.2s ease;
+}
+
+@keyframes stadium-feed-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.phone-frame-dark .stadium-play-feed-row.is-hit {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.phone-frame-dark .stadium-play-feed-row.is-hr {
+  background: rgba(255, 106, 43, 0.18);
+  border: 1px solid rgba(255, 106, 43, 0.5);
+}
+
+.phone-frame-dark .stadium-play-feed-meta {
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-play-feed-name {
+  font-weight: 800;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-play-feed-outcome {
+  color: var(--hd-text-primary);
+  text-align: right;
+}
+
+.phone-frame-dark .stadium-play-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.phone-frame-dark .stadium-play-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.phone-frame-dark .stadium-play-btn-skip {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+}
+
+/* ── 결과 ── */
+.phone-frame-dark .stadium-result {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.phone-frame-dark .stadium-result-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(255, 106, 43, 0.2), rgba(255, 106, 43, 0.05));
+  border: 1px solid rgba(255, 106, 43, 0.4);
+  border-radius: 14px;
+  color: var(--hd-accent, #ff6a2b);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.phone-frame-dark .stadium-result-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 14px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-dark .stadium-result-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-frame-dark .stadium-result-team strong {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.phone-frame-dark .stadium-result-team span {
+  font-size: 13px;
+  color: var(--hd-text-secondary);
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-result-divider {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--hd-text-muted, #6b7280);
+}
+
+.phone-frame-dark .stadium-result-mvp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+}
+
+.phone-frame-dark .stadium-result-mvp-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--hd-accent, #ff6a2b);
+  letter-spacing: 1px;
+}
+
+.phone-frame-dark .stadium-result-mvp strong {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.phone-frame-dark .stadium-result-mvp-reason {
+  font-size: 12px;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .stadium-result-line {
+  overflow-x: auto;
+}
+
+.phone-frame-dark .stadium-result-linetable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.phone-frame-dark .stadium-result-linetable th,
+.phone-frame-dark .stadium-result-linetable td {
+  padding: 6px 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--hd-border-soft);
+}
+
+.phone-frame-dark .stadium-result-linetable thead th {
+  color: var(--hd-text-secondary);
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-result-linetable td:first-child,
+.phone-frame-dark .stadium-result-linetable th:first-child {
+  text-align: left;
+  font-weight: 700;
+}
+
+.phone-frame-dark .stadium-result-meta {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--hd-text-muted, #6b7280);
+}
+
+.phone-frame-dark .stadium-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

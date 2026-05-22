@@ -39,6 +39,7 @@ import "@/styles/dark-install.css";
 import "@/styles/dark-profile-popover.css";
 import "@/styles/dark-season-level.css";
 import "@/styles/dark-lineup.css";
+import "@/styles/dark-stadium.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://talkpark.vercel.app";
 const SITE_TITLE = "야구놀이터";

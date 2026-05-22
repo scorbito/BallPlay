@@ -3,7 +3,7 @@ import { SkeletonBox, SkeletonLine } from "@/components/common/Skeleton";
 
 export default function HomeLoading() {
   return (
-    <AppShell activeTab="home" theme="dark">
+    <AppShell activeTab="home" theme="dark" wide>
       <div className="skeleton-page">
         {/* HERO */}
         <SkeletonBox height={200} radius={16} />

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam, teams } from "@/lib/constants/teams";
@@ -239,9 +239,12 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   const selectedTeam = getTeam(selectedTeamId);
 
   return (
-    <AppShell activeTab="schedule" title="일정" theme="dark" hideHeader>
-      {/* 상단: 팀 선택 드롭다운 + 팀 순위 버튼 */}
+    <AppShell activeTab="schedule" title="일정" theme="dark" hideHeader wide>
+      {/* 상단: 뒤로가기 + 팀 선택(중앙) + 팀 순위 버튼 */}
       <div className="sched-top-bar">
+        <Link className="sched-back-btn" href="/" aria-label="뒤로" prefetch>
+          <ArrowLeft size={18} />
+        </Link>
         <div className="sched-team-picker" ref={teamPickerRef}>
           <button
             type="button"

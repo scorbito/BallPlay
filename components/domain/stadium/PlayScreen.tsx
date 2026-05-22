@@ -1,0 +1,580 @@
+"use client";
+
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { Play, Pause, FastForward, Trophy } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
+import { TeamBadge } from "@/components/common/TeamBadge";
+import { getTeam } from "@/lib/constants/teams";
+import { simulateGame } from "@/lib/sim/engine";
+import {
+  loadMatchSession,
+  saveMatchSession,
+  type MatchSession
+} from "@/lib/sim/matchSession";
+import type { AtBatLog, AtBatOutcome, BaseState, InningLog, SimPitcher } from "@/lib/sim/types";
+
+const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
+  K: "삼진",
+  GO: "땅볼아웃",
+  FO: "외야플라이",
+  PO: "내야플라이",
+  LO: "직선타",
+  SF: "희생플라이",
+  DP: "병살타",
+  BB: "볼넷",
+  HBP: "사구",
+  "1B": "안타",
+  "2B": "2루타",
+  "3B": "3루타",
+  HR: "홈런!",
+  E: "실책 출루"
+};
+
+const EMPTY_BASE: BaseState = { first: null, second: null, third: null };
+
+type FlatEvent = {
+  inning: number;
+  half: "top" | "bottom";
+  index: number;
+  ab: AtBatLog;
+  scoreSnapshot: { home: number; away: number };
+};
+
+function flatten(innings: InningLog[]): FlatEvent[] {
+  const out: FlatEvent[] = [];
+  let home = 0;
+  let away = 0;
+  for (const ing of innings) {
+    let halfIdx = 0;
+    for (const ab of ing.top.atBats) {
+      away += ab.runsScored;
+      out.push({ inning: ing.inning, half: "top", index: halfIdx++, ab, scoreSnapshot: { home, away } });
+    }
+    if (ing.bottom) {
+      halfIdx = 0;
+      for (const ab of ing.bottom.atBats) {
+        home += ab.runsScored;
+        out.push({ inning: ing.inning, half: "bottom", index: halfIdx++, ab, scoreSnapshot: { home, away } });
+      }
+    }
+  }
+  return out;
+}
+
+function buildLinescore(innings: InningLog[], visibleCount: number, events: FlatEvent[]) {
+  const visibleEvents = events.slice(0, visibleCount);
+  const seenInning = new Map<string, number>();
+
+  for (const ev of visibleEvents) {
+    const key = `${ev.inning}|${ev.half}`;
+    seenInning.set(key, (seenInning.get(key) ?? 0) + ev.ab.runsScored);
+  }
+
+  const totalInnings = Math.max(9, ...innings.map((i) => i.inning));
+
+  const lastEvent = visibleEvents[visibleEvents.length - 1];
+  const currentInning = lastEvent?.inning ?? 1;
+  const currentHalf = lastEvent?.half ?? "top";
+
+  type Cell = { runs: number | null };
+  const away: Cell[] = [];
+  const home: Cell[] = [];
+
+  for (let i = 1; i <= totalInnings; i++) {
+    const topKey = `${i}|top`;
+    const botKey = `${i}|bottom`;
+
+    away.push({ runs: seenInning.has(topKey) ? seenInning.get(topKey)! : null });
+
+    const inningData = innings.find((x) => x.inning === i);
+    if (inningData && inningData.bottom === null) {
+      home.push({ runs: null });
+    } else if (seenInning.has(botKey)) {
+      home.push({ runs: seenInning.get(botKey)! });
+    } else {
+      home.push({ runs: null });
+    }
+  }
+
+  return { away, home, currentInning, currentHalf, totalInnings };
+}
+
+// 다이아몬드 컴포넌트 — 1·2·3루 점등 + 홈베이스
+function Diamond({ base }: { base: BaseState }) {
+  return (
+    <div className="stadium-diamond" aria-label="베이스 상황">
+      <div className={`stadium-base stadium-base-2nd ${base.second ? "is-on" : ""}`} />
+      <div className={`stadium-base stadium-base-3rd ${base.third ? "is-on" : ""}`} />
+      <div className={`stadium-base stadium-base-1st ${base.first ? "is-on" : ""}`} />
+      <div className="stadium-base stadium-base-home" />
+    </div>
+  );
+}
+
+function OutDots({ outs }: { outs: 0 | 1 | 2 | 3 }) {
+  return (
+    <div className="stadium-outs" aria-label={`아웃 ${outs}`}>
+      {[0, 1, 2].map((i) => (
+        <span key={i} className={i < outs ? "is-out" : ""} />
+      ))}
+    </div>
+  );
+}
+
+export function PlayScreen() {
+  const router = useRouter();
+  const [session, setSession] = useState<MatchSession | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [cursor, setCursor] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [speed, setSpeed] = useState<0.5 | 1 | 2 | 4>(1);
+  // 진행 단계 — BATTER → OUTCOME → 필요시 INNING_END/PITCHER_CHANGE → 다음 타자 / 마지막은 GAME_END
+  const [phase, setPhase] = useState<
+    "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE" | "GAME_END"
+  >("BATTER");
+  const showOutcome = phase !== "BATTER"; // 라인업·다이아몬드 상태에서 결과 반영 여부
+
+  // 라이브 매치 모드 — liveStartAt까지 대기 후 진행. 속도/일시정지 컨트롤 잠금.
+  const isLive = !!session?.liveMatchId;
+  const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    const s = loadMatchSession();
+    if (!s || !s.input) {
+      router.replace("/stadium/lobby");
+      return;
+    }
+    let next = s;
+    if (!s.result) {
+      const result = simulateGame(s.input, s.seed);
+      next = { ...s, result };
+      saveMatchSession(next);
+    }
+    setSession(next);
+    setHydrated(true);
+
+    // 라이브 모드: startAt이 미래면 그때까지 playing=false 유지하고 카운트다운 표시
+    if (next.liveMatchId && next.liveStartAt) {
+      const startMs = new Date(next.liveStartAt).getTime();
+      const now = Date.now();
+      if (now < startMs) {
+        setPlaying(false);
+        setSpeed(1);
+      }
+    }
+  }, [router]);
+
+  // 라이브 카운트다운 — startAt 도달 시 자동 play
+  useEffect(() => {
+    if (!isLive || !session?.liveStartAt) return;
+    const startMs = new Date(session.liveStartAt).getTime();
+    const tick = () => {
+      const remain = Math.max(0, Math.ceil((startMs - Date.now()) / 1000));
+      setLiveCountdown(remain);
+      if (remain <= 0) {
+        setPlaying(true);
+        setLiveCountdown(null);
+        return false;
+      }
+      return true;
+    };
+    if (!tick()) return;
+    const id = window.setInterval(() => {
+      if (!tick()) window.clearInterval(id);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [isLive, session?.liveStartAt]);
+
+  const events = useMemo(() => {
+    if (!session?.result) return [];
+    return flatten(session.result.innings);
+  }, [session]);
+
+  const currentInningEvents = useMemo(() => {
+    if (cursor === 0) return [];
+    const visible = events.slice(0, cursor);
+    const tail = visible[visible.length - 1];
+    if (!tail) return [];
+    return visible.filter((ev) => ev.inning === tail.inning && ev.half === tail.half);
+  }, [events, cursor]);
+
+  // 전체 투수 lookup (playerId → SimPitcher) — 이름 표시에 사용
+  const pitcherById = useMemo(() => {
+    const m = new Map<string, SimPitcher>();
+    if (!session?.input) return m;
+    const all = [
+      session.input.home.starter,
+      ...session.input.home.bullpen,
+      session.input.away.starter,
+      ...session.input.away.bullpen
+    ];
+    for (const p of all) m.set(p.playerId, p);
+    return m;
+  }, [session]);
+
+  // 현재 이닝의 각 타자별 마지막 결과 — 공수교대 시 자동으로 비워짐 (currentInningEvents가 새 이닝의 것으로 교체됨)
+  const inningOutcomes = useMemo(() => {
+    const map = new Map<string, { label: string; isHit: boolean; isHr: boolean }>();
+    for (let i = 0; i < currentInningEvents.length; i++) {
+      const ev = currentInningEvents[i];
+      const isLast = i === currentInningEvents.length - 1;
+      // 마지막 타석은 결과 표시 페이즈일 때만 Map에 반영 (그 전엔 진행 중 ··· 상태)
+      if (isLast && !showOutcome) continue;
+      const label =
+        OUTCOME_LABEL[ev.ab.outcome] +
+        (ev.ab.runsScored > 0 ? ` (+${ev.ab.runsScored})` : "");
+      map.set(ev.ab.batterId, {
+        label,
+        isHit: ["1B", "2B", "3B", "HR"].includes(ev.ab.outcome),
+        isHr: ev.ab.outcome === "HR"
+      });
+    }
+    return map;
+  }, [currentInningEvents, showOutcome]);
+
+  useEffect(() => {
+    if (!playing || !hydrated) return;
+    if (phase === "GAME_END") return; // 게임 종료 페이즈에선 진행 멈춤
+    if (cursor > events.length) return;
+
+    // 페이즈별 시간 (ms). INNING_END/PITCHER_CHANGE는 정보 인지 위해 길게.
+    // GAME_END는 위에서 early return이라 여기서 빠짐.
+    const intervalByPhase: Record<
+      "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE",
+      number
+    > = {
+      BATTER: 700 / speed,
+      OUTCOME: 700 / speed,
+      INNING_END: 1100 / speed,
+      PITCHER_CHANGE: 1100 / speed
+    };
+
+    const handle = window.setTimeout(() => {
+      // cursor=0: 게임 시작 직전 → 첫 타자(events[0]) BATTER 페이즈로 진입
+      if (cursor === 0) {
+        setCursor(1);
+        setPhase("BATTER");
+        return;
+      }
+
+      const current = events[cursor - 1];
+      const next = events[cursor];
+      const inningEnded =
+        !!next && (next.inning !== current.inning || next.half !== current.half);
+      const pitcherChanged =
+        !!next && !inningEnded && next.ab.pitcherId !== current.ab.pitcherId;
+
+      if (phase === "BATTER") {
+        setPhase("OUTCOME");
+        return;
+      }
+      if (phase === "OUTCOME") {
+        if (!next) {
+          // 마지막 타석 결과까지 표시 끝 → GAME_END 페이즈 (INNING_END 스킵)
+          setPhase("GAME_END");
+          return;
+        }
+        if (inningEnded) {
+          setPhase("INNING_END");
+          return;
+        }
+        if (pitcherChanged) {
+          setPhase("PITCHER_CHANGE");
+          return;
+        }
+        setCursor((c) => c + 1);
+        setPhase("BATTER");
+        return;
+      }
+      if (phase === "INNING_END") {
+        if (pitcherChanged) {
+          setPhase("PITCHER_CHANGE");
+          return;
+        }
+        setCursor((c) => c + 1);
+        setPhase("BATTER");
+        return;
+      }
+      if (phase === "PITCHER_CHANGE") {
+        setCursor((c) => c + 1);
+        setPhase("BATTER");
+        return;
+      }
+    }, intervalByPhase[phase]);
+
+    return () => window.clearTimeout(handle);
+  }, [playing, cursor, events, events.length, speed, hydrated, phase]);
+
+  if (!hydrated || !session?.result) {
+    return (
+      <AppShell activeTab="stadium" title="시뮬레이션" backHref="/stadium/lobby" theme="dark">
+        <p className="stadium-loading">경기 준비 중...</p>
+      </AppShell>
+    );
+  }
+
+  const input = session.input!;
+  const homeTeam = getTeam(input.home.teamId);
+  const awayTeam = getTeam(input.away.teamId);
+  // 사용자 지정 팀명(라인업 이름) 우선, 없으면 KBO 정식 팀명 폴백
+  const homeLabel = input.home.displayName?.trim() || homeTeam.shortName;
+  const awayLabel = input.away.displayName?.trim() || awayTeam.shortName;
+  const linescore = buildLinescore(session.result.innings, cursor, events);
+  const latest = events[Math.max(0, cursor - 1)];
+  const isDone = phase === "GAME_END";
+
+  const totalAway = linescore.away.reduce((s, c) => s + (c.runs ?? 0), 0);
+  const totalHome = linescore.home.reduce((s, c) => s + (c.runs ?? 0), 0);
+
+  const battingSide: "home" | "away" = latest?.half === "bottom" ? "home" : "away";
+
+  const visible = events.slice(0, cursor);
+  const lastAwayBatterId = [...visible].reverse().find((ev) => ev.half === "top")?.ab.batterId ?? null;
+  const lastHomeBatterId = [...visible].reverse().find((ev) => ev.half === "bottom")?.ab.batterId ?? null;
+  const awayCurrentIdx = lastAwayBatterId ? input.away.batters.findIndex((b) => b.playerId === lastAwayBatterId) : -1;
+  const homeCurrentIdx = lastHomeBatterId ? input.home.batters.findIndex((b) => b.playerId === lastHomeBatterId) : -1;
+
+  // 현재 등판 투수 — 그 팀이 수비할 때(상대 공격) 가장 최근 던진 투수.
+  // away팀 수비 = home 공격 = bottom half / home팀 수비 = away 공격 = top half
+  const lastAwayPitcherId =
+    [...visible].reverse().find((ev) => ev.half === "bottom")?.ab.pitcherId ?? null;
+  const lastHomePitcherId =
+    [...visible].reverse().find((ev) => ev.half === "top")?.ab.pitcherId ?? null;
+  const awayCurrentPitcher = lastAwayPitcherId
+    ? pitcherById.get(lastAwayPitcherId) ?? input.away.starter
+    : input.away.starter;
+  const homeCurrentPitcher = lastHomePitcherId
+    ? pitcherById.get(lastHomePitcherId) ?? input.home.starter
+    : input.home.starter;
+
+  // 다이아몬드/아웃카운트 — 현재 이닝의 visible 마지막 타석에서 가져옴. 비었으면 0 outs/empty.
+  const lastInInning = currentInningEvents[currentInningEvents.length - 1];
+  // showOutcome이 false면 "타석 진행 중" 상태 — 이전 타석의 baseStateAfter 사용 (이 타석 결과는 아직 미반영)
+  const stateRefAb =
+    !showOutcome && currentInningEvents.length >= 2
+      ? currentInningEvents[currentInningEvents.length - 2].ab
+      : lastInInning?.ab;
+  const baseState: BaseState =
+    !showOutcome && currentInningEvents.length === 1
+      ? EMPTY_BASE
+      : stateRefAb?.baseStateAfter ?? EMPTY_BASE;
+  const outsValue =
+    !showOutcome && currentInningEvents.length === 1
+      ? 0
+      : stateRefAb?.outsAfter ?? 0;
+  const outs = Math.min(3, outsValue) as 0 | 1 | 2 | 3;
+
+  // 1줄 상황판 텍스트 + variant 결정
+  const narration: { text: string; variant: "default" | "inning" | "pitcher" | "walkoff" } = (() => {
+    if (cursor === 0) return { text: "플레이볼!", variant: "default" };
+    const current = events[cursor - 1];
+    const battingTeamBatters = current.half === "top" ? input.away.batters : input.home.batters;
+    const orderIdx = battingTeamBatters.findIndex((b) => b.playerId === current.ab.batterId);
+    const orderPrefix = orderIdx >= 0 ? `${orderIdx + 1}번 타자 ` : "";
+    const batterName =
+      battingTeamBatters.find((b) => b.playerId === current.ab.batterId)?.name ?? "타자";
+    const outcomeLabel =
+      OUTCOME_LABEL[current.ab.outcome] +
+      (current.ab.runsScored > 0 ? ` (+${current.ab.runsScored})` : "");
+
+    if (phase === "BATTER") {
+      return { text: `${orderPrefix}${batterName}`, variant: "default" };
+    }
+    if (phase === "OUTCOME") {
+      return { text: `${orderPrefix}${batterName} - ${outcomeLabel}`, variant: "default" };
+    }
+    if (phase === "INNING_END") {
+      return { text: "쓰리아웃 · 공수교대", variant: "inning" };
+    }
+    if (phase === "GAME_END") {
+      const isWalkOff =
+        current.inning >= 9 &&
+        current.half === "bottom" &&
+        current.ab.outsAfter < 3;
+      if (isWalkOff) return { text: "🏆 끝내기!", variant: "walkoff" };
+      return { text: "경기 종료", variant: "walkoff" };
+    }
+    if (phase === "PITCHER_CHANGE") {
+      const next = events[cursor];
+      const prevName =
+        pitcherById.get(current.ab.pitcherId)?.name ?? "투수";
+      const nextName = next ? pitcherById.get(next.ab.pitcherId)?.name ?? "투수" : "투수";
+      return { text: `투수 교체: ${prevName} → ${nextName}`, variant: "pitcher" };
+    }
+    return { text: "", variant: "default" };
+  })();
+
+  const renderLineupRow = (
+    side: "home" | "away",
+    batter: { playerId: string; name: string },
+    idx: number,
+    currentIdx: number
+  ) => {
+    const isCurrent = battingSide === side && idx === currentIdx;
+    const stored = inningOutcomes.get(batter.playerId);
+
+    let outcomeNode: ReactNode = null;
+    if (isCurrent && !showOutcome) {
+      // 진행 중인 현재 타석 — 이전 결과가 있어도 새 타석이므로 ··· 표시
+      outcomeNode = <span className="stadium-play-lineup-outcome is-pending">···</span>;
+    } else if (stored) {
+      outcomeNode = (
+        <span
+          className={`stadium-play-lineup-outcome ${stored.isHr ? "is-hr" : ""} ${stored.isHit ? "is-hit" : ""}`}
+        >
+          {stored.label}
+        </span>
+      );
+    }
+
+    return (
+      <li
+        key={batter.playerId}
+        className={`stadium-play-lineup-row ${isCurrent ? "is-current" : ""}`}
+      >
+        <span className="stadium-play-lineup-order">{idx + 1}</span>
+        <span className="stadium-play-lineup-name">{batter.name}</span>
+        {outcomeNode}
+      </li>
+    );
+  };
+
+  return (
+    <AppShell activeTab="stadium" title="시뮬레이션" backHref="/stadium/lobby" theme="dark">
+      {isLive && liveCountdown !== null && liveCountdown > 0 ? (
+        <div className="stadium-live-countdown">
+          <span>곧 시작합니다</span>
+          <strong>{liveCountdown}</strong>
+        </div>
+      ) : null}
+      <section className="stadium-play-v2">
+        {/* 1. 라인스코어 */}
+        <div className="stadium-linescore">
+          <table>
+            <thead>
+              <tr>
+                <th />
+                {Array.from({ length: linescore.totalInnings }, (_, i) => (
+                  <th key={i + 1} className={i + 1 === linescore.currentInning ? "is-current" : ""}>{i + 1}</th>
+                ))}
+                <th className="rh">R</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="team-cell"><TeamBadge teamId={awayTeam.id} size="sm" /> <span>{awayLabel}</span></td>
+                {linescore.away.map((cell, i) => (
+                  <td key={`a${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "top" ? "is-current" : ""}>
+                    {cell.runs === null ? "" : cell.runs}
+                  </td>
+                ))}
+                <td className="rh"><strong>{totalAway}</strong></td>
+              </tr>
+              <tr>
+                <td className="team-cell"><TeamBadge teamId={homeTeam.id} size="sm" /> <span>{homeLabel}</span></td>
+                {linescore.home.map((cell, i) => (
+                  <td key={`h${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "bottom" ? "is-current" : ""}>
+                    {cell.runs === null ? "" : cell.runs}
+                  </td>
+                ))}
+                <td className="rh"><strong>{totalHome}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* 2. 스코어보드 + 다이아몬드 + 아웃카운트 */}
+        <header className="stadium-play-scoreboard">
+          <div className="stadium-play-team">
+            <TeamBadge teamId={awayTeam.id} size="md" />
+            <span>{awayLabel}</span>
+            <strong>{totalAway}</strong>
+          </div>
+          <div className="stadium-play-state">
+            <span className="stadium-play-inning-label">
+              {latest ? `${latest.inning}회 ${latest.half === "top" ? "초" : "말"}` : "경기 시작"}
+            </span>
+            <Diamond base={baseState} />
+            <OutDots outs={outs} />
+          </div>
+          <div className="stadium-play-team stadium-play-team-right">
+            <strong>{totalHome}</strong>
+            <span>{homeLabel}</span>
+            <TeamBadge teamId={homeTeam.id} size="md" />
+          </div>
+        </header>
+
+        {/* 3. 1줄 상황판 — 타석 진행/공수교대/투수교체 등 진행 알림 */}
+        <div className={`stadium-play-narration is-${narration.variant}`}>
+          <span>{narration.text}</span>
+        </div>
+
+        {/* 4. 양 팀 라인업 (현재 타순 옆에 결과 인라인 표시) */}
+        <div className="stadium-play-lineups">
+          <div className={`stadium-play-batting-card ${battingSide === "away" ? "is-offense" : ""}`}>
+            <div className="stadium-play-batting-head">
+              <span className="stadium-play-batting-pitcher">투수 {awayCurrentPitcher.name}</span>
+            </div>
+            <ol className="stadium-play-lineup">
+              {input.away.batters.map((b, idx) => renderLineupRow("away", b, idx, awayCurrentIdx))}
+            </ol>
+          </div>
+
+          <div className={`stadium-play-batting-card ${battingSide === "home" ? "is-offense" : ""}`}>
+            <div className="stadium-play-batting-head">
+              <span className="stadium-play-batting-pitcher">투수 {homeCurrentPitcher.name}</span>
+            </div>
+            <ol className="stadium-play-lineup">
+              {input.home.batters.map((b, idx) => renderLineupRow("home", b, idx, homeCurrentIdx))}
+            </ol>
+          </div>
+        </div>
+
+        {/* 4. 컨트롤 */}
+        <footer className="stadium-play-controls">
+          {!isDone ? (
+            isLive ? (
+              <div className="stadium-play-live-badge">
+                <span className="stadium-live-dot" /> 실시간 매치 진행 중 — 컨트롤 잠금
+              </div>
+            ) : (
+              <>
+                <button type="button" className="stadium-play-btn" onClick={() => setPlaying((p) => !p)}>
+                  {playing ? <Pause size={16} /> : <Play size={16} />}
+                  <span>{playing ? "일시정지" : "재생"}</span>
+                </button>
+                <button
+                  type="button"
+                  className="stadium-play-btn"
+                  onClick={() =>
+                    setSpeed((s) => (s === 0.5 ? 1 : s === 1 ? 2 : s === 2 ? 4 : 0.5))
+                  }
+                >
+                  <FastForward size={16} />
+                  <span>×{speed}</span>
+                </button>
+                <button
+                  type="button"
+                  className="stadium-play-btn stadium-play-btn-skip"
+                  onClick={() => setCursor(events.length)}
+                >
+                  건너뛰기
+                </button>
+              </>
+            )
+          ) : (
+            <button
+              type="button"
+              className="stadium-cta-primary"
+              onClick={() => router.push("/stadium/result")}
+            >
+              <Trophy size={16} />
+              <span>결과 보기</span>
+            </button>
+          )}
+        </footer>
+      </section>
+    </AppShell>
+  );
+}

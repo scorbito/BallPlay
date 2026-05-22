@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, RotateCcw, Share2, X } from "lucide-react";
+import { Check, ChevronDown, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -11,15 +11,15 @@ import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { getRoster, getSeededTeamIds } from "@/lib/rosters";
 import {
-  LINEUP_STORAGE_PREFIX,
-  PITCHER_STORAGE_PREFIX,
   POSITIONS,
   POSITION_LABEL,
   POSITION_SHORT,
   PITCHER_SLOTS_COUNT,
   PITCHER_STARTER_INDEX,
+  MAX_LINEUP_ENTRIES,
   formatHandBadge,
   getPoolGroupLabel,
+  type LineupEntry,
   type LineupMode,
   type LineupOrder,
   type LineupSlot,
@@ -28,56 +28,15 @@ import {
   type SavedLineup,
   type SavedPitcherLineup
 } from "@/lib/types/lineup";
+import {
+  loadLineupEntries,
+  upsertLineupEntry,
+  deleteLineupEntry,
+  renameLineupEntry,
+  createEmptyEntry
+} from "@/lib/storage/lineupEntries";
 
 const ORDERS: LineupOrder[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-function storageKey(teamId: string) {
-  return `${LINEUP_STORAGE_PREFIX}${teamId}`;
-}
-
-function pitcherStorageKey(teamId: string) {
-  return `${PITCHER_STORAGE_PREFIX}${teamId}`;
-}
-
-function loadLineup(teamId: string): SavedLineup | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(storageKey(teamId));
-    if (!raw) return null;
-    return JSON.parse(raw) as SavedLineup;
-  } catch {
-    return null;
-  }
-}
-
-function saveLineup(lineup: SavedLineup) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(storageKey(lineup.teamId), JSON.stringify(lineup));
-  } catch {
-    // ignore quota errors
-  }
-}
-
-function loadPitcherLineup(teamId: string): SavedPitcherLineup | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(pitcherStorageKey(teamId));
-    if (!raw) return null;
-    return JSON.parse(raw) as SavedPitcherLineup;
-  } catch {
-    return null;
-  }
-}
-
-function savePitcherLineup(lineup: SavedPitcherLineup) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(pitcherStorageKey(lineup.teamId), JSON.stringify(lineup));
-  } catch {
-    // ignore quota errors
-  }
-}
 
 type SlotState = LineupSlot | null;
 const EMPTY_SLOTS: SlotState[] = Array.from({ length: 9 }, () => null);
@@ -134,21 +93,35 @@ export function LineupBuilderScreen() {
   // 시드가 있는 팀으로 기본값 — 사용자의 메인팀이 시드 안 됐으면 두산
   const initialTeamId = seededTeamIds.has(profile.mainTeamId) ? profile.mainTeamId : "doosan";
 
-  const [selectedTeamId, setSelectedTeamId] = useState(initialTeamId);
+  // 다중 라인업 슬롯 (entries) — localStorage 마이그 포함
+  const [entries, setEntries] = useState<LineupEntry[]>([]);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const currentEntry = useMemo(
+    () => entries.find((e) => e.entryId === selectedEntryId) ?? null,
+    [entries, selectedEntryId]
+  );
+  const selectedTeamId = currentEntry?.teamId ?? initialTeamId;
+
+  const [slotMenuOpen, setSlotMenuOpen] = useState(false);
+  const slotPickerRef = useRef<HTMLDivElement | null>(null);
+  const [newSlotOpen, setNewSlotOpen] = useState(false);
+  const [newSlotTeamId, setNewSlotTeamId] = useState<string>(initialTeamId);
+  const [newSlotName, setNewSlotName] = useState<string>("");
+  const [renamingEntryId, setRenamingEntryId] = useState<string | null>(null);
+  const [renameInput, setRenameInput] = useState("");
+  const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<string | null>(null);
+
   const [mode, setMode] = useState<LineupMode>("batter");
   const [slots, setSlots] = useState<SlotState[]>(EMPTY_SLOTS);
   const [pitcherSlots, setPitcherSlots] = useState<(string | null)[]>(EMPTY_PITCHER_SLOTS);
   const useDH = true;
-  const [teamMenuOpen, setTeamMenuOpen] = useState(false);
-  const teamPickerRef = useRef<HTMLDivElement | null>(null);
   const [positionPickerForOrder, setPositionPickerForOrder] = useState<LineupOrder | null>(null);
   /** 다이아몬드에서 첫 번째로 선택된 포지션 — 두 번째 클릭 시 교환 */
   const [swapSource, setSwapSource] = useState<Position | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  /** localStorage 복원이 끝난 팀 id. 저장 effect는 이 값이 selectedTeamId와 같을 때만 동작하여,
-   *  마운트 직후 EMPTY 슬롯으로 save가 먼저 돌며 localStorage를 비우는 레이스를 차단한다. */
-  const [hydratedTeam, setHydratedTeam] = useState<string | null>(null);
+  /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
+  const [hydratedEntryId, setHydratedEntryId] = useState<string | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
   const swapTimerRef = useRef<number | null>(null);
   /** 타순 번호 뱃지로 두 슬롯의 선수를 교체할 때의 source 인덱스 (0-based) */
@@ -157,18 +130,27 @@ export function LineupBuilderScreen() {
   const [swapOrderAnimation, setSwapOrderAnimation] = useState<{ a: number; b: number } | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
 
-  // 외부 클릭 시 팀 드롭다운 닫기
+  // 외부 클릭 시 슬롯 드롭다운 닫기
   useEffect(() => {
-    if (!teamMenuOpen) return;
+    if (!slotMenuOpen) return;
     const handler = (event: MouseEvent) => {
       const target = event.target as Node | null;
-      if (target && teamPickerRef.current && !teamPickerRef.current.contains(target)) {
-        setTeamMenuOpen(false);
+      if (target && slotPickerRef.current && !slotPickerRef.current.contains(target)) {
+        setSlotMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [teamMenuOpen]);
+  }, [slotMenuOpen]);
+
+  // 마운트 시 슬롯 entries 로드 + 첫 entry 자동 선택
+  useEffect(() => {
+    const loaded = loadLineupEntries();
+    setEntries(loaded);
+    if (loaded.length > 0) {
+      setSelectedEntryId(loaded[0].entryId);
+    }
+  }, []);
 
   const roster = useMemo(() => getRoster(selectedTeamId), [selectedTeamId]);
   const playersById = useMemo(() => {
@@ -177,11 +159,11 @@ export function LineupBuilderScreen() {
     return map;
   }, [roster]);
 
-  // 팀 변경 시 swap 선택도 초기화
+  // 선택된 슬롯 변경 시 swap 선택도 초기화
   useEffect(() => {
     setSwapSource(null);
     setSwapOrderSourceIdx(null);
-  }, [selectedTeamId]);
+  }, [selectedEntryId]);
 
   // 모드 전환 시 타순 swap 선택도 초기화
   useEffect(() => {
@@ -196,13 +178,15 @@ export function LineupBuilderScreen() {
     };
   }, []);
 
-  // 팀 변경 시 저장된 라인업 복원, 없으면 빈 슬롯 — 타자/투수 양쪽 모두
+  // 선택된 슬롯(entry) 변경 시 batting/pitching 복원, 없으면 빈 슬롯
   useEffect(() => {
-    // 복원 시작 전 게이트 닫기 — 새 팀 데이터가 슬롯에 반영되기 전에는 save 금지
-    setHydratedTeam(null);
-
-    // 타자 라인업 복원
-    const stored = loadLineup(selectedTeamId);
+    setHydratedEntryId(null);
+    if (!currentEntry) {
+      setSlots(EMPTY_SLOTS);
+      setPitcherSlots(EMPTY_PITCHER_SLOTS);
+      return;
+    }
+    const stored = currentEntry.batting;
     if (stored && stored.slots.length > 0) {
       const next: SlotState[] = Array.from({ length: 9 }, () => null);
       stored.slots.forEach((s) => {
@@ -215,53 +199,48 @@ export function LineupBuilderScreen() {
       setSlots(EMPTY_SLOTS);
     }
 
-    // 투수 라인업 복원
-    const storedPitcher = loadPitcherLineup(selectedTeamId);
+    const storedPitcher = currentEntry.pitching;
     if (storedPitcher && Array.isArray(storedPitcher.slots)) {
       const next = Array.from({ length: PITCHER_SLOTS_COUNT }, (_, i) => storedPitcher.slots[i] ?? null);
       setPitcherSlots(next);
     } else {
       setPitcherSlots(EMPTY_PITCHER_SLOTS);
     }
+    setHydratedEntryId(currentEntry.entryId);
+  }, [currentEntry?.entryId]);
 
-    // 복원 완료 — 이 팀에 대해서만 save 이펙트가 동작하도록 게이트 열기
-    setHydratedTeam(selectedTeamId);
-  }, [selectedTeamId]);
-
-  // 타자 라인업 — 변경 시 localStorage 즉시 저장. 복원 완료 전엔 skip.
+  // 타자 라인업 변경 → 현재 entry의 batting 업데이트 + 저장. 복원 완료 전엔 skip.
   useEffect(() => {
-    if (hydratedTeam !== selectedTeamId) return;
+    if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
     const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
-    if (filledSlots.length === 0) {
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(storageKey(selectedTeamId));
-      }
-      return;
-    }
-    saveLineup({
-      teamId: selectedTeamId,
-      slots: filledSlots,
-      useDH,
-      updatedAt: new Date().toISOString()
-    });
-  }, [slots, selectedTeamId, useDH, hydratedTeam]);
+    const now = new Date().toISOString();
+    const updated: LineupEntry = {
+      ...currentEntry,
+      batting: {
+        teamId: currentEntry.teamId,
+        slots: filledSlots,
+        useDH,
+        updatedAt: now
+      },
+      updatedAt: now
+    };
+    setEntries(upsertLineupEntry(updated));
+  }, [slots, useDH, hydratedEntryId]); // currentEntry는 의도적으로 deps 제외 (id로 추적)
 
-  // 투수 라인업 — 변경 시 localStorage 저장. 복원 완료 전엔 skip.
+  // 투수 라인업 변경 → 현재 entry의 pitching 업데이트 + 저장.
   useEffect(() => {
-    if (hydratedTeam !== selectedTeamId) return;
+    if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
     const hasAny = pitcherSlots.some(Boolean);
-    if (!hasAny) {
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(pitcherStorageKey(selectedTeamId));
-      }
-      return;
-    }
-    savePitcherLineup({
-      teamId: selectedTeamId,
-      slots: pitcherSlots,
-      updatedAt: new Date().toISOString()
-    });
-  }, [pitcherSlots, selectedTeamId, hydratedTeam]);
+    const now = new Date().toISOString();
+    const updated: LineupEntry = {
+      ...currentEntry,
+      pitching: hasAny
+        ? { teamId: currentEntry.teamId, slots: pitcherSlots, updatedAt: now }
+        : null,
+      updatedAt: now
+    };
+    setEntries(upsertLineupEntry(updated));
+  }, [pitcherSlots, hydratedEntryId]);
 
   // 모드별 배치된 선수 ID 집합 — 중복 방지에 사용
   const placedPlayerIds = useMemo(() => {
@@ -547,47 +526,94 @@ export function LineupBuilderScreen() {
   return (
     <AppShell activeTab="play" title="라인업 짜기" theme="dark" hideHeader wide>
       <header className="lineup-header lineup-header-no-back">
-        {/* v1: 라인업 탭이 BottomTabs에서 직접 진입하므로 뒤로가기 버튼 일시 숨김.
-            추후 다른 진입 경로 생기면 다시 노출. */}
-        <div className="sched-team-picker" ref={teamPickerRef}>
+        {/* 슬롯 picker — 현재 슬롯 + 드롭다운으로 다른 슬롯 / 새 슬롯 / 이름 편집 / 삭제 */}
+        <div className="lineup-slot-picker" ref={slotPickerRef}>
           <button
             type="button"
-            className="sched-team-picker-trigger"
+            className="lineup-slot-trigger"
             aria-haspopup="listbox"
-            aria-expanded={teamMenuOpen}
-            onClick={() => setTeamMenuOpen((open) => !open)}
+            aria-expanded={slotMenuOpen}
+            onClick={() => setSlotMenuOpen((open) => !open)}
           >
-            <TeamBadge teamId={selectedTeamId} size="sm" />
-            <strong>{selectedTeam.shortName}</strong>
-            <ChevronDown size={16} className={teamMenuOpen ? "sched-team-picker-chevron-open" : ""} />
+            {currentEntry ? (
+              <>
+                <TeamBadge teamId={currentEntry.teamId} size="sm" />
+                <strong className="lineup-slot-trigger-name">{currentEntry.name}</strong>
+              </>
+            ) : (
+              <strong className="lineup-slot-trigger-empty">슬롯을 만드세요</strong>
+            )}
+            <ChevronDown size={16} className={slotMenuOpen ? "lineup-slot-chevron-open" : ""} />
           </button>
-          {teamMenuOpen ? (
-            <ul className="sched-team-picker-menu" role="listbox" aria-label="팀 선택">
-              {teams.map((team) => {
-                const active = team.id === selectedTeamId;
-                const seeded = seededTeamIds.has(team.id);
+          {slotMenuOpen ? (
+            <ul className="lineup-slot-menu" role="listbox" aria-label="라인업 슬롯">
+              {entries.map((entry) => {
+                const active = entry.entryId === selectedEntryId;
                 return (
-                  <li key={team.id}>
+                  <li key={entry.entryId} className="lineup-slot-menu-item-wrap">
                     <button
                       type="button"
                       role="option"
                       aria-selected={active}
-                      disabled={!seeded}
-                      className={`sched-team-picker-item ${active ? "sched-team-picker-item-active" : ""} ${!seeded ? "sched-team-picker-item-disabled" : ""}`}
+                      className={`lineup-slot-menu-item ${active ? "is-active" : ""}`}
                       onClick={() => {
-                        if (!seeded) return;
-                        setSelectedTeamId(team.id);
-                        setTeamMenuOpen(false);
+                        setSelectedEntryId(entry.entryId);
+                        setSlotMenuOpen(false);
                       }}
                     >
-                      <TeamBadge teamId={team.id} size="sm" />
-                      <span>{team.name}</span>
-                      {active ? <Check size={14} strokeWidth={3} className="sched-team-picker-check" /> : null}
-                      {!seeded ? <span className="lineup-pool-soon">준비중</span> : null}
+                      <TeamBadge teamId={entry.teamId} size="sm" />
+                      <span className="lineup-slot-menu-name">{entry.name}</span>
+                      {active ? <Check size={14} strokeWidth={3} /> : null}
                     </button>
+                    <div className="lineup-slot-menu-actions">
+                      <button
+                        type="button"
+                        className="lineup-slot-action-btn"
+                        aria-label="이름 변경"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRenamingEntryId(entry.entryId);
+                          setRenameInput(entry.name);
+                          setSlotMenuOpen(false);
+                        }}
+                      >
+                        <Pencil size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        className="lineup-slot-action-btn lineup-slot-action-btn-danger"
+                        aria-label="삭제"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDeleteEntryId(entry.entryId);
+                          setSlotMenuOpen(false);
+                        }}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                   </li>
                 );
               })}
+              {entries.length < MAX_LINEUP_ENTRIES ? (
+                <li>
+                  <button
+                    type="button"
+                    className="lineup-slot-menu-item lineup-slot-menu-add"
+                    onClick={() => {
+                      setNewSlotTeamId(initialTeamId);
+                      setNewSlotName("");
+                      setNewSlotOpen(true);
+                      setSlotMenuOpen(false);
+                    }}
+                  >
+                    <Plus size={14} />
+                    <span>새 라인업 슬롯</span>
+                  </button>
+                </li>
+              ) : (
+                <li className="lineup-slot-menu-cap">최대 {MAX_LINEUP_ENTRIES}개까지 저장</li>
+              )}
             </ul>
           ) : null}
         </div>
@@ -914,6 +940,157 @@ export function LineupBuilderScreen() {
         pitcherSlots={pitcherSlots}
         playersById={playersById}
       />
+
+      {/* 새 슬롯 만들기 모달 */}
+      <ModalShell
+        open={newSlotOpen}
+        title="새 라인업 슬롯"
+        onClose={() => setNewSlotOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">선수 풀로 사용할 팀과 우리 팀명을 정해주세요.</p>
+          <div className="lineup-slot-team-grid">
+            {teams.map((team) => {
+              const seeded = seededTeamIds.has(team.id);
+              const active = team.id === newSlotTeamId;
+              return (
+                <button
+                  key={team.id}
+                  type="button"
+                  className={`lineup-slot-team-choice ${active ? "is-active" : ""} ${!seeded ? "is-disabled" : ""}`}
+                  disabled={!seeded}
+                  onClick={() => setNewSlotTeamId(team.id)}
+                >
+                  <TeamBadge teamId={team.id} size="sm" />
+                  <span>{team.shortName}</span>
+                </button>
+              );
+            })}
+          </div>
+          <label className="lineup-newslot-name-label" htmlFor="newslot-team-name">
+            팀명 (선택)
+          </label>
+          <input
+            id="newslot-team-name"
+            type="text"
+            className="lineup-rename-input"
+            value={newSlotName}
+            onChange={(e) => setNewSlotName(e.target.value)}
+            placeholder={`예) ${getTeam(newSlotTeamId).name}`}
+            maxLength={20}
+          />
+          <p className="lineup-newslot-name-hint">
+            비워두면 KBO 정식 팀명({getTeam(newSlotTeamId).name})으로 저장됩니다. 경기 화면에도 표시되는 이름입니다.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setNewSlotOpen(false)}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              onClick={() => {
+                const newEntry = createEmptyEntry(newSlotTeamId, newSlotName.trim() || undefined);
+                const next = upsertLineupEntry(newEntry);
+                setEntries(next);
+                setSelectedEntryId(newEntry.entryId);
+                setNewSlotOpen(false);
+              }}
+            >
+              만들기
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* 슬롯 이름 변경 모달 */}
+      <ModalShell
+        open={renamingEntryId !== null}
+        title="팀명 변경"
+        onClose={() => setRenamingEntryId(null)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">경기 화면에 표시될 우리 팀명을 입력하세요.</p>
+          <input
+            type="text"
+            className="lineup-rename-input"
+            value={renameInput}
+            onChange={(e) => setRenameInput(e.target.value)}
+            placeholder="팀명"
+            maxLength={20}
+            autoFocus
+          />
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setRenamingEntryId(null)}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              onClick={() => {
+                if (renamingEntryId && renameInput.trim()) {
+                  setEntries(renameLineupEntry(renamingEntryId, renameInput.trim()));
+                }
+                setRenamingEntryId(null);
+              }}
+            >
+              저장
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* 슬롯 삭제 확인 모달 */}
+      <ModalShell
+        open={confirmDeleteEntryId !== null}
+        title="라인업 삭제"
+        onClose={() => setConfirmDeleteEntryId(null)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            이 라인업을 삭제할까요?<br />
+            저장된 타순과 투수 라인업이 함께 사라집니다.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setConfirmDeleteEntryId(null)}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-destruct"
+              onClick={() => {
+                if (!confirmDeleteEntryId) return;
+                const next = deleteLineupEntry(confirmDeleteEntryId);
+                setEntries(next);
+                if (selectedEntryId === confirmDeleteEntryId) {
+                  setSelectedEntryId(next[0]?.entryId ?? null);
+                }
+                setConfirmDeleteEntryId(null);
+              }}
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+      </ModalShell>
     </AppShell>
   );
 }

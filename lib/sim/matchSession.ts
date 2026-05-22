@@ -1,0 +1,47 @@
+// 경기장 4단계 흐름 동안 매치 컨텍스트를 sessionStorage에 보존.
+// v1 스캐폴드 단계. v2에서 bp_matches 테이블로 이관.
+
+import type { SimGameInput, SimGameResult } from "./types";
+
+const KEY = "ballplay:match:current";
+
+export type MatchSession = {
+  myTeamId: string;
+  opponentTeamId: string;
+  seed: number;
+  input?: SimGameInput;
+  result?: SimGameResult;
+  startedAt: string;
+  // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
+  liveMatchId?: string;
+  liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행
+};
+
+export function loadMatchSession(): MatchSession | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as MatchSession;
+  } catch {
+    return null;
+  }
+}
+
+export function saveMatchSession(session: MatchSession): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(KEY, JSON.stringify(session));
+  } catch {
+    // ignore quota
+  }
+}
+
+export function clearMatchSession(): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(KEY);
+}
+
+export function generateSeed(): number {
+  return Math.floor(Math.random() * 2 ** 31);
+}

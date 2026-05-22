@@ -29,6 +29,21 @@
   margin-top: 14px;
 }
 
+/* PC 와이드 모드 — 카드 2열 그리드로 가로 공간 활용 */
+@media (min-width: 1025px) {
+  .phone-frame-wide .play-hub-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .phone-frame-wide .play-hub-header {
+    padding-top: 32px;
+  }
+  .phone-frame-wide .play-hub-header h1 {
+    font-size: 26px;
+  }
+}
+
 .phone-frame-dark .play-hub-card {
   display: flex;
   align-items: center;
@@ -1281,4 +1296,238 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--hd-accent, #ff6a2b);
+}
+
+/* ============================================================
+ * 라인업 슬롯 picker — 헤더 좌측 드롭다운 (다중 슬롯 선택/생성/이름/삭제)
+ * ============================================================ */
+.phone-frame-dark .lineup-slot-picker {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 240px;
+}
+
+.phone-frame-dark .lineup-slot-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 10px;
+  color: var(--hd-text-primary);
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+  max-width: 100%;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-dark .lineup-slot-trigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.phone-frame-dark .lineup-slot-trigger-name {
+  font-size: 13px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.phone-frame-dark .lineup-slot-trigger-empty {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .lineup-slot-chevron-open {
+  transform: rotate(180deg);
+  transition: transform 0.15s ease;
+}
+
+.phone-frame-dark .lineup-slot-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 240px;
+  max-width: 280px;
+  margin: 0;
+  padding: 6px;
+  background: var(--hd-bg-card);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-dark .lineup-slot-menu-item-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-frame-dark .lineup-slot-menu-item {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--hd-text-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background 0.15s ease;
+  min-width: 0;
+}
+
+.phone-frame-dark .lineup-slot-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.phone-frame-dark .lineup-slot-menu-item.is-active {
+  background: rgba(255, 106, 43, 0.14);
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .lineup-slot-menu-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .lineup-slot-menu-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.phone-frame-dark .lineup-slot-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--hd-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-dark .lineup-slot-action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .lineup-slot-action-btn-danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+  color: #fca5a5;
+}
+
+.phone-frame-dark .lineup-slot-menu-add {
+  color: var(--hd-accent, #ff6a2b);
+  font-weight: 800;
+}
+
+.phone-frame-dark .lineup-slot-menu-cap {
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--hd-text-muted, #6b7280);
+  text-align: center;
+}
+
+/* ── 새 슬롯 만들기: 팀 선택 grid ── */
+.phone-frame-dark .lineup-slot-team-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.phone-frame-dark .lineup-slot-team-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--hd-bg-card);
+  border: 1.5px solid var(--hd-border-soft);
+  border-radius: 8px;
+  color: var(--hd-text-primary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.phone-frame-dark .lineup-slot-team-choice.is-active {
+  border-color: var(--hd-accent, #ff6a2b);
+  background: rgba(255, 106, 43, 0.1);
+}
+
+.phone-frame-dark .lineup-slot-team-choice.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 이름 변경 input ── */
+.phone-frame-dark .lineup-rename-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 8px;
+  color: var(--hd-text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.phone-frame-dark .lineup-rename-input:focus {
+  outline: none;
+  border-color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .lineup-newslot-name-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .lineup-newslot-name-hint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--hd-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── confirm modal primary 액션 (새 슬롯·이름 저장) ── */
+.phone-frame-dark .lineup-confirm-primary {
+  padding: 10px 18px;
+  background: var(--hd-accent, #ff6a2b);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.phone-frame-dark .lineup-confirm-primary:hover {
+  filter: brightness(1.1);
 }
