@@ -128,12 +128,18 @@ export function PlayScreen() {
   const [hydrated, setHydrated] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [speed, setSpeed] = useState<0.5 | 1 | 2 | 4>(1);
-  // 진행 단계 — BATTER → OUTCOME → 필요시 INNING_END/PITCHER_CHANGE → 다음 타자 / 마지막은 GAME_END
+  // 진행 모드 — normal(현재 기본) / fast(2배) / live(실시간 중계, SITUATION phase + 단계 narration)
+  const [mode, setMode] = useState<"normal" | "fast" | "live">("normal");
+  // 진행 단계 — live에선 SITUATION → BATTER → OUTCOME → … / normal·fast는 SITUATION 스킵
   const [phase, setPhase] = useState<
-    "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE" | "GAME_END"
+    "SITUATION" | "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE" | "GAME_END"
   >("BATTER");
-  const showOutcome = phase !== "BATTER"; // 라인업·다이아몬드 상태에서 결과 반영 여부
+  // live 모드의 OUTCOME 안에서 단계적 narration 진행: 0=결과 / 1=홈인 / 2=점수보드.
+  // 점수 없는 결과는 0에서 바로 다음 타자로 진행.
+  const [outcomeStep, setOutcomeStep] = useState<0 | 1 | 2>(0);
+  // 라인업·다이아몬드 상태에서 결과 반영 여부.
+  // SITUATION/BATTER phase에선 아직 결과 발표 전이라 라인업에 결과 표시 안 함 (스포 방지).
+  const showOutcome = phase !== "BATTER" && phase !== "SITUATION";
 
   // 라이브 매치 모드 — liveStartAt까지 대기 후 진행. 속도/일시정지 컨트롤 잠금.
   const isLive = !!session?.liveMatchId;
@@ -154,13 +160,18 @@ export function PlayScreen() {
     setSession(next);
     setHydrated(true);
 
-    // 라이브 모드: startAt이 미래면 그때까지 playing=false 유지하고 카운트다운 표시
+    // 라이브 매치(친구 대결)는 중계 모드로 시작 — 양쪽 클라이언트가 같은 진행 속도 유지.
+    // mode는 시뮬 결과에 영향 없고 표시 페이스만 결정하므로 sync에 안전.
+    if (next.liveMatchId) {
+      setMode("live");
+    }
+
+    // 카운트다운: startAt이 미래면 그때까지 playing=false
     if (next.liveMatchId && next.liveStartAt) {
       const startMs = new Date(next.liveStartAt).getTime();
       const now = Date.now();
       if (now < startMs) {
         setPlaying(false);
-        setSpeed(1);
       }
     }
   }, [router]);
@@ -238,23 +249,27 @@ export function PlayScreen() {
     if (phase === "GAME_END") return; // 게임 종료 페이즈에선 진행 멈춤
     if (cursor > events.length) return;
 
-    // 페이즈별 시간 (ms). INNING_END/PITCHER_CHANGE는 정보 인지 위해 길게.
-    // GAME_END는 위에서 early return이라 여기서 빠짐.
+    // 모드별 시간 배수 — normal=기본, fast=절반, live=느림(중계 호흡)
+    const modeMul = mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+
+    // 페이즈별 base 시간 (ms). live 모드의 OUTCOME sub-step도 같은 시간 단위.
     const intervalByPhase: Record<
-      "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE",
+      "SITUATION" | "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE",
       number
     > = {
-      BATTER: 700 / speed,
-      OUTCOME: 700 / speed,
-      INNING_END: 1100 / speed,
-      PITCHER_CHANGE: 1100 / speed
+      SITUATION: 1500 * modeMul,
+      BATTER: 700 * modeMul,
+      OUTCOME: 700 * modeMul,
+      INNING_END: 1100 * modeMul,
+      PITCHER_CHANGE: 1100 * modeMul
     };
 
     const handle = window.setTimeout(() => {
-      // cursor=0: 게임 시작 직전 → 첫 타자(events[0]) BATTER 페이즈로 진입
+      // cursor=0: 게임 시작 직전 → 첫 타자 진입. live는 SITUATION부터.
       if (cursor === 0) {
         setCursor(1);
-        setPhase("BATTER");
+        setPhase(mode === "live" ? "SITUATION" : "BATTER");
+        setOutcomeStep(0);
         return;
       }
 
@@ -265,13 +280,23 @@ export function PlayScreen() {
       const pitcherChanged =
         !!next && !inningEnded && next.ab.pitcherId !== current.ab.pitcherId;
 
+      if (phase === "SITUATION") {
+        setPhase("BATTER");
+        return;
+      }
       if (phase === "BATTER") {
         setPhase("OUTCOME");
+        setOutcomeStep(0);
         return;
       }
       if (phase === "OUTCOME") {
+        // live 모드 + 점수 들어옴 + 아직 sub-step 남음 → 단계적 진행
+        if (mode === "live" && current.ab.runsScored > 0 && outcomeStep < 2) {
+          setOutcomeStep((s) => (s + 1) as 0 | 1 | 2);
+          return;
+        }
+        // 다음 타자/이닝/투수교체 분기
         if (!next) {
-          // 마지막 타석 결과까지 표시 끝 → GAME_END 페이즈 (INNING_END 스킵)
           setPhase("GAME_END");
           return;
         }
@@ -284,7 +309,8 @@ export function PlayScreen() {
           return;
         }
         setCursor((c) => c + 1);
-        setPhase("BATTER");
+        setPhase(mode === "live" ? "SITUATION" : "BATTER");
+        setOutcomeStep(0);
         return;
       }
       if (phase === "INNING_END") {
@@ -293,18 +319,20 @@ export function PlayScreen() {
           return;
         }
         setCursor((c) => c + 1);
-        setPhase("BATTER");
+        setPhase(mode === "live" ? "SITUATION" : "BATTER");
+        setOutcomeStep(0);
         return;
       }
       if (phase === "PITCHER_CHANGE") {
         setCursor((c) => c + 1);
-        setPhase("BATTER");
+        setPhase(mode === "live" ? "SITUATION" : "BATTER");
+        setOutcomeStep(0);
         return;
       }
-    }, intervalByPhase[phase]);
+    }, intervalByPhase[phase as keyof typeof intervalByPhase]);
 
     return () => window.clearTimeout(handle);
-  }, [playing, cursor, events, events.length, speed, hydrated, phase]);
+  }, [playing, cursor, events, events.length, mode, hydrated, phase, outcomeStep]);
 
   if (!hydrated || !session?.result) {
     return (
@@ -372,18 +400,103 @@ export function PlayScreen() {
     const battingTeamBatters = current.half === "top" ? input.away.batters : input.home.batters;
     const orderIdx = battingTeamBatters.findIndex((b) => b.playerId === current.ab.batterId);
     const orderPrefix = orderIdx >= 0 ? `${orderIdx + 1}번 타자 ` : "";
-    const batterName =
-      battingTeamBatters.find((b) => b.playerId === current.ab.batterId)?.name ?? "타자";
+    const batter = battingTeamBatters.find((b) => b.playerId === current.ab.batterId);
+    const batterName = batter?.name ?? "타자";
     const outcomeLabel =
       OUTCOME_LABEL[current.ab.outcome] +
       (current.ab.runsScored > 0 ? ` (+${current.ab.runsScored})` : "");
 
+    // ───────── SITUATION: 이닝·점수·주자·아웃 (live 모드만) ─────────
+    if (phase === "SITUATION") {
+      const half = current.half === "top" ? "초" : "말";
+      const before = current.ab.baseStateBefore;
+      const baseRunners = [
+        before.first ? "1루" : null,
+        before.second ? "2루" : null,
+        before.third ? "3루" : null
+      ].filter(Boolean);
+      const runnerText = baseRunners.length > 0 ? `주자 ${baseRunners.join("·")}` : "주자 없음";
+      const outsBefore = current.ab.outsBefore;
+      const scoreBefore = current.scoreSnapshot;
+      const diff = scoreBefore.home - scoreBefore.away;
+      const scoreLabel =
+        diff === 0
+          ? `${scoreBefore.home}-${scoreBefore.away} 동점`
+          : `${Math.max(scoreBefore.home, scoreBefore.away)}-${Math.min(scoreBefore.home, scoreBefore.away)}`;
+      return {
+        text: `${current.inning}회${half} ${outsBefore}아웃 · ${runnerText} · ${scoreLabel}`,
+        variant: "default"
+      };
+    }
+
+    // ───────── BATTER: 타순·이름 (+ live면 타율) ─────────
     if (phase === "BATTER") {
+      if (mode === "live" && batter) {
+        const avg = batter.avg.toFixed(3).replace(/^0/, "");
+        return { text: `${orderPrefix}${batterName} (타율 ${avg})`, variant: "default" };
+      }
       return { text: `${orderPrefix}${batterName}`, variant: "default" };
     }
+
+    // ───────── OUTCOME: 결과 / live 단계 narration ─────────
     if (phase === "OUTCOME") {
+      // live 모드 + 점수 들어옴 → outcomeStep에 따라 단계 narration
+      if (mode === "live" && current.ab.runsScored > 0) {
+        if (outcomeStep === 0) {
+          return { text: `${orderPrefix}${batterName} - ${OUTCOME_LABEL[current.ab.outcome]}!`, variant: "default" };
+        }
+        if (outcomeStep === 1) {
+          // 홈인 주자 식별 — baseStateBefore에 있고 baseStateAfter에 없거나 진루로 사라진 경우
+          const homedRunners: string[] = [];
+          const before = current.ab.baseStateBefore;
+          const after = current.ab.baseStateAfter;
+          // HR은 모든 주자 + 타자 본인
+          if (current.ab.outcome === "HR") {
+            if (before.third) homedRunners.push(playerNameById(before.third) ?? "3루주자");
+            if (before.second) homedRunners.push(playerNameById(before.second) ?? "2루주자");
+            if (before.first) homedRunners.push(playerNameById(before.first) ?? "1루주자");
+            homedRunners.push(batterName);
+          } else {
+            // 일반 안타·SF — 3루주자가 사라졌으면 홈인 (가장 흔한 케이스)
+            if (before.third && before.third !== after.first && before.third !== after.second && before.third !== after.third) {
+              homedRunners.push(playerNameById(before.third) ?? "3루주자");
+            }
+            // 2루주자가 사라졌고 after에서 보이지 않으면 (장타) 홈인
+            if (before.second && before.second !== after.first && before.second !== after.second && before.second !== after.third) {
+              homedRunners.push(playerNameById(before.second) ?? "2루주자");
+            }
+            // 1루주자도 동일 (3루타·HR이 아닌 한)
+            if (before.first && before.first !== after.first && before.first !== after.second && before.first !== after.third) {
+              homedRunners.push(playerNameById(before.first) ?? "1루주자");
+            }
+          }
+          const runnerLabel = homedRunners.length > 0 ? homedRunners.join("·") : batterName;
+          const verb = current.ab.outcome === "HR" ? "모두 홈인" : "홈인";
+          return { text: `${runnerLabel} ${verb}! ${current.ab.runsScored}점 추가`, variant: "default" };
+        }
+        if (outcomeStep === 2) {
+          // 스코어보드 + 변동 라벨 (역전/동점/리드)
+          const after = {
+            home: current.scoreSnapshot.home + (current.half === "bottom" ? current.ab.runsScored : 0),
+            away: current.scoreSnapshot.away + (current.half === "top" ? current.ab.runsScored : 0)
+          };
+          const before = current.scoreSnapshot;
+          let prefix = "";
+          if (before.home === before.away && after.home !== after.away) prefix = "리드, ";
+          else if (after.home === after.away && before.home !== before.away) prefix = "동점! ";
+          else if (
+            (before.home > before.away && after.away > after.home) ||
+            (before.away > before.home && after.home > after.away)
+          ) {
+            prefix = "역전! ";
+          }
+          return { text: `${prefix}${after.away}-${after.home}`, variant: "default" };
+        }
+      }
+      // 일반/빠른 모드 또는 점수 없는 결과
       return { text: `${orderPrefix}${batterName} - ${outcomeLabel}`, variant: "default" };
     }
+
     if (phase === "INNING_END") {
       return { text: "쓰리아웃 · 공수교대", variant: "inning" };
     }
@@ -404,6 +517,12 @@ export function PlayScreen() {
     }
     return { text: "", variant: "default" };
   })();
+
+  // playerId → 이름 lookup (홈인 주자 텍스트용)
+  function playerNameById(playerId: string): string | null {
+    const allBatters = [...input.home.batters, ...input.away.batters];
+    return allBatters.find((b) => b.playerId === playerId)?.name ?? null;
+  }
 
   const renderLineupRow = (
     side: "home" | "away",
@@ -544,16 +663,35 @@ export function PlayScreen() {
                   {playing ? <Pause size={16} /> : <Play size={16} />}
                   <span>{playing ? "일시정지" : "재생"}</span>
                 </button>
-                <button
-                  type="button"
-                  className="stadium-play-btn"
-                  onClick={() =>
-                    setSpeed((s) => (s === 0.5 ? 1 : s === 1 ? 2 : s === 2 ? 4 : 0.5))
-                  }
-                >
-                  <FastForward size={16} />
-                  <span>×{speed}</span>
-                </button>
+                <div className="stadium-play-mode" role="radiogroup" aria-label="진행 모드">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={mode === "fast"}
+                    className={`stadium-play-mode-btn ${mode === "fast" ? "is-active" : ""}`}
+                    onClick={() => setMode("fast")}
+                  >
+                    <FastForward size={12} /> 빠른
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={mode === "normal"}
+                    className={`stadium-play-mode-btn ${mode === "normal" ? "is-active" : ""}`}
+                    onClick={() => setMode("normal")}
+                  >
+                    일반
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={mode === "live"}
+                    className={`stadium-play-mode-btn ${mode === "live" ? "is-active" : ""}`}
+                    onClick={() => setMode("live")}
+                  >
+                    중계
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="stadium-play-btn stadium-play-btn-skip"

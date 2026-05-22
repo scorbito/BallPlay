@@ -144,19 +144,13 @@ export async function signInWithOAuthAction(provider: OAuthProvider) {
       ? { prompt: "login" }
       : undefined;
 
-  // 현재 익명 세션이 있으면 link 흐름, 아니면 일반 sign in
+  // 익명 세션이 있으면 먼저 정리 — linkIdentity는 콜백 단계에서 'already linked'
+  // 에러가 잘 발생함. 우리 정책상 익명은 DB 데이터 없음(RLS 차단), localStorage만 사용.
+  // user.id를 유지할 이유가 없어 그냥 익명 세션 폐기 + 정식 user로 새로 sign-in.
+  // 라인업은 localStorage 그대로 남아있어 정식 로그인 후 자동 DB sync.
   const { data: authData } = await supabase.auth.getUser();
-  const isAnonymous = Boolean(authData?.user?.is_anonymous);
-
-  if (isAnonymous) {
-    const { data, error } = await supabase.auth.linkIdentity({
-      provider,
-      options: { redirectTo: `${origin}/auth/callback?upgrade=1`, scopes, queryParams }
-    });
-    if (error || !data?.url) {
-      redirect(`/login?error=${encodeURIComponent(error?.message ?? "계정 연동에 실패했습니다.")}`);
-    }
-    redirect(data.url);
+  if (authData?.user?.is_anonymous) {
+    await supabase.auth.signOut().catch(() => {});
   }
 
   const { data, error } = await supabase.auth.signInWithOAuth({

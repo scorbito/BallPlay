@@ -36,8 +36,12 @@ const PITCH_COUNT_BY_OUTCOME: Partial<Record<AtBatOutcome, number>> = {
 
 const DEFAULT_PITCHES_PER_AB = 3;
 
-// 교체 임계값. 남은 스태미나가 이 값 미만이면 다음 타자 전에 교체.
-const SWAP_THRESHOLD = 8;
+// 교체 임계값. 남은 스태미나가 전체의 이 비율 미만이면 다음 타자 전에 교체.
+// 절대값(예: 8) 고정 시 stamina 큰 선발(예: 108)이 한 경기를 다 던져버리는 문제 발생 →
+// 비율 기반으로 변경. 0.20 = 80% 소진 시 교체.
+// KBO 평균 선발(stamina ~95) → 약 24 PBR (~5~6이닝)에 교체. 마무리(stamina ~20) →
+// 약 5 PBR(1이닝)에 교체로 자연스러운 운영.
+const SWAP_RATIO = 0.20;
 
 export function createBullpenState(team: SimTeamInput): BullpenState {
   const closer = team.bullpen.find((p) => p.role === "CL") ?? null;
@@ -77,7 +81,8 @@ export function tickAndMaybeSwap(
   }
 
   const remaining = current.staminaPitches - usage.pitchesThrown;
-  if (remaining < SWAP_THRESHOLD && state.available.length > 0) {
+  const swapAt = current.staminaPitches * SWAP_RATIO;
+  if (remaining < swapAt && state.available.length > 0) {
     state.currentPitcher = state.available.shift()!;
   }
 }

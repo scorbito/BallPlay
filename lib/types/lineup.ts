@@ -78,15 +78,18 @@ export const PITCHER_STORAGE_PREFIX = "ballplay:lineup:pitcher:";
  *  UI상 "슬롯 1/2/3"으로 표시. 같은 팀 여러 변형(주력/테스트 등) 저장 가능. */
 export type LineupEntry = {
   entryId: string;
-  name: string;             // 사용자 지정 (또는 기본값: "두산 라인업 #1")
+  name: string;             // 사용자 지정 (또는 기본값: KBO 정식 팀명)
   teamId: string;
   batting: SavedLineup;
   pitching: SavedPitcherLineup | null;
   updatedAt: string;
+  /** 공개 풀 매칭 대상으로 노출 (로그인 사용자만 / 9명 완성된 라인업만).
+   *  localStorage에도 캐시되지만 source of truth는 bp_lineups.is_published. */
+  isPublished?: boolean;
 };
 
 export const MY_LINEUPS_STORAGE_KEY = "ballplay:my-lineups";
-export const MAX_LINEUP_ENTRIES = 3; // 기획서 §9.2 무료 로그인 기준
+export const MAX_LINEUP_ENTRIES = 5; // 테스트 기간 동안 5로 확장 (정식 무료 기준은 3)
 
 export type LineupMode = "batter" | "pitcher";
 

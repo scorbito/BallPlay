@@ -4,14 +4,14 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, Check, ChevronRight, Download, Settings } from "lucide-react";
+import { Camera, ChevronRight, Download, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { Card } from "@/components/common/Card";
 import { ModalShell } from "@/components/common/ModalShell";
 import { Button } from "@/components/common/Button";
 import { InstallAppModal } from "@/components/domain/InstallAppModal";
-import { getTeam, teams } from "@/lib/constants/teams";
+import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { useInstallPrompt } from "@/lib/hooks/useInstallPrompt";
 import { updateAvatarAction, updateProfileAction } from "@/lib/actions/profile";
@@ -28,7 +28,6 @@ export function MyScreen() {
   const [editing, setEditing] = useState(false);
   const [installModalOpen, setInstallModalOpen] = useState(false);
   const [nickname, setNickname] = useState(profile.nickname);
-  const [selectedTeamId, setSelectedTeamId] = useState(profile.mainTeamId);
   const [avatarUrl, setAvatarUrl] = useState<string | null | undefined>(profile.avatarUrl);
   const [bio, setBio] = useState(profile.bio ?? "");
   const [uploading, startUpload] = useTransition();
@@ -38,10 +37,9 @@ export function MyScreen() {
   useEffect(() => {
     if (!editing) return;
     setNickname(profile.nickname);
-    setSelectedTeamId(profile.mainTeamId);
     setAvatarUrl(profile.avatarUrl);
     setBio(profile.bio ?? "");
-  }, [editing, profile.mainTeamId, profile.nickname, profile.avatarUrl, profile.bio]);
+  }, [editing, profile.nickname, profile.avatarUrl, profile.bio]);
 
   const handleAvatarPick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -80,7 +78,7 @@ export function MyScreen() {
           <div>
             <h1>{profile.nickname}</h1>
             <span className="profile-hero-team">
-              <span className="profile-hero-team-text">내 팀 {profileTeam.name}</span>
+              <span className="profile-hero-team-text">응원팀 {profileTeam.name}</span>
               <TeamBadge teamId={profile.mainTeamId} size="sm" />
             </span>
           </div>
@@ -172,34 +170,15 @@ export function MyScreen() {
             />
             <p className="field-hint">{bio.length}/150</p>
           </label>
-          <div className="field-group">
-            <span>내 팀</span>
-            <div className="profile-team-grid">
-              {teams.map((team) => {
-                const active = selectedTeamId === team.id;
-                return (
-                  <button
-                    className={active ? "profile-team-choice profile-team-choice-active" : "profile-team-choice"}
-                    key={team.id}
-                    type="button"
-                    onClick={() => setSelectedTeamId(team.id)}
-                  >
-                    <TeamBadge teamId={team.id} size="sm" />
-                    <strong>{team.shortName}</strong>
-                    {active ? <Check size={14} className="profile-team-check" strokeWidth={3} /> : null}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <p className="field-hint">응원팀 변경은 &lsquo;오늘은 승요&rsquo; 앱에서 할 수 있어요.</p>
           <Button disabled={savingProfile} onClick={() => {
             const nextNickname = nickname.trim() || profile.nickname;
             const trimmedBio = bio.replace(/[\r\n]+/g, " ").trim().slice(0, 150);
             const nextBio = trimmedBio.length > 0 ? trimmedBio : null;
             startSaveProfile(async () => {
               try {
-                await updateProfileAction({ nickname: nextNickname, mainTeamId: selectedTeamId, bio: nextBio });
-                updateProfile({ nickname: nextNickname, mainTeamId: selectedTeamId, bio: nextBio });
+                await updateProfileAction({ nickname: nextNickname, bio: nextBio });
+                updateProfile({ nickname: nextNickname, bio: nextBio });
                 setEditing(false);
                 router.refresh();
               } catch (err) {

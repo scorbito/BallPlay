@@ -101,26 +101,40 @@
 }
 
 .login-mascot {
-  width: 96px;
-  height: 96px;
+  width: 140px;
+  height: 140px;
   margin: 0 auto;
-  filter: drop-shadow(0 0 18px rgba(255, 106, 43, 0.55));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 6px 16px rgba(255, 106, 43, 0.35));
 }
 
+.login-mascot img,
 .login-mascot svg {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   display: block;
 }
 
 .login-title {
-  margin: 6px 0 14px;
+  margin: 6px 0 8px;
   font-size: 22px;
   font-weight: 800;
   text-align: center;
   letter-spacing: -0.3px;
   line-height: 1.35;
   color: #ffffff;
+}
+
+.login-sub {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: rgba(247, 249, 252, 0.65);
 }
 
 /* OAuth buttons */

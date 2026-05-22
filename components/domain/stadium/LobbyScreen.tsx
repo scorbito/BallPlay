@@ -1,21 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { KeyRound, Swords, Users } from "lucide-react";
+import { Bot, ChevronRight, KeyRound, Swords, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
+import { PublishedLineupList } from "./PublishedLineupList";
 
-// v1 스캐폴드: 매칭풀에 실제 다른 사용자 라인업이 없으므로 10팀 자체를 도전 대상으로 표시.
-// 각 팀의 로스터에서 자동으로 라인업이 짜여 상대로 등장.
+// 경기장 메인 — 공개 라인업이 메인 콘텐츠.
+//   1) 친구와 대결 (작은 진입점 2-up)
+//   2) 공개 라인업 풀 (메인, 상위 6개 미리보기)
+//   3) AI와 대결 (하단 그리드)
 export function LobbyScreen() {
   return (
     <AppShell activeTab="stadium" title="경기장" backHref="/" theme="dark">
-      <header className="stadium-lobby-header">
-        <h1 className="stadium-h1">매칭풀</h1>
-        <p className="stadium-sub">도전할 팀을 골라 내 라인업을 붙여보세요.</p>
-      </header>
-
+      {/* 1. 친구와 대결 — 컴팩트 2-up */}
       <div className="stadium-lobby-live-row">
         <Link href="/stadium/live/new" className="stadium-lobby-live" prefetch>
           <div className="stadium-lobby-live-icon" aria-hidden="true">
@@ -37,27 +36,49 @@ export function LobbyScreen() {
         </Link>
       </div>
 
-      <section className="stadium-lobby-grid">
-        {teams.map((team) => (
-          <Link
-            key={team.id}
-            href={`/stadium/enter?opponent=${team.id}`}
-            className="stadium-lobby-card"
-            prefetch
-          >
-            <span
-              className="stadium-lobby-card-bar"
-              style={{ background: team.color }}
-              aria-hidden="true"
-            />
-            <TeamBadge teamId={team.id} size="md" />
-            <div className="stadium-lobby-card-body">
-              <strong>{team.name}</strong>
-              <span>자동 생성 라인업</span>
-            </div>
-            <Swords size={16} className="stadium-lobby-card-icon" />
+      {/* 2. 공개 라인업 풀 — 메인 영역 */}
+      <section className="stadium-lobby-section stadium-lobby-section-main">
+        <header className="stadium-lobby-section-head">
+          <h2 className="stadium-lobby-section-title">공개 라인업</h2>
+          <Link href="/stadium/discover" className="stadium-lobby-section-more" prefetch>
+            전체 보기
+            <ChevronRight size={14} />
           </Link>
-        ))}
+        </header>
+        <PublishedLineupList maxItems={6} showHeader={false} />
+      </section>
+
+      {/* 3. AI와 대결 — 하단 그리드 */}
+      <section className="stadium-lobby-section">
+        <header className="stadium-lobby-section-head">
+          <h2 className="stadium-lobby-section-title">
+            <Bot size={14} />
+            AI와 대결
+          </h2>
+          <span className="stadium-lobby-section-sub">자동 생성된 팀 라인업과 시뮬</span>
+        </header>
+        <div className="stadium-lobby-grid">
+          {teams.map((team) => (
+            <Link
+              key={team.id}
+              href={`/stadium/enter?opponent=${team.id}`}
+              className="stadium-lobby-card"
+              prefetch
+            >
+              <span
+                className="stadium-lobby-card-bar"
+                style={{ background: team.color }}
+                aria-hidden="true"
+              />
+              <TeamBadge teamId={team.id} size="md" />
+              <div className="stadium-lobby-card-body">
+                <strong>{team.name}</strong>
+                <span>자동 생성 라인업</span>
+              </div>
+              <Swords size={16} className="stadium-lobby-card-icon" />
+            </Link>
+          ))}
+        </div>
       </section>
     </AppShell>
   );

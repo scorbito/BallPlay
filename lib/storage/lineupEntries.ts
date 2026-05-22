@@ -100,7 +100,8 @@ export function createEmptyEntry(teamId: string, nameSuggestion?: string): Lineu
     teamId,
     batting: { teamId, slots: [], useDH: true, updatedAt: now },
     pitching: null,
-    updatedAt: now
+    updatedAt: now,
+    isPublished: true // 디폴트 공개 — 사용자가 빌더에서 직접 비공개로 바꿀 수 있음
   };
 }
 

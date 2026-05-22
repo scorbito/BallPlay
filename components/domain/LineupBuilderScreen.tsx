@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -28,13 +28,8 @@ import {
   type SavedLineup,
   type SavedPitcherLineup
 } from "@/lib/types/lineup";
-import {
-  loadLineupEntries,
-  upsertLineupEntry,
-  deleteLineupEntry,
-  renameLineupEntry,
-  createEmptyEntry
-} from "@/lib/storage/lineupEntries";
+import { createEmptyEntry } from "@/lib/storage/lineupEntries";
+import { useLineupSync } from "@/lib/storage/useLineupSync";
 
 const ORDERS: LineupOrder[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -93,8 +88,17 @@ export function LineupBuilderScreen() {
   // 시드가 있는 팀으로 기본값 — 사용자의 메인팀이 시드 안 됐으면 두산
   const initialTeamId = seededTeamIds.has(profile.mainTeamId) ? profile.mainTeamId : "doosan";
 
-  // 다중 라인업 슬롯 (entries) — localStorage 마이그 포함
-  const [entries, setEntries] = useState<LineupEntry[]>([]);
+  // 다중 라인업 슬롯 (entries) — useLineupSync가 localStorage + Supabase DB 양방향 sync.
+  // 비로그인이면 localStorage만, 로그인이면 첫 진입 시 마이그레이션 + 이후 양방향.
+  const {
+    entries,
+    status: syncStatus,
+    syncedUpsert,
+    syncedDelete,
+    syncedRename,
+    localUpsertEntry,
+    togglePublished
+  } = useLineupSync();
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const currentEntry = useMemo(
     () => entries.find((e) => e.entryId === selectedEntryId) ?? null,
@@ -143,14 +147,11 @@ export function LineupBuilderScreen() {
     return () => document.removeEventListener("mousedown", handler);
   }, [slotMenuOpen]);
 
-  // 마운트 시 슬롯 entries 로드 + 첫 entry 자동 선택
+  // entries가 로드되면 첫 entry 자동 선택 (이미 선택된 게 있으면 유지)
   useEffect(() => {
-    const loaded = loadLineupEntries();
-    setEntries(loaded);
-    if (loaded.length > 0) {
-      setSelectedEntryId(loaded[0].entryId);
-    }
-  }, []);
+    if (selectedEntryId) return;
+    if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
+  }, [entries, selectedEntryId]);
 
   const roster = useMemo(() => getRoster(selectedTeamId), [selectedTeamId]);
   const playersById = useMemo(() => {
@@ -224,10 +225,18 @@ export function LineupBuilderScreen() {
       },
       updatedAt: now
     };
-    setEntries(upsertLineupEntry(updated));
-  }, [slots, useDH, hydratedEntryId]); // currentEntry는 의도적으로 deps 제외 (id로 추적)
+    // 타선 9명 완성됐을 때만 DB 동기화. 미완성은 localStorage만 (호출 빈도 감소).
+    // DB엔 항상 "마지막 완성 시점의 9명 라인업"만 남아있음 → Discover에서 미완성 노출 X.
+    if (filledSlots.length === 9) {
+      syncedUpsert(updated);
+    } else {
+      localUpsertEntry(updated);
+    }
+  }, [slots, useDH, hydratedEntryId]); // currentEntry/syncedUpsert는 의도적으로 deps 제외 (id로 추적)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // 투수 라인업 변경 → 현재 entry의 pitching 업데이트 + 저장.
+  // 타선이 9명일 때만 DB sync. 타선 미완성이면 localStorage만.
   useEffect(() => {
     if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
     const hasAny = pitcherSlots.some(Boolean);
@@ -239,7 +248,13 @@ export function LineupBuilderScreen() {
         : null,
       updatedAt: now
     };
-    setEntries(upsertLineupEntry(updated));
+    const batterFilled = (currentEntry.batting?.slots?.length ?? 0) === 9;
+    if (batterFilled) {
+      syncedUpsert(updated);
+    } else {
+      localUpsertEntry(updated);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pitcherSlots, hydratedEntryId]);
 
   // 모드별 배치된 선수 ID 집합 — 중복 방지에 사용
@@ -526,6 +541,40 @@ export function LineupBuilderScreen() {
   return (
     <AppShell activeTab="play" title="라인업 짜기" theme="dark" hideHeader wide>
       <header className="lineup-header lineup-header-no-back">
+        {/* 헤더 좌측: 공개/비공개 토글 (이 슬롯의 속성, 액션) */}
+        {(() => {
+          if (!currentEntry) return null;
+          const filled = (currentEntry.batting?.slots?.length ?? 0) === 9;
+          const isLoggedIn = syncStatus !== "local-only";
+          const isOn = !!currentEntry.isPublished;
+          // 끄기는 항상 가능, 켜기만 조건 검사
+          const disabled = !isLoggedIn || (!isOn && !filled);
+          const tip = !isLoggedIn
+            ? "로그인하면 공개할 수 있어요"
+            : isOn
+              ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로"
+              : !filled
+                ? "타선 9명을 채워야 공개할 수 있어요"
+                : "공개로 바꾸면 다른 사람이 도전할 수 있어요";
+          return (
+            <button
+              type="button"
+              className={`lineup-publish-toggle ${isOn ? "is-on" : ""}`}
+              disabled={disabled}
+              title={tip}
+              onClick={async () => {
+                if (!currentEntry) return;
+                const res = await togglePublished(currentEntry.entryId, !isOn);
+                if (!res.ok) showToast(res.error ?? "공개 상태 변경 실패");
+                else showToast(!isOn ? "이 라인업을 공개로 바꿨어요" : "비공개로 바꿨어요");
+              }}
+            >
+              {isOn ? <Eye size={12} /> : <EyeOff size={12} />}
+              <span>{isOn ? "공개" : "비공개"}</span>
+            </button>
+          );
+        })()}
+
         {/* 슬롯 picker — 현재 슬롯 + 드롭다운으로 다른 슬롯 / 새 슬롯 / 이름 편집 / 삭제 */}
         <div className="lineup-slot-picker" ref={slotPickerRef}>
           <button
@@ -617,31 +666,23 @@ export function LineupBuilderScreen() {
             </ul>
           ) : null}
         </div>
-        <div className="lineup-mode-toggle" role="tablist" aria-label="라인업 종류">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "batter"}
-            className={mode === "batter" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
-            onClick={() => {
-              setMode("batter");
-              setSwapSource(null);
-            }}
-          >
-            타자
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "pitcher"}
-            className={mode === "pitcher" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
-            onClick={() => {
-              setMode("pitcher");
-              setSwapSource(null);
-            }}
-          >
-            투수
-          </button>
+        {/* 헤더 우측: 동기화 상태 배지 (mode toggle은 공유 버튼 옆으로 이동) */}
+        <div className={`lineup-sync-badge is-${syncStatus}`} title={
+          syncStatus === "local-only" ? "이 기기에만 저장 — 로그인하면 다른 기기에서도 사용 가능" :
+          syncStatus === "synced" ? "DB와 동기화됨 — 다른 기기에서도 사용 가능" :
+          syncStatus === "loading" ? "동기화 중..." :
+          "동기화 실패 (이 기기 저장은 정상)"
+        }>
+          {syncStatus === "loading" ? <Loader2 size={12} className="lineup-sync-spin" /> :
+           syncStatus === "synced" ? <Cloud size={12} /> :
+           syncStatus === "local-only" ? <HardDrive size={12} /> :
+           <CloudOff size={12} />}
+          <span>{
+            syncStatus === "loading" ? "동기화 중" :
+            syncStatus === "synced" ? "동기화됨" :
+            syncStatus === "local-only" ? "이 기기만" :
+            "동기화 실패"
+          }</span>
         </div>
       </header>
 
@@ -671,6 +712,33 @@ export function LineupBuilderScreen() {
             삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>해주세요.
           </p>
           <div className="lineup-action-buttons">
+            {/* 타자/투수 토글 — 공유 옆에 배치 */}
+            <div className="lineup-mode-toggle lineup-mode-toggle-inline" role="tablist" aria-label="라인업 종류">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "batter"}
+                className={mode === "batter" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
+                onClick={() => {
+                  setMode("batter");
+                  setSwapSource(null);
+                }}
+              >
+                타자
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "pitcher"}
+                className={mode === "pitcher" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
+                onClick={() => {
+                  setMode("pitcher");
+                  setSwapSource(null);
+                }}
+              >
+                투수
+              </button>
+            </div>
             <button
               type="button"
               className="lineup-action-btn lineup-action-btn-primary"
@@ -996,9 +1064,9 @@ export function LineupBuilderScreen() {
               type="button"
               className="lineup-confirm-primary"
               onClick={() => {
+                // 새 슬롯은 빈 라인업이므로 localStorage만 — 9명 채울 때 DB로 첫 commit.
                 const newEntry = createEmptyEntry(newSlotTeamId, newSlotName.trim() || undefined);
-                const next = upsertLineupEntry(newEntry);
-                setEntries(next);
+                localUpsertEntry(newEntry);
                 setSelectedEntryId(newEntry.entryId);
                 setNewSlotOpen(false);
               }}
@@ -1041,7 +1109,7 @@ export function LineupBuilderScreen() {
               className="lineup-confirm-primary"
               onClick={() => {
                 if (renamingEntryId && renameInput.trim()) {
-                  setEntries(renameLineupEntry(renamingEntryId, renameInput.trim()));
+                  syncedRename(renamingEntryId, renameInput.trim());
                 }
                 setRenamingEntryId(null);
               }}
@@ -1078,8 +1146,7 @@ export function LineupBuilderScreen() {
               className="lineup-confirm-destruct"
               onClick={() => {
                 if (!confirmDeleteEntryId) return;
-                const next = deleteLineupEntry(confirmDeleteEntryId);
-                setEntries(next);
+                const next = syncedDelete(confirmDeleteEntryId);
                 if (selectedEntryId === confirmDeleteEntryId) {
                   setSelectedEntryId(next[0]?.entryId ?? null);
                 }

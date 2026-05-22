@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, ListChecks, Sparkles, Trophy } from "lucide-react";
+import { CalendarDays, ListChecks, Settings, Sparkles, Swords, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 
 type HomeCard = {
@@ -21,6 +21,14 @@ const cards: HomeCard[] = [
     title: "팀 라인업 짜기",
     description: "원하는 팀의 9인 타순과 수비 위치를 직접 구성",
     icon: ListChecks,
+    available: true
+  },
+  {
+    id: "stadium",
+    href: "/stadium",
+    title: "경기장 들어가기",
+    description: "내가 만든 라인업으로 경기 시뮬 & 친구 대결",
+    icon: Swords,
     available: true
   },
   {
@@ -57,6 +65,9 @@ export function HomeScreen() {
       <header className="play-hub-header">
         <h1>야구놀이터</h1>
         <p>가볍게 즐기는 야구 미니게임 모음</p>
+        <Link href="/my/settings" className="play-hub-settings" prefetch aria-label="설정">
+          <Settings size={20} />
+        </Link>
       </header>
       <section className="play-hub-grid">
         {cards.map((card) => {

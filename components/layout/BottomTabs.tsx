@@ -1,13 +1,11 @@
 "use client";
 
-import { Home, ListChecks, Swords, User } from "lucide-react";
+import { History, Home, ListChecks, Swords } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-// v1 BottomTabs — §5.1 4탭 구조 (홈 / 라인업 짜기 / 경기장 / 마이)
-// 경기장은 §5.3 4단계 플로우 구현 전까지 공사중 비활성.
-type TabId = "home" | "play" | "stadium" | "my";
+type TabId = "home" | "play" | "stadium" | "records";
 
 type BottomTabsProps = {
   activeTab: TabId | (string & {});
@@ -26,7 +24,7 @@ const tabs: readonly TabDef[] = [
   { id: "home", label: "홈", icon: Home, href: "/" },
   { id: "play", label: "라인업 짜기", icon: ListChecks, href: "/play/lineup" },
   { id: "stadium", label: "경기장", icon: Swords, href: "/stadium/lobby" },
-  { id: "my", label: "마이", icon: User, href: "/my" }
+  { id: "records", label: "내 기록", icon: History, href: "/records" }
 ] as const;
 
 export function BottomTabs({ activeTab }: BottomTabsProps) {

@@ -5,7 +5,7 @@ import { BottomTabs } from "@/components/layout/BottomTabs";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 
 type AppShellProps = {
-  activeTab?: "home" | "play" | "stadium" | "my" | "schedule";
+  activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
   title?: string;
   showBeta?: boolean;
   theme?: "default" | "dark";

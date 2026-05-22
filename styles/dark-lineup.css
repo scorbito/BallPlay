@@ -4,7 +4,29 @@
 
 /* ── /play 허브 ── */
 .phone-frame-dark .play-hub-header {
+  position: relative;
   padding: 24px 4px 4px;
+}
+
+.phone-frame-dark .play-hub-settings {
+  position: absolute;
+  top: 20px;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--hd-text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.phone-frame-dark .play-hub-settings:hover,
+.phone-frame-dark .play-hub-settings:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--hd-text-primary);
 }
 
 .phone-frame-dark .play-hub-header h1 {
@@ -114,8 +136,9 @@
   grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 4px 0 0;
-  /* .app-content의 18px gap을 상쇄 — 헤더와 그라운드 사이 간격 좁힘 */
+  padding: 0;
+  /* .app-content의 18px gap을 상쇄 + 상단을 위로 끌어올림 */
+  margin-top: -10px;
   margin-bottom: -14px;
 }
 
@@ -133,6 +156,96 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
+}
+
+/* ── 동기화 상태 배지 (헤더 우측 absolute — mode-toggle이 빠진 자리) ── */
+.phone-frame-dark .lineup-sync-badge {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid var(--hd-border-soft);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--hd-text-secondary);
+  white-space: nowrap;
+}
+
+/* ── 공개/비공개 토글 (헤더 좌측 absolute) ── */
+.phone-frame-dark .lineup-publish-toggle {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid var(--hd-border-soft);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--hd-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.phone-frame-dark .lineup-publish-toggle.is-on {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.14);
+  color: rgb(134, 239, 172);
+}
+
+.phone-frame-dark .lineup-publish-toggle:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.phone-frame-dark .lineup-publish-toggle.is-on:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.20);
+}
+
+.phone-frame-dark .lineup-publish-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 공유 버튼 옆에 들어가는 인라인 모드 토글 — 헤더용 absolute 스타일을 상속하지 않도록 */
+.phone-frame-dark .lineup-mode-toggle-inline {
+  position: static;
+  transform: none;
+}
+
+.phone-frame-dark .lineup-sync-badge.is-synced {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.10);
+  color: rgb(134, 239, 172);
+}
+
+.phone-frame-dark .lineup-sync-badge.is-loading {
+  border-color: rgba(255, 106, 43, 0.45);
+  background: rgba(255, 106, 43, 0.08);
+  color: var(--hd-accent, #ff6a2b);
+}
+
+.phone-frame-dark .lineup-sync-badge.is-error {
+  border-color: rgba(220, 38, 38, 0.5);
+  background: rgba(220, 38, 38, 0.10);
+  color: rgb(252, 165, 165);
+}
+
+.phone-frame-dark .lineup-sync-spin {
+  animation: lineup-sync-spin 0.9s linear infinite;
+}
+
+@keyframes lineup-sync-spin {
+  to { transform: rotate(360deg); }
 }
 
 .phone-frame-dark .lineup-header > .sched-team-picker {
@@ -260,7 +373,7 @@
 .phone-frame-dark .lineup-action-buttons {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 14px; /* 타자/투수 토글과 공유 버튼 오인 클릭 방지 */
   flex-shrink: 0;
 }
 
@@ -299,6 +412,24 @@
 
 .phone-frame-dark .lineup-action-btn-primary:hover {
   background: rgba(255, 106, 43, 0.26);
+}
+
+/* 공개/비공개 토글 — 공개 중일 땐 초록색 강조, 비공개일 땐 회색 */
+.phone-frame-dark .lineup-action-btn-publish {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--hd-border-soft);
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .lineup-action-btn-publish.is-on {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: rgb(134, 239, 172);
+}
+
+.phone-frame-dark .lineup-action-btn-publish:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* PC 와이드 모드 — 다이아몬드/타순 상단 좌우, 힌트 가운데, 대기 선수 하단 풀폭 */
@@ -1306,6 +1437,9 @@
   flex: 1 1 auto;
   min-width: 0;
   max-width: 240px;
+  /* picker 컨테이너 안에서 trigger 버튼이 가운데로 정렬되도록 */
+  display: flex;
+  justify-content: center;
 }
 
 .phone-frame-dark .lineup-slot-trigger {
