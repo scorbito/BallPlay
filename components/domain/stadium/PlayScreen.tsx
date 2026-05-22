@@ -13,6 +13,13 @@ import {
   type MatchSession
 } from "@/lib/sim/matchSession";
 import type { AtBatLog, AtBatOutcome, BaseState, InningLog, SimPitcher } from "@/lib/sim/types";
+import {
+  getSituationText,
+  getBatterText,
+  getOutcomeText,
+  getHomerunText,
+  getScoreText
+} from "@/lib/sim/narration";
 
 const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
   K: "삼진",
@@ -160,10 +167,10 @@ export function PlayScreen() {
     setSession(next);
     setHydrated(true);
 
-    // 라이브 매치(친구 대결)는 중계 모드로 시작 — 양쪽 클라이언트가 같은 진행 속도 유지.
+    // 라이브 매치(친구 대결) — 매치 생성자가 선택한 모드로 시작.
     // mode는 시뮬 결과에 영향 없고 표시 페이스만 결정하므로 sync에 안전.
     if (next.liveMatchId) {
-      setMode("live");
+      setMode(next.liveMode ?? "live");
     }
 
     // 카운트다운: startAt이 미래면 그때까지 playing=false
@@ -406,36 +413,33 @@ export function PlayScreen() {
       OUTCOME_LABEL[current.ab.outcome] +
       (current.ab.runsScored > 0 ? ` (+${current.ab.runsScored})` : "");
 
-    // ───────── SITUATION: 이닝·점수·주자·아웃 (live 모드만) ─────────
+    // ───────── SITUATION: 풍부한 멘트 풀 (live 모드만) ─────────
     if (phase === "SITUATION") {
-      const half = current.half === "top" ? "초" : "말";
-      const before = current.ab.baseStateBefore;
-      const baseRunners = [
-        before.first ? "1루" : null,
-        before.second ? "2루" : null,
-        before.third ? "3루" : null
-      ].filter(Boolean);
-      const runnerText = baseRunners.length > 0 ? `주자 ${baseRunners.join("·")}` : "주자 없음";
-      const outsBefore = current.ab.outsBefore;
-      const scoreBefore = current.scoreSnapshot;
-      const diff = scoreBefore.home - scoreBefore.away;
-      const scoreLabel =
-        diff === 0
-          ? `${scoreBefore.home}-${scoreBefore.away} 동점`
-          : `${Math.max(scoreBefore.home, scoreBefore.away)}-${Math.min(scoreBefore.home, scoreBefore.away)}`;
       return {
-        text: `${current.inning}회${half} ${outsBefore}아웃 · ${runnerText} · ${scoreLabel}`,
+        text: getSituationText({
+          cursor,
+          inning: current.inning,
+          half: current.half,
+          outsBefore: current.ab.outsBefore,
+          baseStateBefore: current.ab.baseStateBefore,
+          scoreBefore: current.scoreSnapshot,
+          totalInnings: linescore.totalInnings
+        }),
         variant: "default"
       };
     }
 
-    // ───────── BATTER: 타순·이름 (+ live면 타율) ─────────
+    // ───────── BATTER: 타순·이름 (+ live면 스탯) ─────────
     if (phase === "BATTER") {
-      if (mode === "live" && batter) {
-        const avg = batter.avg.toFixed(3).replace(/^0/, "");
-        return { text: `${orderPrefix}${batterName} (타율 ${avg})`, variant: "default" };
-      }
-      return { text: `${orderPrefix}${batterName}`, variant: "default" };
+      return {
+        text: getBatterText({
+          cursor,
+          orderIdx,
+          batter: batter ?? null,
+          withStats: mode === "live"
+        }),
+        variant: "default"
+      };
     }
 
     // ───────── OUTCOME: 결과 / live 단계 narration ─────────
@@ -443,58 +447,66 @@ export function PlayScreen() {
       // live 모드 + 점수 들어옴 → outcomeStep에 따라 단계 narration
       if (mode === "live" && current.ab.runsScored > 0) {
         if (outcomeStep === 0) {
-          return { text: `${orderPrefix}${batterName} - ${OUTCOME_LABEL[current.ab.outcome]}!`, variant: "default" };
+          return {
+            text: `${orderPrefix}${batterName} — ${getOutcomeText(current.ab.outcome, cursor)}`,
+            variant: "default"
+          };
         }
         if (outcomeStep === 1) {
-          // 홈인 주자 식별 — baseStateBefore에 있고 baseStateAfter에 없거나 진루로 사라진 경우
+          // 홈인 주자 식별
           const homedRunners: string[] = [];
           const before = current.ab.baseStateBefore;
           const after = current.ab.baseStateAfter;
-          // HR은 모든 주자 + 타자 본인
-          if (current.ab.outcome === "HR") {
+          const isHR = current.ab.outcome === "HR";
+          if (isHR) {
             if (before.third) homedRunners.push(playerNameById(before.third) ?? "3루주자");
             if (before.second) homedRunners.push(playerNameById(before.second) ?? "2루주자");
             if (before.first) homedRunners.push(playerNameById(before.first) ?? "1루주자");
             homedRunners.push(batterName);
           } else {
-            // 일반 안타·SF — 3루주자가 사라졌으면 홈인 (가장 흔한 케이스)
             if (before.third && before.third !== after.first && before.third !== after.second && before.third !== after.third) {
               homedRunners.push(playerNameById(before.third) ?? "3루주자");
             }
-            // 2루주자가 사라졌고 after에서 보이지 않으면 (장타) 홈인
             if (before.second && before.second !== after.first && before.second !== after.second && before.second !== after.third) {
               homedRunners.push(playerNameById(before.second) ?? "2루주자");
             }
-            // 1루주자도 동일 (3루타·HR이 아닌 한)
             if (before.first && before.first !== after.first && before.first !== after.second && before.first !== after.third) {
               homedRunners.push(playerNameById(before.first) ?? "1루주자");
             }
           }
-          const runnerLabel = homedRunners.length > 0 ? homedRunners.join("·") : batterName;
-          const verb = current.ab.outcome === "HR" ? "모두 홈인" : "홈인";
-          return { text: `${runnerLabel} ${verb}! ${current.ab.runsScored}점 추가`, variant: "default" };
+          const isBasesLoadedHR =
+            isHR && !!before.first && !!before.second && !!before.third;
+          return {
+            text: getHomerunText({
+              cursor,
+              outcome: current.ab.outcome,
+              runners: homedRunners,
+              runsScored: current.ab.runsScored,
+              isBasesLoadedHR
+            }),
+            variant: "default"
+          };
         }
         if (outcomeStep === 2) {
-          // 스코어보드 + 변동 라벨 (역전/동점/리드)
           const after = {
             home: current.scoreSnapshot.home + (current.half === "bottom" ? current.ab.runsScored : 0),
             away: current.scoreSnapshot.away + (current.half === "top" ? current.ab.runsScored : 0)
           };
-          const before = current.scoreSnapshot;
-          let prefix = "";
-          if (before.home === before.away && after.home !== after.away) prefix = "리드, ";
-          else if (after.home === after.away && before.home !== before.away) prefix = "동점! ";
-          else if (
-            (before.home > before.away && after.away > after.home) ||
-            (before.away > before.home && after.home > after.away)
-          ) {
-            prefix = "역전! ";
-          }
-          return { text: `${prefix}${after.away}-${after.home}`, variant: "default" };
+          return {
+            text: getScoreText({ cursor, scoreBefore: current.scoreSnapshot, scoreAfter: after }),
+            variant: "default"
+          };
         }
       }
-      // 일반/빠른 모드 또는 점수 없는 결과
-      return { text: `${orderPrefix}${batterName} - ${outcomeLabel}`, variant: "default" };
+      // 일반/빠른 모드 또는 점수 없는 결과 — 풍부한 결과 멘트 + 점수 정보
+      const outcomeNarr = getOutcomeText(current.ab.outcome, cursor);
+      return {
+        text:
+          current.ab.runsScored > 0
+            ? `${orderPrefix}${batterName} — ${outcomeNarr} (+${current.ab.runsScored})`
+            : `${orderPrefix}${batterName} — ${outcomeNarr}`,
+        variant: "default"
+      };
     }
 
     if (phase === "INNING_END") {

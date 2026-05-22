@@ -159,7 +159,8 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
       input: { home: home.team, away: away.team, context: {} },
       startedAt: new Date().toISOString(),
       liveMatchId: row.id,
-      liveStartAt: row.start_at
+      liveStartAt: row.start_at,
+      liveMode: row.mode ?? "live"
     });
     router.replace("/stadium/play");
   }, [row, uid, guestId, router]);

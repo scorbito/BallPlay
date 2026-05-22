@@ -13,7 +13,7 @@ import { buildSharedTeamFromEntry } from "@/lib/sim/matchShare";
 import { generateSeed } from "@/lib/sim/matchSession";
 import { getOrCreateGuestId } from "@/lib/sim/guestId";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { createMatch } from "@/lib/supabase/query-parts/bpMatches";
+import { createMatch, type BpMatchMode } from "@/lib/supabase/query-parts/bpMatches";
 
 // "친구와 대결" — 내 라인업으로 매치 생성 → invite_code 발급 → /stadium/live/[code] 이동
 // 호스트는 home 슬롯 고정 (단순화).
@@ -21,6 +21,7 @@ export function CreateLiveMatchScreen() {
   const router = useRouter();
   const [entries, setEntries] = useState<LineupEntry[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [mode, setMode] = useState<BpMatchMode>("live");
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -63,7 +64,8 @@ export function CreateLiveMatchScreen() {
       ownerId: user?.id ?? null,
       guestId,
       team: shared.team,
-      seed
+      seed,
+      mode
     });
 
     if (!result.ok) {
@@ -120,6 +122,33 @@ export function CreateLiveMatchScreen() {
             </Link>
           </div>
         )}
+
+        {/* 진행 모드 선택 — 양쪽 sync 위해 매치 생성 시 고정 */}
+        <div className="stadium-live-mode-pick">
+          <span className="stadium-enter-picker-label">진행 모드</span>
+          <div className="stadium-live-mode-row" role="radiogroup" aria-label="진행 모드">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "live"}
+              className={`stadium-live-mode-item ${mode === "live" ? "is-active" : ""}`}
+              onClick={() => setMode("live")}
+            >
+              <strong>중계 모드</strong>
+              <span>실제 경기처럼 천천히 + 단계별 중계 멘트</span>
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "normal"}
+              className={`stadium-live-mode-item ${mode === "normal" ? "is-active" : ""}`}
+              onClick={() => setMode("normal")}
+            >
+              <strong>일반 모드</strong>
+              <span>빠른 호흡으로 결과 확인</span>
+            </button>
+          </div>
+        </div>
 
         <div className="stadium-live-rules">
           <Users size={14} />

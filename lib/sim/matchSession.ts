@@ -16,6 +16,7 @@ export type MatchSession = {
   // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
   liveMatchId?: string;
   liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행
+  liveMode?: "normal" | "live"; // 매치 생성자가 선택한 진행 모드. 양쪽 클라이언트 동일.
 };
 
 export function loadMatchSession(): MatchSession | null {
