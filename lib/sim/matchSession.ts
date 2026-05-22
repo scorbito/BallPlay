@@ -2,6 +2,7 @@
 // v1 스캐폴드 단계. v2에서 bp_matches 테이블로 이관.
 
 import type { SimGameInput, SimGameResult } from "./types";
+import { ensureNamespacedInput } from "./namespace";
 
 const KEY = "ballplay:match:current";
 
@@ -30,8 +31,13 @@ export function loadMatchSession(): MatchSession | null {
 
 export function saveMatchSession(session: MatchSession): void {
   if (typeof window === "undefined") return;
+  // 양쪽 팀이 같은 KBO 팀일 때 playerId 충돌 방지 — input의 모든 playerId에 H:/A: prefix.
+  // idempotent라 중복 save 호출에도 안전.
+  const normalized: MatchSession = session.input
+    ? { ...session, input: ensureNamespacedInput(session.input) }
+    : session;
   try {
-    window.sessionStorage.setItem(KEY, JSON.stringify(session));
+    window.sessionStorage.setItem(KEY, JSON.stringify(normalized));
   } catch {
     // ignore quota
   }
