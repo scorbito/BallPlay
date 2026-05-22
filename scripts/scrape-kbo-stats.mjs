@@ -545,14 +545,20 @@ async function loadRosters() {
   return out;
 }
 
-/** 이름으로 roster에서 매칭. 동명이인은 등번호로 보강 가능하지만 KBO 통계엔 등번호가 없음.
- *  통상 한 팀 내 동명이인은 거의 없으니 이름 단일 매칭으로 충분. */
-function findPlayerInRoster(name, roster) {
+/** 이름으로 roster에서 매칭. 동명이인은 kind(타자/투수)로 1차 필터, 1군 출장 우선. */
+function findPlayerInRoster(name, roster, kind) {
   if (!roster) return null;
-  const candidates = roster.players.filter((p) => p.name === name);
+  let candidates = roster.players.filter((p) => p.name === name);
   if (candidates.length === 0) return null;
+  if (candidates.length > 1 && kind) {
+    // kind=batter: 투수가 아닌 사람만 / kind=pitcher: 투수만
+    const filtered = kind === "pitcher"
+      ? candidates.filter((p) => p.primaryPosition === "P")
+      : candidates.filter((p) => p.primaryPosition !== "P");
+    if (filtered.length > 0) candidates = filtered;
+  }
   if (candidates.length === 1) return candidates[0];
-  // 동명이인 — 1군 출장 우선 (seasonGames > 0)
+  // 그래도 여러 명이면 1군 출장 우선
   const active = candidates.find((p) => (p.seasonGames ?? 0) > 0);
   return active ?? candidates[0];
 }
@@ -562,7 +568,7 @@ function findPlayerInRoster(name, roster) {
 // ============================================================
 
 function makeSimBatter(row, roster) {
-  const player = findPlayerInRoster(row.name, roster);
+  const player = findPlayerInRoster(row.name, roster, "batter");
   if (!player) return null;
   const pa = row.pa || 0;
   const ab = row.ab || 0;
@@ -610,7 +616,7 @@ function makeSimBatter(row, roster) {
 }
 
 function makeSimPitcher(row, roster) {
-  const player = findPlayerInRoster(row.name, roster);
+  const player = findPlayerInRoster(row.name, roster, "pitcher");
   if (!player) return null;
   const ip = row.ip || 0;
   const k = row.so || 0;

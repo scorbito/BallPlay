@@ -5,7 +5,9 @@ import type { MouseEvent, ReactNode } from "react";
 
 type ModalShellProps = {
   open: boolean;
-  title: string;
+  title: ReactNode;
+  /** aria-label용 문자열 — title이 ReactNode일 때 접근성 라벨로 사용 */
+  ariaLabel?: string;
   onClose: () => void;
   children: ReactNode;
   panelClassName?: string;
@@ -16,6 +18,7 @@ type ModalShellProps = {
 export function ModalShell({
   open,
   title,
+  ariaLabel,
   onClose,
   children,
   panelClassName,
@@ -37,7 +40,7 @@ export function ModalShell({
       role="presentation"
       onClick={handleBackdropClick}
     >
-      <section className={panelClassName ? `modal-panel ${panelClassName}` : "modal-panel"} role="dialog" aria-modal="true" aria-label={title}>
+      <section className={panelClassName ? `modal-panel ${panelClassName}` : "modal-panel"} role="dialog" aria-modal="true" aria-label={ariaLabel ?? (typeof title === "string" ? title : undefined)}>
         <header className="modal-header">
           <button className="modal-close" type="button" aria-label="닫기" onClick={onClose}>
             <X size={20} />

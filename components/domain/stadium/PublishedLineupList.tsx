@@ -7,10 +7,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LogIn, RefreshCw, Swords } from "lucide-react";
+import { ArrowRight, List, LogIn, RefreshCw, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
+import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
+import type { SimTeamInput } from "@/lib/sim/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   listPublishedLineups,
@@ -75,6 +77,7 @@ export function PublishedLineupList({
   const [myEntryId, setMyEntryId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [loginGateOpen, setLoginGateOpen] = useState(false);
+  const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
 
   useEffect(() => {
     const client = createSupabaseBrowserClient();
@@ -126,6 +129,17 @@ export function PublishedLineupList({
     [myEntries, myEntryId]
   );
 
+  // 공개 라인업 미리보기 — row를 SimTeamInput으로 변환해 모달에 표시
+  const openLineupPreview = (row: PublishedLineupRow) => {
+    const entry = rowToEntry(row);
+    const pitching = entry.pitching ?? autoFillPitcherLineup(entry.teamId);
+    if (!pitching) return;
+    const stats = buildStatsDirectory([entry.teamId]);
+    const built = buildSimTeamInput(entry.teamId, entry.batting, pitching, stats, entry.name);
+    if (!built.ok) return;
+    setPreviewTeam(built.team);
+  };
+
   const startChallenge = useCallback(() => {
     if (!selectedOpponent || !myEntry || starting) return;
     // 안전장치 — 모달이 어쩌다 열렸어도 비로그인이면 시뮬 진입 막음
@@ -173,7 +187,9 @@ export function PublishedLineupList({
       opponentTeamId: opponentEntry.teamId,
       seed,
       input: { home: mine.team, away: opp.team, context: {} },
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
+      source: "public",
+      userSide: "home"
     });
     router.push("/stadium/play");
   }, [selectedOpponent, myEntry, starting, router, userId]);
@@ -210,23 +226,7 @@ export function PublishedLineupList({
         {rows.map((row) => {
           const team = getTeam(row.team_id);
           return (
-            <button
-              key={row.id}
-              type="button"
-              className="stadium-discover-card"
-              onClick={() => {
-                // 비로그인은 로그인 게이트 (기획 §10: 대결 = 로그인 필수)
-                if (!userId) {
-                  setLoginGateOpen(true);
-                  return;
-                }
-                if (redirectOnClick) {
-                  router.push("/stadium/discover");
-                } else {
-                  setSelectedOpponent(row);
-                }
-              }}
-            >
+            <div key={row.id} className="stadium-discover-card">
               <TeamBadge teamId={row.team_id} size="md" />
               <div className="stadium-discover-card-body">
                 <strong>{row.name}</strong>
@@ -234,11 +234,46 @@ export function PublishedLineupList({
                   {formatOpponentLabel(row)} · {team.shortName} · {formatRelativeDate(row.updated_at)}
                 </span>
               </div>
-              <Swords size={16} className="stadium-discover-card-icon" />
-            </button>
+              <div className="stadium-lobby-card-actions">
+                <button
+                  type="button"
+                  className="stadium-lobby-card-btn stadium-lobby-card-btn-secondary"
+                  onClick={() => openLineupPreview(row)}
+                  aria-label={`${row.name} 라인업 보기`}
+                >
+                  <List size={14} />
+                  <span>라인업</span>
+                </button>
+                <button
+                  type="button"
+                  className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
+                  onClick={() => {
+                    if (!userId) {
+                      setLoginGateOpen(true);
+                      return;
+                    }
+                    if (redirectOnClick) {
+                      router.push("/stadium/discover");
+                    } else {
+                      setSelectedOpponent(row);
+                    }
+                  }}
+                  aria-label={`${row.name}에 도전`}
+                >
+                  <Swords size={14} />
+                  <span>도전</span>
+                </button>
+              </div>
+            </div>
           );
         })}
       </section>
+
+      <LineupDetailModal
+        open={previewTeam !== null}
+        team={previewTeam}
+        onClose={() => setPreviewTeam(null)}
+      />
 
       <ModalShell
         open={selectedOpponent !== null}

@@ -1,7 +1,7 @@
 {
   "teamId": "ssg",
   "teamName": "SSG 랜더스",
-  "_scrapedAt": "2026-05-21T06:49:52.560Z",
+  "_scrapedAt": "2026-05-22T15:49:10.180Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
   "players": [
@@ -12,7 +12,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 2
+      "seasonGames": 3
     },
     {
       "id": "ssg-1",
@@ -24,13 +24,31 @@
       "seasonGames": 23
     },
     {
+      "id": "ssg-p55801",
+      "name": "한지헌",
+      "jerseyNumber": 1,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
       "id": "ssg-2",
       "name": "박성한",
       "jerseyNumber": 2,
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 44
+      "seasonGames": 46
+    },
+    {
+      "id": "ssg-p55896",
+      "name": "이도우",
+      "jerseyNumber": 2,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
     },
     {
       "id": "ssg-3",
@@ -40,6 +58,15 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
+    },
+    {
+      "id": "ssg-p54812",
+      "name": "정준재",
+      "jerseyNumber": 3,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 43
     },
     {
       "id": "ssg-4",
@@ -60,12 +87,30 @@
       "seasonGames": 0
     },
     {
+      "id": "ssg-p55899",
+      "name": "장현진",
+      "jerseyNumber": 5,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
       "id": "ssg-6",
       "name": "김성현",
       "jerseyNumber": 6,
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "ssg-p52864",
+      "name": "박상후",
+      "jerseyNumber": 6,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
       "seasonGames": 0
     },
     {
@@ -76,6 +121,15 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
+    },
+    {
+      "id": "ssg-p68868",
+      "name": "최준우",
+      "jerseyNumber": 7,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 15
     },
     {
       "id": "ssg-8",
@@ -96,13 +150,22 @@
       "seasonGames": 0
     },
     {
+      "id": "ssg-p54806",
+      "name": "이승민",
+      "jerseyNumber": 9,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
       "id": "ssg-10",
       "name": "안상현",
       "jerseyNumber": 10,
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 31
+      "seasonGames": 33
     },
     {
       "id": "ssg-11",
@@ -146,7 +209,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 27
+      "seasonGames": 29
     },
     {
       "id": "ssg-16",
@@ -155,7 +218,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 2
     },
     {
       "id": "ssg-18",
@@ -218,7 +281,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 6
+      "seasonGames": 8
     },
     {
       "id": "ssg-25",
@@ -236,7 +299,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "R",
-      "seasonGames": 44
+      "seasonGames": 46
     },
     {
       "id": "ssg-28",
@@ -263,7 +326,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 8
+      "seasonGames": 9
     },
     {
       "id": "ssg-31",
@@ -281,7 +344,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 36
+      "seasonGames": 38
     },
     {
       "id": "ssg-33",
@@ -299,7 +362,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 17
+      "seasonGames": 19
     },
     {
       "id": "ssg-35",
@@ -326,7 +389,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 39
+      "seasonGames": 41
     },
     {
       "id": "ssg-38",
@@ -347,7 +410,7 @@
       "seasonGames": 9
     },
     {
-      "id": "ssg-40",
+      "id": "ssg-47",
       "name": "김민준",
       "jerseyNumber": 40,
       "primaryPosition": "P",
@@ -401,7 +464,7 @@
       "seasonGames": 0
     },
     {
-      "id": "ssg-47",
+      "id": "ssg-p53893",
       "name": "김민준",
       "jerseyNumber": 47,
       "primaryPosition": "3B",
@@ -416,7 +479,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "ssg-49",
@@ -442,7 +505,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 2
+      "seasonGames": 3
     },
     {
       "id": "ssg-52",
@@ -469,7 +532,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 44
+      "seasonGames": 46
     },
     {
       "id": "ssg-55",
@@ -487,7 +550,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 28
+      "seasonGames": 29
     },
     {
       "id": "ssg-57",
@@ -559,7 +622,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 5
+      "seasonGames": 6
     },
     {
       "id": "ssg-65",
@@ -604,7 +667,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 23
+      "seasonGames": 24
     },
     {
       "id": "ssg-97",

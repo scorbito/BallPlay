@@ -1,7 +1,7 @@
 {
   "teamId": "lg",
   "teamName": "LG 트윈스",
-  "_scrapedAt": "2026-05-21T06:48:31.538Z",
+  "_scrapedAt": "2026-05-22T15:47:47.436Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
   "players": [
@@ -15,7 +15,7 @@
       "seasonGames": 1
     },
     {
-      "id": "lg-0",
+      "id": "lg-p64596",
       "name": "김유영",
       "jerseyNumber": 0,
       "primaryPosition": "P",
@@ -57,7 +57,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 42
+      "seasonGames": 44
     },
     {
       "id": "lg-5",
@@ -75,7 +75,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 42
+      "seasonGames": 44
     },
     {
       "id": "lg-7",
@@ -84,7 +84,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 23
+      "seasonGames": 25
     },
     {
       "id": "lg-8",
@@ -102,7 +102,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 40
+      "seasonGames": 41
     },
     {
       "id": "lg-11",
@@ -165,7 +165,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "lg-18",
@@ -181,7 +181,7 @@
       "jerseyNumber": 20,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 22
     },
     {
       "id": "lg-21",
@@ -199,7 +199,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "lg-24",
@@ -217,7 +217,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "lg-26",
@@ -226,7 +226,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 1
     },
     {
       "id": "lg-27",
@@ -235,7 +235,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 38
+      "seasonGames": 40
     },
     {
       "id": "lg-28",
@@ -253,7 +253,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "lg-30",
@@ -271,7 +271,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "lg-32",
@@ -352,7 +352,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 22
     },
     {
       "id": "lg-43",
@@ -388,7 +388,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 6
+      "seasonGames": 7
     },
     {
       "id": "lg-47",
@@ -397,7 +397,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 5
+      "seasonGames": 6
     },
     {
       "id": "lg-48",
@@ -433,7 +433,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 39
+      "seasonGames": 40
     },
     {
       "id": "lg-52",
@@ -442,7 +442,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 22
+      "seasonGames": 23
     },
     {
       "id": "lg-53",
@@ -451,7 +451,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 42
+      "seasonGames": 44
     },
     {
       "id": "lg-54",
@@ -469,7 +469,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 25
+      "seasonGames": 27
     },
     {
       "id": "lg-56",
@@ -478,7 +478,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 6
     },
     {
       "id": "lg-57",
@@ -496,7 +496,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 5
+      "seasonGames": 6
     },
     {
       "id": "lg-59",
@@ -523,7 +523,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "lg-62",
@@ -541,7 +541,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 23
+      "seasonGames": 24
     },
     {
       "id": "lg-65",
@@ -559,7 +559,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 7
+      "seasonGames": 9
     },
     {
       "id": "lg-67",
@@ -568,7 +568,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 17
+      "seasonGames": 18
     },
     {
       "id": "lg-68",

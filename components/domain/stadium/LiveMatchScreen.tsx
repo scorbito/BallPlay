@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowRight, Check, Copy, Loader2, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
+import type { SimTeamInput } from "@/lib/sim/types";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { buildSharedTeamFromEntry, restoreSimTeamFromShared } from "@/lib/sim/matchShare";
@@ -72,6 +74,9 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
 
   // 초대 URL 복사
   const [copied, setCopied] = useState(false);
+
+  // 라인업 상세 미리보기 모달
+  const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
 
   // ── 초기 로드 ─────────────────────────────────────────────
   useEffect(() => {
@@ -158,6 +163,8 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
       seed: row.seed,
       input: { home: home.team, away: away.team, context: {} },
       startedAt: new Date().toISOString(),
+      source: "friend",
+      userSide: isHome ? "home" : "away",
       liveMatchId: row.id,
       liveStartAt: row.start_at,
       liveMode: row.mode ?? "live"
@@ -259,37 +266,57 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   const hostLabel = hostSnapshot?.n?.trim() || (hostTeam ? getTeam(hostTeam).name : "");
   const guestLabel = guestSnapshot?.n?.trim() || (guestTeam ? getTeam(guestTeam).name : "");
 
+  // 스냅샷 → SimTeamInput 변환 후 모달 오픈
+  const openSnapshotPreview = (snapshot: typeof hostSnapshot) => {
+    if (!snapshot) return;
+    const restored = restoreSimTeamFromShared(snapshot);
+    if (!restored.ok) return;
+    setPreviewTeam(restored.team);
+  };
+
   const bothReady = row.status === "ready" || row.status === "playing";
   const finished = row.status === "finished" || row.status === "cancelled";
 
   return (
     <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="dark">
       <section className="stadium-live">
-        {/* ── 매치 VS 헤더 ── */}
+        {/* ── 매치 VS 헤더 — 라인업 카드 클릭 시 상세 모달 ── */}
         <div className="stadium-enter-vs">
-          <div className="stadium-enter-team">
-            <span className="stadium-enter-team-label">{hostSide === "home" ? "홈" : "원정"}</span>
-            {hostTeam ? (
-              <>
-                <TeamBadge teamId={hostTeam} size="lg" />
-                <strong>{hostLabel}</strong>
-              </>
-            ) : (
+          {hostTeam && hostSnapshot ? (
+            <button
+              type="button"
+              className="stadium-enter-team stadium-enter-team-clickable"
+              onClick={() => openSnapshotPreview(hostSnapshot)}
+              aria-label={`${hostLabel} 라인업 보기`}
+            >
+              <span className="stadium-enter-team-label">{hostSide === "home" ? "홈" : "원정"}</span>
+              <TeamBadge teamId={hostTeam} size="lg" />
+              <strong>{hostLabel}</strong>
+            </button>
+          ) : (
+            <div className="stadium-enter-team">
+              <span className="stadium-enter-team-label">{hostSide === "home" ? "홈" : "원정"}</span>
               <span className="stadium-enter-empty">대기</span>
-            )}
-          </div>
+            </div>
+          )}
           <span className="stadium-enter-vs-label">VS</span>
-          <div className="stadium-enter-team">
-            <span className="stadium-enter-team-label">{hostSide === "home" ? "원정" : "홈"}</span>
-            {guestTeam ? (
-              <>
-                <TeamBadge teamId={guestTeam} size="lg" />
-                <strong>{guestLabel}</strong>
-              </>
-            ) : (
+          {guestTeam && guestSnapshot ? (
+            <button
+              type="button"
+              className="stadium-enter-team stadium-enter-team-clickable"
+              onClick={() => openSnapshotPreview(guestSnapshot)}
+              aria-label={`${guestLabel} 라인업 보기`}
+            >
+              <span className="stadium-enter-team-label">{hostSide === "home" ? "원정" : "홈"}</span>
+              <TeamBadge teamId={guestTeam} size="lg" />
+              <strong>{guestLabel}</strong>
+            </button>
+          ) : (
+            <div className="stadium-enter-team">
+              <span className="stadium-enter-team-label">{hostSide === "home" ? "원정" : "홈"}</span>
               <span className="stadium-enter-empty">친구 대기</span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* ── 상태별 본문 ── */}
@@ -395,6 +422,12 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
           </div>
         )}
       </section>
+
+      <LineupDetailModal
+        open={previewTeam !== null}
+        team={previewTeam}
+        onClose={() => setPreviewTeam(null)}
+      />
     </AppShell>
   );
 }

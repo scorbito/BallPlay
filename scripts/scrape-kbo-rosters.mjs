@@ -15,7 +15,7 @@
  * 트레이드/방출/콜업 시: 그냥 다시 실행하면 됨.
  */
 
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load as cheerioLoad } from "cheerio";
@@ -91,8 +91,9 @@ function parsePlayers($, teamId) {
     const playerId = playerIdMatch ? playerIdMatch[1] : null;
     const isPitcher = /PitcherDetail/i.test(href);
 
+    // id는 assignStableIds()에서 결정 (등번호 충돌 시 알파벳/이전id 기준)
     players.push({
-      id: `${teamId}-${jerseyNumber}`,
+      id: "",
       name,
       jerseyNumber,
       primaryPosition: mapKboPosition(positionRaw),
@@ -169,6 +170,73 @@ function findPageNumbers(html) {
   return [...nums].sort((a, b) => a - b);
 }
 
+/**
+ * 새 스크랩 결과에 안정적인 id를 부여한다.
+ *
+ * 규칙:
+ *  - 이전 파일에 이름이 일치하는 선수가 있으면 그 id 그대로 보존 (안정성).
+ *  - 등번호가 한 명만 가지면 `${teamId}-${jerseyNumber}` (단순 id).
+ *  - 등번호 충돌이면 알파벳 1순위가 단순 id, 나머지는 `${teamId}-p${kboPlayerId}`.
+ *  - kboPlayerId가 없는 케이스는 fallback `${teamId}-x${index}`.
+ */
+function assignStableIds(players, teamId, prevByName) {
+  // 1) (name, jersey) 정확 매칭으로만 prev id 보존.
+  //    동명이인 모호성 차단: 등번호가 다르면 다른 사람으로 간주, 새 id 부여.
+  //    트레이드오프: 시즌 중 등번호 변경 시 id가 바뀜 (드문 케이스라 수용).
+  for (const p of players) {
+    const matches = prevByName.get(p.name) ?? [];
+    const sameJersey = matches.filter((m) => m.jerseyNumber === p.jerseyNumber);
+    if (sameJersey.length === 1) {
+      p.id = sameJersey[0].id;
+    }
+    // 그 외 — empty 상태로 두고 step 2가 새 id 부여
+  }
+
+  // 2) 등번호 그룹별로 처리
+  const byJersey = new Map();
+  for (const p of players) {
+    if (!byJersey.has(p.jerseyNumber)) byJersey.set(p.jerseyNumber, []);
+    byJersey.get(p.jerseyNumber).push(p);
+  }
+
+  for (const [jersey, group] of byJersey.entries()) {
+    if (group.length === 1) {
+      // 충돌 없음 — id 비어있을 때만 단순 id 부여
+      const p = group[0];
+      if (!p.id) p.id = `${teamId}-${jersey}`;
+      continue;
+    }
+    // 충돌 — 단순 id 우선권 결정
+    const simpleId = `${teamId}-${jersey}`;
+    let simpleHolder = group.find((p) => p.id === simpleId);
+    if (!simpleHolder) {
+      // 이전 파일에서 단순 id 가졌던 사람이 그룹에 없으면 알파벳 1순위
+      const sorted = [...group].sort((a, b) => a.name.localeCompare(b.name, "ko"));
+      simpleHolder = sorted[0];
+    }
+    for (let i = 0; i < group.length; i++) {
+      const p = group[i];
+      if (p === simpleHolder) {
+        p.id = simpleId;
+      } else if (!p.id) {
+        // 이전 id 없는 새 선수만 새 id 부여
+        p.id = p._playerId ? `${teamId}-p${p._playerId}` : `${teamId}-x${jersey}-${i}`;
+      }
+      // p.id가 이미 있으면 (이전 파일에서 가져옴) 그대로 둠
+    }
+  }
+
+  // 3) 최종 검증 — 동일 id 발생 시 충돌 보고
+  const seen = new Set();
+  for (const p of players) {
+    if (seen.has(p.id)) {
+      console.warn(`  ⚠ id 충돌: ${p.id} (${p.name}) — fallback 적용`);
+      p.id = p._playerId ? `${teamId}-p${p._playerId}` : `${teamId}-x-${p.name}`;
+    }
+    seen.add(p.id);
+  }
+}
+
 /** "내야수/외야수" 같은 일반 분류를 우리 시스템의 9포지션 중 하나로 매핑.
  *  세부 포지션은 알 수 없으니 기본값을 두고 사용자가 라인업에서 수동 조정. */
 function mapKboPosition(rawPos) {
@@ -229,7 +297,8 @@ async function scrapeTeam(team) {
   state = extractViewState(html);
   let $ = cheerioLoad(html);
   const allPlayers = [...parsePlayers($, team.id)];
-  const seenIds = new Set(allPlayers.map((p) => p.id));
+  // 중복은 _playerId(KBO 고유) 기준으로 제거. _playerId 없으면 name+jersey 조합.
+  const seenKey = new Set(allPlayers.map((p) => p._playerId ?? `${p.name}-${p.jerseyNumber}`));
 
   // 3) 페이지 2 이상이 있으면 순회
   const pageNums = findPageNumbers(html);
@@ -260,15 +329,30 @@ async function scrapeTeam(team) {
     $ = cheerioLoad(html);
     const players = parsePlayers($, team.id);
     for (const p of players) {
-      if (!seenIds.has(p.id)) {
+      const key = p._playerId ?? `${p.name}-${p.jerseyNumber}`;
+      if (!seenKey.has(key)) {
         allPlayers.push(p);
-        seenIds.add(p.id);
+        seenKey.add(key);
       }
     }
   }
 
   // 정렬 — 등번호 오름차순
   allPlayers.sort((a, b) => a.jerseyNumber - b.jerseyNumber);
+
+  // 3.5) 이전 파일 로드해서 id 안정성 보장 (name → 후보 배열, 동명이인 대응)
+  const prevByName = new Map();
+  try {
+    const prevPath = join(OUT_DIR, `${team.id}.json`);
+    const prev = JSON.parse(await readFile(prevPath, "utf-8"));
+    for (const p of prev.players ?? []) {
+      if (!prevByName.has(p.name)) prevByName.set(p.name, []);
+      prevByName.get(p.name).push(p);
+    }
+  } catch {
+    // 첫 스크랩이거나 파일 없음 — 무시
+  }
+  assignStableIds(allPlayers, team.id, prevByName);
 
   // 4) 각 선수 상세 페이지에서 투/타 + 시즌 G 가져오기 (순차, 100ms 간격)
   process.stdout.write(`(상세 ${allPlayers.length}건 fetch... `);

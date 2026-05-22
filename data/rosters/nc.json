@@ -1,7 +1,7 @@
 {
   "teamId": "nc",
   "teamName": "NC 다이노스",
-  "_scrapedAt": "2026-05-21T06:50:13.387Z",
+  "_scrapedAt": "2026-05-22T15:49:30.356Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
   "players": [
@@ -21,7 +21,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 41
+      "seasonGames": 43
     },
     {
       "id": "nc-3",
@@ -66,7 +66,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "S",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "nc-8",
@@ -84,7 +84,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 26
+      "seasonGames": 27
     },
     {
       "id": "nc-10",
@@ -102,7 +102,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 7
+      "seasonGames": 8
     },
     {
       "id": "nc-12",
@@ -120,7 +120,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 22
     },
     {
       "id": "nc-14",
@@ -129,7 +129,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 39
+      "seasonGames": 41
     },
     {
       "id": "nc-15",
@@ -147,7 +147,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 26
     },
     {
       "id": "nc-17",
@@ -156,7 +156,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 26
     },
     {
       "id": "nc-18",
@@ -174,7 +174,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 23
     },
     {
       "id": "nc-20",
@@ -219,7 +219,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 33
+      "seasonGames": 35
     },
     {
       "id": "nc-25",
@@ -228,7 +228,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 38
+      "seasonGames": 40
     },
     {
       "id": "nc-26",
@@ -282,7 +282,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 36
+      "seasonGames": 38
     },
     {
       "id": "nc-34",
@@ -291,7 +291,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 21
+      "seasonGames": 22
     },
     {
       "id": "nc-35",
@@ -309,7 +309,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 11
+      "seasonGames": 13
     },
     {
       "id": "nc-37",
@@ -318,7 +318,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 42
+      "seasonGames": 44
     },
     {
       "id": "nc-40",
@@ -327,7 +327,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 14
+      "seasonGames": 15
     },
     {
       "id": "nc-41",
@@ -336,7 +336,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 17
+      "seasonGames": 19
     },
     {
       "id": "nc-42",
@@ -416,7 +416,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 9
+      "seasonGames": 11
     },
     {
       "id": "nc-54",
@@ -425,7 +425,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 18
+      "seasonGames": 19
     },
     {
       "id": "nc-55",
@@ -434,7 +434,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 40
+      "seasonGames": 42
     },
     {
       "id": "nc-56",
@@ -479,7 +479,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 6
+      "seasonGames": 7
     },
     {
       "id": "nc-61",

@@ -169,6 +169,47 @@
   color: var(--hd-accent, #ff6a2b);
 }
 
+/* 카드 액션 버튼 묶음 — 라인업 / 도전 */
+.phone-frame-dark .stadium-lobby-card-actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.phone-frame-dark .stadium-lobby-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 0;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .stadium-lobby-card-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--hd-text-secondary);
+  border: 1px solid var(--hd-border-soft);
+}
+
+.phone-frame-dark .stadium-lobby-card-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .stadium-lobby-card-btn-primary {
+  background: var(--hd-accent, #ff6a2b);
+  color: #fff;
+}
+
+.phone-frame-dark .stadium-lobby-card-btn-primary:hover {
+  filter: brightness(1.08);
+}
+
 /* ── 로비: 친구와 대결 진입점 (2-up) ── */
 .phone-frame-dark .stadium-lobby-live-row {
   display: grid;
@@ -821,6 +862,22 @@
   text-align: center;
 }
 
+/* 친구 매치 라인업 카드 — 클릭 시 상세 모달 표시 */
+.phone-frame-dark .stadium-enter-team-clickable {
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.phone-frame-dark .stadium-enter-team-clickable:hover {
+  border-color: rgba(255, 106, 43, 0.5);
+  background: rgba(255, 106, 43, 0.06);
+}
+
 .phone-frame-dark .stadium-enter-team-label {
   font-size: 11px;
   color: var(--hd-text-secondary);
@@ -948,6 +1005,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
 }
 
 /* 라인스코어 */
@@ -1106,6 +1164,7 @@
   color: var(--hd-text-primary);
   text-align: left;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  position: relative;
 }
 
 .phone-frame-dark .stadium-play-narration.is-inning {
@@ -1130,11 +1189,74 @@
   font-weight: 900;
 }
 
-/* 양 팀 라인업 — 2분할 (좌: 원정/초 공격, 우: 홈/말 공격) */
+/* 양 팀 라인업 — 공격팀 큰 카드, 수비팀 작은 카드. transition으로 공수 교대 시 부드럽게. */
 .phone-frame-dark .stadium-play-lineups {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.85fr 1fr;
   gap: 8px;
+  transition: grid-template-columns 0.4s ease;
+}
+
+.phone-frame-dark .stadium-play-lineups.is-offense-home {
+  grid-template-columns: 1fr 1.85fr;
+}
+
+/* 경기 종료 — 1:1 박스스코어 모드 */
+.phone-frame-dark .stadium-play-lineups.is-final {
+  grid-template-columns: 1fr 1fr;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-final {
+  opacity: 1;
+  padding: 10px;
+  background: var(--hd-bg-card);
+  border-color: var(--hd-border-soft);
+  box-shadow: none;
+}
+
+/* 종료 모드에선 양쪽 다 today stats 보이게 */
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-today {
+  display: inline-block;
+}
+
+/* 종료 모드 행 — 공격/수비 압축 해제, 균등 + 큰 폰트 (공간 여유 활용) */
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-row {
+  font-size: 13px;
+  padding: 7px 4px;
+  grid-template-columns: 22px 1fr auto;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-order {
+  font-size: 14px;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-batting-pitcher {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-today {
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+/* 종료 모드 — 마지막 이닝 결과 뱃지는 숨김 (일부 타자만 보이면 일관성 부족).
+   대신 (안타/타수) 누적 스탯이 모든 9명에게 균일하게 보임. */
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-outcome {
+  display: none;
+}
+
+/* 종료 모드 — 현재 타석 강조도 제거 (이미 끝났으니 의미 없음) */
+.phone-frame-dark .stadium-play-batting-card.is-final .stadium-play-lineup-row.is-current {
+  background: transparent;
+  border-left: none;
+  padding-left: 4px;
+  margin-left: 0;
 }
 
 .phone-frame-dark .stadium-play-batting-card {
@@ -1143,12 +1265,52 @@
   border: 1px solid var(--hd-border-soft);
   border-radius: 10px;
   min-width: 0;
+  transition: padding 0.4s ease, background 0.4s ease, border-color 0.4s ease;
 }
 
-/* 현재 공격 중인 팀 카드는 약간 강조 */
+/* 현재 공격 중인 팀 카드는 약간 강조 + 살짝 큰 패딩 */
 .phone-frame-dark .stadium-play-batting-card.is-offense {
-  border-color: rgba(255, 106, 43, 0.4);
-  background: rgba(255, 106, 43, 0.03);
+  border-color: rgba(255, 106, 43, 0.5);
+  background: rgba(255, 106, 43, 0.06);
+  padding: 12px;
+  box-shadow: 0 4px 14px rgba(255, 106, 43, 0.08);
+}
+
+/* 수비팀 카드 — 텍스트 압축 + 결과 뱃지 숨김 (단 경기 종료 모드는 제외) */
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense):not(.is-final) {
+  opacity: 0.78;
+}
+
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense):not(.is-final) .stadium-play-batting-pitcher {
+  font-size: 11px;
+}
+
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense):not(.is-final) .stadium-play-lineup-row {
+  font-size: 11px;
+  padding: 3px 4px;
+  grid-template-columns: 16px 1fr;
+}
+
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense):not(.is-final) .stadium-play-lineup-name {
+  font-size: 11px;
+}
+
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense):not(.is-final) .stadium-play-lineup-outcome {
+  display: none;
+}
+
+/* 공격팀 카드 — 타순/이름 가독성 향상 */
+.phone-frame-dark .stadium-play-batting-card.is-offense .stadium-play-lineup-row {
+  font-size: 14px;
+  padding: 7px 4px;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-offense .stadium-play-lineup-name {
+  font-size: 14px;
+}
+
+.phone-frame-dark .stadium-play-batting-card.is-offense .stadium-play-lineup-order {
+  font-size: 13px;
 }
 
 .phone-frame-dark .stadium-play-batting-head {
@@ -1159,6 +1321,27 @@
   margin-bottom: 4px;
   border-bottom: 1px solid var(--hd-border-soft);
   min-width: 0;
+}
+
+/* 라인업 상세 모달 트리거 — 카드 헤더를 버튼으로 만듦 */
+.phone-frame-dark .stadium-play-batting-head-btn {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--hd-border-soft);
+  text-align: left;
+  cursor: pointer;
+  padding: 0 0 6px;
+  color: inherit;
+}
+
+.phone-frame-dark .stadium-play-batting-head-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(255, 106, 43, 0.5);
+}
+
+.phone-frame-dark .stadium-play-batting-head-btn:active {
+  transform: scale(0.98);
 }
 
 .phone-frame-dark .stadium-play-batting-pitcher {
@@ -1191,11 +1374,71 @@
   min-width: 0;
 }
 
+/* 이번 경기 누적 (안타 / 타수) — 이름 옆 인라인. 공격팀 카드에만 표시 */
+.phone-frame-dark .stadium-play-lineup-today {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--hd-text-muted, #6b7280);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.3px;
+  vertical-align: baseline;
+}
+
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense):not(.is-final) .stadium-play-lineup-today {
+  display: none;
+}
+
+/* 현재 타석 행에선 색상 강조 */
+.phone-frame-dark .stadium-play-lineup-row.is-current .stadium-play-lineup-today {
+  color: var(--hd-accent, #ff6a2b);
+}
+
+/* 현재 타석 행 아래로 펼쳐지는 결과 중계 멘트 (2번째 grid row, 전 컬럼 span) */
+.phone-frame-dark .stadium-play-lineup-narration {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: rgba(255, 106, 43, 0.12);
+  border-left: 3px solid var(--hd-accent, #ff6a2b);
+  border-radius: 0 6px 6px 0;
+  color: var(--hd-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+  animation: stadium-narr-reveal 0.45s cubic-bezier(0.16, 0.84, 0.3, 1);
+  transform-origin: top center;
+}
+
+@keyframes stadium-narr-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scaleY(0.7);
+    max-height: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    max-height: 80px;
+  }
+}
+
+/* 수비팀 카드에선 표시 안 함 — 어차피 inlineOutcomeBatterId가 공격팀 타자라 매칭 안 되긴 함 */
+.phone-frame-dark .stadium-play-batting-card:not(.is-offense) .stadium-play-lineup-narration {
+  display: none;
+}
+
 .phone-frame-dark .stadium-play-lineup-outcome {
   color: var(--hd-text-primary);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 10px;
   background: rgba(255, 106, 43, 0.18);
   border-radius: 999px;
   white-space: nowrap;
@@ -1210,20 +1453,66 @@
   animation: stadium-ab-dot 0.8s ease-in-out infinite;
 }
 
+/* 안타 — 초록 뱃지, "확 커졌다가 살짝 줄어드는" bounce 효과 */
 .phone-frame-dark .stadium-play-lineup-outcome.is-hit {
   background: rgba(34, 197, 94, 0.25);
   color: #86efac;
+  animation: stadium-outcome-hit 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
 }
 
+/* 홈런 — 오렌지 강조, 큰 폭으로 등장 + 글로우 펄스 + 흔들림. 뱃지 자체도 살짝 더 큼. */
 .phone-frame-dark .stadium-play-lineup-outcome.is-hr {
   background: rgba(255, 106, 43, 0.5);
   color: #fff;
   font-weight: 900;
+  font-size: 13px;
+  padding: 4px 12px;
+  animation: stadium-outcome-hr 1.1s cubic-bezier(0.16, 0.84, 0.3, 1);
+  transform-origin: center;
+  box-shadow: 0 0 0 0 rgba(255, 106, 43, 0.6);
 }
 
 @keyframes stadium-outcome-pop {
   0% { transform: scale(0.8); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* 안타 bounce — 1.0 → 1.6 → 1.0 */
+@keyframes stadium-outcome-hit {
+  0% { transform: scale(0.6); opacity: 0; }
+  35% { transform: scale(1.6); opacity: 1; }
+  60% { transform: scale(0.95); }
+  80% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* 홈런 — 작게 → 크게 등장 + 미세 회전 흔들림 + 그림자 펄스 */
+@keyframes stadium-outcome-hr {
+  0% {
+    transform: scale(0.3) rotate(-8deg);
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(255, 106, 43, 0.6);
+  }
+  25% {
+    transform: scale(2) rotate(6deg);
+    opacity: 1;
+    box-shadow: 0 0 24px 6px rgba(255, 106, 43, 0.6);
+  }
+  40% {
+    transform: scale(1.2) rotate(-4deg);
+  }
+  55% {
+    transform: scale(1.4) rotate(3deg);
+  }
+  70% {
+    transform: scale(1.15) rotate(-1deg);
+    box-shadow: 0 0 12px 2px rgba(255, 106, 43, 0.4);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    box-shadow: 0 0 0 0 rgba(255, 106, 43, 0);
+  }
 }
 
 @keyframes stadium-ab-dot {
@@ -1373,6 +1662,7 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .phone-frame-dark .stadium-play-btn {
@@ -1394,6 +1684,14 @@
 .phone-frame-dark .stadium-play-btn-skip {
   flex: 0 0 auto;
   padding: 12px 16px;
+}
+
+/* 아이콘-only 버튼 (일시정지/재생) — 건너뛰기 버튼 가로폭 맞춤 */
+.phone-frame-dark .stadium-play-btn-icon {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+  min-width: 88px;
+  justify-content: center;
 }
 
 /* 친구 대결 매치 생성 — 진행 모드 선택 카드 */
@@ -1515,15 +1813,29 @@
 
 .phone-frame-dark .stadium-result-team {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 오른쪽(홈) 팀은 미러 — 점수 / 팀명 / 배지 순으로 보이게 */
+.phone-frame-dark .stadium-result-team.is-right {
+  flex-direction: row-reverse;
 }
 
 .phone-frame-dark .stadium-result-team strong {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 900;
   letter-spacing: -1px;
+}
+
+/* 결과 스코어보드 안의 팀 배지 — 기본 lg(58/20)는 안에 이니셜이 너무 작아 보여서
+   배지는 줄이고 이니셜은 키워서 시각적 균형 맞춤 (ratio ~55%). */
+.phone-frame-dark .stadium-result-team .team-badge {
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
 }
 
 .phone-frame-dark .stadium-result-team span {
@@ -1606,4 +1918,105 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* 자동 저장 상태 표시 — 결과 화면 footer 위에 작게 */
+.phone-frame-dark .stadium-result-save-status {
+  text-align: center;
+  font-size: 11px;
+  color: var(--hd-text-muted, #6b7280);
+  padding: 4px 0 8px;
+  min-height: 18px;
+}
+
+/* ── 타격 이펙트 (안타/홈런) — narration bar 중앙에서 터짐 ── */
+.phone-frame-dark .stadium-fx {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.phone-frame-dark .stadium-fx-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: hsl(var(--hue), 92%, 62%);
+  box-shadow: 0 0 8px hsl(var(--hue), 92%, 70%);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: stadium-fx-fly 900ms cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+.phone-frame-dark .stadium-fx-hr .stadium-fx-particle {
+  width: 10px;
+  height: 10px;
+  animation-duration: 1400ms;
+}
+
+@keyframes stadium-fx-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) rotate(0deg) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--dist) * -1)) rotate(720deg) scale(1);
+  }
+}
+
+/* 홈런 — 중앙 폭발 글로우 */
+.phone-frame-dark .stadium-fx-burst {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 215, 90, 0.95) 0%,
+    rgba(255, 140, 40, 0.7) 35%,
+    rgba(255, 60, 90, 0) 70%
+  );
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  animation: stadium-fx-burst 1200ms cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+}
+
+@keyframes stadium-fx-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(2.2);
+  }
+  60% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-dark .stadium-fx-particle,
+  .phone-frame-dark .stadium-fx-burst {
+    animation: none;
+    opacity: 0;
+  }
 }

@@ -1,7 +1,7 @@
 {
   "teamId": "hanwha",
   "teamName": "한화 이글스",
-  "_scrapedAt": "2026-05-21T06:50:55.969Z",
+  "_scrapedAt": "2026-05-22T15:54:57.611Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
   "players": [
@@ -33,6 +33,15 @@
       "seasonGames": 0
     },
     {
+      "id": "hanwha-p53705",
+      "name": "최원준",
+      "jerseyNumber": 3,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
       "id": "hanwha-4",
       "name": "김준수",
       "jerseyNumber": 4,
@@ -42,13 +51,31 @@
       "seasonGames": 0
     },
     {
+      "id": "hanwha-p55706",
+      "name": "이지성",
+      "jerseyNumber": 4,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
       "id": "hanwha-5",
       "name": "이도윤",
       "jerseyNumber": 5,
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 35
+      "seasonGames": 36
+    },
+    {
+      "id": "hanwha-p56705",
+      "name": "이재환",
+      "jerseyNumber": 5,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
     },
     {
       "id": "hanwha-6",
@@ -60,13 +87,31 @@
       "seasonGames": 0
     },
     {
+      "id": "hanwha-p52710",
+      "name": "한경빈",
+      "jerseyNumber": 6,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
       "id": "hanwha-7",
       "name": "심우준",
       "jerseyNumber": 7,
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 37
+    },
+    {
+      "id": "hanwha-p56707",
+      "name": "황희성",
+      "jerseyNumber": 7,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
     },
     {
       "id": "hanwha-8",
@@ -75,7 +120,16 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 36
+      "seasonGames": 38
+    },
+    {
+      "id": "hanwha-p56708",
+      "name": "이도훈",
+      "jerseyNumber": 8,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
     },
     {
       "id": "hanwha-9",
@@ -93,7 +147,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 22
+      "seasonGames": 24
     },
     {
       "id": "hanwha-11",
@@ -154,7 +208,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "hanwha-19",
@@ -163,7 +217,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 9
+      "seasonGames": 10
     },
     {
       "id": "hanwha-20",
@@ -199,7 +253,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 37
     },
     {
       "id": "hanwha-26",
@@ -217,7 +271,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "hanwha-28",
@@ -244,7 +298,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "S",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "hanwha-31",
@@ -298,7 +352,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 35
     },
     {
       "id": "hanwha-38",
@@ -307,7 +361,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 18
+      "seasonGames": 19
     },
     {
       "id": "hanwha-39",
@@ -405,7 +459,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "hanwha-51",
@@ -414,7 +468,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 41
+      "seasonGames": 43
     },
     {
       "id": "hanwha-53",
@@ -432,7 +486,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 37
+      "seasonGames": 38
     },
     {
       "id": "hanwha-55",
@@ -458,7 +512,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 22
+      "seasonGames": 23
     },
     {
       "id": "hanwha-58",
@@ -476,7 +530,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 37
     },
     {
       "id": "hanwha-61",
@@ -485,7 +539,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 20
+      "seasonGames": 21
     },
     {
       "id": "hanwha-63",
@@ -503,7 +557,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 8
+      "seasonGames": 9
     },
     {
       "id": "hanwha-65",
@@ -539,7 +593,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 2
+      "seasonGames": 3
     },
     {
       "id": "hanwha-69",
@@ -575,7 +629,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 26
+      "seasonGames": 27
     },
     {
       "id": "hanwha-96",
@@ -584,7 +638,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "hanwha-97",

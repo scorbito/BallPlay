@@ -13,10 +13,17 @@ export type MatchSession = {
   input?: SimGameInput;
   result?: SimGameResult;
   startedAt: string;
+  // 매치 출처 — 기록 저장 가능 여부 판단. "ai"는 저장 X, "public"/"friend"만 저장.
+  // 미설정(undefined)이면 AI로 간주 (백워드 호환).
+  source?: "ai" | "public" | "friend";
   // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
   liveMatchId?: string;
   liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행
   liveMode?: "normal" | "live"; // 매치 생성자가 선택한 진행 모드. 양쪽 클라이언트 동일.
+  // 친구 대전이면 사용자 측 (home/away) — 기록 저장 시 user_side로 사용.
+  userSide?: "home" | "away";
+  // 기록에서 재생 중이면 원본 record id. 결과 화면에서 중복 저장 방지에 사용.
+  replayOfRecordId?: string;
 };
 
 export function loadMatchSession(): MatchSession | null {

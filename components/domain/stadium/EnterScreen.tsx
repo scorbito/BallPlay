@@ -109,7 +109,8 @@ export function EnterScreen() {
       opponentTeamId,
       seed,
       input,
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
+      source: "ai"
     });
     setStarting(true);
     router.push("/stadium/play");

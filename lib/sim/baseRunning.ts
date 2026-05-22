@@ -14,11 +14,14 @@ export type ApplyOutcomeResult = {
 };
 
 // outcome에 따라 베이스 상태 전이. 새 상태와 득점·아웃 증감을 반환.
+// outsBefore — 이 타석 직전 아웃 수. 2아웃 땅볼처럼 3아웃이 force/batter-runner로 성립하면
+// 룰상 그 이닝의 어떤 주자도 득점할 수 없음. 호출 측에서 outs를 넘겨준다.
 export function applyOutcome(
   outcome: AtBatOutcome,
   base: BaseState,
   batterId: string,
-  rng: Rng
+  rng: Rng,
+  outsBefore: 0 | 1 | 2 = 0
 ): ApplyOutcomeResult {
   switch (outcome) {
     case "HR":
@@ -42,7 +45,7 @@ export function applyOutcome(
     case "LO":
       return { baseAfter: base, runsScored: 0, outsAdded: 1, rbi: 0 };
     case "GO":
-      return applyGroundOut(base);
+      return applyGroundOut(base, outsBefore);
     case "E":
       // v1엔 사용 X. 안전망: 단타로 처리.
       return applySingle(base, batterId, rng);
@@ -128,16 +131,19 @@ function applyDoublePlay(base: BaseState): ApplyOutcomeResult {
   };
 }
 
-function applyGroundOut(base: BaseState): ApplyOutcomeResult {
-  // 1루 주자 있으면 강제진루(단순화: 100% 진루 성공 + 타자 1루로 강등 아님, 타자 아웃)
+function applyGroundOut(base: BaseState, outsBefore: 0 | 1 | 2): ApplyOutcomeResult {
+  // 1루 주자 있으면 강제진루(단순화: 100% 진루 성공, 타자 아웃)
   if (base.first) {
+    // 2아웃 + 1루 주자: 2루 포스아웃이 3아웃 — 룰상 어떤 주자도 득점 불가
+    const runs = !base.third || outsBefore >= 2 ? 0 : 1;
     return {
       baseAfter: { first: null, second: base.first, third: base.second },
-      runsScored: base.third ? 1 : 0,
+      runsScored: runs,
       outsAdded: 1,
-      rbi: base.third ? 1 : 0
+      rbi: runs
     };
   }
+  // 1루 주자 없음 — 타자 1루 송구 아웃. 단순화: 3루 주자 홀딩(시도 안 함).
   return { baseAfter: base, runsScored: 0, outsAdded: 1, rbi: 0 };
 }
 

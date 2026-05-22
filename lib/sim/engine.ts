@@ -133,7 +133,7 @@ function playHalfInning(
 
     const baseStateBefore = base;
     const outsBefore = outs;
-    const result = applyOutcome(outcome, base, batter.playerId, rng);
+    const result = applyOutcome(outcome, base, batter.playerId, rng, outs);
     base = result.baseAfter;
     const newOuts = Math.min(3, outs + result.outsAdded);
     outs = newOuts >= 3 ? 0 : (newOuts as 0 | 1 | 2);

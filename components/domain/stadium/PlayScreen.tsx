@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Pause, FastForward, Trophy } from "lucide-react";
+import { Play, Pause, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
@@ -129,6 +129,29 @@ function OutDots({ outs }: { outs: 0 | 1 | 2 | 3 }) {
   );
 }
 
+// 안타/홈런 시 화면 위로 폭죽·반짝이 이펙트. key prop으로 매 타석마다 재실행.
+function HitEffect({ kind }: { kind: "hr" | "hit" }) {
+  const particles = kind === "hr" ? 24 : 12;
+  return (
+    <div className={`stadium-fx stadium-fx-${kind}`} aria-hidden>
+      {kind === "hr" ? <div className="stadium-fx-burst" /> : null}
+      {Array.from({ length: particles }).map((_, i) => (
+        <span
+          key={i}
+          className="stadium-fx-particle"
+          style={{
+            // 균등 분포 + 약간의 랜덤 — i 기반이라 결정적
+            ["--angle" as string]: `${(360 / particles) * i + (i % 3) * 7}deg`,
+            ["--delay" as string]: `${(i % 6) * 30}ms`,
+            ["--dist" as string]: `${kind === "hr" ? 160 + (i % 5) * 20 : 90 + (i % 4) * 15}px`,
+            ["--hue" as string]: `${(i * 47) % 360}`
+          } as CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function PlayScreen() {
   const router = useRouter();
   const [session, setSession] = useState<MatchSession | null>(null);
@@ -136,7 +159,7 @@ export function PlayScreen() {
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
   // 진행 모드 — normal(현재 기본) / fast(2배) / live(실시간 중계, SITUATION phase + 단계 narration)
-  const [mode, setMode] = useState<"normal" | "fast" | "live">("normal");
+  const [mode, setMode] = useState<"normal" | "fast" | "superfast" | "live">("normal");
   // 진행 단계 — live에선 SITUATION → BATTER → OUTCOME → … / normal·fast는 SITUATION 스킵
   const [phase, setPhase] = useState<
     "SITUATION" | "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE" | "GAME_END"
@@ -167,10 +190,9 @@ export function PlayScreen() {
     setSession(next);
     setHydrated(true);
 
-    // 라이브 매치(친구 대결) — 매치 생성자가 선택한 모드로 시작.
-    // mode는 시뮬 결과에 영향 없고 표시 페이스만 결정하므로 sync에 안전.
+    // 라이브 매치(친구 대결) — 일반 모드로 진행 (구버전 liveMode "live"는 무시).
     if (next.liveMatchId) {
-      setMode(next.liveMode ?? "live");
+      setMode("normal");
     }
 
     // 카운트다운: startAt이 미래면 그때까지 playing=false
@@ -231,6 +253,27 @@ export function PlayScreen() {
     return m;
   }, [session]);
 
+  // 이번 경기 누적 타격 (cursor까지) — 타자별 AB / Hits.
+  // 진행 중인 마지막 타석은 결과 발표 페이즈일 때만 합산 (스포 방지).
+  const todayStats = useMemo(() => {
+    const m = new Map<string, { ab: number; hits: number }>();
+    const visible = events.slice(0, cursor);
+    for (let i = 0; i < visible.length; i++) {
+      const ev = visible[i];
+      const isCurrent = i === visible.length - 1;
+      if (isCurrent && !showOutcome) continue;
+      const o = ev.ab.outcome;
+      // PA 중 AB 제외: BB, HBP, SF
+      const countsAsAB = o !== "BB" && o !== "HBP" && o !== "SF";
+      const isHit = o === "1B" || o === "2B" || o === "3B" || o === "HR";
+      const cur = m.get(ev.ab.batterId) ?? { ab: 0, hits: 0 };
+      if (countsAsAB) cur.ab += 1;
+      if (isHit) cur.hits += 1;
+      m.set(ev.ab.batterId, cur);
+    }
+    return m;
+  }, [events, cursor, showOutcome]);
+
   // 현재 이닝의 각 타자별 마지막 결과 — 공수교대 시 자동으로 비워짐 (currentInningEvents가 새 이닝의 것으로 교체됨)
   const inningOutcomes = useMemo(() => {
     const map = new Map<string, { label: string; isHit: boolean; isHr: boolean }>();
@@ -257,7 +300,21 @@ export function PlayScreen() {
     if (cursor > events.length) return;
 
     // 모드별 시간 배수 — normal=기본, fast=절반, live=느림(중계 호흡)
-    const modeMul = mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+    const modeMul =
+      mode === "superfast" ? 0.28 : mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+
+    // OUTCOME phase 시간은 타구 결과에 따라 달라짐 — 득점 발생/안타/홈런은 더 길게.
+    const currentEvt = cursor > 0 ? events[cursor - 1] : null;
+    const outcomeMs = (() => {
+      if (!currentEvt) return 1100;
+      const o = currentEvt.ab.outcome;
+      // 홈런 or 득점 발생 (적시타 / SF / 땅볼 RBI 등) — 모두 가장 길게
+      if (o === "HR" || currentEvt.ab.runsScored > 0) return 2400;
+      if (o === "3B") return 1900;
+      if (o === "2B") return 1800;
+      if (o === "1B") return 1500;
+      return 1100; // 아웃/볼넷류
+    })();
 
     // 페이즈별 base 시간 (ms). live 모드의 OUTCOME sub-step도 같은 시간 단위.
     const intervalByPhase: Record<
@@ -265,10 +322,10 @@ export function PlayScreen() {
       number
     > = {
       SITUATION: 1500 * modeMul,
-      BATTER: 700 * modeMul,
-      OUTCOME: 700 * modeMul,
-      INNING_END: 1100 * modeMul,
-      PITCHER_CHANGE: 1100 * modeMul
+      BATTER: 800 * modeMul,
+      OUTCOME: outcomeMs * modeMul,
+      INNING_END: 1200 * modeMul,
+      PITCHER_CHANGE: 1200 * modeMul
     };
 
     const handle = window.setTimeout(() => {
@@ -498,13 +555,24 @@ export function PlayScreen() {
           };
         }
       }
-      // 일반/빠른 모드 또는 점수 없는 결과 — 풍부한 결과 멘트 + 점수 정보
+      // 일반/빠른 모드 또는 점수 없는 결과 — 풍부한 결과 멘트 + 점수 정보 + 주자 진루
       const outcomeNarr = getOutcomeText(current.ab.outcome, cursor);
+      // 주자 진루 — before/after 비교로 같은 playerId가 어느 베이스로 이동했는지 추적.
+      // 홈인은 +N으로 이미 표시되므로 진루(2루/3루)만 모음.
+      const before = current.ab.baseStateBefore;
+      const after = current.ab.baseStateAfter;
+      const movements: string[] = [];
+      if (before.first) {
+        if (after.second === before.first) movements.push("1루주자 2루로");
+        else if (after.third === before.first) movements.push("1루주자 3루까지");
+      }
+      if (before.second) {
+        if (after.third === before.second) movements.push("2루주자 3루로");
+      }
+      const movementText = movements.length > 0 ? ` · ${movements.join(", ")}` : "";
+      const runsText = current.ab.runsScored > 0 ? ` (+${current.ab.runsScored})` : "";
       return {
-        text:
-          current.ab.runsScored > 0
-            ? `${orderPrefix}${batterName} — ${outcomeNarr} (+${current.ab.runsScored})`
-            : `${orderPrefix}${batterName} — ${outcomeNarr}`,
+        text: `${orderPrefix}${batterName} — ${outcomeNarr}${runsText}${movementText}`,
         variant: "default"
       };
     }
@@ -559,20 +627,37 @@ export function PlayScreen() {
       );
     }
 
+    // 이번 경기 누적 — "타수-안타" 형식 (KBO 중계 관행). AB 0이면 표시 안 함.
+    const today = todayStats.get(batter.playerId);
+
     return (
       <li
         key={batter.playerId}
         className={`stadium-play-lineup-row ${isCurrent ? "is-current" : ""}`}
       >
         <span className="stadium-play-lineup-order">{idx + 1}</span>
-        <span className="stadium-play-lineup-name">{batter.name}</span>
+        <span className="stadium-play-lineup-name">
+          {batter.name}
+          {today && today.ab > 0 ? (
+            <em className="stadium-play-lineup-today">
+              ({today.hits}/{today.ab})
+            </em>
+          ) : null}
+        </span>
         {outcomeNode}
       </li>
     );
   };
 
+  // 상단 헤더 타이틀 — 진행 중엔 이닝 정보, 종료 시엔 "경기 종료"
+  const headerTitle = isDone
+    ? "경기 종료"
+    : latest
+    ? `${latest.inning}회 ${latest.half === "top" ? "초" : "말"}`
+    : "경기 시작";
+
   return (
-    <AppShell activeTab="stadium" title="시뮬레이션" backHref="/stadium/lobby" theme="dark">
+    <AppShell activeTab="stadium" title={headerTitle} backHref="/stadium/lobby" theme="dark">
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>
@@ -594,7 +679,7 @@ export function PlayScreen() {
             </thead>
             <tbody>
               <tr>
-                <td className="team-cell"><TeamBadge teamId={awayTeam.id} size="sm" /> <span>{awayLabel}</span></td>
+                <td className="team-cell"><span>{awayLabel}</span></td>
                 {linescore.away.map((cell, i) => (
                   <td key={`a${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "top" ? "is-current" : ""}>
                     {cell.runs === null ? "" : cell.runs}
@@ -603,7 +688,7 @@ export function PlayScreen() {
                 <td className="rh"><strong>{totalAway}</strong></td>
               </tr>
               <tr>
-                <td className="team-cell"><TeamBadge teamId={homeTeam.id} size="sm" /> <span>{homeLabel}</span></td>
+                <td className="team-cell"><span>{homeLabel}</span></td>
                 {linescore.home.map((cell, i) => (
                   <td key={`h${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "bottom" ? "is-current" : ""}>
                     {cell.runs === null ? "" : cell.runs}
@@ -623,9 +708,6 @@ export function PlayScreen() {
             <strong>{totalAway}</strong>
           </div>
           <div className="stadium-play-state">
-            <span className="stadium-play-inning-label">
-              {latest ? `${latest.inning}회 ${latest.half === "top" ? "초" : "말"}` : "경기 시작"}
-            </span>
             <Diamond base={baseState} />
             <OutDots outs={outs} />
           </div>
@@ -636,14 +718,30 @@ export function PlayScreen() {
           </div>
         </header>
 
-        {/* 3. 1줄 상황판 — 타석 진행/공수교대/투수교체 등 진행 알림 */}
+        {/* 3. 1줄 상황판 — 타석 진행/공수교대/투수교체/타석 결과 등 모든 진행 알림.
+            타격 이펙트(폭죽)도 이 박스 중앙에서 터짐. */}
         <div className={`stadium-play-narration is-${narration.variant}`}>
           <span>{narration.text}</span>
+          {phase === "OUTCOME" && latest ? (
+            latest.ab.outcome === "HR" || latest.ab.runsScored > 0 ? (
+              <HitEffect key={`fx-${cursor}-hr`} kind="hr" />
+            ) : latest.ab.outcome === "1B" || latest.ab.outcome === "2B" || latest.ab.outcome === "3B" ? (
+              <HitEffect key={`fx-${cursor}-hit`} kind="hit" />
+            ) : null
+          ) : null}
         </div>
 
-        {/* 4. 양 팀 라인업 (현재 타순 옆에 결과 인라인 표시) */}
-        <div className="stadium-play-lineups">
-          <div className={`stadium-play-batting-card ${battingSide === "away" ? "is-offense" : ""}`}>
+        {/* 4. 양 팀 라인업 — 진행 중엔 공격팀이 크게, 종료 시엔 1:1 박스스코어 모드 */}
+        <div
+          className={`stadium-play-lineups ${
+            isDone ? "is-final" : `is-offense-${battingSide}`
+          }`}
+        >
+          <div
+            className={`stadium-play-batting-card ${
+              !isDone && battingSide === "away" ? "is-offense" : ""
+            } ${isDone ? "is-final" : ""}`}
+          >
             <div className="stadium-play-batting-head">
               <span className="stadium-play-batting-pitcher">투수 {awayCurrentPitcher.name}</span>
             </div>
@@ -652,7 +750,11 @@ export function PlayScreen() {
             </ol>
           </div>
 
-          <div className={`stadium-play-batting-card ${battingSide === "home" ? "is-offense" : ""}`}>
+          <div
+            className={`stadium-play-batting-card ${
+              !isDone && battingSide === "home" ? "is-offense" : ""
+            } ${isDone ? "is-final" : ""}`}
+          >
             <div className="stadium-play-batting-head">
               <span className="stadium-play-batting-pitcher">투수 {homeCurrentPitcher.name}</span>
             </div>
@@ -671,20 +773,16 @@ export function PlayScreen() {
               </div>
             ) : (
               <>
-                <button type="button" className="stadium-play-btn" onClick={() => setPlaying((p) => !p)}>
+                <button
+                  type="button"
+                  className="stadium-play-btn stadium-play-btn-icon"
+                  onClick={() => setPlaying((p) => !p)}
+                  aria-label={playing ? "일시정지" : "재생"}
+                  title={playing ? "일시정지" : "재생"}
+                >
                   {playing ? <Pause size={16} /> : <Play size={16} />}
-                  <span>{playing ? "일시정지" : "재생"}</span>
                 </button>
                 <div className="stadium-play-mode" role="radiogroup" aria-label="진행 모드">
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === "fast"}
-                    className={`stadium-play-mode-btn ${mode === "fast" ? "is-active" : ""}`}
-                    onClick={() => setMode("fast")}
-                  >
-                    <FastForward size={12} /> 빠른
-                  </button>
                   <button
                     type="button"
                     role="radio"
@@ -697,11 +795,20 @@ export function PlayScreen() {
                   <button
                     type="button"
                     role="radio"
-                    aria-checked={mode === "live"}
-                    className={`stadium-play-mode-btn ${mode === "live" ? "is-active" : ""}`}
-                    onClick={() => setMode("live")}
+                    aria-checked={mode === "fast"}
+                    className={`stadium-play-mode-btn ${mode === "fast" ? "is-active" : ""}`}
+                    onClick={() => setMode("fast")}
                   >
-                    중계
+                    빠른
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={mode === "superfast"}
+                    className={`stadium-play-mode-btn ${mode === "superfast" ? "is-active" : ""}`}
+                    onClick={() => setMode("superfast")}
+                  >
+                    빠른×2
                   </button>
                 </div>
                 <button
@@ -725,6 +832,7 @@ export function PlayScreen() {
           )}
         </footer>
       </section>
+
     </AppShell>
   );
 }

@@ -1,0 +1,206 @@
+/* 라인업 상세 모달 — 타순 + 투수진 풀버전.
+   기본 modal-panel이 밝은 톤이라 다크 색상은 panel 셀렉터에서 직접 지정. */
+
+.modal-backdrop:has(.lineup-detail-panel) {
+  align-items: center;
+  padding: 16px;
+}
+
+.modal-panel.lineup-detail-panel,
+.phone-frame-dark .modal-panel.lineup-detail-panel {
+  width: calc(100% - 32px);
+  max-width: 480px;
+  max-height: 85vh;
+  background: #0d1a30 !important;
+  color: #f7f9fc !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 16px;
+  /* body가 스크롤되므로 panel은 overflow hidden */
+  overflow: hidden;
+}
+
+/* 모달 본문 스크롤바 — 다크 톤에 맞게 얇고 어둡게 */
+.lineup-detail-panel .modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.lineup-detail-panel .modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+.lineup-detail-panel .modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lineup-detail-panel .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+}
+.lineup-detail-panel .modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.lineup-detail-panel .modal-header {
+  background: #0d1a30 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f7f9fc;
+}
+
+/* 헤더 타이틀 — 팀명 (LG 트윈스 등) */
+.lineup-detail-panel .modal-header strong {
+  color: #f7f9fc !important;
+}
+
+.lineup-detail-panel .modal-close {
+  background: transparent !important;
+  color: #f7f9fc !important;
+}
+
+.lineup-detail-panel .modal-body {
+  background: #0d1a30 !important;
+  color: #f7f9fc !important;
+}
+
+
+/* 헤더 타이틀 — 배지 + 라인업 이름 (가로 정렬) */
+.lineup-detail-panel .lineup-detail-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.lineup-detail-panel .lineup-detail-section {
+  margin-bottom: 20px;
+}
+
+.lineup-detail-panel .lineup-detail-section h3 {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--hd-text-secondary);
+  margin: 0 0 10px;
+  letter-spacing: 0.3px;
+}
+
+/* 타순 — 9명 그리드 */
+
+.lineup-detail-panel .lineup-detail-batters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lineup-detail-panel .lineup-detail-batters li {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.lineup-detail-panel .lineup-detail-order {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--hd-accent, #ff6a2b);
+  text-align: center;
+}
+
+.lineup-detail-panel .lineup-detail-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--hd-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.lineup-detail-panel .lineup-detail-hand {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  color: var(--hd-text-secondary);
+}
+
+.lineup-detail-panel .lineup-detail-stat {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  color: var(--hd-text-muted, #6b7280);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.lineup-detail-panel .lineup-detail-stat strong {
+  color: var(--hd-text-primary);
+  font-weight: 800;
+  margin-left: 2px;
+}
+
+/* 투수진 */
+
+.lineup-detail-panel .lineup-detail-pitcher {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 106, 43, 0.08);
+  border: 1px solid rgba(255, 106, 43, 0.25);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.lineup-detail-panel .lineup-detail-bullpen {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lineup-detail-panel .lineup-detail-bullpen li {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hd-border-soft);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.lineup-detail-panel .lineup-detail-role {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  background: var(--hd-accent, #ff6a2b);
+  color: #fff;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+
+.lineup-detail-panel .lineup-detail-bullpen .lineup-detail-role {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--hd-text-secondary);
+}
+
+.lineup-detail-panel .lineup-detail-empty {
+  font-size: 12px;
+  color: var(--hd-text-muted, #6b7280);
+  text-align: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}

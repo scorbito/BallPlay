@@ -14,7 +14,10 @@ import {
   type MatchSession
 } from "@/lib/sim/matchSession";
 import { buildShareUrl } from "@/lib/sim/matchShare";
+import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { useAppState } from "@/lib/state/AppState";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 
 export function ResultScreen() {
   const router = useRouter();
@@ -22,6 +25,8 @@ export function ResultScreen() {
   const [session, setSession] = useState<MatchSession | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   useEffect(() => {
     const s = loadMatchSession();
@@ -49,6 +54,77 @@ export function ResultScreen() {
       null
     );
   }, [session]);
+
+  // 자동 저장 — source가 public/friend일 때만, 로그인+정식계정에서만.
+  // 단, 기록에서 재생 중이면(replayOfRecordId 세팅됨) 중복 저장 방지를 위해 skip.
+  // ⚠ Rules of Hooks 위반 방지를 위해 early return 앞에 위치해야 함.
+  const canSave =
+    (session?.source === "public" || session?.source === "friend") &&
+    !session?.replayOfRecordId;
+
+  useEffect(() => {
+    if (!hydrated || !session?.input || !session.result) return;
+    if (!canSave) return;
+    if (savedId || saving) return;
+
+    let cancelled = false;
+    (async () => {
+      setSaving(true);
+      try {
+        const client = createSupabaseBrowserClient();
+        const { data: { user } } = await client.auth.getUser();
+        if (!user || user.is_anonymous) return;
+
+        const { home, away } = session.input!;
+        const { finalScore, mvp, innings } = session.result!;
+        const totalInnings = Math.max(9, ...innings.map((i) => i.inning));
+        const lastInning = innings[innings.length - 1];
+        const isWalkOff =
+          !!lastInning &&
+          lastInning.inning >= 9 &&
+          !!lastInning.bottom &&
+          finalScore.home > finalScore.away;
+
+        const homeLabel = home.displayName?.trim() || null;
+        const awayLabel = away.displayName?.trim() || null;
+
+        const result = await createRecord(client, {
+          ownerUserId: user.id,
+          source: session.source as BpRecordSource,
+          bpMatchId: session.liveMatchId ?? null,
+          userSide: session.userSide ?? "home",
+          engineVersion: SIM_ENGINE_VERSION,
+          seed: session.seed,
+          input: session.input!,
+          result: session.result!,
+          homeTeamId: home.teamId,
+          awayTeamId: away.teamId,
+          homeLabel,
+          awayLabel,
+          finalScore,
+          mvpPlayerId: mvp.playerId,
+          mvpName: mvpPlayer?.name ?? null,
+          isWalkoff: isWalkOff,
+          totalInnings
+        });
+
+        if (cancelled) return;
+        if (!result.ok) {
+          showToast(`기록 자동 저장 실패: ${result.error}`);
+          return;
+        }
+        setSavedId(result.row.id);
+      } catch {
+        if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
+      } finally {
+        if (!cancelled) setSaving(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, canSave, session, mvpPlayer, savedId, saving, showToast]);
 
   if (!hydrated || !session?.result || !session.input) {
     return (
@@ -81,7 +157,9 @@ export function ResultScreen() {
       opponentTeamId: session.opponentTeamId,
       seed: newSeed,
       input: session.input,
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
+      // 재대결은 항상 AI 처리 (친구/공개 매칭 재대결은 별도 흐름 필요)
+      source: "ai"
     });
     router.push("/stadium/play");
   };
@@ -129,7 +207,7 @@ export function ResultScreen() {
             <strong>{finalScore.away}</strong>
           </div>
           <span className="stadium-result-divider">:</span>
-          <div className="stadium-result-team">
+          <div className="stadium-result-team is-right">
             <TeamBadge teamId={homeTeam.id} size="lg" />
             <span>{homeLabel}</span>
             <strong>{finalScore.home}</strong>
@@ -172,6 +250,12 @@ export function ResultScreen() {
           <span>엔진 v{engineVersion}</span>
           <span>시드 {seed}</span>
         </div>
+
+        {canSave ? (
+          <div className="stadium-result-save-status">
+            {savedId ? "✓ 기록에 자동 저장됨" : saving ? "기록 저장 중..." : null}
+          </div>
+        ) : null}
 
         <footer className="stadium-result-actions">
           <button type="button" className="stadium-cta-primary" onClick={handleRematch}>

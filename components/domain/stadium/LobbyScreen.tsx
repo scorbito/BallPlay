@@ -1,17 +1,34 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Bot, ChevronRight, KeyRound, Swords, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bot, ChevronRight, KeyRound, List, Swords, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
 import { PublishedLineupList } from "./PublishedLineupList";
+import { LineupDetailModal } from "./LineupDetailModal";
+import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
+import type { SimTeamInput } from "@/lib/sim/types";
 
 // 경기장 메인 — 공개 라인업이 메인 콘텐츠.
 //   1) 친구와 대결 (작은 진입점 2-up)
 //   2) 공개 라인업 풀 (메인, 상위 6개 미리보기)
 //   3) AI와 대결 (하단 그리드)
+// 라인업 미리보기용 고정 seed — preview는 항상 같은 결과 나오게.
+// 실제 경기 진입 시는 새 seed로 다시 생성되어 본 경기에 영향 X.
+const PREVIEW_SEED = 0;
+
 export function LobbyScreen() {
+  const router = useRouter();
+  const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
+
+  const openAiPreview = (teamId: string) => {
+    const team = buildFakeOpponentTeam(teamId, PREVIEW_SEED);
+    if (team) setPreviewTeam(team);
+  };
+
   return (
     <AppShell activeTab="stadium" title="경기장" backHref="/" theme="dark">
       {/* 1. 친구와 대결 — 컴팩트 2-up */}
@@ -59,12 +76,7 @@ export function LobbyScreen() {
         </header>
         <div className="stadium-lobby-grid">
           {teams.map((team) => (
-            <Link
-              key={team.id}
-              href={`/stadium/enter?opponent=${team.id}`}
-              className="stadium-lobby-card"
-              prefetch
-            >
+            <div key={team.id} className="stadium-lobby-card">
               <span
                 className="stadium-lobby-card-bar"
                 style={{ background: team.color }}
@@ -75,11 +87,36 @@ export function LobbyScreen() {
                 <strong>{team.name}</strong>
                 <span>자동 생성 라인업</span>
               </div>
-              <Swords size={16} className="stadium-lobby-card-icon" />
-            </Link>
+              <div className="stadium-lobby-card-actions">
+                <button
+                  type="button"
+                  className="stadium-lobby-card-btn stadium-lobby-card-btn-secondary"
+                  onClick={() => openAiPreview(team.id)}
+                  aria-label={`${team.name} 라인업 보기`}
+                >
+                  <List size={14} />
+                  <span>라인업</span>
+                </button>
+                <button
+                  type="button"
+                  className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
+                  onClick={() => router.push(`/stadium/enter?opponent=${team.id}`)}
+                  aria-label={`${team.name}과 대결`}
+                >
+                  <Swords size={14} />
+                  <span>도전</span>
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </section>
+
+      <LineupDetailModal
+        open={previewTeam !== null}
+        team={previewTeam}
+        onClose={() => setPreviewTeam(null)}
+      />
     </AppShell>
   );
 }
