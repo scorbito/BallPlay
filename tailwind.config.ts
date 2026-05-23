@@ -51,6 +51,12 @@ const config: Config = {
           accent: "var(--bp-accent)",
           "accent-strong": "var(--bp-accent-strong)",
           "accent-soft": "var(--bp-accent-soft)",
+          "accent-2": "var(--bp-accent-2)",
+          "accent-2-strong": "var(--bp-accent-2-strong)",
+          "accent-2-soft": "var(--bp-accent-2-soft)",
+          "accent-3": "var(--bp-accent-3)",
+          "accent-3-strong": "var(--bp-accent-3-strong)",
+          "accent-3-soft": "var(--bp-accent-3-soft)",
           "game-victory": "var(--bp-game-victory)",
           "game-victory-strong": "var(--bp-game-victory-strong)"
         },

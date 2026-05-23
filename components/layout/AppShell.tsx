@@ -8,7 +8,7 @@ type AppShellProps = {
   activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
   title?: string;
   showBeta?: boolean;
-  theme?: "default" | "dark";
+  theme?: "default" | "dark" | "light";
   headerAction?: ReactNode;
   backHref?: string;
   /** 상단 헤더(타이틀바)를 완전히 숨김. 뒤로가기·타이틀·헤더 액션 모두 함께 사라짐.
@@ -30,9 +30,12 @@ export function AppShell({
   wide = false,
   children
 }: AppShellProps) {
+  // theme="dark": 레거시 "오늘은 승요" 공유 화면용 (다크 톤 유지).
+  // theme="light": BallPlay 신규 라이트 톤 — product-spec §5.5 (--bp-* 토큰 + 팀 컬러 주도).
   const frameClasses = [
     "phone-frame",
     theme === "dark" ? "phone-frame-dark" : "",
+    theme === "light" ? "phone-frame-light" : "",
     wide ? "phone-frame-wide" : ""
   ].filter(Boolean).join(" ");
   return (

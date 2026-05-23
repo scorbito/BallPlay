@@ -16,43 +16,74 @@
   /* === BallPlay 라이트 시맨틱 토큰 (2026-05-22 추가, product-spec §5.5)
    * 라인업 배틀 중심 — 중성 베이스 + KBO 팀 컬러가 콘텐츠 강조를 주도. */
 
-  /* 표면 (배경·카드·구분) */
-  --bp-bg: #fafafa;
-  --bp-bg-soft: #f5f6f8;
+  /* 표면 (배경·카드·구분) — 사용자 지정 팔레트 (2026-05-23) */
+  --bp-bg: #ffffff;
+  --bp-bg-soft: #f8fafc;
   --bp-bg-elevated: #ffffff;
-  --bp-bg-section: #f8fafc;
-  --bp-card: #ffffff;
-  --bp-card-soft: #f5f6f8;
+  --bp-bg-section: #f1f5f9;
+  --bp-card: #f8fafc;
+  --bp-card-soft: #f1f5f9;
 
-  /* 텍스트 */
-  --bp-text: #1a1a1a;
-  --bp-text-strong: #0f172a;
-  --bp-text-secondary: #4b5563;
-  --bp-text-muted: #6b7280;
-  --bp-text-subtle: #9ca3af;
+  /* 텍스트 — 짙은 네이비 잉크 + 슬레이트 단계.
+     text-strong은 accent(#1a2244)보다 한 톤 더 진해서 위계가 깨지지 않게. */
+  --bp-text: #0b1f3a;
+  --bp-text-strong: #08152b;
+  --bp-text-secondary: #475569;
+  --bp-text-muted: #94a3b8;
+  --bp-text-subtle: #cbd5e1;
   --bp-text-on-color: #ffffff;
 
-  /* 보더·라인 */
-  --bp-line: #eceef2;
-  --bp-line-soft: #f1f2f5;
-  --bp-line-strong: #d1d5db;
+  /* 보더·라인 — 슬레이트 그레이 */
+  --bp-line: #e2e8f0;
+  --bp-line-soft: #f1f5f9;
+  --bp-line-strong: #cbd5e1;
 
   /* 상태 (승/패/정보) */
   --bp-success: #16a34a;
   --bp-success-soft: rgba(22, 163, 74, 0.12);
-  --bp-danger: #dc2626;
-  --bp-danger-soft: rgba(220, 38, 38, 0.1);
+  --bp-danger: #ef4444;
+  --bp-danger-soft: rgba(239, 68, 68, 0.10);
   --bp-warning: #d97706;
   --bp-warning-soft: rgba(217, 119, 6, 0.12);
   --bp-info: #2563eb;
   --bp-info-soft: rgba(37, 99, 235, 0.1);
 
-  /* 게임감 액센트 (CTA·승리 표시 — 팀 컬러와 충돌 없는 별도 키 컬러) */
-  --bp-accent: #ff6b35;
-  --bp-accent-strong: #ff3d15;
-  --bp-accent-soft: rgba(255, 107, 53, 0.12);
-  --bp-game-victory: #00e676;
-  --bp-game-victory-strong: #00b85b;
+  /* CTA 액센트 — 핑크 (Primary).
+     product-spec §5.5 "놀이터·가족 친화·SNS 바이럴" 포지셔닝.
+     KBO 10팀 어느 곳도 메인으로 안 쓰는 컬러라 충돌 없음.
+     사용처: 매치 만들기 / 재생 / 도전 / 활성 탭 / 주요 CTA */
+  --bp-accent: #e84a8a;
+  --bp-accent-strong: #d63b7a;
+  --bp-accent-soft: rgba(232, 74, 138, 0.10);
+
+  /* 보조 액센트 — 라벤더 (Secondary).
+     사용처: 라인업 짜기 / 코드 참여 같은 보조 액션 버튼 */
+  --bp-accent-2: #a78bfa;
+  --bp-accent-2-strong: #8b5cf6;
+  --bp-accent-2-soft: rgba(167, 139, 250, 0.12);
+
+  /* 3차 액센트 — 민트 (Tertiary, 강조 라벨·상태).
+     사용처: 활성 슬롯 표시 / "저장됨"·"동기화" 같은 상태 */
+  --bp-accent-3: #2ed3b7;
+  --bp-accent-3-strong: #14b8a6;
+  --bp-accent-3-soft: rgba(46, 211, 183, 0.12);
+
+  /* 게임감 — "승리" 표시는 --bp-success로 통일 (사용자 팔레트 결정) */
+  --bp-game-victory: #16a34a;
+  --bp-game-victory-strong: #15803d;
+
+  /* Radius — 라이트 톤 카드 미감 (둥글지만 과하지 않게) */
+  --bp-radius-hero: 22px;
+  --bp-radius-card: 18px;
+  --bp-radius-button: 14px;
+  --bp-radius-chip: 10px;
+  --bp-radius-pill: 999px;
+
+  /* Shadow — 라이트 베이스에 떠보이게 옅은 블루 그레이 톤 */
+  --bp-shadow-sm: 0 1px 2px rgba(20, 30, 50, 0.05);
+  --bp-shadow-card: 0 6px 16px rgba(20, 30, 50, 0.06);
+  --bp-shadow-hero: 0 12px 32px rgba(20, 30, 50, 0.10);
+  --bp-shadow-overlay: 0 24px 60px rgba(20, 30, 50, 0.14);
 
   /* === KBO 10팀 컬러 — lib/constants/teams.ts와 동기화 (2026-05-22)
    * 라이트 베이스에서 충분한 대비를 가지도록 진한 톤으로 유지.

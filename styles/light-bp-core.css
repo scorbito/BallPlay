@@ -1,0 +1,160 @@
+/* ============================================================
+ * BallPlay LIGHT theme — chrome (AppShell wrapper · header · BottomTabs · 모달)
+ *
+ * product-spec §5.5 결정:
+ *   v1 = 라이트 단일 톤, 중성 베이스 + KBO 팀 컬러가 콘텐츠 강조 주도.
+ *   토큰은 --bp-* / --team-* (app/globals.css :root 정의).
+ *
+ * 화면별 카드/리스트 스타일은 styles/dark-{records,stadium,lineup,lineup-detail}.css가
+ *   .phone-frame-light 셀렉터로 직접 --bp-* 토큰을 사용하도록 마이그레이션 완료.
+ *   본 파일은 AppShell이 공통으로 쓰는 chrome 요소만 라이트로 정의.
+ * ============================================================ */
+
+.phone-frame-light {
+  background: linear-gradient(180deg, var(--bp-bg) 0%, var(--bp-bg-soft) 100%);
+  color: var(--bp-text);
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+}
+
+/* ── 스크롤·헤더·브랜드 ── */
+.phone-frame-light .app-scroll {
+  background: transparent;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .app-header {
+  height: 64px;
+  padding: 18px 24px 8px;
+  background: transparent;
+  border-bottom: 0;
+  text-align: center;
+}
+
+.phone-frame-light .app-header .brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--bp-text-strong);
+  letter-spacing: -0.2px;
+  margin: 0 auto;
+}
+
+.phone-frame-light .brand-beta {
+  background: var(--bp-accent-soft);
+  border-color: rgba(232, 74, 138, 0.4);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .header-back {
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .header-back:hover {
+  color: var(--bp-text);
+}
+
+.phone-frame-light .app-content {
+  padding: 8px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── BottomTabs ── */
+.phone-frame-light .bottom-tab {
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--bp-line-soft);
+  backdrop-filter: blur(12px);
+}
+
+.phone-frame-light .tab-item {
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .tab-item-active {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .tab-item-disabled {
+  color: var(--bp-text-muted);
+  opacity: 0.4;
+}
+
+.phone-frame-light .tab-item-badge {
+  background: var(--bp-card-soft);
+  color: var(--bp-text-muted);
+}
+
+/* ── 가이드(온보딩) 모달 — 흰 패널 ── */
+.phone-frame-light .guide-modal-backdrop {
+  align-items: flex-start;
+  padding: 86px 18px 18px;
+}
+
+.phone-frame-light .guide-modal-panel {
+  max-width: calc(100% - 0px);
+  border-radius: 20px;
+  background: var(--bp-card);
+  color: var(--bp-text);
+  border: 1px solid var(--bp-line);
+  box-shadow: var(--bp-shadow-overlay);
+}
+
+.phone-frame-light .guide-modal-panel .modal-header {
+  background: transparent;
+  border-bottom-color: var(--bp-line-soft);
+}
+
+.phone-frame-light .guide-modal-panel .modal-header strong {
+  color: var(--bp-text);
+}
+
+.phone-frame-light .guide-modal-panel .modal-close {
+  background: var(--bp-card-soft);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .guide-step-indicator {
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .guide-icon {
+  background: var(--bp-accent-soft);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .guide-modal-content h2 {
+  color: var(--bp-text-strong);
+}
+
+.phone-frame-light .guide-modal-content p {
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .guide-dot {
+  background: rgba(20, 30, 50, 0.18);
+}
+
+.phone-frame-light .guide-dot-active {
+  background: var(--bp-accent);
+}
+
+.phone-frame-light .guide-skip {
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line);
+  color: var(--bp-text-secondary);
+}
+
+/* ── 모바일 fullscreen — phone-frame 바깥 배경(notch 영역)도 라이트로 ── */
+@media (max-width: 480px) {
+  body:has(.phone-frame-light) .app-backdrop {
+    background: var(--bp-bg);
+  }
+}
+
+/* ── PC/태블릿 — phone-frame 자체에 옅은 보더 + 그림자 (시안의 카드 느낌) ── */
+@media (min-width: 481px) {
+  .phone-frame-light {
+    border: 1px solid var(--bp-line);
+    box-shadow: var(--bp-shadow-hero);
+  }
+}
