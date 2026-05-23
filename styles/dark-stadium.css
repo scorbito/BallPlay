@@ -120,6 +120,19 @@
   gap: 10px;
 }
 
+/* AI 카드 — PC wide(1100px) 모드에선 2열, 그 외엔 1열 (좁은 폭에선 텍스트 깨짐 방지) */
+@media (min-width: 1025px) {
+  .phone-frame-dark.phone-frame-wide .stadium-lobby-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .phone-frame-dark.phone-frame-wide .stadium-lobby-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .phone-frame-dark .stadium-lobby-card {
   position: relative;
   display: flex;
@@ -428,9 +441,23 @@
 }
 
 .phone-frame-dark .stadium-discover-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 8px;
+}
+
+/* PC wide 모드 — 공개 라인업 카드 2열 */
+@media (min-width: 1025px) {
+  .phone-frame-dark.phone-frame-wide .stadium-discover-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* 태블릿 가로 wide — 더 넓으면 2열 */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .phone-frame-dark.phone-frame-wide .stadium-discover-list {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .phone-frame-dark .stadium-discover-card {

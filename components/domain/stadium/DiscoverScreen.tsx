@@ -25,7 +25,7 @@ export function DiscoverScreen() {
   // 로그인 안 됨 — 로그인 게이트
   if (checked && !userId) {
     return (
-      <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="dark">
+      <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="dark" wide>
         <section className="stadium-discover-gate">
           <Globe size={40} />
           <h2>로그인이 필요합니다</h2>
@@ -37,7 +37,7 @@ export function DiscoverScreen() {
   }
 
   return (
-    <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="dark">
+    <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="dark" wide>
       <header className="stadium-enter-head">
         <h1 className="stadium-h1">공개 라인업</h1>
         <p className="stadium-sub">

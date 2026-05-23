@@ -400,7 +400,7 @@ export function PlayScreen() {
 
   if (!hydrated || !session?.result) {
     return (
-      <AppShell activeTab="stadium" title="시뮬레이션" backHref="/stadium/lobby" theme="dark">
+      <AppShell activeTab="stadium" title="시뮬레이션" backHref="/stadium/lobby" theme="dark" wide>
         <p className="stadium-loading">경기 준비 중...</p>
       </AppShell>
     );
@@ -657,7 +657,7 @@ export function PlayScreen() {
     : "경기 시작";
 
   return (
-    <AppShell activeTab="stadium" title={headerTitle} backHref="/stadium/lobby" theme="dark">
+    <AppShell activeTab="stadium" title={headerTitle} backHref="/stadium/lobby" theme="dark" wide>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>

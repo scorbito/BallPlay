@@ -128,7 +128,7 @@ export function ResultScreen() {
 
   if (!hydrated || !session?.result || !session.input) {
     return (
-      <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="dark">
+      <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="dark" wide>
         <p className="stadium-loading">결과를 불러오는 중...</p>
       </AppShell>
     );
@@ -193,7 +193,7 @@ export function ResultScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="dark">
+    <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="dark" wide>
       <section className="stadium-result">
         <div className="stadium-result-banner">
           <Trophy size={24} />

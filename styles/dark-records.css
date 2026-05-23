@@ -102,9 +102,22 @@
 /* ── 카드 목록 ── */
 
 .phone-frame-dark .records-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
+}
+
+/* PC wide / 태블릿 가로 wide — 기록 카드 2열 */
+@media (min-width: 1025px) {
+  .phone-frame-dark.phone-frame-wide .records-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .phone-frame-dark.phone-frame-wide .records-list {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .phone-frame-dark .records-card {

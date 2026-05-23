@@ -117,7 +117,7 @@ export function EnterScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="경기장 입장" backHref="/stadium/lobby" theme="dark">
+    <AppShell activeTab="stadium" title="경기장 입장" backHref="/stadium/lobby" theme="dark" wide>
       <section className="stadium-enter">
         <header className="stadium-enter-head">
           <h1 className="stadium-h1">매치 미리보기</h1>
