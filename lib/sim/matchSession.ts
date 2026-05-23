@@ -24,6 +24,8 @@ export type MatchSession = {
   userSide?: "home" | "away";
   // 기록에서 재생 중이면 원본 record id. 결과 화면에서 중복 저장 방지에 사용.
   replayOfRecordId?: string;
+  // 경기 종료 시 PlayScreen에서 저장한 record id. ResultScreen 중복 저장 방지에 사용.
+  savedRecordId?: string;
 };
 
 export function loadMatchSession(): MatchSession | null {

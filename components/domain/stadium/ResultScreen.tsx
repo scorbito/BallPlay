@@ -56,11 +56,13 @@ export function ResultScreen() {
   }, [session]);
 
   // 자동 저장 — source가 public/friend일 때만, 로그인+정식계정에서만.
-  // 단, 기록에서 재생 중이면(replayOfRecordId 세팅됨) 중복 저장 방지를 위해 skip.
+  // PlayScreen이 GAME_END 시점에 먼저 저장하므로 ResultScreen은 보통 skip.
+  // Fallback: 직접 /stadium/result URL 진입 등 PlayScreen 거치지 않은 케이스만 저장.
   // ⚠ Rules of Hooks 위반 방지를 위해 early return 앞에 위치해야 함.
   const canSave =
     (session?.source === "public" || session?.source === "friend") &&
-    !session?.replayOfRecordId;
+    !session?.replayOfRecordId &&
+    !session?.savedRecordId;
 
   useEffect(() => {
     if (!hydrated || !session?.input || !session.result) return;
@@ -251,9 +253,9 @@ export function ResultScreen() {
           <span>시드 {seed}</span>
         </div>
 
-        {canSave ? (
+        {(session.source === "public" || session.source === "friend") && !session.replayOfRecordId ? (
           <div className="stadium-result-save-status">
-            {savedId ? "✓ 기록에 자동 저장됨" : saving ? "기록 저장 중..." : null}
+            {(savedId || session.savedRecordId) ? "✓ 기록에 자동 저장됨" : saving ? "기록 저장 중..." : null}
           </div>
         ) : null}
 

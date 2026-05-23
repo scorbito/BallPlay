@@ -12,6 +12,7 @@ import {
   saveMatchSession,
   type MatchSession
 } from "@/lib/sim/matchSession";
+import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import type { AtBatLog, AtBatOutcome, BaseState, InningLog, SimPitcher } from "@/lib/sim/types";
 import {
   getSituationText,
@@ -20,6 +21,9 @@ import {
   getHomerunText,
   getScoreText
 } from "@/lib/sim/narration";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
+import { useAppState } from "@/lib/state/AppState";
 
 const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
   K: "삼진",
@@ -154,10 +158,14 @@ function HitEffect({ kind }: { kind: "hr" | "hit" }) {
 
 export function PlayScreen() {
   const router = useRouter();
+  const { showToast } = useAppState();
   const [session, setSession] = useState<MatchSession | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
+  // 경기 종료 시 자동 저장 — 한 번만 실행하도록 추적
+  const [recordSaving, setRecordSaving] = useState(false);
+  const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
   // 진행 모드 — normal(현재 기본) / fast(2배) / live(실시간 중계, SITUATION phase + 단계 narration)
   const [mode, setMode] = useState<"normal" | "fast" | "superfast" | "live">("normal");
   // 진행 단계 — live에선 SITUATION → BATTER → OUTCOME → … / normal·fast는 SITUATION 스킵
@@ -397,6 +405,86 @@ export function PlayScreen() {
 
     return () => window.clearTimeout(handle);
   }, [playing, cursor, events, events.length, mode, hydrated, phase, outcomeStep]);
+
+  // 경기 종료 시 자동 저장 — public/friend 매치만, 정식 계정만, 재생 모드 제외.
+  // ResultScreen에 들어가지 않아도(예: 도중 이탈) 결과는 DB에 남음.
+  useEffect(() => {
+    if (phase !== "GAME_END") return;
+    if (!session?.input || !session.result) return;
+    if (session.replayOfRecordId) return;
+    const canSave = session.source === "public" || session.source === "friend";
+    if (!canSave) return;
+    if (recordSavedId || recordSaving) return;
+
+    let cancelled = false;
+    (async () => {
+      setRecordSaving(true);
+      try {
+        const client = createSupabaseBrowserClient();
+        const { data: { user } } = await client.auth.getUser();
+        if (!user || user.is_anonymous) return;
+
+        const { home, away } = session.input!;
+        const { finalScore, mvp, innings } = session.result!;
+        const totalInnings = Math.max(9, ...innings.map((i) => i.inning));
+        const lastInning = innings[innings.length - 1];
+        const isWalkOff =
+          !!lastInning &&
+          lastInning.inning >= 9 &&
+          !!lastInning.bottom &&
+          finalScore.home > finalScore.away;
+
+        // MVP 이름 lookup
+        const allBatters = [...home.batters, ...away.batters];
+        const allPitchers = [
+          home.starter, ...home.bullpen,
+          away.starter, ...away.bullpen
+        ];
+        const mvpEntity =
+          allBatters.find((b) => b.playerId === mvp.playerId) ??
+          allPitchers.find((p) => p.playerId === mvp.playerId) ??
+          null;
+
+        const result = await createRecord(client, {
+          ownerUserId: user.id,
+          source: session.source as BpRecordSource,
+          bpMatchId: session.liveMatchId ?? null,
+          userSide: session.userSide ?? "home",
+          engineVersion: SIM_ENGINE_VERSION,
+          seed: session.seed,
+          input: session.input!,
+          result: session.result!,
+          homeTeamId: home.teamId,
+          awayTeamId: away.teamId,
+          homeLabel: home.displayName?.trim() || null,
+          awayLabel: away.displayName?.trim() || null,
+          finalScore,
+          mvpPlayerId: mvp.playerId,
+          mvpName: mvpEntity?.name ?? null,
+          isWalkoff: isWalkOff,
+          totalInnings
+        });
+
+        if (cancelled) return;
+        if (!result.ok) {
+          showToast(`기록 자동 저장 실패: ${result.error}`);
+          return;
+        }
+        setRecordSavedId(result.row.id);
+        // matchSession에도 표시 — ResultScreen이 중복 저장 시도하지 않게
+        const cur = loadMatchSession();
+        if (cur) saveMatchSession({ ...cur, savedRecordId: result.row.id });
+      } catch {
+        if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
+      } finally {
+        if (!cancelled) setRecordSaving(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, session, recordSavedId, recordSaving, showToast]);
 
   if (!hydrated || !session?.result) {
     return (
