@@ -1,114 +1,114 @@
 ﻿/* ============================================================
  * Phase 9.5: Contact
  * ============================================================ */
-.phone-frame-dark .contact-intro {
+.phone-frame-light .contact-intro {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 8px;
   padding: 22px 18px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
 }
 
-.phone-frame-dark .contact-icon {
-  color: var(--hd-accent-orange);
+.phone-frame-light .contact-icon {
+  color: var(--bp-accent);
   margin-bottom: 4px;
 }
 
-.phone-frame-dark .contact-intro h2 {
+.phone-frame-light .contact-intro h2 {
   margin: 0;
   font-size: 15.5px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .contact-intro p {
+.phone-frame-light .contact-intro p {
   margin: 0;
   font-size: 12.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.5;
 }
 
-.phone-frame-dark .contact-faq-link {
+.phone-frame-light .contact-faq-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   margin-top: 6px;
   padding: 7px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: var(--hd-text-primary);
+  background: rgba(20, 30, 50, 0.05);
+  border: 1px solid rgba(20, 30, 50, 0.10);
+  color: var(--bp-text);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
 }
 
-.phone-frame-dark .contact-faq-link:hover {
-  border-color: rgba(255, 106, 43, 0.5);
-  color: var(--hd-accent-orange);
+.phone-frame-light .contact-faq-link:hover {
+  border-color: rgba(232, 74, 138, 0.5);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .contact-section {
+.phone-frame-light .contact-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.phone-frame-dark .contact-section h3 {
+.phone-frame-light .contact-section h3 {
   margin: 0;
   font-size: 13px;
   font-weight: 800;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .contact-help {
+.phone-frame-light .contact-help {
   margin: 0;
   font-size: 12.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.5;
 }
 
-.phone-frame-dark .contact-mail-button {
+.phone-frame-light .contact-mail-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 14px 18px;
   border-radius: 12px;
-  background: var(--hd-accent-orange);
+  background: var(--bp-accent);
   color: #fff;
   font-size: 13.5px;
   font-weight: 800;
   text-decoration: none;
 }
 
-.phone-frame-dark .contact-mail-button:hover {
+.phone-frame-light .contact-mail-button:hover {
   filter: brightness(1.05);
 }
 
-.phone-frame-dark .contact-fineprint {
+.phone-frame-light .contact-fineprint {
   margin: 4px 0 0;
   font-size: 11.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   text-align: center;
 }
 
 /* 이메일 주소 + 복사 버튼 (PC mailto 안 될 때 대체 경로) */
-.phone-frame-dark .contact-email-row {
+.phone-frame-light .contact-email-row {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--hd-border-soft);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
 }
 
-.phone-frame-dark .contact-email-text {
+.phone-frame-light .contact-email-text {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -116,20 +116,20 @@
   white-space: nowrap;
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   letter-spacing: 0.2px;
   user-select: all;
 }
 
-.phone-frame-dark .contact-email-copy {
+.phone-frame-light .contact-email-copy {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid rgba(255, 106, 43, 0.45);
+  border: 1px solid rgba(232, 74, 138, 0.45);
   border-radius: 8px;
-  background: rgba(255, 106, 43, 0.12);
-  color: var(--hd-accent-orange);
+  background: rgba(232, 74, 138, 0.12);
+  color: var(--bp-accent);
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -137,129 +137,129 @@
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 
-.phone-frame-dark .contact-email-copy:hover {
-  background: rgba(255, 106, 43, 0.2);
+.phone-frame-light .contact-email-copy:hover {
+  background: rgba(232, 74, 138, 0.2);
 }
 
-.phone-frame-dark .contact-mail-secondary {
+.phone-frame-light .contact-mail-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 11px 16px;
   border-radius: 11px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--hd-text-primary);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.12);
+  color: var(--bp-text);
   font-size: 12.5px;
   font-weight: 700;
   text-decoration: none;
   margin-top: 6px;
 }
 
-.phone-frame-dark .contact-mail-secondary:hover {
-  border-color: rgba(255, 106, 43, 0.4);
-  color: var(--hd-accent-orange);
+.phone-frame-light .contact-mail-secondary:hover {
+  border-color: rgba(232, 74, 138, 0.4);
+  color: var(--bp-accent);
 }
 
 /* ============================================================
  * Phase 9.5: Legal (terms, privacy)
  * ============================================================ */
-.phone-frame-dark .legal-doc {
+.phone-frame-light .legal-doc {
   display: flex;
   flex-direction: column;
   gap: 18px;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .legal-doc header {
+.phone-frame-light .legal-doc header {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--hd-border-soft);
+  border-bottom: 1px solid var(--bp-line-soft);
 }
 
-.phone-frame-dark .legal-doc h1 {
+.phone-frame-light .legal-doc h1 {
   margin: 0;
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.3px;
 }
 
-.phone-frame-dark .legal-effective {
+.phone-frame-light .legal-effective {
   margin: 0;
   font-size: 12px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   font-weight: 600;
 }
 
-.phone-frame-dark .legal-doc section {
+.phone-frame-light .legal-doc section {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.phone-frame-dark .legal-doc h2 {
+.phone-frame-light .legal-doc h2 {
   margin: 4px 0 0;
   font-size: 14px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .legal-doc p {
+.phone-frame-light .legal-doc p {
   margin: 0;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .legal-doc ul {
+.phone-frame-light .legal-doc ul {
   margin: 0;
   padding-left: 18px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .legal-doc li {
+.phone-frame-light .legal-doc li {
   font-size: 12.5px;
   line-height: 1.6;
 }
 
-.phone-frame-dark .legal-doc strong {
-  color: var(--hd-text-primary);
+.phone-frame-light .legal-doc strong {
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .legal-doc a {
-  color: var(--hd-accent-orange);
+.phone-frame-light .legal-doc a {
+  color: var(--bp-accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
-.phone-frame-dark .legal-footer {
+.phone-frame-light .legal-footer {
   margin-top: 8px;
   padding: 12px 14px;
-  background: rgba(255, 106, 43, 0.08);
-  border: 1px solid rgba(255, 106, 43, 0.3);
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.3);
   border-radius: 10px;
 }
 
-.phone-frame-dark .legal-footer p {
+.phone-frame-light .legal-footer p {
   margin: 0;
   font-size: 11.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.55;
 }
 
 /* Settings: secondary group (이용안내·문의·약관·개인정보) — 살짝 톤 다운 */
-.phone-frame-dark .settings-list-secondary .settings-row {
+.phone-frame-light .settings-list-secondary .settings-row {
   /* 기본 settings-row 스타일 그대로 사용 */
 }
 
-.phone-frame-dark .settings-row:disabled {
+.phone-frame-light .settings-row:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -274,17 +274,17 @@
   text-align: left;
 }
 
-.phone-frame-dark .scope-option,
+.phone-frame-light .scope-option,
 .scope-option {
   display: flex;
   flex-direction: column;
   gap: 3px;
   align-items: flex-start;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.10);
   border-radius: 12px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   text-align: left;
   cursor: pointer;
   transition: border-color 0.18s ease, background 0.18s ease;
@@ -297,21 +297,21 @@
 
 .scope-option span {
   font-size: 12px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   font-weight: 500;
 }
 
 .scope-option:hover {
-  border-color: rgba(255, 106, 43, 0.4);
+  border-color: rgba(232, 74, 138, 0.4);
 }
 
 .scope-option-active {
-  border-color: var(--hd-accent-orange) !important;
-  background: rgba(255, 106, 43, 0.12) !important;
+  border-color: var(--bp-accent) !important;
+  background: rgba(232, 74, 138, 0.12) !important;
 }
 
 .scope-option-active strong {
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
 }
 
 .scope-option:disabled {

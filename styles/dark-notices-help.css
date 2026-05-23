@@ -1,117 +1,117 @@
 ﻿/* ============================================================
  * Phase 9.5: Notices (공지)
  * ============================================================ */
-.phone-frame-dark .notice-list {
+.phone-frame-light .notice-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.phone-frame-dark .notice-card {
+.phone-frame-light .notice-card {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 14px 16px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
   text-decoration: none;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   transition: border-color 0.18s ease, transform 0.18s ease;
 }
 
-.phone-frame-dark .notice-card:hover {
-  border-color: rgba(255, 106, 43, 0.45);
+.phone-frame-light .notice-card:hover {
+  border-color: rgba(232, 74, 138, 0.45);
   transform: translateY(-1px);
 }
 
-.phone-frame-dark .notice-card-head {
+.phone-frame-light .notice-card-head {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 11.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .notice-pin {
+.phone-frame-light .notice-pin {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   padding: 2px 7px;
   border-radius: 999px;
-  background: rgba(255, 106, 43, 0.16);
-  border: 1px solid rgba(255, 106, 43, 0.45);
-  color: var(--hd-accent-orange);
+  background: rgba(232, 74, 138, 0.16);
+  border: 1px solid rgba(232, 74, 138, 0.45);
+  color: var(--bp-accent);
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: -0.2px;
 }
 
-.phone-frame-dark .notice-date {
+.phone-frame-light .notice-date {
   font-size: 11.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   font-weight: 600;
 }
 
-.phone-frame-dark .notice-title {
+.phone-frame-light .notice-title {
   font-size: 15px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   letter-spacing: -0.2px;
   line-height: 1.35;
 }
 
-.phone-frame-dark .notice-summary {
+.phone-frame-light .notice-summary {
   margin: 0;
   font-size: 12.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.5;
 }
 
-.phone-frame-dark .notice-detail {
+.phone-frame-light .notice-detail {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.phone-frame-dark .notice-detail header {
+.phone-frame-light .notice-detail header {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--hd-border-soft);
+  border-bottom: 1px solid var(--bp-line-soft);
 }
 
-.phone-frame-dark .notice-detail h1 {
+.phone-frame-light .notice-detail h1 {
   margin: 0;
   font-size: 19px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   letter-spacing: -0.3px;
   line-height: 1.35;
 }
 
-.phone-frame-dark .notice-detail time {
+.phone-frame-light .notice-detail time {
   font-size: 12px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   font-weight: 600;
 }
 
-.phone-frame-dark .notice-body {
+.phone-frame-light .notice-body {
   display: flex;
   flex-direction: column;
   gap: 8px;
   font-size: 14px;
   line-height: 1.7;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .notice-body p {
+.phone-frame-light .notice-body p {
   margin: 0;
 }
 
 /* 헤더 우측 액션 아이콘 */
-.phone-frame-dark .app-header .header-actions {
+.phone-frame-light .app-header .header-actions {
   position: absolute;
   right: 18px;
   top: calc(50% + 5px);
@@ -121,7 +121,7 @@
   gap: 7px;
 }
 
-.phone-frame-dark .header-action {
+.phone-frame-light .header-action {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -136,22 +136,22 @@
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 
-.phone-frame-dark .header-action svg {
+.phone-frame-light .header-action svg {
   stroke: #ffffff;
   stroke-width: 2.4;
 }
 
-.phone-frame-dark .header-action:hover {
-  background: rgba(255, 106, 43, 0.2);
-  border-color: rgba(255, 106, 43, 0.55);
-  color: var(--hd-accent-orange);
+.phone-frame-light .header-action:hover {
+  background: rgba(232, 74, 138, 0.2);
+  border-color: rgba(232, 74, 138, 0.55);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .header-action:hover svg {
-  stroke: var(--hd-accent-orange);
+.phone-frame-light .header-action:hover svg {
+  stroke: var(--bp-accent);
 }
 
-.phone-frame-dark .header-action-badge {
+.phone-frame-light .header-action-badge {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -159,15 +159,15 @@
   height: 7px;
   border-radius: 50%;
   background: #ff3b3b;
-  box-shadow: 0 0 0 1.5px var(--hd-bg-app);
+  box-shadow: 0 0 0 1.5px var(--bp-bg);
 }
 
-.phone-frame-dark .app-header {
+.phone-frame-light .app-header {
   position: relative;
 }
 
-/* 헤더 좌측 뒤로가기 */
-.phone-frame-dark .header-back {
+/* 헤더 좌측 뒤로가기 — 라이트 베이스 */
+.phone-frame-light .header-back {
   position: absolute;
   left: 18px;
   top: calc(50% + 5px);
@@ -178,26 +178,22 @@
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  color: #ffffff;
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line);
+  color: var(--bp-text-secondary);
   text-decoration: none;
-  transition: background 0.18s ease, border-color 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
-.phone-frame-dark .header-back svg {
-  stroke: #ffffff;
+.phone-frame-light .header-back svg {
+  stroke: currentColor;
   stroke-width: 2.4;
 }
 
-.phone-frame-dark .header-back:hover {
-  background: rgba(255, 106, 43, 0.2);
-  border-color: rgba(255, 106, 43, 0.55);
-  color: var(--hd-accent-orange);
-}
-
-.phone-frame-dark .header-back:hover svg {
-  stroke: var(--hd-accent-orange);
+.phone-frame-light .header-back:hover {
+  background: var(--bp-accent-soft);
+  border-color: rgba(232, 74, 138, 0.45);
+  color: var(--bp-accent);
 }
 
 /* 라이트 테마용 헤더 뒤로가기 */
@@ -225,82 +221,82 @@
 /* ============================================================
  * Phase 9.5: Help / FAQ
  * ============================================================ */
-.phone-frame-dark .help-section {
+.phone-frame-light .help-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.phone-frame-dark .help-section-title {
+.phone-frame-light .help-section-title {
   margin: 0;
   font-size: 13px;
   font-weight: 800;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   letter-spacing: -0.2px;
   text-transform: none;
 }
 
-.phone-frame-dark .help-feature-list {
+.phone-frame-light .help-feature-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.phone-frame-dark .help-feature {
+.phone-frame-light .help-feature {
   display: flex;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
 }
 
-.phone-frame-dark .help-feature-icon {
+.phone-frame-light .help-feature-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: rgba(255, 106, 43, 0.16);
-  color: var(--hd-accent-orange);
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
   flex-shrink: 0;
 }
 
-.phone-frame-dark .help-feature strong {
+.phone-frame-light .help-feature strong {
   display: block;
   font-size: 14px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   margin-bottom: 3px;
 }
 
-.phone-frame-dark .help-feature p {
+.phone-frame-light .help-feature p {
   margin: 0;
   font-size: 12.5px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.5;
 }
 
-.phone-frame-dark .faq-list {
+.phone-frame-light .faq-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.phone-frame-dark .faq-item {
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+.phone-frame-light .faq-item {
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
   overflow: hidden;
   transition: border-color 0.18s ease;
 }
 
-.phone-frame-dark .faq-item-open {
-  border-color: rgba(255, 106, 43, 0.4);
+.phone-frame-light .faq-item-open {
+  border-color: rgba(232, 74, 138, 0.4);
 }
 
-.phone-frame-dark .faq-question {
+.phone-frame-light .faq-question {
   width: 100%;
   display: flex;
   align-items: center;
@@ -309,48 +305,48 @@
   padding: 13px 14px;
   border: 0;
   background: transparent;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   font-size: 13.5px;
   font-weight: 700;
   text-align: left;
   cursor: pointer;
 }
 
-.phone-frame-dark .faq-chevron {
+.phone-frame-light .faq-chevron {
   transition: transform 0.2s ease;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   flex-shrink: 0;
 }
 
-.phone-frame-dark .faq-item-open .faq-chevron {
+.phone-frame-light .faq-item-open .faq-chevron {
   transform: rotate(180deg);
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .faq-answer {
+.phone-frame-light .faq-answer {
   padding: 0 14px 13px;
   font-size: 12.5px;
   line-height: 1.65;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .help-contact-cta {
+.phone-frame-light .help-contact-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 13px 18px;
   border-radius: 12px;
-  background: rgba(255, 106, 43, 0.14);
-  border: 1px solid rgba(255, 106, 43, 0.5);
-  color: var(--hd-accent-orange);
+  background: rgba(232, 74, 138, 0.14);
+  border: 1px solid rgba(232, 74, 138, 0.5);
+  color: var(--bp-accent);
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
   align-self: center;
 }
 
-.phone-frame-dark .help-contact-cta:hover {
-  background: rgba(255, 106, 43, 0.22);
+.phone-frame-light .help-contact-cta:hover {
+  background: rgba(232, 74, 138, 0.22);
 }
 

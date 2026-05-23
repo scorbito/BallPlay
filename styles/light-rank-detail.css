@@ -53,7 +53,7 @@
 }
 
 .ranking-row-highlighted {
-  background: #fff8f3;
+  background: var(--bp-accent-soft);
 }
 
 .ranking-rank {
@@ -125,7 +125,7 @@
 }
 
 .full-rank-highlighted {
-  background: #fff4ed;
+  background: var(--bp-accent-soft);
 }
 
 .full-rank-top {

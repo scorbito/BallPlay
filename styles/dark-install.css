@@ -2,19 +2,8 @@
  * PWA 설치 안내 — 하단 플로팅 바 + 디바이스별 안내 모달
  * ============================================================ */
 
-/* CSS 변수 fallback — InstallAppBanner/InstallAppModal은 layout 레벨에서
-   .phone-frame-dark 바깥에 렌더되어 --hd-* 변수 스코프 밖에 있음.
-   여기서 다시 정의해 글자/배경 색이 검정으로 떨어지는 문제 방지. */
-.install-banner,
-.install-modal-backdrop,
-.install-modal-panel {
-  --hd-text-primary: #f7f9fc;
-  --hd-text-secondary: rgba(247, 249, 252, 0.72);
-  --hd-text-muted: rgba(247, 249, 252, 0.48);
-  --hd-accent-orange: #ff6a2b;
-  --hd-border-soft: rgba(255, 255, 255, 0.08);
-  --hd-border-medium: rgba(255, 255, 255, 0.12);
-}
+/* InstallAppBanner/InstallAppModal은 layout 레벨에 렌더되어 phone-frame 바깥.
+   --bp-* 토큰은 :root에 정의돼 있어 그대로 사용 가능 (fallback 불필요). */
 
 /* ---- 하단 플로팅 배너 ---- */
 .install-banner {
@@ -30,9 +19,9 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  background: rgba(255, 106, 43, 0.96);
+  background: rgba(232, 74, 138, 0.96);
   color: #ffffff;
-  box-shadow: 0 12px 28px rgba(255, 106, 43, 0.42), 0 4px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 28px rgba(232, 74, 138, 0.42), 0 4px 10px rgba(0, 0, 0, 0.25);
   animation: install-banner-rise 0.45s ease-out;
 }
 
@@ -87,7 +76,7 @@
   border-radius: 999px;
   border: 0;
   background: #ffffff;
-  color: #ff6a2b;
+  color: var(--bp-accent);
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -112,7 +101,7 @@
 .install-banner-dismiss:hover { background: rgba(255, 255, 255, 0.12); }
 
 /* ---- 마이 페이지 메뉴 버튼 (Link가 아닌 button) ---- */
-.phone-frame-dark .menu-list .menu-row-button {
+.phone-frame-light .menu-list .menu-row-button {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -120,24 +109,24 @@
   padding: 14px 16px;
   background: transparent;
   border: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--hd-text-primary);
+  border-top: 1px solid rgba(20, 30, 50, 0.05);
+  color: var(--bp-text);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   text-align: left;
 }
 
-.phone-frame-dark .menu-list .menu-row-button:hover {
-  background: rgba(255, 255, 255, 0.04);
+.phone-frame-light .menu-list .menu-row-button:hover {
+  background: rgba(20, 30, 50, 0.04);
 }
 
-.phone-frame-dark .menu-list .menu-row-button > svg:first-child {
+.phone-frame-light .menu-list .menu-row-button > svg:first-child {
   flex-shrink: 0;
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .menu-list .menu-row-button strong {
+.phone-frame-light .menu-list .menu-row-button strong {
   flex: 1;
   font-size: 14px;
   font-weight: 700;
@@ -145,34 +134,34 @@
 
 /* ---- 설치 안내 모달 ---- */
 .install-modal-backdrop {
-  background: rgba(6, 16, 30, 0.78);
+  background: rgba(11, 31, 58, 0.55);
   backdrop-filter: blur(6px);
 }
 
 .install-modal-panel {
-  background: linear-gradient(180deg, #0e1c33 0%, #08111f 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--hd-text-primary);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  color: var(--bp-text);
   max-width: 360px;
 }
 
 .install-modal-panel .modal-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(20, 30, 50, 0.06);
 }
 
 .install-modal-panel .modal-header strong {
   font-size: 15px;
   font-weight: 850;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
 .install-modal-panel .modal-close {
   background: transparent;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--bp-text-secondary);
 }
 
 .install-modal-panel .modal-close:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.06);
 }
 
 .install-modal-content {
@@ -191,7 +180,7 @@
 }
 
 .install-modal-mascot {
-  filter: drop-shadow(0 6px 16px rgba(255, 106, 43, 0.4));
+  filter: drop-shadow(0 6px 16px rgba(232, 74, 138, 0.4));
 }
 
 .install-modal-hero h2 {
@@ -206,7 +195,7 @@
   margin: 0;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   line-height: 1.55;
 }
 
@@ -219,8 +208,8 @@
   flex-direction: column;
   gap: 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.08);
 }
 
 .install-steps li {
@@ -237,7 +226,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--hd-accent-orange);
+  background: var(--bp-accent);
   color: #ffffff;
   font-size: 11px;
   font-weight: 850;
@@ -248,12 +237,12 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.55;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
 .install-step-body strong {
   font-weight: 800;
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
 }
 
 .install-step-hint {
@@ -262,13 +251,13 @@
   font-size: 11px;
   font-weight: 500;
   font-style: normal;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   line-height: 1.5;
 }
 
 .install-step-hint strong {
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
 .install-step-icon {
@@ -280,8 +269,8 @@
   margin: 0 2px;
   vertical-align: middle;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--hd-accent-orange);
+  background: rgba(20, 30, 50, 0.08);
+  color: var(--bp-accent);
 }
 
 /* ---- Android 원클릭 CTA ---- */
@@ -292,15 +281,15 @@
   gap: 12px;
   padding: 16px;
   border-radius: 12px;
-  background: rgba(255, 106, 43, 0.1);
-  border: 1px solid rgba(255, 106, 43, 0.3);
+  background: rgba(232, 74, 138, 0.1);
+  border: 1px solid rgba(232, 74, 138, 0.3);
 }
 
 .install-android-cta p {
   margin: 0;
   font-size: 13px;
   font-weight: 650;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   text-align: center;
   line-height: 1.55;
 }
@@ -317,13 +306,13 @@
   gap: 10px;
   padding: 18px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.08);
   text-align: center;
 }
 
 .install-desktop-hint > svg {
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
   opacity: 0.85;
 }
 
@@ -331,7 +320,7 @@
   margin: 0;
   font-size: 13px;
   font-weight: 650;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   line-height: 1.55;
 }
 
@@ -339,15 +328,15 @@
 .install-modal-close {
   width: 100%;
   height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--bp-line);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--hd-text-primary);
+  background: var(--bp-card-soft);
+  color: var(--bp-text);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .install-modal-close:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.06);
 }

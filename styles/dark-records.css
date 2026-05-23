@@ -1,7 +1,7 @@
 /* 내 기록 탭 — 기록 목록 + 카드 + 빈 상태 */
 
 /* ── 등급 뱃지 ── */
-.phone-frame-dark .tier-badge {
+.phone-frame-light .tier-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -12,46 +12,46 @@
   white-space: nowrap;
 }
 
-.phone-frame-dark .tier-badge-sm {
+.phone-frame-light .tier-badge-sm {
   font-size: 11px;
 }
 
-.phone-frame-dark .tier-badge-md {
+.phone-frame-light .tier-badge-md {
   font-size: 13px;
   padding: 4px 10px;
 }
 
-.phone-frame-dark .tier-badge-guest {
-  background: rgba(107, 114, 128, 0.18);
-  color: #9ca3af;
+.phone-frame-light .tier-badge-guest {
+  background: rgba(107, 114, 128, 0.14);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .tier-badge-free {
-  background: rgba(156, 163, 175, 0.18);
-  color: #d1d5db;
+.phone-frame-light .tier-badge-free {
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .tier-badge-pro {
+.phone-frame-light .tier-badge-pro {
   background: rgba(245, 158, 11, 0.2);
-  color: #fcd34d;
+  color: var(--bp-warning);
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
-.phone-frame-dark .tier-badge-admin {
+.phone-frame-light .tier-badge-admin {
   background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  color: var(--bp-danger);
   border: 1px solid rgba(239, 68, 68, 0.45);
 }
 
 /* 내 기록 헤더 — 제목과 등급 뱃지 가로 배치 */
-.phone-frame-dark .records-header-with-badge {
+.phone-frame-light .records-header-with-badge {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.phone-frame-dark .records-empty {
+.phone-frame-light .records-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -59,39 +59,39 @@
   gap: 10px;
   padding: 40px 20px;
   margin-top: 20px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
 }
 
-.phone-frame-dark .records-empty-icon {
+.phone-frame-light .records-empty-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(255, 106, 43, 0.12);
-  color: var(--hd-accent, #ff6a2b);
+  background: rgba(232, 74, 138, 0.12);
+  color: var(--bp-accent);
   margin-bottom: 4px;
 }
 
-.phone-frame-dark .records-empty strong {
+.phone-frame-light .records-empty strong {
   font-size: 15px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .records-empty p {
+.phone-frame-light .records-empty p {
   font-size: 13px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.5;
   max-width: 280px;
 }
 
-.phone-frame-dark .records-empty-cta {
+.phone-frame-light .records-empty-cta {
   margin-top: 8px;
   padding: 10px 18px;
-  background: var(--hd-accent, #ff6a2b);
+  background: var(--bp-accent);
   color: #fff;
   border-radius: 10px;
   font-weight: 800;
@@ -101,7 +101,7 @@
 
 /* ── 카드 목록 ── */
 
-.phone-frame-dark .records-list {
+.phone-frame-light .records-list {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
@@ -109,20 +109,20 @@
 
 /* PC wide / 태블릿 가로 wide — 기록 카드 2열 */
 @media (min-width: 1025px) {
-  .phone-frame-dark.phone-frame-wide .records-list {
+  .phone-frame-light.phone-frame-wide .records-list {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
-  .phone-frame-dark.phone-frame-wide .records-list {
+  .phone-frame-light.phone-frame-wide .records-list {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-.phone-frame-dark .records-card {
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+.phone-frame-light .records-card {
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
@@ -130,14 +130,14 @@
   gap: 10px;
 }
 
-.phone-frame-dark .records-card-head {
+.phone-frame-light .records-card-head {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 11px;
 }
 
-.phone-frame-dark .records-card-source {
+.phone-frame-light .records-card-source {
   padding: 3px 8px;
   border-radius: 999px;
   font-weight: 800;
@@ -145,17 +145,17 @@
   letter-spacing: 0.2px;
 }
 
-.phone-frame-dark .records-card-source-friend {
-  background: rgba(99, 102, 241, 0.18);
-  color: #a5b4fc;
+.phone-frame-light .records-card-source-friend {
+  background: var(--bp-info-soft);
+  color: var(--bp-info);
 }
 
-.phone-frame-dark .records-card-source-public {
-  background: rgba(34, 197, 94, 0.18);
-  color: #86efac;
+.phone-frame-light .records-card-source-public {
+  background: var(--bp-success-soft);
+  color: var(--bp-success);
 }
 
-.phone-frame-dark .records-card-outcome {
+.phone-frame-light .records-card-outcome {
   margin-left: auto;
   padding: 2px 10px;
   border-radius: 999px;
@@ -163,30 +163,30 @@
   font-size: 12px;
 }
 
-.phone-frame-dark .records-card-outcome.is-win {
-  background: rgba(255, 106, 43, 0.25);
-  color: var(--hd-accent, #ff6a2b);
+.phone-frame-light .records-card-outcome.is-win {
+  background: rgba(232, 74, 138, 0.25);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .records-card-outcome.is-lose {
-  background: rgba(220, 38, 38, 0.18);
-  color: #fca5a5;
+.phone-frame-light .records-card-outcome.is-lose {
+  background: var(--bp-danger-soft);
+  color: var(--bp-danger);
 }
 
-.phone-frame-dark .records-card-outcome.is-draw {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--hd-text-secondary);
+.phone-frame-light .records-card-outcome.is-draw {
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .records-card-date {
-  color: var(--hd-text-muted, #6b7280);
+.phone-frame-light .records-card-date {
+  color: var(--bp-text-muted);
   font-size: 11px;
   font-weight: 700;
 }
 
 /* 점수판 */
 
-.phone-frame-dark .records-card-score {
+.phone-frame-light .records-card-score {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -194,7 +194,7 @@
   padding: 6px 0;
 }
 
-.phone-frame-dark .records-card-team {
+.phone-frame-light .records-card-team {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -203,59 +203,61 @@
   min-width: 0;
 }
 
-.phone-frame-dark .records-card-team.is-right {
+.phone-frame-light .records-card-team.is-right {
   flex-direction: row-reverse;
 }
 
-.phone-frame-dark .records-card-team span {
+/* 팀명 라벨만 노리도록 좁힘 — TeamBadge 안의 이니셜 span(.team-badge-initial)이
+   회색으로 덮이는 문제 방지. */
+.phone-frame-light .records-card-team > span:not(.team-badge-wrap) {
   font-size: 12px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
 }
 
-.phone-frame-dark .records-card-team strong {
+.phone-frame-light .records-card-team strong {
   font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.5px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .records-card-team .team-badge {
+.phone-frame-light .records-card-team .team-badge {
   width: 28px;
   height: 28px;
   font-size: 14px;
 }
 
-.phone-frame-dark .records-card-vs {
+.phone-frame-light .records-card-vs {
   font-size: 16px;
   font-weight: 900;
-  color: var(--hd-text-muted, #6b7280);
+  color: var(--bp-text-muted);
 }
 
 /* MVP 한 줄 */
 
-.phone-frame-dark .records-card-mvp {
+.phone-frame-light .records-card-mvp {
   font-size: 12px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-.phone-frame-dark .records-card-mvp strong {
-  color: var(--hd-text-primary);
+.phone-frame-light .records-card-mvp strong {
+  color: var(--bp-text);
   font-weight: 800;
 }
 
-.phone-frame-dark .records-card-walkoff {
+.phone-frame-light .records-card-walkoff {
   margin-left: 4px;
   padding: 1px 6px;
-  background: rgba(255, 106, 43, 0.2);
-  color: var(--hd-accent, #ff6a2b);
+  background: rgba(232, 74, 138, 0.2);
+  color: var(--bp-accent);
   border-radius: 4px;
   font-size: 10px;
   font-weight: 800;
@@ -263,20 +265,20 @@
 
 /* 액션 버튼 */
 
-.phone-frame-dark .records-card-actions {
+.phone-frame-light .records-card-actions {
   display: flex;
   gap: 6px;
   margin-top: 2px;
 }
 
-.phone-frame-dark .records-card-replay {
+.phone-frame-light .records-card-replay {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 9px 14px;
-  background: var(--hd-accent, #ff6a2b);
+  background: var(--bp-accent);
   color: #fff;
   border: 0;
   border-radius: 8px;
@@ -285,27 +287,27 @@
   cursor: pointer;
 }
 
-.phone-frame-dark .records-card-replay:disabled {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--hd-text-muted, #6b7280);
+.phone-frame-light .records-card-replay:disabled {
+  background: rgba(20, 30, 50, 0.05);
+  color: var(--bp-text-muted);
   cursor: not-allowed;
 }
 
-.phone-frame-dark .records-card-delete {
+.phone-frame-light .records-card-delete {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--hd-text-muted, #6b7280);
-  border: 1px solid var(--hd-border-soft);
+  background: rgba(20, 30, 50, 0.04);
+  color: var(--bp-text-muted);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 8px;
   cursor: pointer;
 }
 
-.phone-frame-dark .records-card-delete:hover:not(:disabled) {
-  color: #fca5a5;
+.phone-frame-light .records-card-delete:hover:not(:disabled) {
+  color: var(--bp-danger);
   border-color: rgba(220, 38, 38, 0.4);
 }

@@ -1,14 +1,14 @@
 ﻿/* ============================================================
  * Rankings page — dark theme
  * ============================================================ */
-.phone-frame-dark .rankings-card {
-  background: var(--hd-bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+.phone-frame-light .rankings-card {
+  background: var(--bp-card);
+  border: 1px solid rgba(20, 30, 50, 0.12);
   border-radius: 14px;
   padding: 16px 14px 12px;
 }
 
-.phone-frame-dark .rankings-title {
+.phone-frame-light .rankings-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -16,15 +16,15 @@
   padding: 0 4px;
 }
 
-.phone-frame-dark .rankings-title h1 {
+.phone-frame-light .rankings-title h1 {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   letter-spacing: -0.4px;
 }
 
-.phone-frame-dark .rankings-refresh {
+.phone-frame-light .rankings-refresh {
   height: 32px;
   padding: 0 10px;
   display: inline-flex;
@@ -32,20 +32,20 @@
   justify-content: center;
   gap: 5px;
   border-radius: 9px;
-  border: 1px solid rgba(255, 106, 43, 0.5);
-  background: rgba(255, 106, 43, 0.14);
-  color: var(--hd-accent-orange);
+  border: 1px solid rgba(232, 74, 138, 0.5);
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.phone-frame-dark .rankings-refresh:hover:not(:disabled) {
-  background: rgba(255, 106, 43, 0.22);
+.phone-frame-light .rankings-refresh:hover:not(:disabled) {
+  background: rgba(232, 74, 138, 0.22);
 }
 
-.phone-frame-dark .rankings-refresh:disabled {
+.phone-frame-light .rankings-refresh:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
@@ -61,7 +61,7 @@
 }
 
 /* Ranking table */
-.phone-frame-dark .ranking-table {
+.phone-frame-light .ranking-table {
   display: flex;
   flex-direction: column;
   margin-top: 0;
@@ -71,24 +71,24 @@
   overflow: visible;
 }
 
-.phone-frame-dark .ranking-table-head {
+.phone-frame-light .ranking-table-head {
   display: grid;
   grid-template-columns: 32px 1fr 50px 38px 70px 64px;
   align-items: center;
   gap: 6px;
   padding: 8px 6px;
   background: transparent;
-  border-bottom: 1px solid var(--hd-border-soft);
-  color: var(--hd-text-secondary);
+  border-bottom: 1px solid var(--bp-line-soft);
+  color: var(--bp-text-secondary);
   font-size: 11px;
   font-weight: 700;
 }
 
-.phone-frame-dark .ranking-table-head > span {
+.phone-frame-light .ranking-table-head > span {
   text-align: center;
 }
 
-.phone-frame-dark .ranking-table-body {
+.phone-frame-light .ranking-table-body {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -96,42 +96,42 @@
   flex-direction: column;
 }
 
-.phone-frame-dark .ranking-row {
+.phone-frame-light .ranking-row {
   display: grid;
   grid-template-columns: 32px 1fr 50px 38px 70px 64px;
   align-items: center;
   gap: 6px;
   padding: 11px 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(20, 30, 50, 0.04);
   border-radius: 0;
   background: transparent;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .ranking-row:last-child {
+.phone-frame-light .ranking-row:last-child {
   border-bottom: 0;
 }
 
-.phone-frame-dark .ranking-row-highlighted {
-  background: rgba(255, 106, 43, 0.08);
-  border: 1px solid rgba(255, 106, 43, 0.55);
+.phone-frame-light .ranking-row-highlighted {
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.55);
   border-radius: 8px;
   margin: 4px 0;
-  box-shadow: 0 0 14px rgba(255, 106, 43, 0.2);
+  box-shadow: 0 0 14px rgba(232, 74, 138, 0.2);
 }
 
-.phone-frame-dark .ranking-rank {
+.phone-frame-light .ranking-rank {
   text-align: center;
   font-size: 13px;
   font-weight: 800;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .ranking-row-highlighted .ranking-rank {
-  color: var(--hd-accent-orange);
+.phone-frame-light .ranking-row-highlighted .ranking-rank {
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .ranking-team {
+.phone-frame-light .ranking-team {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -139,58 +139,58 @@
   min-width: 0;
 }
 
-.phone-frame-dark .ranking-team .team-badge {
+.phone-frame-light .ranking-team .team-badge {
   width: 22px;
   height: 22px;
   font-size: 11px;
   flex-shrink: 0;
 }
 
-.phone-frame-dark .ranking-team strong {
+.phone-frame-light .ranking-team strong {
   font-size: 13px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   white-space: nowrap;
 }
 
-.phone-frame-dark .ranking-rate,
-.phone-frame-dark .ranking-gap,
-.phone-frame-dark .ranking-record {
+.phone-frame-light .ranking-rate,
+.phone-frame-light .ranking-gap,
+.phone-frame-light .ranking-record {
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   letter-spacing: -0.2px;
 }
 
-.phone-frame-dark .ranking-gap {
-  color: var(--hd-text-secondary);
+.phone-frame-light .ranking-gap {
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .ranking-form {
+.phone-frame-light .ranking-form {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 3px;
 }
 
-.phone-frame-dark .ranking-dot {
+.phone-frame-light .ranking-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   display: inline-block;
 }
 
-.phone-frame-dark .ranking-dot-w {
+.phone-frame-light .ranking-dot-w {
   background: #1f9a55;
 }
 
-.phone-frame-dark .ranking-dot-l {
+.phone-frame-light .ranking-dot-l {
   background: #b8323c;
 }
 
-.phone-frame-dark .ranking-dot-d {
-  background: var(--hd-text-muted);
+.phone-frame-light .ranking-dot-d {
+  background: var(--bp-text-muted);
 }
 
 /* ============================================================
@@ -198,14 +198,14 @@
  * ============================================================ */
 
 /* 마이 hero 안 익명 전환 CTA */
-.phone-frame-dark .profile-card .profile-anon-cta {
+.phone-frame-light .profile-card .profile-anon-cta {
   display: inline-block;
   margin-top: 6px;
   padding: 6px 12px;
-  background: rgba(255, 106, 43, 0.14);
-  border: 1px solid rgba(255, 106, 43, 0.5);
+  background: rgba(232, 74, 138, 0.14);
+  border: 1px solid rgba(232, 74, 138, 0.5);
   border-radius: 999px;
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
   font-size: 11.5px;
   font-weight: 700;
   text-decoration: none;
@@ -213,39 +213,39 @@
   align-self: center;
 }
 
-.phone-frame-dark .profile-card .profile-anon-cta:hover {
-  background: rgba(255, 106, 43, 0.22);
+.phone-frame-light .profile-card .profile-anon-cta:hover {
+  background: rgba(232, 74, 138, 0.22);
 }
 
 /* 익명 가드 페이지의 전환 CTA 버튼 (친구 관리 등) */
-.phone-frame-dark .upgrade-cta {
+.phone-frame-light .upgrade-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 42px;
   padding: 0 22px;
   border-radius: 12px;
-  background: var(--hd-accent-orange);
+  background: var(--bp-accent);
   color: #ffffff;
   font-size: 14px;
   font-weight: 800;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(255, 106, 43, 0.32);
+  box-shadow: 0 8px 22px rgba(232, 74, 138, 0.32);
 }
 
-.phone-frame-dark .upgrade-cta:hover {
+.phone-frame-light .upgrade-cta:hover {
   filter: brightness(1.05);
 }
 
 /* 후기 작성 모달 - 공개범위 disabled */
-.phone-frame-dark .review-modal-panel .privacy-row button:disabled {
+.phone-frame-light .review-modal-panel .privacy-row button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   position: relative;
 }
 
-.phone-frame-dark .review-modal-panel .privacy-row button:disabled::after {
+.phone-frame-light .review-modal-panel .privacy-row button:disabled::after {
   content: "🔒";
   position: absolute;
   top: 2px;
@@ -288,7 +288,7 @@
   max-width: 380px;
   padding: 28px 22px 22px;
   background: #0d1a30;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(20, 30, 50, 0.12);
   border-radius: 18px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
   color: #f7f9fc;
@@ -312,7 +312,7 @@
 }
 
 .landing-confirm-close:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(20, 30, 50, 0.05);
   color: #ffffff;
 }
 
@@ -339,8 +339,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.08);
   border-radius: 12px;
 }
 
@@ -378,8 +378,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 106, 43, 0.16);
-  color: #ff6a2b;
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
   flex-shrink: 0;
 }
 
@@ -410,8 +410,8 @@
 
 .landing-confirm-cancel {
   height: 46px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.10);
+  background: rgba(20, 30, 50, 0.04);
   color: #ffffff;
   border-radius: 12px;
   font-size: 14px;
@@ -421,20 +421,20 @@
 }
 
 .landing-confirm-cancel:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.06);
 }
 
 .landing-confirm-start {
   height: 46px;
   border: 0;
-  background: #ff6a2b;
+  background: var(--bp-accent);
   color: #ffffff;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   font-family: inherit;
-  box-shadow: 0 8px 22px rgba(255, 106, 43, 0.3);
+  box-shadow: 0 8px 22px rgba(232, 74, 138, 0.3);
 }
 
 .landing-confirm-start:hover:not(:disabled) {
@@ -458,6 +458,6 @@
 }
 
 .landing-confirm-altlink:hover {
-  color: #ff6a2b;
+  color: var(--bp-accent);
 }
 

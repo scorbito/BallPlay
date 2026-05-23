@@ -3,12 +3,12 @@
  * ============================================================ */
 
 /* ── /play 허브 ── */
-.phone-frame-dark .play-hub-header {
+.phone-frame-light .play-hub-header {
   position: relative;
   padding: 24px 4px 4px;
 }
 
-.phone-frame-dark .play-hub-settings {
+.phone-frame-light .play-hub-settings {
   position: absolute;
   top: 20px;
   right: 4px;
@@ -18,33 +18,33 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  color: var(--hd-text-secondary);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--bp-text-secondary);
+  background: rgba(20, 30, 50, 0.04);
   transition: background 120ms ease, color 120ms ease;
 }
 
-.phone-frame-dark .play-hub-settings:hover,
-.phone-frame-dark .play-hub-settings:focus-visible {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--hd-text-primary);
+.phone-frame-light .play-hub-settings:hover,
+.phone-frame-light .play-hub-settings:focus-visible {
+  background: rgba(20, 30, 50, 0.08);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .play-hub-header h1 {
+.phone-frame-light .play-hub-header h1 {
   margin: 0 0 4px;
   font-size: 22px;
   font-weight: 900;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   letter-spacing: -0.3px;
 }
 
-.phone-frame-dark .play-hub-header p {
+.phone-frame-light .play-hub-header p {
   margin: 0;
   font-size: 13px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   font-weight: 600;
 }
 
-.phone-frame-dark .play-hub-grid {
+.phone-frame-light .play-hub-grid {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -66,40 +66,40 @@
   }
 }
 
-.phone-frame-dark .play-hub-card {
+.phone-frame-light .play-hub-card {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 14px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   text-decoration: none;
   transition: background 0.15s ease, transform 0.12s ease;
 }
 
-.phone-frame-dark .play-hub-card:hover {
-  background: rgba(255, 255, 255, 0.04);
+.phone-frame-light .play-hub-card:hover {
+  background: rgba(20, 30, 50, 0.04);
 }
 
-.phone-frame-dark .play-hub-card:active {
+.phone-frame-light .play-hub-card:active {
   transform: scale(0.99);
 }
 
-.phone-frame-dark .play-hub-card-icon {
+.phone-frame-light .play-hub-card-icon {
   width: 40px;
   height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 106, 43, 0.14);
-  color: var(--hd-accent, #ff6a2b);
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
   border-radius: 10px;
   flex-shrink: 0;
 }
 
-.phone-frame-dark .play-hub-card strong {
+.phone-frame-light .play-hub-card strong {
   display: block;
   font-size: 15px;
   font-weight: 800;
@@ -107,31 +107,31 @@
   margin-bottom: 2px;
 }
 
-.phone-frame-dark .play-hub-card p {
+.phone-frame-light .play-hub-card p {
   margin: 0;
   font-size: 12px;
   font-weight: 600;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.4;
 }
 
-.phone-frame-dark .play-hub-card-disabled {
+.phone-frame-light .play-hub-card-disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.phone-frame-dark .play-hub-card-badge {
+.phone-frame-light .play-hub-card-badge {
   margin-left: auto;
   padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.06);
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
 /* ── 라인업 페이지 헤더 — [< 뒤로] [팀 드롭다운 중앙] [타자/투수 토글] ── */
-.phone-frame-dark .lineup-header {
+.phone-frame-light .lineup-header {
   display: grid;
   grid-template-columns: 36px 1fr auto;
   align-items: center;
@@ -144,14 +144,14 @@
 
 /* 뒤로가기 버튼이 없는 모드 — 팀 선택을 헤더 정중앙에 두고, 모드 토글은 오른쪽에 절대 배치.
    1fr-auto 그리드로는 팀 피커가 모드 토글 너비만큼 왼쪽으로 밀려 중앙이 안 됨. */
-.phone-frame-dark .lineup-header-no-back {
+.phone-frame-light .lineup-header-no-back {
   display: flex;
   position: relative;
   justify-content: center;
   align-items: center;
 }
 
-.phone-frame-dark .lineup-header-no-back .lineup-mode-toggle {
+.phone-frame-light .lineup-header-no-back .lineup-mode-toggle {
   position: absolute;
   right: 0;
   top: 50%;
@@ -159,7 +159,7 @@
 }
 
 /* ── 동기화 상태 배지 (헤더 우측 absolute — mode-toggle이 빠진 자리) ── */
-.phone-frame-dark .lineup-sync-badge {
+.phone-frame-light .lineup-sync-badge {
   position: absolute;
   right: 0;
   top: 50%;
@@ -171,14 +171,14 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  border: 1px solid var(--hd-border-soft);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--hd-text-secondary);
+  border: 1px solid var(--bp-line-soft);
+  background: rgba(20, 30, 50, 0.04);
+  color: var(--bp-text-secondary);
   white-space: nowrap;
 }
 
 /* ── 공개/비공개 토글 (헤더 좌측 absolute) ── */
-.phone-frame-dark .lineup-publish-toggle {
+.phone-frame-light .lineup-publish-toggle {
   position: absolute;
   left: 0;
   top: 50%;
@@ -190,57 +190,57 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  border: 1px solid var(--hd-border-soft);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--hd-text-secondary);
+  border: 1px solid var(--bp-line-soft);
+  background: rgba(20, 30, 50, 0.04);
+  color: var(--bp-text-secondary);
   white-space: nowrap;
   cursor: pointer;
 }
 
-.phone-frame-dark .lineup-publish-toggle.is-on {
+.phone-frame-light .lineup-publish-toggle.is-on {
   border-color: rgba(34, 197, 94, 0.5);
   background: rgba(34, 197, 94, 0.14);
-  color: rgb(134, 239, 172);
+  color: var(--bp-success);
 }
 
-.phone-frame-dark .lineup-publish-toggle:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+.phone-frame-light .lineup-publish-toggle:hover:not(:disabled) {
+  background: rgba(20, 30, 50, 0.06);
 }
 
-.phone-frame-dark .lineup-publish-toggle.is-on:hover:not(:disabled) {
+.phone-frame-light .lineup-publish-toggle.is-on:hover:not(:disabled) {
   background: rgba(34, 197, 94, 0.20);
 }
 
-.phone-frame-dark .lineup-publish-toggle:disabled {
+.phone-frame-light .lineup-publish-toggle:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
 /* 공유 버튼 옆에 들어가는 인라인 모드 토글 — 헤더용 absolute 스타일을 상속하지 않도록 */
-.phone-frame-dark .lineup-mode-toggle-inline {
+.phone-frame-light .lineup-mode-toggle-inline {
   position: static;
   transform: none;
 }
 
-.phone-frame-dark .lineup-sync-badge.is-synced {
+.phone-frame-light .lineup-sync-badge.is-synced {
   border-color: rgba(34, 197, 94, 0.45);
   background: rgba(34, 197, 94, 0.10);
-  color: rgb(134, 239, 172);
+  color: var(--bp-success);
 }
 
-.phone-frame-dark .lineup-sync-badge.is-loading {
-  border-color: rgba(255, 106, 43, 0.45);
-  background: rgba(255, 106, 43, 0.08);
-  color: var(--hd-accent, #ff6a2b);
+.phone-frame-light .lineup-sync-badge.is-loading {
+  border-color: rgba(232, 74, 138, 0.45);
+  background: rgba(232, 74, 138, 0.08);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .lineup-sync-badge.is-error {
+.phone-frame-light .lineup-sync-badge.is-error {
   border-color: rgba(220, 38, 38, 0.5);
   background: rgba(220, 38, 38, 0.10);
-  color: rgb(252, 165, 165);
+  color: var(--bp-danger);
 }
 
-.phone-frame-dark .lineup-sync-spin {
+.phone-frame-light .lineup-sync-spin {
   animation: lineup-sync-spin 0.9s linear infinite;
 }
 
@@ -248,30 +248,30 @@
   to { transform: rotate(360deg); }
 }
 
-.phone-frame-dark .lineup-header > .sched-team-picker {
+.phone-frame-light .lineup-header > .sched-team-picker {
   justify-self: center;
 }
 
-.phone-frame-dark .lineup-header-spacer {
+.phone-frame-light .lineup-header-spacer {
   display: block;
 }
 
 /* 타자/투수 세그먼트 토글 */
-.phone-frame-dark .lineup-mode-toggle {
+.phone-frame-light .lineup-mode-toggle {
   display: inline-flex;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.08);
   border-radius: 10px;
   padding: 3px;
   gap: 2px;
 }
 
-.phone-frame-dark .lineup-mode-tab {
+.phone-frame-light .lineup-mode-tab {
   padding: 6px 12px;
   background: transparent;
   border: 0;
   border-radius: 7px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   font: inherit;
   font-size: 12px;
   font-weight: 800;
@@ -280,36 +280,36 @@
   white-space: nowrap;
 }
 
-.phone-frame-dark .lineup-mode-tab:hover {
-  color: var(--hd-text-primary);
+.phone-frame-light .lineup-mode-tab:hover {
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .lineup-mode-tab-active {
-  background: var(--hd-accent, #ff6a2b);
+.phone-frame-light .lineup-mode-tab-active {
+  background: var(--bp-accent);
   color: #ffffff;
 }
 
 /* 정적 라벨 (선발/불펜) — 클릭 안 되는 표시용 */
-.phone-frame-dark .lineup-slot-pos-static {
+.phone-frame-light .lineup-slot-pos-static {
   padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.05);
+  border: 1px solid rgba(20, 30, 50, 0.08);
   border-radius: 6px;
   font-size: 10px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   flex-shrink: 0;
 }
 
 /* 선발 라벨/순서는 오렌지 강조 */
-.phone-frame-dark .lineup-slot-pos-starter,
-.phone-frame-dark .lineup-slot-order-starter {
-  background: rgba(255, 106, 43, 0.18);
-  border-color: rgba(255, 106, 43, 0.4);
-  color: var(--hd-accent, #ff6a2b);
+.phone-frame-light .lineup-slot-pos-starter,
+.phone-frame-light .lineup-slot-order-starter {
+  background: rgba(232, 74, 138, 0.18);
+  border-color: rgba(232, 74, 138, 0.4);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .lineup-back {
+.phone-frame-light .lineup-back {
   width: 36px;
   height: 36px;
   display: inline-flex;
@@ -318,16 +318,16 @@
   background: transparent;
   border: 0;
   border-radius: 10px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   cursor: pointer;
 }
 
-.phone-frame-dark .lineup-back:hover {
-  background: rgba(255, 255, 255, 0.05);
+.phone-frame-light .lineup-back:hover {
+  background: rgba(20, 30, 50, 0.04);
 }
 
 /* ── 라인업 페이지 레이아웃 (다이아몬드/힌트/타순/대기 — grid-area로 PC에서 재배치 가능) ── */
-.phone-frame-dark .lineup-layout {
+.phone-frame-light .lineup-layout {
   display: grid;
   gap: 8px;
   /* 모바일/태블릿 기본: 다이아몬드(전체폭) → 힌트(전체폭) → [타순|대기] */
@@ -338,14 +338,14 @@
     "slots   pool";
 }
 
-.phone-frame-dark .lineup-diamond-card { grid-area: diamond; }
+.phone-frame-light .lineup-diamond-card { grid-area: diamond; }
 /* .lineup-action-hint는 .lineup-action-row 안으로 들어가므로 grid-area는 행에서 지정 */
-.phone-frame-dark .lineup-slots-card { grid-area: slots; }
-.phone-frame-dark .lineup-pool-card-side { grid-area: pool; }
+.phone-frame-light .lineup-slots-card { grid-area: slots; }
+.phone-frame-light .lineup-pool-card-side { grid-area: pool; }
 
 /* 다이아몬드와 타순/대기 사이 사용법 안내 — 텍스트만, 좌측 정렬.
    안내 텍스트 + 우측 액션 버튼(저장/공유)을 한 줄에 배치 */
-.phone-frame-dark .lineup-action-row {
+.phone-frame-light .lineup-action-row {
   grid-area: hint;
   display: flex;
   align-items: center;
@@ -353,7 +353,7 @@
   min-width: 0;
 }
 
-.phone-frame-dark .lineup-action-hint {
+.phone-frame-light .lineup-action-hint {
   flex: 1;
   min-width: 0;
   margin: 0;
@@ -365,27 +365,27 @@
   text-align: left;
 }
 
-.phone-frame-dark .lineup-action-hint strong {
+.phone-frame-light .lineup-action-hint strong {
   color: rgba(255, 255, 255, 0.7);
   font-weight: 800;
 }
 
-.phone-frame-dark .lineup-action-buttons {
+.phone-frame-light .lineup-action-buttons {
   display: inline-flex;
   align-items: center;
   gap: 14px; /* 타자/투수 토글과 공유 버튼 오인 클릭 방지 */
   flex-shrink: 0;
 }
 
-.phone-frame-dark .lineup-action-btn {
+.phone-frame-light .lineup-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(20, 30, 50, 0.05);
+  border: 1px solid rgba(20, 30, 50, 0.10);
   border-radius: 8px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   font: inherit;
   font-size: 11px;
   font-weight: 700;
@@ -395,39 +395,39 @@
   white-space: nowrap;
 }
 
-.phone-frame-dark .lineup-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
+.phone-frame-light .lineup-action-btn:hover {
+  background: rgba(20, 30, 50, 0.08);
+  border-color: rgba(20, 30, 50, 0.14);
 }
 
-.phone-frame-dark .lineup-action-btn:active {
-  background: rgba(255, 255, 255, 0.14);
+.phone-frame-light .lineup-action-btn:active {
+  background: rgba(20, 30, 50, 0.10);
 }
 
-.phone-frame-dark .lineup-action-btn-primary {
-  background: rgba(255, 106, 43, 0.18);
-  border-color: rgba(255, 106, 43, 0.4);
-  color: var(--hd-accent, #ff6a2b);
+.phone-frame-light .lineup-action-btn-primary {
+  background: rgba(232, 74, 138, 0.18);
+  border-color: rgba(232, 74, 138, 0.4);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .lineup-action-btn-primary:hover {
-  background: rgba(255, 106, 43, 0.26);
+.phone-frame-light .lineup-action-btn-primary:hover {
+  background: rgba(232, 74, 138, 0.26);
 }
 
 /* 공개/비공개 토글 — 공개 중일 땐 초록색 강조, 비공개일 땐 회색 */
-.phone-frame-dark .lineup-action-btn-publish {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--hd-border-soft);
-  color: var(--hd-text-secondary);
+.phone-frame-light .lineup-action-btn-publish {
+  background: rgba(20, 30, 50, 0.04);
+  border-color: var(--bp-line-soft);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .lineup-action-btn-publish.is-on {
+.phone-frame-light .lineup-action-btn-publish.is-on {
   background: rgba(34, 197, 94, 0.14);
   border-color: rgba(34, 197, 94, 0.5);
-  color: rgb(134, 239, 172);
+  color: var(--bp-success);
 }
 
-.phone-frame-dark .lineup-action-btn-publish:disabled {
+.phone-frame-light .lineup-action-btn-publish:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -452,37 +452,37 @@
 }
 
 /* ── 라인업 슬롯 카드 ── */
-.phone-frame-dark .lineup-slots-card,
-.phone-frame-dark .lineup-pool-card,
-.phone-frame-dark .lineup-diamond-card {
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+.phone-frame-light .lineup-slots-card,
+.phone-frame-light .lineup-pool-card,
+.phone-frame-light .lineup-diamond-card {
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
   padding: 12px 10px;
   min-width: 0;
 }
 
-.phone-frame-dark .lineup-diamond-card {
+.phone-frame-light .lineup-diamond-card {
   display: flex;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
 }
 
-.phone-frame-dark .lineup-pool-card-side {
+.phone-frame-light .lineup-pool-card-side {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-.phone-frame-dark .lineup-section-head {
+.phone-frame-light .lineup-section-head {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
 }
 
-.phone-frame-dark .lineup-clear-btn {
+.phone-frame-light .lineup-clear-btn {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
@@ -503,34 +503,34 @@
 }
 
 
-.phone-frame-dark .lineup-clear-btn:hover {
+.phone-frame-light .lineup-clear-btn:hover {
   background: rgba(244, 67, 54, 0.2);
 }
 
-.phone-frame-dark .lineup-clear-btn:active {
+.phone-frame-light .lineup-clear-btn:active {
   background: rgba(244, 67, 54, 0.28);
 }
 
-.phone-frame-dark .lineup-section-head strong {
+.phone-frame-light .lineup-section-head strong {
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.2px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .lineup-section-count {
+.phone-frame-light .lineup-section-count {
   font-size: 12px;
   font-weight: 700;
-  color: var(--hd-accent, #ff6a2b);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .lineup-section-hint {
+.phone-frame-light .lineup-section-hint {
   font-size: 11px;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   font-weight: 600;
 }
 
-.phone-frame-dark .lineup-slots {
+.phone-frame-light .lineup-slots {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -539,30 +539,30 @@
   gap: 6px;
 }
 
-.phone-frame-dark .lineup-slot {
+.phone-frame-light .lineup-slot {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(20, 30, 50, 0.03);
+  border: 1px solid rgba(20, 30, 50, 0.05);
   border-radius: 9px;
   min-height: 36px;
 }
 
-.phone-frame-dark .lineup-slot-empty {
+.phone-frame-light .lineup-slot-empty {
   border-style: dashed;
   background: transparent;
 }
 
-.phone-frame-dark .lineup-slot-order {
+.phone-frame-light .lineup-slot-order {
   width: 20px;
   height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 106, 43, 0.16);
-  color: var(--hd-accent, #ff6a2b);
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
@@ -571,7 +571,7 @@
 }
 
 /* 슬롯 선택 버튼 — 번호 + 이름 통합 클릭 영역 */
-.phone-frame-dark .lineup-slot-main {
+.phone-frame-light .lineup-slot-main {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -586,18 +586,18 @@
   font: inherit;
 }
 
-.phone-frame-dark .lineup-slot-main:hover .lineup-slot-order {
-  background: rgba(255, 106, 43, 0.28);
+.phone-frame-light .lineup-slot-main:hover .lineup-slot-order {
+  background: rgba(232, 74, 138, 0.28);
 }
 
 /* 선택된 슬롯 전체 — 옅은 노란 배경 + 보더로 강조 */
-.phone-frame-dark .lineup-slot-selected {
+.phone-frame-light .lineup-slot-selected {
   background: rgba(255, 221, 51, 0.1) !important;
   border-color: rgba(255, 221, 51, 0.4) !important;
 }
 
 /* 타순 교체 source 선택 — 노란색 강조 (다이아몬드 선택과 동일 톤) */
-.phone-frame-dark .lineup-slot-order-selected {
+.phone-frame-light .lineup-slot-order-selected {
   background: #ffdd33 !important;
   color: #1a2640 !important;
   box-shadow:
@@ -605,16 +605,16 @@
     0 0 8px rgba(255, 221, 51, 0.6);
 }
 
-.phone-frame-dark .lineup-slot-main:hover .lineup-slot-order-selected {
+.phone-frame-light .lineup-slot-main:hover .lineup-slot-order-selected {
   background: #ffdd33 !important;
 }
 
 /* 타순 swap 직후 슬롯 행 — 위/아래에서 들어오는 듯한 모션 + 노란 플래시 */
-.phone-frame-dark .lineup-slot-swap-from-down {
+.phone-frame-light .lineup-slot-swap-from-down {
   animation: lineup-slot-swap-from-down 0.42s cubic-bezier(0.45, 0, 0.25, 1);
 }
 
-.phone-frame-dark .lineup-slot-swap-from-up {
+.phone-frame-light .lineup-slot-swap-from-up {
   animation: lineup-slot-swap-from-up 0.42s cubic-bezier(0.45, 0, 0.25, 1);
 }
 
@@ -629,7 +629,7 @@
   }
   100% {
     transform: translateY(0);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(20, 30, 50, 0.03);
     opacity: 1;
   }
 }
@@ -645,21 +645,21 @@
   }
   100% {
     transform: translateY(0);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(20, 30, 50, 0.03);
     opacity: 1;
   }
 }
 
-.phone-frame-dark .lineup-slot-player {
+.phone-frame-light .lineup-slot-player {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   text-align: left;
 }
 
-.phone-frame-dark .lineup-slot-name {
+.phone-frame-light .lineup-slot-name {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.2px;
@@ -668,20 +668,20 @@
   text-overflow: ellipsis;
 }
 
-.phone-frame-dark .lineup-slot-pos {
+.phone-frame-light .lineup-slot-pos {
   padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.05);
+  border: 1px solid rgba(20, 30, 50, 0.08);
   border-radius: 6px;
   font-size: 10px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 /* 슬롯 우측 X 제거 버튼 — 명확하게 분리된 액션 */
-.phone-frame-dark .lineup-slot-remove {
+.phone-frame-light .lineup-slot-remove {
   width: 22px;
   height: 22px;
   display: inline-flex;
@@ -698,16 +698,16 @@
   transition: background 0.12s ease, color 0.12s ease;
 }
 
-.phone-frame-dark .lineup-slot-remove:hover {
+.phone-frame-light .lineup-slot-remove:hover {
   background: rgba(244, 67, 54, 0.16);
   color: #ff7c7c;
 }
 
-.phone-frame-dark .lineup-slot-pos:hover {
-  background: rgba(255, 255, 255, 0.1);
+.phone-frame-light .lineup-slot-pos:hover {
+  background: rgba(20, 30, 50, 0.08);
 }
 
-.phone-frame-dark .lineup-slot-remove {
+.phone-frame-light .lineup-slot-remove {
   width: 26px;
   height: 26px;
   display: inline-flex;
@@ -716,32 +716,32 @@
   background: transparent;
   border: 0;
   border-radius: 6px;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   cursor: pointer;
   flex-shrink: 0;
 }
 
-.phone-frame-dark .lineup-slot-remove:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--hd-text-primary);
+.phone-frame-light .lineup-slot-remove:hover {
+  background: rgba(20, 30, 50, 0.05);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .lineup-slot-placeholder {
+.phone-frame-light .lineup-slot-placeholder {
   flex: 1;
   font-size: 12px;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   font-weight: 600;
 }
 
 /* ── 야구장 (이미지 배경 + 절대좌표 마커) ── */
-.phone-frame-dark .lineup-field {
+.phone-frame-light .lineup-field {
   position: relative;
   width: 100%;
   aspect-ratio: 640 / 360;
   background: #0a1422;
 }
 
-.phone-frame-dark .lineup-field-bg {
+.phone-frame-light .lineup-field-bg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -752,7 +752,7 @@
   z-index: 1;
 }
 
-.phone-frame-dark .lineup-field-marker {
+.phone-frame-light .lineup-field-marker {
   position: absolute;
   transform: translate(-50%, -50%);
   /* flex column 제거 — 이름이 있을 때도 원의 중심이 좌표에 고정되도록.
@@ -766,7 +766,7 @@
 }
 
 /* 클릭 가능한 마커 — 브라우저 기본 동작 완전 차단 (padding은 base에서 통일됨) */
-.phone-frame-dark button.lineup-field-marker {
+.phone-frame-light button.lineup-field-marker {
   background: transparent !important;
   border: 0 !important;
   outline: none !important;
@@ -783,21 +783,21 @@
   transform: translate(-50%, -50%) !important;
 }
 
-.phone-frame-dark button.lineup-field-marker:focus,
-.phone-frame-dark button.lineup-field-marker:focus-visible,
-.phone-frame-dark button.lineup-field-marker:active,
-.phone-frame-dark button.lineup-field-marker:hover {
+.phone-frame-light button.lineup-field-marker:focus,
+.phone-frame-light button.lineup-field-marker:focus-visible,
+.phone-frame-light button.lineup-field-marker:active,
+.phone-frame-light button.lineup-field-marker:hover {
   background: transparent !important;
   outline: none !important;
   border: 0 !important;
 }
 
-.phone-frame-dark .lineup-field-marker-interactive .lineup-field-marker-circle {
+.phone-frame-light .lineup-field-marker-interactive .lineup-field-marker-circle {
   transition: none;
 }
 
 /* 첫 번째로 선택된 포지션 — 정적 노란 강조 (애니메이션/transform 일체 없음) */
-.phone-frame-dark .lineup-field-marker-selected .lineup-field-marker-circle {
+.phone-frame-light .lineup-field-marker-selected .lineup-field-marker-circle {
   background: #ffdd33 !important;
   color: #1a2640 !important;
   border-color: #ffffff !important;
@@ -806,7 +806,7 @@
     0 2px 8px rgba(0, 0, 0, 0.6) !important;
 }
 
-.phone-frame-dark .lineup-field-marker-selected .lineup-field-marker-name {
+.phone-frame-light .lineup-field-marker-selected .lineup-field-marker-name {
   color: #ffdd33;
   font-weight: 900;
 }
@@ -814,7 +814,7 @@
 /* ── swap 애니메이션 고스트 ──
  * 두 포지션을 교환할 때 한 선수가 from 좌표에서 to 좌표로 날아가는 캡슐.
  * 정적 마커의 이름 라벨은 from/to 위치에서 일시적으로 숨겨지고, 끝나면 다시 노출. */
-.phone-frame-dark .lineup-swap-ghost {
+.phone-frame-light .lineup-swap-ghost {
   position: absolute;
   transform: translate(-50%, -50%);
   padding: 4px 10px;
@@ -857,7 +857,7 @@
 }
 
 /* 선택 상태 안내 배너 — 다이아몬드 카드 하단에 표시 */
-.phone-frame-dark .lineup-field-hint {
+.phone-frame-light .lineup-field-hint {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -869,7 +869,7 @@
   font-weight: 700;
 }
 
-.phone-frame-dark .lineup-field-hint strong {
+.phone-frame-light .lineup-field-hint strong {
   padding: 2px 6px;
   background: #ffdd33;
   color: #1a2640;
@@ -878,7 +878,7 @@
   font-weight: 900;
 }
 
-.phone-frame-dark .lineup-field-hint-cancel {
+.phone-frame-light .lineup-field-hint-cancel {
   margin-left: auto;
   padding: 4px 10px;
   background: transparent;
@@ -890,13 +890,13 @@
   cursor: pointer;
 }
 
-.phone-frame-dark .lineup-field-marker-circle {
+.phone-frame-light .lineup-field-marker-circle {
   width: 24px;
   height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--marker-color, rgba(255,255,255,0.16));
+  background: var(--marker-color, rgba(20, 30, 50, 0.10));
   border: 1.5px solid rgba(255, 255, 255, 0.92);
   border-radius: 999px;
   font-size: 10px;
@@ -906,12 +906,12 @@
   letter-spacing: -0.3px;
 }
 
-.phone-frame-dark .lineup-field-marker-empty .lineup-field-marker-circle {
+.phone-frame-light .lineup-field-marker-empty .lineup-field-marker-circle {
   border-color: rgba(255, 255, 255, 0.45);
   color: rgba(255, 255, 255, 0.65);
 }
 
-.phone-frame-dark .lineup-field-marker-name {
+.phone-frame-light .lineup-field-marker-name {
   position: absolute;
   /* 버튼 padding 8px + 텍스트 line-box 여백 보정. 원 바로 아래에 붙음. */
   top: calc(100% - 6px);
@@ -926,17 +926,17 @@
   pointer-events: none;
 }
 
-.phone-frame-dark .lineup-field-marker-dh {
+.phone-frame-light .lineup-field-marker-dh {
   /* DH는 우상단 모서리 외부에 표시 — 원형 + 짧은 라벨 */
 }
 
-.phone-frame-dark .lineup-field-marker-dh .lineup-field-marker-circle {
+.phone-frame-light .lineup-field-marker-dh .lineup-field-marker-circle {
   background: rgba(0, 0, 0, 0.55);
   border-color: rgba(255, 255, 255, 0.55);
 }
 
 /* ── 대기 선수 세로 리스트 (타순 옆) ── */
-.phone-frame-dark .lineup-pool-list {
+.phone-frame-light .lineup-pool-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -947,28 +947,28 @@
   max-height: 370px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.18) transparent;
+  scrollbar-color: rgba(20, 30, 50, 0.12) transparent;
 }
 
-.phone-frame-dark .lineup-pool-list::-webkit-scrollbar {
+.phone-frame-light .lineup-pool-list::-webkit-scrollbar {
   width: 4px;
 }
 
-.phone-frame-dark .lineup-pool-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.18);
+.phone-frame-light .lineup-pool-list::-webkit-scrollbar-thumb {
+  background: rgba(20, 30, 50, 0.12);
   border-radius: 2px;
 }
 
-.phone-frame-dark .lineup-pool-row {
+.phone-frame-light .lineup-pool-row {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(20, 30, 50, 0.03);
+  border: 1px solid rgba(20, 30, 50, 0.05);
   border-radius: 9px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   font: inherit;
   cursor: pointer;
   min-height: 36px;
@@ -976,21 +976,21 @@
   transition: background 0.12s ease;
 }
 
-.phone-frame-dark .lineup-pool-row:hover {
-  background: rgba(255, 255, 255, 0.07);
+.phone-frame-light .lineup-pool-row:hover {
+  background: rgba(20, 30, 50, 0.05);
 }
 
-.phone-frame-dark .lineup-pool-row:active {
+.phone-frame-light .lineup-pool-row:active {
   transform: scale(0.98);
 }
 
-.phone-frame-dark .lineup-pool-row-blocked {
+.phone-frame-light .lineup-pool-row-blocked {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* ── 투/타 뱃지 (좌타/우타/양타, 좌투/우투) ── */
-.phone-frame-dark .lineup-hand-badge {
+.phone-frame-light .lineup-hand-badge {
   display: inline-flex;
   align-items: center;
   padding: 1px 5px;
@@ -1002,42 +1002,42 @@
   line-height: 1.4;
 }
 
-.phone-frame-dark .lineup-hand-L {
+.phone-frame-light .lineup-hand-L {
   background: rgba(64, 156, 255, 0.18);
-  color: #6db4ff;
+  color: var(--bp-info);
 }
 
-.phone-frame-dark .lineup-hand-R {
+.phone-frame-light .lineup-hand-R {
   background: rgba(255, 124, 124, 0.18);
-  color: #ff9c9c;
+  color: var(--bp-danger);
 }
 
-.phone-frame-dark .lineup-hand-S {
+.phone-frame-light .lineup-hand-S {
   background: rgba(180, 120, 255, 0.2);
-  color: #c8a4ff;
+  color: var(--bp-accent-2);
 }
 
 /* 슬롯 안의 hand badge — 이름 옆에 살짝 떨어져 표시 */
-.phone-frame-dark .lineup-slot-player .lineup-hand-badge {
+.phone-frame-light .lineup-slot-player .lineup-hand-badge {
   margin-left: 6px;
 }
 
 /* 풀 row의 hand badge — 우측 끝으로 밀어내기 */
-.phone-frame-dark .lineup-pool-row .lineup-hand-badge {
+.phone-frame-light .lineup-pool-row .lineup-hand-badge {
   margin-left: auto;
 }
 
-.phone-frame-dark .lineup-pool-row .lineup-pool-pos {
+.phone-frame-light .lineup-pool-row .lineup-pool-pos {
   padding: 2px 5px;
-  background: rgba(255, 106, 43, 0.16);
-  color: var(--hd-accent, #ff6a2b);
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
   border-radius: 5px;
   font-size: 10px;
   font-weight: 800;
   flex-shrink: 0;
 }
 
-.phone-frame-dark .lineup-pool-row-name {
+.phone-frame-light .lineup-pool-row-name {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.2px;
@@ -1047,79 +1047,79 @@
 }
 
 /* ── 기존 가로 풀 (사용 안 함, 호환용 보존) ── */
-.phone-frame-dark .lineup-pool {
+.phone-frame-light .lineup-pool {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.phone-frame-dark .lineup-pool-item {
+.phone-frame-light .lineup-pool-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.06);
   border-radius: 999px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   font: inherit;
   cursor: pointer;
   transition: background 0.12s ease;
 }
 
-.phone-frame-dark .lineup-pool-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+.phone-frame-light .lineup-pool-item:hover {
+  background: rgba(20, 30, 50, 0.06);
 }
 
-.phone-frame-dark .lineup-pool-item:active {
+.phone-frame-light .lineup-pool-item:active {
   transform: scale(0.97);
 }
 
-.phone-frame-dark .lineup-pool-item-blocked {
+.phone-frame-light .lineup-pool-item-blocked {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.phone-frame-dark .lineup-pool-pos {
+.phone-frame-light .lineup-pool-pos {
   padding: 2px 6px;
-  background: rgba(255, 106, 43, 0.16);
-  color: var(--hd-accent, #ff6a2b);
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
   border-radius: 6px;
   font-size: 10px;
   font-weight: 800;
 }
 
-.phone-frame-dark .lineup-pool-name {
+.phone-frame-light .lineup-pool-name {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.1px;
 }
 
-.phone-frame-dark .lineup-pool-num {
+.phone-frame-light .lineup-pool-num {
   font-size: 11px;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   font-weight: 700;
 }
 
-.phone-frame-dark .lineup-pool-empty {
+.phone-frame-light .lineup-pool-empty {
   text-align: center;
   padding: 20px;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
   font-size: 12px;
   font-weight: 600;
 }
 
-.phone-frame-dark .lineup-pool-soon {
+.phone-frame-light .lineup-pool-soon {
   margin-left: auto;
   padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(20, 30, 50, 0.05);
   border-radius: 6px;
   font-size: 10px;
   font-weight: 700;
-  color: var(--hd-text-muted);
+  color: var(--bp-text-muted);
 }
 
-.phone-frame-dark .sched-team-picker-item-disabled {
+.phone-frame-light .sched-team-picker-item-disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
@@ -1135,14 +1135,14 @@
   max-width: 340px;
   background: #0d1a30;
   color: #f7f9fc;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(20, 30, 50, 0.12);
   border-radius: 20px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
 .lineup-confirm-modal-panel .modal-header {
   background: #0d1a30;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(20, 30, 50, 0.06);
   color: #f7f9fc;
 }
 
@@ -1196,13 +1196,13 @@
 }
 
 .lineup-confirm-cancel {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(20, 30, 50, 0.05);
+  border-color: rgba(20, 30, 50, 0.10);
   color: #f7f9fc;
 }
 
 .lineup-confirm-cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.08);
 }
 
 .lineup-confirm-destruct {
@@ -1226,14 +1226,14 @@
   max-width: 380px;
   background: #0d1a30;
   color: #f7f9fc;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(20, 30, 50, 0.12);
   border-radius: 20px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
 .lineup-pos-modal-panel .modal-header {
   background: #0d1a30;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(20, 30, 50, 0.06);
   color: #f7f9fc;
 }
 
@@ -1267,8 +1267,8 @@
   align-items: center;
   justify-content: center;
   padding: 12px 4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.06);
   border-radius: 10px;
   color: #f7f9fc;
   cursor: pointer;
@@ -1277,7 +1277,7 @@
 }
 
 .lineup-pos-modal-panel .lineup-pos-choice:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 30, 50, 0.06);
 }
 
 .lineup-pos-modal-panel .lineup-pos-choice strong {
@@ -1293,19 +1293,19 @@
 }
 
 .lineup-pos-modal-panel .lineup-pos-choice-active {
-  background: rgba(255, 106, 43, 0.18);
-  border-color: rgba(255, 106, 43, 0.5);
+  background: rgba(232, 74, 138, 0.18);
+  border-color: rgba(232, 74, 138, 0.5);
 }
 
 .lineup-pos-modal-panel .lineup-pos-choice-active strong {
-  color: #ff6a2b;
+  color: var(--bp-accent);
 }
 
 .lineup-pos-modal-panel .lineup-pos-check {
   position: absolute;
   top: 4px;
   right: 4px;
-  color: #ff6a2b;
+  color: var(--bp-accent);
 }
 
 /* ── 라인업 공유 모달 ── */
@@ -1317,35 +1317,35 @@
 .modal-panel.share-lineup-modal-panel {
   width: calc(100% - 32px);
   max-width: 360px;
-  background: #0d1a30;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
   border-radius: 16px;
 }
 
 .share-lineup-modal-panel .modal-header {
-  background: #0d1a30;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: #f7f9fc;
+  background: var(--bp-card);
+  border-bottom: 1px solid var(--bp-line-soft);
+  color: var(--bp-text);
 }
 
 .share-lineup-modal-panel .modal-header strong {
-  color: #f7f9fc;
+  color: var(--bp-text);
   font-size: 15px;
   font-weight: 800;
 }
 
 .share-lineup-modal-panel .modal-close {
-  color: rgba(247, 249, 252, 0.72);
+  color: var(--bp-text-secondary);
   background: transparent;
   border: 0;
 }
 
 .share-lineup-modal-panel .modal-close:hover {
-  color: #ffffff;
+  color: var(--bp-text);
 }
 
 .share-lineup-modal-panel .modal-body {
-  background: #0d1a30;
+  background: var(--bp-card);
   padding: 16px 16px 20px;
 }
 
@@ -1359,8 +1359,8 @@
 .share-lineup-preview {
   display: flex;
   justify-content: center;
-  background: #06091a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line);
   border-radius: 12px;
   padding: 10px;
 }
@@ -1371,7 +1371,7 @@
   max-width: 270px;
   height: auto;
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--bp-shadow-card);
 }
 
 .share-lineup-actions {
@@ -1397,13 +1397,13 @@
 }
 
 .share-lineup-primary {
-  background: var(--hd-accent, #ff6a2b);
-  border: 1px solid var(--hd-accent, #ff6a2b);
+  background: var(--bp-accent);
+  border: 1px solid var(--bp-accent);
   color: #ffffff;
 }
 
 .share-lineup-primary:hover {
-  background: #ff7e47;
+  background: var(--bp-accent-strong);
 }
 
 .share-lineup-primary:disabled {
@@ -1412,13 +1412,13 @@
 }
 
 .share-lineup-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: var(--hd-text-primary);
+  background: rgba(20, 30, 50, 0.05);
+  border: 1px solid rgba(20, 30, 50, 0.10);
+  color: var(--bp-text);
 }
 
 .share-lineup-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(20, 30, 50, 0.08);
 }
 
 .share-lineup-status {
@@ -1426,13 +1426,13 @@
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--hd-accent, #ff6a2b);
+  color: var(--bp-accent);
 }
 
 /* ============================================================
  * 라인업 슬롯 picker — 헤더 좌측 드롭다운 (다중 슬롯 선택/생성/이름/삭제)
  * ============================================================ */
-.phone-frame-dark .lineup-slot-picker {
+.phone-frame-light .lineup-slot-picker {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
@@ -1442,15 +1442,15 @@
   justify-content: center;
 }
 
-.phone-frame-dark .lineup-slot-trigger {
+.phone-frame-light .lineup-slot-trigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 9px 12px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 10px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   cursor: pointer;
   font: inherit;
   white-space: nowrap;
@@ -1458,11 +1458,11 @@
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.phone-frame-dark .lineup-slot-trigger:hover {
-  background: rgba(255, 255, 255, 0.05);
+.phone-frame-light .lineup-slot-trigger:hover {
+  background: rgba(20, 30, 50, 0.04);
 }
 
-.phone-frame-dark .lineup-slot-trigger-name {
+.phone-frame-light .lineup-slot-trigger-name {
   font-size: 13px;
   font-weight: 800;
   overflow: hidden;
@@ -1471,18 +1471,18 @@
   max-width: 140px;
 }
 
-.phone-frame-dark .lineup-slot-trigger-empty {
+.phone-frame-light .lineup-slot-trigger-empty {
   font-size: 13px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .lineup-slot-chevron-open {
+.phone-frame-light .lineup-slot-chevron-open {
   transform: rotate(180deg);
   transition: transform 0.15s ease;
 }
 
-.phone-frame-dark .lineup-slot-menu {
+.phone-frame-light .lineup-slot-menu {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
@@ -1491,8 +1491,8 @@
   max-width: 280px;
   margin: 0;
   padding: 6px;
-  background: var(--hd-bg-card);
-  border: 1px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   list-style: none;
@@ -1501,13 +1501,13 @@
   gap: 2px;
 }
 
-.phone-frame-dark .lineup-slot-menu-item-wrap {
+.phone-frame-light .lineup-slot-menu-item-wrap {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.phone-frame-dark .lineup-slot-menu-item {
+.phone-frame-light .lineup-slot-menu-item {
   flex: 1;
   display: inline-flex;
   align-items: center;
@@ -1516,7 +1516,7 @@
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   cursor: pointer;
   font: inherit;
   text-align: left;
@@ -1524,16 +1524,16 @@
   min-width: 0;
 }
 
-.phone-frame-dark .lineup-slot-menu-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+.phone-frame-light .lineup-slot-menu-item:hover {
+  background: rgba(20, 30, 50, 0.04);
 }
 
-.phone-frame-dark .lineup-slot-menu-item.is-active {
-  background: rgba(255, 106, 43, 0.14);
-  color: var(--hd-accent, #ff6a2b);
+.phone-frame-light .lineup-slot-menu-item.is-active {
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
 }
 
-.phone-frame-dark .lineup-slot-menu-name {
+.phone-frame-light .lineup-slot-menu-name {
   flex: 1;
   font-size: 13px;
   font-weight: 700;
@@ -1542,13 +1542,13 @@
   white-space: nowrap;
 }
 
-.phone-frame-dark .lineup-slot-menu-actions {
+.phone-frame-light .lineup-slot-menu-actions {
   display: flex;
   gap: 2px;
   flex-shrink: 0;
 }
 
-.phone-frame-dark .lineup-slot-action-btn {
+.phone-frame-light .lineup-slot-action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1557,102 +1557,102 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.phone-frame-dark .lineup-slot-action-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--hd-text-primary);
+.phone-frame-light .lineup-slot-action-btn:hover {
+  background: rgba(20, 30, 50, 0.05);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .lineup-slot-action-btn-danger:hover {
+.phone-frame-light .lineup-slot-action-btn-danger:hover {
   background: rgba(220, 38, 38, 0.18);
-  color: #fca5a5;
+  color: var(--bp-danger);
 }
 
-.phone-frame-dark .lineup-slot-menu-add {
-  color: var(--hd-accent, #ff6a2b);
+.phone-frame-light .lineup-slot-menu-add {
+  color: var(--bp-accent);
   font-weight: 800;
 }
 
-.phone-frame-dark .lineup-slot-menu-cap {
+.phone-frame-light .lineup-slot-menu-cap {
   padding: 6px 10px;
   font-size: 11px;
-  color: var(--hd-text-muted, #6b7280);
+  color: var(--bp-text-muted);
   text-align: center;
 }
 
 /* ── 새 슬롯 만들기: 팀 선택 grid ── */
-.phone-frame-dark .lineup-slot-team-grid {
+.phone-frame-light .lineup-slot-team-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 6px;
 }
 
-.phone-frame-dark .lineup-slot-team-choice {
+.phone-frame-light .lineup-slot-team-choice {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   padding: 8px 4px;
-  background: var(--hd-bg-card);
-  border: 1.5px solid var(--hd-border-soft);
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line-soft);
   border-radius: 8px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   cursor: pointer;
   font-size: 11px;
   font-weight: 700;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.phone-frame-dark .lineup-slot-team-choice.is-active {
-  border-color: var(--hd-accent, #ff6a2b);
-  background: rgba(255, 106, 43, 0.1);
+.phone-frame-light .lineup-slot-team-choice.is-active {
+  border-color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.1);
 }
 
-.phone-frame-dark .lineup-slot-team-choice.is-disabled {
+.phone-frame-light .lineup-slot-team-choice.is-disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* ── 이름 변경 input ── */
-.phone-frame-dark .lineup-rename-input {
+.phone-frame-light .lineup-rename-input {
   width: 100%;
   padding: 10px 12px;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--hd-border-soft);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 8px;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   font-size: 14px;
   font-family: inherit;
 }
 
-.phone-frame-dark .lineup-rename-input:focus {
+.phone-frame-light .lineup-rename-input:focus {
   outline: none;
-  border-color: var(--hd-accent, #ff6a2b);
+  border-color: var(--bp-accent);
 }
 
-.phone-frame-dark .lineup-newslot-name-label {
+.phone-frame-light .lineup-newslot-name-label {
   display: block;
   margin-top: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .lineup-newslot-name-hint {
+.phone-frame-light .lineup-newslot-name-hint {
   margin: 4px 0 0;
   font-size: 11px;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   line-height: 1.5;
 }
 
 /* ── confirm modal primary 액션 (새 슬롯·이름 저장) ── */
-.phone-frame-dark .lineup-confirm-primary {
+.phone-frame-light .lineup-confirm-primary {
   padding: 10px 18px;
-  background: var(--hd-accent, #ff6a2b);
+  background: var(--bp-accent);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -1662,6 +1662,6 @@
   transition: filter 0.15s ease;
 }
 
-.phone-frame-dark .lineup-confirm-primary:hover {
+.phone-frame-light .lineup-confirm-primary:hover {
   filter: brightness(1.1);
 }
