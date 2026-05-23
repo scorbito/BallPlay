@@ -1,5 +1,56 @@
 /* 내 기록 탭 — 기록 목록 + 카드 + 빈 상태 */
 
+/* ── 등급 뱃지 ── */
+.phone-frame-dark .tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.phone-frame-dark .tier-badge-sm {
+  font-size: 11px;
+}
+
+.phone-frame-dark .tier-badge-md {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+
+.phone-frame-dark .tier-badge-guest {
+  background: rgba(107, 114, 128, 0.18);
+  color: #9ca3af;
+}
+
+.phone-frame-dark .tier-badge-free {
+  background: rgba(156, 163, 175, 0.18);
+  color: #d1d5db;
+}
+
+.phone-frame-dark .tier-badge-pro {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.phone-frame-dark .tier-badge-admin {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+/* 내 기록 헤더 — 제목과 등급 뱃지 가로 배치 */
+.phone-frame-dark .records-header-with-badge {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .phone-frame-dark .records-empty {
   display: flex;
   flex-direction: column;
