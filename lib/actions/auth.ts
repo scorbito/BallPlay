@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateDefaultNickname } from "@/lib/constants/nicknames";
+import { ensureProfile } from "@/lib/actions/ensureProfile";
 
 type AuthMode = "sign-in" | "sign-up";
 type OAuthProvider = "google" | "kakao";
@@ -22,21 +23,6 @@ function getRequestOrigin() {
   }
 
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-}
-
-async function hasProfile(userId: string) {
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`프로필 확인에 실패했습니다: ${error.message}`);
-  }
-
-  return Boolean(data);
 }
 
 export async function emailAuthAction(formData: FormData) {
@@ -71,7 +57,8 @@ export async function emailAuthAction(formData: FormData) {
       redirect("/login?notice=check-email");
     }
 
-    redirect("/onboarding");
+    if (data.user) await ensureProfile(data.user.id).catch(() => {});
+    redirect("/");
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -80,7 +67,8 @@ export async function emailAuthAction(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent(error?.message ?? "로그인에 실패했습니다.")}`);
   }
 
-  redirect(await hasProfile(data.user.id) ? "/" : "/onboarding");
+  await ensureProfile(data.user.id).catch(() => {});
+  redirect("/");
 }
 
 export async function signOutAction() {
@@ -93,16 +81,16 @@ export async function signOutAction() {
 /**
  * 익명 로그인 시작 — Supabase 익명 user 생성 + 기본 프로필 row 생성.
  * 첫 진입 사용자의 가입 마찰을 0으로 만들어 "체험 → 가입" 흐름을 가능하게 함.
- * 성공 시 /onboarding으로 redirect (닉네임/팀 선택).
+ * 온보딩 스킵 — 바로 홈으로.
  */
 export async function signInAnonymouslyAction() {
   const supabase = createSupabaseServerClient();
 
-  // 이미 세션이 있으면 그대로 진행 (중복 익명 user 방지)
+  // 이미 세션이 있으면 그대로 홈으로 (중복 익명 user 방지)
   const { data: existing } = await supabase.auth.getUser();
   if (existing?.user) {
-    const profile = await hasProfile(existing.user.id);
-    redirect(profile ? "/" : "/onboarding");
+    await ensureProfile(existing.user.id).catch(() => {});
+    redirect("/");
   }
 
   const { data, error } = await supabase.auth.signInAnonymously();
@@ -110,7 +98,7 @@ export async function signInAnonymouslyAction() {
     redirect(`/login?error=${encodeURIComponent(error?.message ?? "체험하기 시작에 실패했습니다.")}`);
   }
 
-  // profiles 행 자동 생성 (admin client로 RLS 우회) — 닉네임/팀은 온보딩에서 채움
+  // profiles 행 자동 생성 (admin client로 RLS 우회)
   const admin = createSupabaseAdminClient();
   await admin.from("profiles").upsert({
     id: data!.user!.id,
@@ -121,7 +109,7 @@ export async function signInAnonymouslyAction() {
     default_public_scope: "public"
   }, { onConflict: "id" });
 
-  redirect("/onboarding");
+  redirect("/");
 }
 
 /** Google/카카오 OAuth 로그인 시작 — Supabase가 발급한 provider URL로 redirect.
@@ -199,5 +187,6 @@ export async function linkAnonymousToEmailAction(formData: FormData) {
   }
 
   // 익명 → 정식 전환 후엔 그대로 사용 가능 (메일 인증은 추후 회복용)
-  redirect(await hasProfile(authData.user.id) ? "/?notice=upgraded" : "/onboarding");
+  await ensureProfile(authData.user.id).catch(() => {});
+  redirect("/?notice=upgraded");
 }

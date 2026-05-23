@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCurrentProfileFromDb } from "@/lib/supabase/queries";
+import { ensureProfile } from "@/lib/actions/ensureProfile";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -37,6 +37,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/?notice=upgraded`);
   }
 
-  const profile = await getCurrentProfileFromDb().catch(() => null);
-  return NextResponse.redirect(`${origin}${profile ? "/" : "/onboarding"}`);
+  // 온보딩 스킵 — profile row 없으면 디폴트로 자동 생성하고 홈으로
+  const { data: authData } = await supabase.auth.getUser();
+  if (authData?.user) {
+    await ensureProfile(authData.user.id).catch(() => {});
+  }
+  return NextResponse.redirect(`${origin}/`);
 }
