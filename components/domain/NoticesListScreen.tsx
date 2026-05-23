@@ -39,7 +39,7 @@ export function NoticesListScreen({ notices }: Props) {
   }, [notices]);
 
   return (
-    <AppShell activeTab="my" title="공지사항" theme="dark" backHref="/">
+    <AppShell activeTab="my" title="공지사항" theme="light" backHref="/">
       {notices.length === 0 ? (
         <div className="empty-state-large">
           <div className="empty-state-icon"><Megaphone size={28} /></div>

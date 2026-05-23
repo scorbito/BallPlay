@@ -231,7 +231,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   // ── 렌더 분기 ────────────────────────────────────────────
   if (loading) {
     return (
-      <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="dark" wide>
+      <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide>
         <p className="stadium-loading">
           <Loader2 size={16} className="stadium-spin" /> 매치 정보를 불러오는 중...
         </p>
@@ -241,7 +241,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
 
   if (error && !row) {
     return (
-      <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="dark" wide>
+      <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide>
         <section className="stadium-replay-error">
           <AlertCircle size={28} />
           <strong>매치를 열 수 없어요</strong>
@@ -278,7 +278,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   const finished = row.status === "finished" || row.status === "cancelled";
 
   return (
-    <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="dark" wide>
+    <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide>
       <section className="stadium-live">
         {/* ── 매치 VS 헤더 — 라인업 카드 클릭 시 상세 모달 ── */}
         <div className="stadium-enter-vs">

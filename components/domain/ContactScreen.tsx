@@ -29,7 +29,7 @@ export function ContactScreen() {
   };
 
   return (
-    <AppShell activeTab="my" title="문의하기" theme="dark" backHref="/my/settings">
+    <AppShell activeTab="my" title="문의하기" theme="light" backHref="/my/settings">
       <section className="contact-intro">
         <Mail size={32} className="contact-icon" />
         <h2>문의 전, 자주 묻는 질문부터 확인해 보세요</h2>

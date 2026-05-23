@@ -239,7 +239,7 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   const selectedTeam = getTeam(selectedTeamId);
 
   return (
-    <AppShell activeTab="schedule" title="일정" theme="dark" hideHeader wide>
+    <AppShell activeTab="schedule" title="일정" theme="light" hideHeader wide>
       {/* 상단: 뒤로가기 + 팀 선택(중앙) + 팀 순위 버튼 */}
       <div className="sched-top-bar">
         <Link className="sched-back-btn" href="/" aria-label="뒤로" prefetch>

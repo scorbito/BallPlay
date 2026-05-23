@@ -50,7 +50,7 @@ export function RankingsScreen({ standings = [] }: RankingsScreenProps) {
   };
 
   return (
-    <AppShell activeTab="schedule" title="팀순위" theme="dark" backHref="/schedule" wide>
+    <AppShell activeTab="schedule" title="팀순위" theme="light" backHref="/schedule" wide>
       <div className="rankings-title">
         <h1>{season} KBO 정규시즌</h1>
         <button

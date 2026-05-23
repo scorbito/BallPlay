@@ -3,7 +3,7 @@ import { SkeletonBox } from "@/components/common/Skeleton";
 
 export default function ScheduleLoading() {
   return (
-    <AppShell activeTab="schedule" title="일정" theme="dark" hideHeader wide>
+    <AppShell activeTab="schedule" title="일정" theme="light" hideHeader wide>
       <div className="skeleton-page">
         {/* 보기 전환 탭 */}
         <SkeletonBox height={40} radius={10} />

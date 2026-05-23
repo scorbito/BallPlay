@@ -18,7 +18,7 @@ function formatDateTime(iso: string) {
 
 export function NoticeDetailScreen({ notice }: Props) {
   return (
-    <AppShell activeTab="my" title="공지사항" theme="dark" backHref="/my/notices">
+    <AppShell activeTab="my" title="공지사항" theme="light" backHref="/my/notices">
       <article className="notice-detail">
         <header>
           {notice.isPinned ? (

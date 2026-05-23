@@ -543,7 +543,7 @@ export function LineupBuilderScreen() {
   }, [slots, pitcherSlots]);
 
   return (
-    <AppShell activeTab="play" title="라인업 짜기" theme="dark" hideHeader wide>
+    <AppShell activeTab="play" title="라인업 짜기" theme="light" hideHeader wide>
       <header className="lineup-header lineup-header-no-back">
         {/* 헤더 좌측: 공개/비공개 토글 (이 슬롯의 속성, 액션) */}
         {(() => {

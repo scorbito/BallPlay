@@ -4,7 +4,7 @@ const EFFECTIVE_DATE = "2026-05-08";
 
 export function PrivacyScreen() {
   return (
-    <AppShell activeTab="my" title="개인정보처리방침" theme="dark" backHref="/my/settings">
+    <AppShell activeTab="my" title="개인정보처리방침" theme="light" backHref="/my/settings">
       <article className="legal-doc">
         <header>
           <h1>개인정보처리방침</h1>

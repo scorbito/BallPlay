@@ -66,7 +66,7 @@ export function HelpScreen() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <AppShell activeTab="my" title="이용안내" theme="dark" backHref="/my/settings">
+    <AppShell activeTab="my" title="이용안내" theme="light" backHref="/my/settings">
       <section className="help-section">
         <h2 className="help-section-title">주요 기능</h2>
         <div className="help-feature-list">

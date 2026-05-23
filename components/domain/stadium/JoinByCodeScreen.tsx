@@ -55,7 +55,7 @@ export function JoinByCodeScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="코드로 참여" backHref="/stadium/lobby" theme="dark" wide>
+    <AppShell activeTab="stadium" title="코드로 참여" backHref="/stadium/lobby" theme="light" wide>
       <section className="stadium-live-create">
         <header className="stadium-enter-head">
           <h1 className="stadium-h1">초대 코드 입력</h1>

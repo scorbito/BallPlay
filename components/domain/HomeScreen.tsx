@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, ListChecks, Settings, Sparkles, Swords, Trophy } from "lucide-react";
+import { BarChart3, CalendarDays, ListChecks, Settings, Sparkles, Swords, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 
 type HomeCard = {
@@ -34,9 +34,17 @@ const cards: HomeCard[] = [
   {
     id: "schedule",
     href: "/schedule",
-    title: "경기일정 & 순위",
-    description: "오늘의 KBO 일정과 팀 순위 확인",
+    title: "경기일정",
+    description: "오늘과 이번 주 KBO 경기 일정 확인",
     icon: CalendarDays,
+    available: true
+  },
+  {
+    id: "rankings",
+    href: "/rankings",
+    title: "팀 순위",
+    description: "2026 KBO 정규시즌 순위와 최근 5경기",
+    icon: BarChart3,
     available: true
   },
   {
@@ -61,7 +69,7 @@ const cards: HomeCard[] = [
 
 export function HomeScreen() {
   return (
-    <AppShell activeTab="home" title="야구놀이터" theme="dark" hideHeader wide>
+    <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
       <header className="play-hub-header">
         <h1>야구놀이터</h1>
         <p>가볍게 즐기는 야구 미니게임 모음</p>

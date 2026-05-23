@@ -101,7 +101,7 @@ export function RecordsScreen() {
 
   if (authState === "loading") {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="dark" hideHeader wide>
+      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
         <header className="play-hub-header">
           <h1>내 기록</h1>
         </header>
@@ -112,7 +112,7 @@ export function RecordsScreen() {
 
   if (authState === "loggedOut" || authState === "anonymous") {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="dark" hideHeader wide>
+      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
         <header className="play-hub-header">
           <h1>내 기록</h1>
           <p>경기 기록은 정식 계정에 저장돼요</p>
@@ -137,7 +137,7 @@ export function RecordsScreen() {
 
   if (loadError) {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="dark" hideHeader wide>
+      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
         <header className="play-hub-header">
           <h1>내 기록</h1>
         </header>
@@ -148,7 +148,7 @@ export function RecordsScreen() {
 
   if (rows && rows.length === 0) {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="dark" hideHeader wide>
+      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
         <header className="play-hub-header">
           <h1>내 기록</h1>
           <p>공개 라인업 매칭과 친구 대전 결과가 자동으로 쌓여요</p>
@@ -168,7 +168,7 @@ export function RecordsScreen() {
   }
 
   return (
-    <AppShell activeTab="records" title="내 기록" theme="dark" hideHeader wide>
+    <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
       <header className="play-hub-header records-header-with-badge">
         <div>
           <h1>내 기록</h1>

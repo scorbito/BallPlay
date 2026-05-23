@@ -77,7 +77,7 @@ export function CreateLiveMatchScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="dark" wide>
+    <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide>
       <section className="stadium-live-create">
         <header className="stadium-enter-head">
           <h1 className="stadium-h1">친구와 실시간 대결</h1>

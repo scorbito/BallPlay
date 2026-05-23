@@ -40,7 +40,7 @@ export function ReplayScreen() {
 
   if (error) {
     return (
-      <AppShell activeTab="stadium" title="공유 매치" backHref="/stadium/lobby" theme="dark" wide>
+      <AppShell activeTab="stadium" title="공유 매치" backHref="/stadium/lobby" theme="light" wide>
         <section className="stadium-replay-error">
           <AlertCircle size={28} />
           <strong>매치를 재생할 수 없어요</strong>
@@ -55,7 +55,7 @@ export function ReplayScreen() {
   }
 
   return (
-    <AppShell activeTab="stadium" title="공유 매치" backHref="/stadium/lobby" theme="dark" wide>
+    <AppShell activeTab="stadium" title="공유 매치" backHref="/stadium/lobby" theme="light" wide>
       <p className="stadium-loading">공유 매치 불러오는 중...</p>
     </AppShell>
   );

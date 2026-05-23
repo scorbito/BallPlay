@@ -3,7 +3,7 @@ import { SkeletonBox, SkeletonLine } from "@/components/common/Skeleton";
 
 export default function NoticesLoading() {
   return (
-    <AppShell activeTab="my" title="공지사항" theme="dark" backHref="/">
+    <AppShell activeTab="my" title="공지사항" theme="light" backHref="/">
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {Array.from({ length: 4 }).map((_, i) => (
           <div

@@ -30,7 +30,7 @@ export function LobbyScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="경기장" backHref="/" theme="dark" wide>
+    <AppShell activeTab="stadium" title="경기장" backHref="/" theme="light" wide>
       {/* 1. 친구와 대결 — 컴팩트 2-up */}
       <div className="stadium-lobby-live-row">
         <Link href="/stadium/live/new" className="stadium-lobby-live" prefetch>

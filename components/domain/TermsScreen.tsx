@@ -4,7 +4,7 @@ const EFFECTIVE_DATE = "2026-05-08";
 
 export function TermsScreen() {
   return (
-    <AppShell activeTab="my" title="이용약관" theme="dark" backHref="/my/settings">
+    <AppShell activeTab="my" title="이용약관" theme="light" backHref="/my/settings">
       <article className="legal-doc">
         <header>
           <h1>이용약관</h1>
