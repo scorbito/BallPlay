@@ -31,6 +31,9 @@ export type SimBatter = {
   playerId: string;
   name: string;
   battingHand: "L" | "R" | "S";
+  /** 사용자가 라인업에서 지정한 포지션 (표시용). 엔진 시뮬에는 사용되지 않음.
+   *  AI 자동 생성팀처럼 포지션 정보 없으면 undefined. */
+  position?: string;
 
   pa: number;
   ab: number;

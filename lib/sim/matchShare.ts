@@ -59,12 +59,11 @@ export function encodeMatchToToken(input: SimGameInput, seed: number): string {
 }
 
 export function encodeTeam(team: SimTeamInput): SharedTeam {
-  // SimTeamInput 단계엔 batters에 타순·position 정보가 없으므로
-  // 타순은 배열 순서를 그대로 사용. position 정보는 v1엔 'DH' 폴백 (배팅 시 미사용).
+  // 타순은 배열 순서를 그대로 사용. position은 SimBatter에 보존된 사용자 지정값 사용 (없으면 DH 폴백).
   const batters: SharedBatter[] = team.batters.map((b, idx) => ({
     p: b.playerId,
     o: idx + 1,
-    pos: "DH" as Position
+    pos: (b.position ?? "DH") as Position
   }));
   const ps: (string | null)[] = Array.from({ length: PITCHER_SLOTS_COUNT }, () => null);
   ps[0] = team.starter.playerId;

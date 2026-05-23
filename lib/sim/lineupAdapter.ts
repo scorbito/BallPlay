@@ -43,7 +43,8 @@ export function buildSimTeamInput(
       issues.push({ kind: "missing_batter", playerId: slot.playerId, order: slot.order });
       continue;
     }
-    orderedBatters.push(stat);
+    // 사용자 지정 포지션을 SimBatter에 함께 담아 표시용 데이터 유지
+    orderedBatters.push({ ...stat, position: slot.position });
   }
   if (orderedBatters.length !== 9) {
     issues.push({ kind: "incomplete_batting_lineup", filledSlots: orderedBatters.length });

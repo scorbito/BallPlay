@@ -89,7 +89,9 @@ export type LineupEntry = {
 };
 
 export const MY_LINEUPS_STORAGE_KEY = "ballplay:my-lineups";
-export const MAX_LINEUP_ENTRIES = 5; // 테스트 기간 동안 5로 확장 (정식 무료 기준은 3)
+// 절대 상한 — admin 등급 최대치. 등급별 실제 한도는 lib/auth/tierLimits.ts에서 동적 결정.
+// 이 상수는 storage가 안전망으로 자르는 ceiling 역할.
+export const MAX_LINEUP_ENTRIES = 50;
 
 export type LineupMode = "batter" | "pitcher";
 

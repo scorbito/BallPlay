@@ -16,7 +16,6 @@ import {
   POSITION_SHORT,
   PITCHER_SLOTS_COUNT,
   PITCHER_STARTER_INDEX,
-  MAX_LINEUP_ENTRIES,
   formatHandBadge,
   getPoolGroupLabel,
   type LineupEntry,
@@ -30,6 +29,9 @@ import {
 } from "@/lib/types/lineup";
 import { createEmptyEntry } from "@/lib/storage/lineupEntries";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
+import { useUserTier } from "@/lib/auth/useUserTier";
+import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
+import { TIER_LABEL } from "@/lib/auth/userTier";
 
 const ORDERS: LineupOrder[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -83,6 +85,8 @@ function getFallbackOrder(primaryPos: Position): Position[] {
 
 export function LineupBuilderScreen() {
   const { profile, showToast } = useAppState();
+  const { tier } = useUserTier();
+  const lineupLimit = getLineupSlotLimit(tier);
   const seededTeamIds = useMemo(() => getSeededTeamIds(), []);
 
   // 시드가 있는 팀으로 기본값 — 사용자의 메인팀이 시드 안 됐으면 두산
@@ -644,7 +648,7 @@ export function LineupBuilderScreen() {
                   </li>
                 );
               })}
-              {entries.length < MAX_LINEUP_ENTRIES ? (
+              {entries.length < lineupLimit ? (
                 <li>
                   <button
                     type="button"
@@ -661,7 +665,9 @@ export function LineupBuilderScreen() {
                   </button>
                 </li>
               ) : (
-                <li className="lineup-slot-menu-cap">최대 {MAX_LINEUP_ENTRIES}개까지 저장</li>
+                <li className="lineup-slot-menu-cap">
+                  {TIER_LABEL[tier]} 등급은 최대 {lineupLimit}개까지 저장
+                </li>
               )}
             </ul>
           ) : null}
