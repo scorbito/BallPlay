@@ -7,12 +7,12 @@ import { AppShell } from "@/components/layout/AppShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getMatchByInviteCode } from "@/lib/supabase/query-parts/bpMatches";
 
-// invite_code는 6자 영숫자(I/O/0/1 제외). 사용자 입력은 대소문자 구분 없이 받아 정규화.
-const INVITE_CODE_LENGTH = 6;
-const INVITE_ALPHABET_RE = /^[A-HJ-NP-Z2-9]+$/;
+// invite_code는 4자리 숫자. 공백/비숫자 제거 후 사용.
+const INVITE_CODE_LENGTH = 4;
+const INVITE_NUMERIC_RE = /^\d+$/;
 
 function normalize(raw: string): string {
-  return raw.replace(/\s+/g, "").toUpperCase();
+  return raw.replace(/\D+/g, "").slice(0, INVITE_CODE_LENGTH);
 }
 
 export function JoinByCodeScreen() {
@@ -26,11 +26,11 @@ export function JoinByCodeScreen() {
     const trimmed = normalize(code);
 
     if (trimmed.length !== INVITE_CODE_LENGTH) {
-      setError(`초대 코드는 ${INVITE_CODE_LENGTH}자입니다.`);
+      setError(`초대 코드는 ${INVITE_CODE_LENGTH}자리 숫자입니다.`);
       return;
     }
-    if (!INVITE_ALPHABET_RE.test(trimmed)) {
-      setError("코드에 잘못된 문자가 포함됐습니다. (I, O, 0, 1은 사용 안 함)");
+    if (!INVITE_NUMERIC_RE.test(trimmed)) {
+      setError("숫자만 입력해주세요.");
       return;
     }
 
@@ -55,11 +55,11 @@ export function JoinByCodeScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="코드로 참여" backHref="/stadium/lobby" theme="dark">
+    <AppShell activeTab="stadium" title="코드로 참여" backHref="/stadium/lobby" theme="dark" wide>
       <section className="stadium-live-create">
         <header className="stadium-enter-head">
           <h1 className="stadium-h1">초대 코드 입력</h1>
-          <p className="stadium-sub">친구에게 받은 6자 코드를 입력하면 매치에 참여합니다.</p>
+          <p className="stadium-sub">친구에게 받은 4자리 숫자 코드를 입력하면 매치에 참여합니다.</p>
         </header>
 
         <form className="stadium-code-form" onSubmit={handleSubmit}>
@@ -70,18 +70,18 @@ export function JoinByCodeScreen() {
           <input
             id="invite-code"
             type="text"
-            inputMode="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             autoComplete="off"
-            autoCapitalize="characters"
             spellCheck={false}
             maxLength={INVITE_CODE_LENGTH}
             value={code}
             onChange={(e) => setCode(normalize(e.target.value))}
-            placeholder="예) 7RWSFK"
+            placeholder="예) 4821"
             className="stadium-code-input"
             aria-invalid={error ? "true" : "false"}
           />
-          <p className="stadium-code-hint">대소문자 구분 없이 입력하셔도 됩니다.</p>
+          <p className="stadium-code-hint">숫자 4자리</p>
 
           {error ? <p className="stadium-error">{error}</p> : null}
 
