@@ -101,9 +101,21 @@ function applySingle(base: BaseState, batterId: string, rng: Rng): ApplyOutcomeR
 }
 
 function applyWalk(base: BaseState, batterId: string): ApplyOutcomeResult {
-  // 밀어내기 처리 — 1루부터 순서대로 점유
-  const after: BaseState = { first: batterId, second: base.first, third: base.second };
-  const runs = base.first && base.second && base.third ? 1 : 0;
+  // forced 주자만 진루. 1루가 비어 있으면 뒤쪽 주자는 강제되지 않으므로 그대로.
+  // 예) 1·3루 → 볼넷 → 1·2·3루 (3루 주자는 force가 아니라 멈춤)
+  //    2·3루 → 볼넷 → 1·2·3루 (둘 다 force 아님)
+  //    만루   → 볼넷 → 만루 + 3루 주자 득점
+  let second = base.second;
+  let third = base.third;
+  let runs = 0;
+  if (base.first) {
+    if (base.second) {
+      if (base.third) runs = 1;
+      third = base.second;
+    }
+    second = base.first;
+  }
+  const after: BaseState = { first: batterId, second, third };
   return { baseAfter: after, runsScored: runs, outsAdded: 0, rbi: runs };
 }
 
