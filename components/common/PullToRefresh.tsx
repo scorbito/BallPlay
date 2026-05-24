@@ -22,18 +22,31 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
   useEffect(() => {
     const isAtTop = () => {
       const doc = document.scrollingElement || document.documentElement;
-      return doc.scrollTop <= 0 && window.scrollY <= 0;
+      if (doc.scrollTop > 0 || window.scrollY > 0) return false;
+      // AppShell의 .app-scroll가 실제 페이지 스크롤 컨테이너인 경우 그것도 top 확인
+      const appScroll = document.querySelector(".app-scroll");
+      if (appScroll && appScroll.scrollTop > 0) return false;
+      return true;
     };
 
-    // 터치 시작 지점에서 위쪽 조상 중 자체 스크롤이 가능한 컨테이너가 있으면
-    // 사용자가 그 안을 스크롤하려는 의도 → PTR 발동 막음.
-    // (예: 라인업 빌더의 대기선수 리스트 .lineup-pool-list)
+    // 터치 시작 지점에서 위쪽 조상 중 자체 스크롤 컨테이너가 있고 그게 top이 아니면
+    // (사용자가 그걸 스크롤하려는 의도) → PTR 발동 막음.
+    // (예: 라인업 빌더 대기선수 리스트 .lineup-pool-list)
+    //
+    // .app-scroll(AppShell 메인 스크롤)은 페이지 자체 스크롤이지 inner가 아님 — walk에서 제외.
+    // 이걸 안 빼면 콘텐츠가 viewport보다 긴 모든 페이지(경기장·라인업 등)에서 PTR이 차단됨.
     const isInsideInnerScroller = (target: EventTarget | null) => {
       let el: Element | null = target instanceof Element ? target : null;
       while (el && el !== document.body && el !== document.documentElement) {
+        if (el.classList.contains("app-scroll")) break;
         const style = window.getComputedStyle(el);
         const oy = style.overflowY;
-        if ((oy === "auto" || oy === "scroll" || oy === "overlay") && el.scrollHeight > el.clientHeight) {
+        if (
+          (oy === "auto" || oy === "scroll" || oy === "overlay") &&
+          el.scrollHeight > el.clientHeight &&
+          el.scrollTop > 0
+        ) {
+          // inner scroller가 top이 아니면 = 사용자가 그 안에서 위로 끌어올리는 중
           return true;
         }
         el = el.parentElement;
