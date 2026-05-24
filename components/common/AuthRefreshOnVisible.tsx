@@ -1,57 +1,73 @@
 "use client";
 
-// 모바일 백그라운드 → 포그라운드 복귀 시 Supabase 세션을 강제 갱신.
-// 백그라운드 동안 JS 타이머가 throttle 되어 토큰 auto-refresh가 못 돌아가
-// 만료된 토큰으로 API 호출 → 401 발생. 이걸 한 곳에서 일괄 방지.
+// 모바일 백그라운드 → 포그라운드 복귀 처리.
 //
-// 추가로 watchdog 기능 — 30초+ 백그라운드 후 복귀했는데 refresh가 5초 안에
-// 응답 안 하면 iOS Safari가 fetch를 limbo로 묶었다는 신호. window.location.reload()로
-// 강제 복구 (사용자가 동기화 아이콘만 무한히 보는 상황 방지).
+// 정책: 1초 이상 백그라운드였다가 복귀하면 무조건 window.location.reload().
+//   iOS Safari/PWA는 짧은 백그라운드(1~2초)에도 fetch를 limbo로 묶어버려
+//   refresh·동기화·데이터 fetch까지 모두 hang시킴. refresh 결과로 판단하려
+//   해도 refresh 자체가 캐시로 빠르게 성공해 false-negative가 나옴 → 결국
+//   "동기화 아이콘만 돌고 화면 빈 상태" 재현. 신뢰할 수 있는 유일한 신호는
+//   "백그라운드 다녀왔다" 자체이므로 그걸로 트리거.
+//
+// 1초 미만은 무시 — 알림 센터 살짝 내렸다 올린 정도의 false-positive 방지.
+//
+// visibilitychange 외 pageshow(persisted=true)도 같이 듣는 이유:
+//   iOS PWA에서 visibilitychange가 누락되는 케이스 백업 (bfcache 복원).
 //
 // app/layout.tsx에 1회 마운트. UI 렌더 없음.
 
 import { useEffect, useRef } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { withTimeout } from "@/lib/utils/withTimeout";
 
-const LONG_HIDDEN_MS = 30_000;    // 이만큼 배경에 있다가 돌아오면 watchdog 발동
-const REFRESH_TIMEOUT_MS = 5_000; // refresh가 이 시간 안에 안 끝나면 hang으로 간주
+const RELOAD_HIDDEN_MS = 1_000;
 
 export function AuthRefreshOnVisible() {
   const hiddenAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const client = createSupabaseBrowserClient();
 
-    const onChange = () => {
+    const tryReload = (hiddenFor: number) => {
+      if (hiddenFor < RELOAD_HIDDEN_MS) return;
+      if (typeof window === "undefined") return;
+      window.location.reload();
+    };
+
+    const onVisibility = () => {
       if (document.visibilityState === "hidden") {
         hiddenAtRef.current = Date.now();
         return;
       }
       if (document.visibilityState !== "visible") return;
-
       const hiddenAt = hiddenAtRef.current;
       hiddenAtRef.current = null;
       const hiddenFor = hiddenAt !== null ? Date.now() - hiddenAt : 0;
-      const longHidden = hiddenFor >= LONG_HIDDEN_MS;
-
-      void (async () => {
-        try {
-          await withTimeout(client.auth.refreshSession(), REFRESH_TIMEOUT_MS);
-          // 정상 — 다른 화면들의 visibility 핸들러가 알아서 refetch
-        } catch {
-          // 타임아웃 또는 실패. 짧게 백그라운드였으면 그냥 무시 (다음 fetch에서 SDK 재시도).
-          // 오래(30초+) 백그라운드였으면 iOS limbo 가능성 높음 → 페이지 리로드로 완전 복구.
-          if (longHidden && typeof window !== "undefined") {
-            window.location.reload();
-          }
-        }
-      })();
+      tryReload(hiddenFor);
     };
 
-    document.addEventListener("visibilitychange", onChange);
-    return () => document.removeEventListener("visibilitychange", onChange);
+    // pageshow persisted=true → bfcache에서 복원. 보통 visibilitychange도 같이
+    // 발생하지만 iOS PWA에서 안 오는 케이스가 있어 백업.
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      const hiddenAt = hiddenAtRef.current;
+      hiddenAtRef.current = null;
+      const hiddenFor = hiddenAt !== null ? Date.now() - hiddenAt : RELOAD_HIDDEN_MS;
+      tryReload(hiddenFor);
+    };
+
+    const onPageHide = () => {
+      if (hiddenAtRef.current === null) {
+        hiddenAtRef.current = Date.now();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("pagehide", onPageHide);
+    };
   }, []);
 
   return null;
