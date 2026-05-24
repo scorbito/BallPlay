@@ -20,9 +20,9 @@ import { useEffect, useRef } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const PROBE_HIDDEN_MS = 1_000;
-const PROBE_TIMEOUT_MS = 2_000;
+const PROBE_TIMEOUT_MS = 1_500;
 // probingRef가 stale 락된 케이스 대비 — 이 시간 지나면 새 probe 허용
-const PROBE_STALE_MS = 6_000;
+const PROBE_STALE_MS = 5_000;
 
 export function AuthRefreshOnVisible() {
   const hiddenAtRef = useRef<number | null>(null);
@@ -33,28 +33,28 @@ export function AuthRefreshOnVisible() {
 
     const client = createSupabaseBrowserClient();
 
-    /** Supabase SDK 경유 가벼운 쿼리. 2초 안에 응답이 오면 true, 타임아웃이면 false.
-     *  RLS 에러·404 등 서버 응답이면 OK 처리 — "네트워크/SDK 통신 자체"만 보는 지표. */
+    /** 엄격 probe — auth.refreshSession + 실제 쿼리 둘 다 1.5초 안에 성공해야 true.
+     *  단일 probe만 통과하고 다음 fetch가 hang하는 케이스를 잡기 위해 2단계 검사. */
     const probe = async (): Promise<boolean> => {
       let timedOut = false;
-      const timeoutPromise = new Promise<"timeout">((resolve) => {
-        setTimeout(() => {
-          timedOut = true;
-          resolve("timeout");
-        }, PROBE_TIMEOUT_MS);
-      });
-      // bp_user_tier — 가벼움(인덱스만 hit), 로그인 안 됐어도 RLS 에러로 정상 응답.
-      // limit(0)이라 row 안 받음. count: 'exact', head: true로 헤더만.
-      const queryPromise = client
-        .from("bp_user_tier")
-        .select("user_id", { count: "exact", head: true });
+      const tid = setTimeout(() => { timedOut = true; }, PROBE_TIMEOUT_MS);
       try {
-        const result = await Promise.race([queryPromise, timeoutPromise]);
+        const combined = Promise.all([
+          client.auth.refreshSession(),
+          client.from("bp_user_tier").select("user_id", { count: "exact", head: true })
+        ]);
+        const result = await Promise.race([
+          combined.then(() => "ok" as const),
+          new Promise<"timeout">((resolve) =>
+            setTimeout(() => resolve("timeout"), PROBE_TIMEOUT_MS)
+          )
+        ]);
+        clearTimeout(tid);
         if (result === "timeout" || timedOut) return false;
-        // 응답이 왔다 = SDK→Supabase 왕복 OK. RLS/PGRST 에러도 OK.
         return true;
       } catch {
-        return !timedOut;
+        clearTimeout(tid);
+        return false;
       }
     };
 
