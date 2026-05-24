@@ -264,6 +264,177 @@
   cursor: not-allowed;
 }
 
+/* ============================================================
+ * 메뉴 리스트 — 라이트 BallPlay (SettingsScreen, RecordsScreen 등에서 사용).
+ * dark-my.css의 .phone-frame-dark .menu-list 와 같은 구조를 라이트 톤으로.
+ * ============================================================ */
+.phone-frame-light .menu-list {
+  margin-top: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  border-radius: 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.phone-frame-light .menu-list a,
+.phone-frame-light .menu-list .settings-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--bp-line-soft);
+  text-decoration: none;
+  color: var(--bp-text);
+  background: transparent;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.phone-frame-light .menu-list a:last-child,
+.phone-frame-light .menu-list .settings-row:last-child {
+  border-bottom: 0;
+}
+
+.phone-frame-light .menu-list a:hover,
+.phone-frame-light .menu-list .settings-row:hover:not(:disabled) {
+  background: rgba(20, 30, 50, 0.03);
+}
+
+.phone-frame-light .menu-list a svg:first-child,
+.phone-frame-light .menu-list .settings-row svg:first-child {
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .menu-list a strong,
+.phone-frame-light .menu-list .settings-row strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .menu-list a .menu-count,
+.phone-frame-light .menu-list .settings-row .settings-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  min-width: 24px;
+  text-align: right;
+}
+
+.phone-frame-light .menu-list a > svg:last-child,
+.phone-frame-light .menu-list .settings-row > svg:last-child {
+  color: var(--bp-text-muted);
+}
+
+/* ============================================================
+ * 설정 페이지 — 연동 계정 영역 (라이트)
+ * ============================================================ */
+.phone-frame-light .settings-account-section {
+  margin: 6px 0 14px;
+}
+
+.phone-frame-light .settings-section-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.phone-frame-light .settings-account-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  border-radius: 14px;
+}
+
+.phone-frame-light .settings-account-main {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.phone-frame-light .settings-account-provider {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.phone-frame-light .settings-account-provider-google {
+  background: rgba(66, 133, 244, 0.10);
+  color: #1a73e8;
+  border: 1px solid rgba(66, 133, 244, 0.30);
+}
+
+.phone-frame-light .settings-account-provider-kakao {
+  background: rgba(254, 229, 0, 0.20);
+  color: #8a6d00;
+  border: 1px solid rgba(254, 229, 0, 0.55);
+}
+
+.phone-frame-light .settings-account-provider-email {
+  background: var(--bp-accent-soft);
+  color: var(--bp-accent);
+  border: 1px solid rgba(232, 74, 138, 0.35);
+}
+
+.phone-frame-light .settings-account-provider-anonymous {
+  background: var(--bp-card-soft);
+  color: var(--bp-text-secondary);
+  border: 1px solid var(--bp-line);
+}
+
+.phone-frame-light .settings-account-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.phone-frame-light .settings-account-logout {
+  align-items: center;
+  background: var(--bp-danger-soft);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 999px;
+  color: var(--bp-danger);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 850;
+  gap: 4px;
+  height: 30px;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.phone-frame-light .settings-account-logout:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
+
 /* 공개 범위 선택 모달 */
 .scope-options {
   gap: 8px;

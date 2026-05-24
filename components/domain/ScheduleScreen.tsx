@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
+import { refreshTodayGamesAction } from "@/lib/actions/refreshTodayGames";
 import type { Game } from "@/lib/types/domain";
 
 const WEEKDAYS_SUN = ["일", "월", "화", "수", "목", "금", "토"];
@@ -54,12 +56,47 @@ type ScheduleScreenProps = {
 };
 
 export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
-  const { profile } = useAppState();
+  const { profile, showToast } = useAppState();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const today = new Date();
 
   const [selectedTeamId, setSelectedTeamId] = useState(profile.mainTeamId);
   const [teamMenuOpen, setTeamMenuOpen] = useState(false);
   const teamPickerRef = useRef<HTMLDivElement | null>(null);
+
+  // "오늘 경기 결과" 메뉴에서 진입 시 자동으로 오늘 날짜 선택 + 하단 일정 카드로 스크롤
+  const dayCardRef = useRef<HTMLElement | null>(null);
+  const focusToday = searchParams.get("focus") === "today";
+
+  // 갱신 — KBO API 호출해서 오늘 경기 결과 DB 동기화 → router.refresh()로 페이지 재페치
+  const [refreshing, startRefresh] = useTransition();
+  const handleRefresh = useCallback(() => {
+    startRefresh(async () => {
+      const result = await refreshTodayGamesAction();
+      if (!result.ok) {
+        showToast(`갱신 실패: ${result.error}`);
+        return;
+      }
+      router.refresh();
+
+      // 진단 친화 토스트
+      if (result.source === "none") {
+        showToast(`KBO: ${result.kboError ?? "?"} / 네이버: ${result.naverError ?? "?"}`);
+        return;
+      }
+      if (result.totalFromApi === 0) {
+        const kboNote = result.kboError ? ` / KBO 에러: ${result.kboError}` : "";
+        showToast(`API ${result.source}: 오늘(${result.date}) 경기 0건${kboNote}`);
+        return;
+      }
+      const changed = result.inserted + result.updated;
+      const kboNote = result.kboError ? ` / KBO 에러: ${result.kboError}` : "";
+      showToast(
+        `갱신 완료 — API(${result.source}) ${result.totalFromApi}경기 / 종료 ${result.finishedCount} / DB 반영 ${changed}${kboNote}`
+      );
+    });
+  }, [router, showToast]);
 
   // 외부 클릭 시 팀 드롭다운 닫기
   useEffect(() => {
@@ -218,6 +255,30 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
 
   const selectedTitle = `${selectedDate.getMonth() + 1}.${selectedDate.getDate()} (${WEEKDAYS_SUN[selectedDate.getDay()]})`;
 
+  // 오늘 선택된 상태인지 + 오늘 경기 진행 상태 분석
+  const isTodaySelected = isSameDate(selectedDate, today);
+  const todayGames = isTodaySelected ? selectedGames : [];
+  const allTodayFinished = todayGames.length > 0 &&
+    todayGames.every((g) => g.status === "finished" || g.status === "canceled");
+  // 갱신 버튼: 오늘 날짜일 때 노출. "이미 모든 경기 종료" 상태일 때만 숨김.
+  //   - 0경기 표시 상태 → 노출 (DB에 today row가 없을 수 있어 한 번 fetch 필요)
+  //   - 미완료 경기 있음 → 노출
+  //   - 모두 종료 → 숨김
+  const canShowRefresh = isTodaySelected && !allTodayFinished;
+
+  // focus=today 진입 시 오늘 날짜로 설정 + 하단 일정 카드로 스크롤
+  useEffect(() => {
+    if (!focusToday) return;
+    setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
+    setVisibleMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    // 다음 tick에서 scroll (DOM 업데이트 후)
+    const t = window.setTimeout(() => {
+      dayCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusToday]);
+
   const renderMonthCell = (date: Date, inMonth: boolean) => {
     const dateKey = toDateKey(date);
     const isSelected = isSameDate(date, selectedDate);
@@ -240,7 +301,7 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
 
   return (
     <AppShell activeTab="schedule" title="일정" theme="light" hideHeader wide>
-      {/* 상단: 뒤로가기 + 팀 선택(중앙) + 팀 순위 버튼 */}
+      {/* 상단: 뒤로가기 + 팀 선택(중앙) */}
       <div className="sched-top-bar">
         <Link className="sched-back-btn" href="/" aria-label="뒤로" prefetch>
           <ArrowLeft size={18} />
@@ -284,10 +345,6 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
           ) : null}
         </div>
 
-        <Link className="sched-rank-btn" href="/rankings" prefetch>
-          <Trophy size={14} />
-          <span>팀 순위</span>
-        </Link>
       </div>
 
       <section className="sched-card">
@@ -358,9 +415,22 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
         </div>
       </section>
 
-      <section className="sched-card sched-day-card">
+      <section className="sched-card sched-day-card" ref={dayCardRef}>
         <div className="sched-day-head">
           <strong className="sched-day-title">{selectedTitle}</strong>
+          {canShowRefresh ? (
+            <button
+              type="button"
+              className="sched-day-refresh"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              aria-label="경기 결과 갱신"
+              title="경기 결과 갱신"
+            >
+              <RefreshCw size={14} className={refreshing ? "sched-day-refresh-spin" : ""} />
+              <span>{refreshing ? "갱신 중..." : "갱신"}</span>
+            </button>
+          ) : null}
         </div>
 
         <div className="sched-game-list">

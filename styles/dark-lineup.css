@@ -35,6 +35,16 @@
   font-weight: 900;
   color: var(--bp-text);
   letter-spacing: -0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-light .play-hub-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 .phone-frame-light .play-hub-header p {
@@ -48,7 +58,24 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* 섹션 그룹 — 라벨 + 카드 묶음, 그룹 간 간격으로 그룹화 인지 */
+.phone-frame-light .play-hub-section {
+  margin-top: 20px;
+}
+
+.phone-frame-light .play-hub-section:first-of-type {
   margin-top: 14px;
+}
+
+.phone-frame-light .play-hub-section-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-muted, #94a3b8);
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 4px;
+  text-transform: none;
 }
 
 /* PC 와이드 모드 — 카드 2열 그리드로 가로 공간 활용 */
@@ -77,6 +104,11 @@
   color: var(--bp-text);
   text-decoration: none;
   transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.phone-frame-light .play-hub-card > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .phone-frame-light .play-hub-card:hover {
@@ -121,6 +153,7 @@
 }
 
 .phone-frame-light .play-hub-card-badge {
+  flex: 0 0 auto;
   margin-left: auto;
   padding: 3px 8px;
   background: rgba(20, 30, 50, 0.06);
@@ -214,6 +247,14 @@
 .phone-frame-light .lineup-publish-toggle:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* 전역 button:active { transform: scale(0.97) } 무효화 —
+   이 토글은 translateY(-50%)로 세로 중앙 정렬돼 있어서 scale이 끼면
+   중앙 정렬이 깨져 "움직임"으로 보임. 그냥 상태만 변하도록 유지. */
+.phone-frame-light .lineup-publish-toggle:not(:disabled):active {
+  transform: translateY(-50%);
+  filter: none;
 }
 
 /* 공유 버튼 옆에 들어가는 인라인 모드 토글 — 헤더용 absolute 스타일을 상속하지 않도록 */
@@ -927,12 +968,9 @@
 }
 
 .phone-frame-light .lineup-field-marker-dh {
-  /* DH는 우상단 모서리 외부에 표시 — 원형 + 짧은 라벨 */
-}
-
-.phone-frame-light .lineup-field-marker-dh .lineup-field-marker-circle {
-  background: rgba(0, 0, 0, 0.55);
-  border-color: rgba(255, 255, 255, 0.55);
+  /* DH는 다이아몬드 외곽에 표시 (POS_COORDS 좌표로 배치).
+     색은 다른 포지션과 동일하게 base .lineup-field-marker-circle 의
+     var(--marker-color) = teamColor 가 그대로 적용됨 — 의도적으로 override 없음. */
 }
 
 /* ── 대기 선수 세로 리스트 (타순 옆) ── */

@@ -45,14 +45,39 @@ function mapStatus(stateCode: string, stateName: string, isCancelled: boolean): 
 export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
   const { yyyymmdd, dateStr } = formatKboDate(date);
 
-  const url = `https://www.koreabaseball.com/ws/Main.asmx/GetKboGameList?leId=1&srId=0&date=${yyyymmdd}&_t=${Date.now()}`;
+  // KBO ASMX 웹서비스는 GET 거부 → POST + form-encoded만 응답.
+  // GET으로 호출하면 IE 호환성 주석이 포함된 도움말 HTML이 반환됨.
+  const url = "https://www.koreabaseball.com/ws/Main.asmx/GetKboGameList";
+  const body = new URLSearchParams({
+    leId: "1",
+    srId: "0",
+    date: yyyymmdd
+  });
   const response = await fetch(url, {
+    method: "POST",
     cache: "no-store",
-    headers: { "User-Agent": USER_AGENT }
+    headers: {
+      "User-Agent": USER_AGENT,
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      "Referer": "https://www.koreabaseball.com/Schedule/Schedule.aspx",
+      "X-Requested-With": "XMLHttpRequest",
+      "Origin": "https://www.koreabaseball.com"
+    },
+    body: body.toString()
   });
   if (!response.ok) throw new Error(`KBO API ${response.status}`);
 
-  const data = await response.json();
+  // 응답이 JSON인지 확인 — HTML이 오면 명확한 에러 던짐 (이전엔 silently 0건 되었음)
+  const text = await response.text();
+  if (text.trim().startsWith("<")) {
+    throw new Error(`KBO API returned HTML (endpoint changed or auth required)`);
+  }
+  let data: { game?: unknown[] };
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`KBO API invalid JSON: ${text.slice(0, 60)}`);
+  }
   if (!data?.game || !Array.isArray(data.game)) return [];
 
   const games: RawGame[] = [];
@@ -157,18 +182,26 @@ export async function fetchNaverGames(date: KboDateInput): Promise<RawGame[]> {
 }
 
 /** KBO API 우선, 실패 시 네이버 폴백 */
-export async function fetchGamesForDate(date: KboDateInput): Promise<{ games: RawGame[]; source: "kbo" | "naver" | "none" }> {
+export async function fetchGamesForDate(date: KboDateInput): Promise<{
+  games: RawGame[];
+  source: "kbo" | "naver" | "none";
+  kboError?: string;
+  naverError?: string;
+}> {
+  let kboError: string | undefined;
   try {
     const games = await fetchKboApiGames(date);
     return { games, source: "kbo" };
   } catch (kboErr) {
-    console.warn("[KBO] fetch failed, falling back to Naver:", (kboErr as Error).message);
-    try {
-      const games = await fetchNaverGames(date);
-      return { games, source: "naver" };
-    } catch (naverErr) {
-      console.error("[KBO] all sources failed:", (naverErr as Error).message);
-      return { games: [], source: "none" };
-    }
+    kboError = (kboErr as Error).message;
+    console.warn("[KBO] fetch failed, falling back to Naver:", kboError);
+  }
+  try {
+    const games = await fetchNaverGames(date);
+    return { games, source: "naver", kboError };
+  } catch (naverErr) {
+    const naverError = (naverErr as Error).message;
+    console.error("[KBO] all sources failed:", naverError);
+    return { games: [], source: "none", kboError, naverError };
   }
 }

@@ -56,6 +56,26 @@ export function RecordsScreen() {
     fetchRecords();
   }, [fetchRecords]);
 
+  // 모바일: 백그라운드 → 포그라운드 복귀 시 세션 갱신 + 목록 재조회.
+  // 토큰이 만료됐을 수 있어 명시적 refresh 후 fetch.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const client = createSupabaseBrowserClient();
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      void (async () => {
+        try {
+          await client.auth.refreshSession();
+        } catch {
+          // ignore — fetchRecords가 새 토큰으로 재시도
+        }
+        void fetchRecords();
+      })();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [fetchRecords]);
+
   const handleReplay = (row: BpRecordRow) => {
     const check = canReplay(row, SIM_ENGINE_VERSION);
     if (!check.ok) {
@@ -170,11 +190,11 @@ export function RecordsScreen() {
   return (
     <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
       <header className="play-hub-header records-header-with-badge">
-        <div>
+        <div className="records-header-titlebar">
           <h1>내 기록</h1>
-          <p>자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
+          <TierBadge size="md" hideGuest />
         </div>
-        <TierBadge size="md" hideGuest />
+        <p>자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
       </header>
       <section className="records-list">
         {rows?.map((row) => {

@@ -88,25 +88,25 @@
   /* === KBO 10팀 컬러 — lib/constants/teams.ts와 동기화 (2026-05-22)
    * 라이트 베이스에서 충분한 대비를 가지도록 진한 톤으로 유지.
    * 각 팀 -soft는 카드 배경·뱃지 배경 등 옅은 강조에 사용. */
-  --team-doosan: #1a2244;
-  --team-doosan-soft: rgba(26, 34, 68, 0.1);
-  --team-lg: #9b2046;
-  --team-lg-soft: rgba(155, 32, 70, 0.1);
+  --team-doosan: #1d3470;
+  --team-doosan-soft: rgba(29, 52, 112, 0.10);
+  --team-lg: #c2185b;
+  --team-lg-soft: rgba(194, 24, 91, 0.10);
   --team-kt: #262626;
   --team-kt-accent: #eb1c24;
   --team-kt-soft: rgba(38, 38, 38, 0.08);
-  --team-ssg: #a51e34;
-  --team-ssg-soft: rgba(165, 30, 52, 0.1);
-  --team-nc: #2c6571;
-  --team-nc-soft: rgba(44, 101, 113, 0.1);
-  --team-kiwoom: #5c1c25;
-  --team-kiwoom-soft: rgba(92, 28, 37, 0.1);
+  --team-ssg: #ce0e2d;
+  --team-ssg-soft: rgba(206, 14, 45, 0.10);
+  --team-nc: #1c4b6e;
+  --team-nc-soft: rgba(28, 75, 110, 0.10);
+  --team-kiwoom: #7c2737;
+  --team-kiwoom-soft: rgba(124, 39, 55, 0.10);
   --team-samsung: #1d4e8c;
   --team-samsung-soft: rgba(29, 78, 140, 0.1);
-  --team-lotte: #1f3252;
-  --team-lotte-soft: rgba(31, 50, 82, 0.1);
-  --team-kia: #9c1d2c;
-  --team-kia-soft: rgba(156, 29, 44, 0.1);
+  --team-lotte: #0e1a36;
+  --team-lotte-soft: rgba(14, 26, 54, 0.10);
+  --team-kia: #c8102e;
+  --team-kia-soft: rgba(200, 16, 46, 0.10);
   --team-hanwha: #d6671a;
   --team-hanwha-soft: rgba(214, 103, 26, 0.1);
 }

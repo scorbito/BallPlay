@@ -4,6 +4,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { InstallAppBanner } from "@/components/domain/InstallAppBanner";
+import { AuthRefreshOnVisible } from "@/components/common/AuthRefreshOnVisible";
 import { AppStateLoader } from "./app-state-loader";
 import "./globals.css";
 import "@/styles/light-home.css";
@@ -164,6 +165,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <AppStateLoader isAnonymous={isAnonymous}>
               {children}
               <InstallAppBanner />
+              <AuthRefreshOnVisible />
             </AppStateLoader>
           </Suspense>
         </ErrorBoundary>

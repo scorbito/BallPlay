@@ -25,9 +25,26 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
       return doc.scrollTop <= 0 && window.scrollY <= 0;
     };
 
+    // 터치 시작 지점에서 위쪽 조상 중 자체 스크롤이 가능한 컨테이너가 있으면
+    // 사용자가 그 안을 스크롤하려는 의도 → PTR 발동 막음.
+    // (예: 라인업 빌더의 대기선수 리스트 .lineup-pool-list)
+    const isInsideInnerScroller = (target: EventTarget | null) => {
+      let el: Element | null = target instanceof Element ? target : null;
+      while (el && el !== document.body && el !== document.documentElement) {
+        const style = window.getComputedStyle(el);
+        const oy = style.overflowY;
+        if ((oy === "auto" || oy === "scroll" || oy === "overlay") && el.scrollHeight > el.clientHeight) {
+          return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    };
+
     const onStart = (e: TouchEvent) => {
       if (refreshing) return;
       if (!isAtTop()) return;
+      if (isInsideInnerScroller(e.target)) return;
       startY.current = e.touches[0].clientY;
       pulling.current = false;
     };

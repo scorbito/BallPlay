@@ -43,10 +43,10 @@
   border: 1px solid rgba(239, 68, 68, 0.45);
 }
 
-/* 내 기록 헤더 — 제목과 등급 뱃지 가로 배치 */
-.phone-frame-light .records-header-with-badge {
+/* 내 기록 헤더 — 첫 줄: 제목+뱃지 가로 배치, 두 번째 줄: 설명 전체 폭으로 자유롭게 */
+.phone-frame-light .records-header-titlebar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }

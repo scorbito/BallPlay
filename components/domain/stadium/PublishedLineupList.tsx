@@ -124,6 +124,26 @@ export function PublishedLineupList({
     setRows(res.rows.slice(0, maxItems));
   }, [ownerIdForExclude, maxItems]);
 
+  // 모바일: 백그라운드 → 포그라운드 복귀 시 세션 갱신 + 공개 라인업 재조회.
+  // 백그라운드 동안 토큰이 만료되어 401로 빈 목록이 되는 케이스 방지.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const client = createSupabaseBrowserClient();
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      void (async () => {
+        try {
+          await client.auth.refreshSession();
+        } catch {
+          // ignore — refresh 다음 호출
+        }
+        void refresh();
+      })();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [refresh]);
+
   const myEntry = useMemo(
     () => myEntries.find((e) => e.entryId === myEntryId) ?? null,
     [myEntries, myEntryId]
