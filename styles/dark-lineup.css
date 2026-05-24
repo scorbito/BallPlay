@@ -54,19 +54,31 @@
   font-weight: 600;
 }
 
+/* 타이틀 옆 한 줄 태그라인 — h1 안에 inline. 모바일에선 한 줄 유지하기 위해
+   타이틀 자체 라인-높이에 맞춰 sublabel처럼 표시. */
+.phone-frame-light .play-hub-tagline {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 .phone-frame-light .play-hub-grid {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* 섹션 그룹 — 라벨 + 카드 묶음, 그룹 간 간격으로 그룹화 인지 */
-.phone-frame-light .play-hub-section {
-  margin-top: 20px;
-}
-
-.phone-frame-light .play-hub-section:first-of-type {
-  margin-top: 14px;
+/* 섹션 그룹 — 라벨 + 카드 묶음.
+   .app-content의 flex gap이 18px이라 그대로 두면 섹션 간격이 너무 큼.
+   음수 margin으로 상쇄해서 실효 간격 ~6px로 좁힘. 첫 섹션은 헤더 바로 아래라
+   first-of-type 별도 처리 없이 기본 18px 간격 유지. */
+.phone-frame-light .play-hub-section + .play-hub-section {
+  margin-top: -12px;
 }
 
 .phone-frame-light .play-hub-section-label {
@@ -399,7 +411,7 @@
   min-width: 0;
   margin: 0;
   padding: 0 2px;
-  color: rgba(255, 255, 255, 0.42);
+  color: var(--bp-text-muted);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.1px;
@@ -407,7 +419,7 @@
 }
 
 .phone-frame-light .lineup-action-hint strong {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--bp-text-secondary);
   font-weight: 800;
 }
 
@@ -473,15 +485,68 @@
   cursor: not-allowed;
 }
 
-/* PC 와이드 모드 — 다이아몬드/타순 상단 좌우, 힌트 가운데, 대기 선수 하단 풀폭 */
+/* 액션 행 안의 "대기 N" 라벨 — 기본 숨김, PC 와이드에서만 표시 */
+.phone-frame-light .lineup-action-pool-badge {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line);
+  font-size: 12px;
+  color: var(--bp-text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.phone-frame-light .lineup-action-pool-badge strong {
+  font-weight: 800;
+}
+.phone-frame-light .lineup-action-pool-badge .lineup-section-count {
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+/* PC 와이드 모드 — 그라운드 밑에 액션 행(타자/투수·공유·대기 N)을 두고, 타순은 우측 2행 차지,
+   대기 선수는 하단 풀폭. 그라운드 밑 여백을 없애서 좌측 공간 효율 ↑.
+   타순 ↔ 대기 사이 행 간격은 좁게(8px) 두어 시각적 묶음감. */
 @media (min-width: 1025px) {
   .phone-frame-wide .lineup-layout {
     grid-template-columns: minmax(360px, 1.3fr) minmax(280px, 1fr);
     grid-template-areas:
       "diamond slots"
-      "hint    hint"
+      "hint    slots"
       "pool    pool";
-    gap: 14px;
+    column-gap: 14px;
+    row-gap: 4px;
+  }
+  /* 액션 행 ↔ 대기 카드 사이 간격 최소화 — 대기 카드 상단 padding 축소 */
+  .phone-frame-wide .lineup-pool-card-side {
+    padding-top: 6px;
+  }
+  /* 액션 행 2줄 레이아웃:
+     1줄: hint (전체 폭)
+     2줄: [대기 N] (왼쪽) ······ [타자/투수] [공유] (오른쪽) */
+  .phone-frame-wide .lineup-action-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "hint    hint"
+      "badge   buttons";
+    column-gap: 8px;
+    row-gap: 6px;
+    padding: 0 2px;
+  }
+  .phone-frame-wide .lineup-action-hint { grid-area: hint; }
+  .phone-frame-wide .lineup-action-pool-badge { grid-area: badge; justify-self: start; }
+  .phone-frame-wide .lineup-action-buttons { grid-area: buttons; justify-self: end; }
+
+  /* PC에서 대기 라벨 노출 + 풀 카드 자체 헤더는 숨김 (공간 절약) */
+  .phone-frame-wide .lineup-action-pool-badge {
+    display: inline-flex;
+  }
+  .phone-frame-wide .lineup-pool-card-side .lineup-section-head {
+    display: none;
   }
   .phone-frame-wide .lineup-pool-list {
     /* 대기 선수는 그리드로 펼쳐서 한 번에 많이 노출 */

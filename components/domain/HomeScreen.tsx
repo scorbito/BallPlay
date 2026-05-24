@@ -122,8 +122,8 @@ export function HomeScreen() {
             className="play-hub-logo"
           />
           <span>야구놀이터</span>
+          <span className="play-hub-tagline">가볍게 즐기는 야구 미니게임 모음</span>
         </h1>
-        <p>가볍게 즐기는 야구 미니게임 모음</p>
         <Link href="/my/settings" className="play-hub-settings" prefetch aria-label="설정">
           <Settings size={20} />
         </Link>

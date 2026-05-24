@@ -754,6 +754,11 @@ export function LineupBuilderScreen() {
               공유
             </button>
           </div>
+          {/* PC 와이드 모드에서만 노출 — 대기 선수 카드 헤더 자리 절약. 모바일은 풀 카드 자체에 헤더 유지. */}
+          <div className="lineup-action-pool-badge" aria-hidden="true">
+            <strong>대기</strong>
+            <span className="lineup-section-count">{poolPlayers.length}</span>
+          </div>
         </div>
 
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 불펜 1~8 */}
