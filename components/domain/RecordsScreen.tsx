@@ -56,21 +56,15 @@ export function RecordsScreen() {
     fetchRecords();
   }, [fetchRecords]);
 
-  // 모바일: 백그라운드 → 포그라운드 복귀 시 세션 갱신 + 목록 재조회.
-  // 토큰이 만료됐을 수 있어 명시적 refresh 후 fetch.
+  // 모바일: 백그라운드 → 포그라운드 복귀 시 목록 재조회.
+  // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
+  // 여기서 await하면 iOS Safari가 refresh를 limbo 상태로 hang시킬 때 fetchRecords가
+  // 영원히 실행 안 됨 → 절대 refreshSession을 await하지 말 것.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const client = createSupabaseBrowserClient();
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      void (async () => {
-        try {
-          await client.auth.refreshSession();
-        } catch {
-          // ignore — fetchRecords가 새 토큰으로 재시도
-        }
-        void fetchRecords();
-      })();
+      void fetchRecords();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);

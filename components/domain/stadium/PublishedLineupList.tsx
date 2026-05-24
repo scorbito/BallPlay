@@ -124,21 +124,14 @@ export function PublishedLineupList({
     setRows(res.rows.slice(0, maxItems));
   }, [ownerIdForExclude, maxItems]);
 
-  // 모바일: 백그라운드 → 포그라운드 복귀 시 세션 갱신 + 공개 라인업 재조회.
-  // 백그라운드 동안 토큰이 만료되어 401로 빈 목록이 되는 케이스 방지.
+  // 모바일: 백그라운드 → 포그라운드 복귀 시 공개 라인업 재조회.
+  // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
+  // 여기서 await하면 iOS hang 시 refresh가 영원히 실행 안 됨 → 절대 await X.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const client = createSupabaseBrowserClient();
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      void (async () => {
-        try {
-          await client.auth.refreshSession();
-        } catch {
-          // ignore — refresh 다음 호출
-        }
-        void refresh();
-      })();
+      void refresh();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);

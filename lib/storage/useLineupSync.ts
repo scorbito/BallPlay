@@ -221,18 +221,12 @@ export function useLineupSync() {
       }
     });
 
-    // 모바일: 백그라운드 → 포그라운드 복귀 시 세션 갱신 + 재동기화.
-    // 백그라운드 동안 토큰이 만료될 수 있어 명시적 refresh 후 sync.
+    // 모바일: 백그라운드 → 포그라운드 복귀 시 재동기화.
+    // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
+    // 여기서 await하면 iOS hang 시 syncOnce가 영원히 실행 안 됨 → 절대 await X.
     const onVisible = () => {
       if (typeof document === "undefined" || document.visibilityState !== "visible") return;
-      void (async () => {
-        try {
-          await client.auth.refreshSession();
-        } catch {
-          // refresh 실패해도 syncOnce는 시도 (auth.getUser가 다시 새 토큰 요청)
-        }
-        void syncOnce();
-      })();
+      void syncOnce();
     };
     if (typeof document !== "undefined") {
       document.addEventListener("visibilitychange", onVisible);
