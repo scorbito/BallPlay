@@ -3,12 +3,13 @@
 // 모바일 백그라운드 → 포그라운드 복귀 처리.
 //
 // 정책 (스마트 리로드):
-//   1초+ 백그라운드 후 복귀 시 Supabase 헬스 ping 1회 (2초 cap, no-cache).
-//   - ping 성공: 네트워크 정상 → 리로드 안 함 (각 화면 핸들러가 알아서 refetch)
-//   - ping 타임아웃/실패: iOS fetch limbo로 추정 → window.location.reload()로 완전 복구
+//   1초+ 백그라운드 후 복귀 시 Supabase SDK로 가벼운 쿼리 1회 (2초 cap).
+//   - 응답 도착: 네트워크+SDK 둘 다 OK → 리로드 안 함 (각 화면 핸들러가 refetch)
+//   - 타임아웃: iOS fetch limbo로 추정 → window.location.reload()
 //
-//   기존 "무조건 리로드"는 매번 splash 깜빡임이 있었음 → 95% 케이스(정상 네트워크)에선
-//   ping이 50~300ms에 OK 떨어져 리로드 없음. 진짜 limbo일 때만 리로드.
+//   raw fetch ping 대신 SDK 쿼리를 쓰는 이유: ping은 새 연결로 빠지면서 OK여도
+//   SDK가 쓰는 기존 연결이 limbo면 후속 쿼리가 hang하는 케이스가 있음.
+//   같은 SDK 경로로 probe해야 실제 쿼리 경로 상태가 검출됨.
 //
 // visibilitychange 외 pageshow(persisted=true)도 같이 듣는 이유:
 //   iOS PWA에서 visibilitychange가 누락되는 케이스 백업 (bfcache 복원).
@@ -16,47 +17,56 @@
 // app/layout.tsx에 1회 마운트. UI 렌더 없음.
 
 import { useEffect, useRef } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-const PROBE_HIDDEN_MS = 1_000;   // 1초 미만 hidden은 무시 (알림 센터 살짝 내림 등)
-const PROBE_TIMEOUT_MS = 2_000;  // ping이 이 시간 안에 응답 없으면 limbo로 간주
+const PROBE_HIDDEN_MS = 1_000;
+const PROBE_TIMEOUT_MS = 2_000;
+// probingRef가 stale 락된 케이스 대비 — 이 시간 지나면 새 probe 허용
+const PROBE_STALE_MS = 6_000;
 
 export function AuthRefreshOnVisible() {
   const hiddenAtRef = useRef<number | null>(null);
-  const probingRef = useRef(false);
+  const probingAtRef = useRef<number>(0);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const probeUrl = supabaseUrl ? `${supabaseUrl}/auth/v1/health` : null;
+    const client = createSupabaseBrowserClient();
 
-    /** Supabase 헬스 엔드포인트에 2초 ping. true=네트워크 OK, false=limbo/실패. */
+    /** Supabase SDK 경유 가벼운 쿼리. 2초 안에 응답이 오면 true, 타임아웃이면 false.
+     *  RLS 에러·404 등 서버 응답이면 OK 처리 — "네트워크/SDK 통신 자체"만 보는 지표. */
     const probe = async (): Promise<boolean> => {
-      if (!probeUrl) return true; // env 없으면 ping 못 함 → 리로드 안 함
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
+      let timedOut = false;
+      const timeoutPromise = new Promise<"timeout">((resolve) => {
+        setTimeout(() => {
+          timedOut = true;
+          resolve("timeout");
+        }, PROBE_TIMEOUT_MS);
+      });
+      // bp_user_tier — 가벼움(인덱스만 hit), 로그인 안 됐어도 RLS 에러로 정상 응답.
+      // limit(0)이라 row 안 받음. count: 'exact', head: true로 헤더만.
+      const queryPromise = client
+        .from("bp_user_tier")
+        .select("user_id", { count: "exact", head: true });
       try {
-        const resp = await fetch(probeUrl, {
-          method: "GET",
-          cache: "no-store",
-          signal: ctrl.signal
-        });
-        // 응답 도착 자체가 네트워크 OK 신호 (status는 2xx/4xx 무관)
-        return resp.ok || (resp.status >= 400 && resp.status < 500);
+        const result = await Promise.race([queryPromise, timeoutPromise]);
+        if (result === "timeout" || timedOut) return false;
+        // 응답이 왔다 = SDK→Supabase 왕복 OK. RLS/PGRST 에러도 OK.
+        return true;
       } catch {
-        return false;
-      } finally {
-        clearTimeout(timer);
+        return !timedOut;
       }
     };
 
     const handleResume = (hiddenFor: number) => {
       if (hiddenFor < PROBE_HIDDEN_MS) return;
-      if (probingRef.current) return; // 동시 중복 방지
-      probingRef.current = true;
+      const now = Date.now();
+      // 이미 probe 중이고 stale 시간 안이면 skip — 그 외엔 새 probe 시작 (락 누락 보호)
+      if (probingAtRef.current && now - probingAtRef.current < PROBE_STALE_MS) return;
+      probingAtRef.current = now;
       void (async () => {
         const ok = await probe();
-        probingRef.current = false;
+        probingAtRef.current = 0;
         if (!ok && typeof window !== "undefined") {
           window.location.reload();
         }
