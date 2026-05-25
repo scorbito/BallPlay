@@ -731,7 +731,7 @@ export function LineupBuilderScreen() {
               title={filledCount === 9 ? "경기장에 등록 — 변경 불가, 전적 누적" : "타순 9명 모두 채운 뒤 등록 가능"}
             >
               <Save size={12} />
-              등록
+              경기장 등록
             </button>
           </div>
           {/* PC 와이드 모드에서만 노출 — 대기 선수 카드 헤더 자리 절약. 모바일은 풀 카드 자체에 헤더 유지. */}
