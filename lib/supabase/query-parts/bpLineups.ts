@@ -292,27 +292,42 @@ export async function fetchPublishedLineupsByIds(
     `
     )
     .in("id", lineupIds);
+  let rows: PublishedLineupRow[];
   if (error) {
     const noJoin = await client.from(TABLE).select("*").in("id", lineupIds);
     if (noJoin.error) return { ok: false, error: noJoin.error.message };
-    const rows = (noJoin.data ?? []).map((r) => ({
+    rows = (noJoin.data ?? []).map((r) => ({
       ...(r as BpLineupRow),
       owner_nickname: null,
       owner_display_name: null
     })) as PublishedLineupRow[];
-    const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is PublishedLineupRow => Boolean(r));
-    return { ok: true, rows: sorted };
+  } else {
+    rows = (data ?? []).map((r) => {
+      const row = r as BpLineupRow & {
+        profile?: { nickname?: string | null; display_name?: string | null } | null;
+      };
+      return {
+        ...row,
+        owner_nickname: row.profile?.nickname ?? null,
+        owner_display_name: row.profile?.display_name ?? null
+      } as PublishedLineupRow;
+    });
   }
-  const rows = (data ?? []).map((r) => {
-    const row = r as BpLineupRow & {
-      profile?: { nickname?: string | null; display_name?: string | null } | null;
-    };
-    return {
-      ...row,
-      owner_nickname: row.profile?.nickname ?? null,
-      owner_display_name: row.profile?.display_name ?? null
-    } as PublishedLineupRow;
-  });
+
+  // 닉네임 보강 — join 실패하거나 빠진 닉네임 별도 fetch
+  const missingOwnerIds = rows
+    .filter((r) => !r.owner_nickname && !r.owner_display_name)
+    .map((r) => r.owner_user_id);
+  if (missingOwnerIds.length > 0) {
+    const profiles = await fetchProfilesByUserIds(client, missingOwnerIds);
+    rows = rows.map((r) => {
+      if (r.owner_nickname || r.owner_display_name) return r;
+      const p = profiles[r.owner_user_id];
+      if (!p) return r;
+      return { ...r, owner_nickname: p.nickname, owner_display_name: p.display_name };
+    });
+  }
+
   const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is PublishedLineupRow => Boolean(r));
   return { ok: true, rows: sorted };
 }
@@ -367,9 +382,44 @@ export async function listPublishedByRecent(
     });
   }
 
+  // 닉네임 보강 — join 실패하거나 빠진 닉네임 별도 fetch
+  const missingOwnerIds = rows
+    .filter((r) => !r.owner_nickname && !r.owner_display_name)
+    .map((r) => r.owner_user_id);
+  if (missingOwnerIds.length > 0) {
+    const profiles = await fetchProfilesByUserIds(client, missingOwnerIds);
+    rows = rows.map((r) => {
+      if (r.owner_nickname || r.owner_display_name) return r;
+      const p = profiles[r.owner_user_id];
+      if (!p) return r;
+      return { ...r, owner_nickname: p.nickname, owner_display_name: p.display_name };
+    });
+  }
+
   const ids = rows.map((r) => r.id);
   const stats = await fetchLineupStatsBulk(client, ids);
   return { ok: true, rows, statsByLineupId: stats };
+}
+
+/** owner_user_id 배열 → profiles의 nickname/display_name 매핑.
+ *  RLS에서 다른 사용자 profile select 가능해야 동작 (가능 시 일반 정책). */
+export async function fetchProfilesByUserIds(
+  client: SupabaseClient,
+  userIds: string[]
+): Promise<Record<string, { nickname: string | null; display_name: string | null }>> {
+  if (userIds.length === 0) return {};
+  // 중복 제거
+  const uniq = Array.from(new Set(userIds));
+  const { data, error } = await client
+    .from("profiles")
+    .select("id, nickname, display_name")
+    .in("id", uniq);
+  if (error) return {};
+  const result: Record<string, { nickname: string | null; display_name: string | null }> = {};
+  for (const row of (data ?? []) as Array<{ id: string; nickname: string | null; display_name: string | null }>) {
+    result[row.id] = { nickname: row.nickname ?? null, display_name: row.display_name ?? null };
+  }
+  return result;
 }
 
 export async function fetchLineupStatsBulk(

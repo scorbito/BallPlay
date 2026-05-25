@@ -650,14 +650,16 @@ export function LineupBuilderScreen() {
                     >
                       <TeamBadge teamId={entry.teamId} size="sm" />
                       <span className="lineup-slot-menu-name">{entry.name}</span>
+                      <span className="lineup-slot-menu-record">
+                        {stats && stats.matches > 0
+                          ? `${stats.wins}-${stats.losses}${winPct !== null ? ` (${winPct}%)` : ""}`
+                          : "0-0"}
+                      </span>
                       {entry.isPublished ? (
                         <span className="lineup-slot-menu-badge is-public" title="공개 중">공개</span>
                       ) : (
                         <span className="lineup-slot-menu-badge" title="비공개">비공개</span>
                       )}
-                      {stats && stats.matches > 0 ? (
-                        <span className="lineup-slot-menu-record">{stats.wins}-{stats.losses}{winPct !== null ? ` (${winPct}%)` : ""}</span>
-                      ) : null}
                     </button>
                     <div className="lineup-slot-menu-actions">
                       <button

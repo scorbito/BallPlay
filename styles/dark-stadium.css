@@ -228,7 +228,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 4px;
 }
 
 .phone-frame-light .stadium-lobby-live {
@@ -278,7 +278,7 @@
 }
 
 .phone-frame-light .stadium-lobby-section-main {
-  margin-top: 14px;
+  margin-top: 4px;
 }
 
 .phone-frame-light .stadium-lobby-section-head {
