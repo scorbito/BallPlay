@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bot, ChevronRight, KeyRound, List, Swords, Users } from "lucide-react";
+import { Bot, ChevronRight, KeyRound, List, Lock, Swords, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
 import { PublishedLineupList } from "./PublishedLineupList";
+import { MyLineupList } from "./MyLineupList";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
 import type { SimTeamInput } from "@/lib/sim/types";
@@ -65,7 +66,19 @@ export function LobbyScreen() {
         <PublishedLineupList maxItems={6} showHeader={false} />
       </section>
 
-      {/* 3. AI와 대결 — 하단 그리드 */}
+      {/* 3. 내 라인업 — 본인만 보임. 두 개 이상이면 내 라인업끼리 대결 가능 */}
+      <section className="stadium-lobby-section">
+        <header className="stadium-lobby-section-head">
+          <h2 className="stadium-lobby-section-title">
+            <Lock size={14} />
+            내 라인업
+          </h2>
+          <span className="stadium-lobby-section-sub">나만 볼 수 있어요</span>
+        </header>
+        <MyLineupList maxItems={6} />
+      </section>
+
+      {/* 4. AI와 대결 — 하단 그리드 */}
       <section className="stadium-lobby-section">
         <header className="stadium-lobby-section-head">
           <h2 className="stadium-lobby-section-title">

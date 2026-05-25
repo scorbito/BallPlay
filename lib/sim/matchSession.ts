@@ -13,9 +13,10 @@ export type MatchSession = {
   input?: SimGameInput;
   result?: SimGameResult;
   startedAt: string;
-  // 매치 출처 — 기록 저장 가능 여부 판단. "ai"는 저장 X, "public"/"friend"만 저장.
+  // 매치 출처 — 기록 저장 가능 여부 판단. "ai"/"self"는 저장 X, "public"/"friend"만 저장.
   // 미설정(undefined)이면 AI로 간주 (백워드 호환).
-  source?: "ai" | "public" | "friend";
+  // "self": 본인이 만든 라인업끼리 대결 (양쪽 다 본인이라 공개 기록 의미 약해 저장 X).
+  source?: "ai" | "public" | "friend" | "self";
   // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
   liveMatchId?: string;
   liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행
