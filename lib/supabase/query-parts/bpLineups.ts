@@ -1,10 +1,13 @@
 // bp_lineups CRUD — 로그인 사용자의 라인업 DB 동기화 (브라우저 클라이언트 한정).
-// PR2에서 is_published 토글 + 공개 풀 조회 추가 예정.
+// 공개/비공개 모델: is_published=true면 공개 라인업 풀에 노출 + 수정 잠금 + 전적 누적.
+// 비공개 → 공개: lineup_hash 계산해서 세팅. 본인 중복 차단(unique index).
+// 공개 → 비공개: bp_records의 본인 측 row 삭제(전적 리셋) + lineup_hash null.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LineupEntry, SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 
 const TABLE = "bp_lineups";
+const RECORDS_TABLE = "bp_records";
 
 // DB row 1:1 매핑 (snake_case)
 export type BpLineupRow = {
@@ -16,10 +19,11 @@ export type BpLineupRow = {
   batting: SavedLineup;
   pitching: SavedPitcherLineup | null;
   is_published: boolean;
-  // 2026-05-25 추가 (add-bp-lineups-register.sql) — 등록 카드 시스템
-  status?: "draft" | "registered";
-  description?: string | null;
+  // 공개 라인업이면 lineup_hash 채워짐. 비공개로 가면 null.
   lineup_hash?: string | null;
+  // status / description은 레거시 컬럼 — 새 모델에선 미사용.
+  status?: string | null;
+  description?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -56,9 +60,7 @@ function entryToInsert(entry: LineupEntry, userId: string): Omit<BpLineupRow, "i
     team_id: entry.teamId,
     batting: entry.batting,
     pitching: entry.pitching,
-    // LineupEntry.isPublished를 DB로 전파. undefined면 디폴트 공개(true)로 처리
-    // (새 entry는 createEmptyEntry에서 true로 시작 — 사용자가 빌더에서 끄지 않는 한 공개)
-    is_published: entry.isPublished ?? true
+    is_published: entry.isPublished ?? false
   };
 }
 
@@ -70,15 +72,12 @@ export async function listMyLineups(
   client: SupabaseClient,
   userId: string
 ): Promise<{ ok: true; rows: BpLineupRow[] } | { ok: false; error: string }> {
-  // 명시적으로 owner_user_id 필터 — RLS가 본인 + 등록 카드(registered) 둘 다 허용하므로
-  // 명시 안 하면 다른 user의 등록 라인업까지 "내 라인업"으로 가져옴.
-  // 또한 status='registered'(경기장 등록 카드)는 슬롯이 아니라 별도 영구 카드라 빌더에서 제외.
-  // status 컬럼이 없는 레거시 row는 'draft' default로 잡힘.
+  // 명시적으로 owner_user_id 필터 — RLS가 본인 + 공개 row 둘 다 허용하므로
+  // 명시 안 하면 다른 user의 공개 라인업까지 "내 라인업"으로 가져옴.
   const { data, error } = await client
     .from(TABLE)
     .select("*")
     .eq("owner_user_id", userId)
-    .neq("status", "registered")
     .order("updated_at", { ascending: false });
   if (error) return { ok: false, error: error.message };
   return { ok: true, rows: (data ?? []) as BpLineupRow[] };
@@ -86,7 +85,7 @@ export async function listMyLineups(
 
 // ============================================================
 // Upsert — entry_id 기준 (한 사용자 내 unique).
-// updated_at은 트리거가 자동 갱신하지만, 클라이언트 정렬용으로 직접 전달도 가능.
+// 비공개 상태에서만 호출되어야 함 — 공개 row는 trigger에 의해 batting/pitching 수정 차단.
 // ============================================================
 
 export async function upsertLineup(
@@ -139,88 +138,79 @@ export async function deleteLineupByEntryId(
 }
 
 // ============================================================
-// 공개 풀 (PR2) — is_published=true인 라인업 + 소유자 닉네임 join.
-// 본인 라인업은 제외하고 다른 사용자만 (UI에서 자기 라인업과 매칭은 의미 없음).
+// 공개 / 비공개 전환
+//   - publish: lineup_hash 계산해서 함께 세팅. 본인 중복은 unique constraint로 차단.
+//   - unpublish: bp_records의 본인 측 row 삭제(전적 리셋) + lineup_hash null.
+//                public 매치만 대상 (friend는 lineup_id가 null이라 무관).
 // ============================================================
 
-export type PublishedLineupRow = BpLineupRow & {
-  owner_nickname: string | null;
-  owner_display_name: string | null;
-};
-
-export async function listPublishedLineups(
+export async function publishLineup(
   client: SupabaseClient,
-  excludeUserId?: string | null,
-  /** 본인 인식용 — 현재 기기 localStorage의 entryId 목록. 어떤 계정(정식/익명/비로그인)으로
-   *  봐도 같은 기기에서 만든 라인업은 모두 제외. excludeUserId 보완 메커니즘. */
-  excludeEntryIds?: string[]
-): Promise<{ ok: true; rows: PublishedLineupRow[] } | { ok: false; error: string }> {
-  // profiles 테이블과 join — 운영 DB의 user_profiles 또는 profiles 테이블 활용
-  // (정확한 스키마는 운영 DB에 따라 다름. nickname/display_name 둘 중 살아있는 것 활용)
-  let query = client
+  params: {
+    entryId: string;
+    userId: string;
+    lineupHash: string;
+  }
+): Promise<{ ok: true; row: BpLineupRow } | { ok: false; error: string; code?: "duplicate" | "unknown" }> {
+  const { data, error } = await client
     .from(TABLE)
-    .select(
-      `
-      *,
-      profile:profiles!bp_lineups_owner_user_id_fkey(nickname, display_name)
-    `
-    )
-    .eq("is_published", true)
-    .order("updated_at", { ascending: false })
-    .limit(50);
-  if (excludeUserId) {
-    query = query.neq("owner_user_id", excludeUserId);
+    .update({ is_published: true, lineup_hash: params.lineupHash })
+    .eq("owner_user_id", params.userId)
+    .eq("entry_id", params.entryId)
+    .select()
+    .single();
+  if (error || !data) {
+    if (error?.code === "23505") {
+      return { ok: false, error: "이미 같은 라인업을 공개했어요", code: "duplicate" };
+    }
+    return { ok: false, error: error?.message ?? "공개 전환 실패", code: "unknown" };
   }
-  if (excludeEntryIds && excludeEntryIds.length > 0) {
-    // PostgREST "in" 필터 — `(id1,id2,id3)` 형식
-    query = query.not("entry_id", "in", `(${excludeEntryIds.map((s) => `"${s}"`).join(",")})`);
-  }
-  const { data, error } = await query;
-  if (error) {
-    // profiles join이 실패하면 (FK 이름 불일치 등) profile 없이 fallback
-    const fallback = await listPublishedLineupsNoJoin(client, excludeUserId, excludeEntryIds);
-    return fallback;
-  }
-  const rows = (data ?? []).map((r) => {
-    const row = r as BpLineupRow & {
-      profile?: { nickname?: string | null; display_name?: string | null } | null;
-    };
-    return {
-      ...row,
-      owner_nickname: row.profile?.nickname ?? null,
-      owner_display_name: row.profile?.display_name ?? null
-    } as PublishedLineupRow;
-  });
-  return { ok: true, rows };
+  return { ok: true, row: data as BpLineupRow };
 }
 
-// profiles join이 안 되는 경우 — 라인업만 가져오고 닉네임은 null
-async function listPublishedLineupsNoJoin(
+export async function unpublishLineup(
   client: SupabaseClient,
-  excludeUserId?: string | null,
-  excludeEntryIds?: string[]
-): Promise<{ ok: true; rows: PublishedLineupRow[] } | { ok: false; error: string }> {
-  let query = client
-    .from(TABLE)
-    .select("*")
-    .eq("is_published", true)
-    .order("updated_at", { ascending: false })
-    .limit(50);
-  if (excludeUserId) query = query.neq("owner_user_id", excludeUserId);
-  if (excludeEntryIds && excludeEntryIds.length > 0) {
-    query = query.not("entry_id", "in", `(${excludeEntryIds.map((s) => `"${s}"`).join(",")})`);
+  params: {
+    entryId: string;
+    userId: string;
   }
-  const { data, error } = await query;
-  if (error) return { ok: false, error: error.message };
-  const rows = (data ?? []).map((r) => ({
-    ...(r as BpLineupRow),
-    owner_nickname: null,
-    owner_display_name: null
-  })) as PublishedLineupRow[];
-  return { ok: true, rows };
+): Promise<{ ok: true; row: BpLineupRow } | { ok: false; error: string }> {
+  // 1. lineup row id 조회 (entry_id → id 매핑)
+  const { data: existing } = await client
+    .from(TABLE)
+    .select("id")
+    .eq("owner_user_id", params.userId)
+    .eq("entry_id", params.entryId)
+    .maybeSingle();
+  const lineupRowId = (existing as { id: string } | null)?.id ?? null;
+
+  // 2. 본인 매치 기록 중 이 라인업으로 한 row 삭제 (전적 리셋)
+  if (lineupRowId) {
+    await client
+      .from(RECORDS_TABLE)
+      .delete()
+      .eq("owner_user_id", params.userId)
+      .eq("home_lineup_id", lineupRowId);
+    await client
+      .from(RECORDS_TABLE)
+      .delete()
+      .eq("owner_user_id", params.userId)
+      .eq("away_lineup_id", lineupRowId);
+  }
+
+  // 3. bp_lineups 자체 비공개 + lineup_hash null
+  const { data, error } = await client
+    .from(TABLE)
+    .update({ is_published: false, lineup_hash: null })
+    .eq("owner_user_id", params.userId)
+    .eq("entry_id", params.entryId)
+    .select()
+    .single();
+  if (error || !data) return { ok: false, error: error?.message ?? "비공개 전환 실패" };
+  return { ok: true, row: data as BpLineupRow };
 }
 
-// 공개 토글 (true/false)
+// 레거시 — 단순 boolean toggle. 새 코드는 publishLineup / unpublishLineup 직접 호출.
 export async function togglePublished(
   client: SupabaseClient,
   entryId: string,
@@ -239,105 +229,38 @@ export async function togglePublished(
 }
 
 // ============================================================
-// 등록 카드 (status='registered') — 2026-05-25 신규
-//   - 빌더 슬롯의 스냅샷을 별도 row로 INSERT (변경 불가)
-//   - 본인 중복은 lineup_hash unique constraint로 차단
-//   - 모든 인증 사용자가 read 가능
+// 공개 라인업 풀 조회 (닉네임 join + 전적 RPC)
 // ============================================================
 
-export type RegisteredLineupRow = BpLineupRow & {
+export type PublishedLineupRow = BpLineupRow & {
   owner_nickname: string | null;
   owner_display_name: string | null;
 };
 
-/** 슬롯 entry를 등록 카드로 INSERT. entry_id는 새로 발급 (슬롯 entry_id 재사용 X). */
-export async function registerLineup(
-  client: SupabaseClient,
-  params: {
-    userId: string;
-    name: string;
-    teamId: string;
-    batting: SavedLineup;
-    pitching: SavedPitcherLineup | null;
-    lineupHash: string;
-    description: string | null;
-    /** 새 등록 카드의 entry_id (클라이언트가 UUID 생성해서 전달). */
-    entryId: string;
-  }
-): Promise<{ ok: true; row: BpLineupRow } | { ok: false; error: string; code?: "duplicate" | "unknown" }> {
-  const { data, error } = await client
-    .from(TABLE)
-    .insert({
-      owner_user_id: params.userId,
-      entry_id: params.entryId,
-      name: params.name,
-      team_id: params.teamId,
-      batting: params.batting,
-      pitching: params.pitching,
-      is_published: true,
-      status: "registered",
-      description: params.description,
-      lineup_hash: params.lineupHash
-    })
-    .select()
-    .single();
-  if (error || !data) {
-    // unique constraint 위반 (본인 중복 등록)
-    if (error?.code === "23505") {
-      return { ok: false, error: "이미 같은 라인업을 등록했어요", code: "duplicate" };
-    }
-    return { ok: false, error: error?.message ?? "라인업 등록 실패", code: "unknown" };
-  }
-  return { ok: true, row: data as BpLineupRow };
-}
-
-/** 본인의 등록 카드 중 같은 lineup_hash 존재 여부 확인 (UI에서 미리 안내). */
-export async function existsOwnerRegisteredHash(
+/** 본인이 같은 lineup_hash로 이미 공개했는지 확인 (UI 사전 안내). */
+export async function existsOwnerPublishedHash(
   client: SupabaseClient,
   userId: string,
-  lineupHash: string
+  lineupHash: string,
+  excludeEntryId?: string
 ): Promise<boolean> {
-  const { data } = await client
+  let query = client
     .from(TABLE)
     .select("id")
     .eq("owner_user_id", userId)
-    .eq("status", "registered")
-    .eq("lineup_hash", lineupHash)
-    .maybeSingle();
+    .eq("is_published", true)
+    .eq("lineup_hash", lineupHash);
+  if (excludeEntryId) query = query.neq("entry_id", excludeEntryId);
+  const { data } = await query.maybeSingle();
   return data !== null;
 }
 
-/** 등록 카드 삭제 (본인만 가능 — RLS로 보장). */
-export async function deleteRegisteredLineup(
-  client: SupabaseClient,
-  lineupId: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { error } = await client.from(TABLE).delete().eq("id", lineupId).eq("status", "registered");
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
-}
-
-/** 등록 카드 description 업데이트 (본인만, 트리거가 description만 허용). */
-export async function updateRegisteredDescription(
-  client: SupabaseClient,
-  lineupId: string,
-  description: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { error } = await client
-    .from(TABLE)
-    .update({ description })
-    .eq("id", lineupId)
-    .eq("status", "registered");
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
-}
-
-/** 메인 6개용 — 승률 정렬 RPC. 표본 5경기 가중. */
-export async function listRegisteredByWinrate(
+/** 메인 6개 — 승률 정렬 RPC. 5경기 가중. 본인 도전 매치만 집계됨(view). */
+export async function listPublishedByWinrate(
   client: SupabaseClient,
   limit: number
 ): Promise<{ ok: true; statsByLineupId: Record<string, LineupStats>; lineupIds: string[] } | { ok: false; error: string }> {
-  const { data, error } = await client.rpc("list_registered_lineups_by_winrate", { p_limit: limit });
+  const { data, error } = await client.rpc("list_published_lineups_by_winrate", { p_limit: limit });
   if (error) return { ok: false, error: error.message };
   const rows = (data ?? []) as Array<{
     lineup_id: string;
@@ -354,11 +277,11 @@ export async function listRegisteredByWinrate(
   return { ok: true, statsByLineupId: stats, lineupIds: ids };
 }
 
-/** 라인업 ID 배열 → 등록 카드 row + 닉네임 join. 정렬 순서는 호출자가 결정 (id 배열 순서로). */
-export async function fetchRegisteredLineupsByIds(
+/** 라인업 ID 배열 → 공개 라인업 row + 닉네임 join. join 실패 시 닉네임 null fallback. */
+export async function fetchPublishedLineupsByIds(
   client: SupabaseClient,
   lineupIds: string[]
-): Promise<{ ok: true; rows: RegisteredLineupRow[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; rows: PublishedLineupRow[] } | { ok: false; error: string }> {
   if (lineupIds.length === 0) return { ok: true, rows: [] };
   const { data, error } = await client
     .from(TABLE)
@@ -370,16 +293,14 @@ export async function fetchRegisteredLineupsByIds(
     )
     .in("id", lineupIds);
   if (error) {
-    // profiles join 실패 fallback (닉네임 null)
     const noJoin = await client.from(TABLE).select("*").in("id", lineupIds);
     if (noJoin.error) return { ok: false, error: noJoin.error.message };
     const rows = (noJoin.data ?? []).map((r) => ({
       ...(r as BpLineupRow),
       owner_nickname: null,
       owner_display_name: null
-    })) as RegisteredLineupRow[];
-    // id 배열 순서 유지
-    const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is RegisteredLineupRow => Boolean(r));
+    })) as PublishedLineupRow[];
+    const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is PublishedLineupRow => Boolean(r));
     return { ok: true, rows: sorted };
   }
   const rows = (data ?? []).map((r) => {
@@ -390,19 +311,18 @@ export async function fetchRegisteredLineupsByIds(
       ...row,
       owner_nickname: row.profile?.nickname ?? null,
       owner_display_name: row.profile?.display_name ?? null
-    } as RegisteredLineupRow;
+    } as PublishedLineupRow;
   });
-  // id 배열 순서 유지
-  const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is RegisteredLineupRow => Boolean(r));
+  const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is PublishedLineupRow => Boolean(r));
   return { ok: true, rows: sorted };
 }
 
-/** 전체 보기용 — 최신순으로 등록 카드 + 닉네임 + 전적. join 실패 시 닉네임 없이 fallback. */
-export async function listRegisteredByRecent(
+/** 전체보기 — 최신순. excludeUserId=null이면 본인 카드 포함. */
+export async function listPublishedByRecent(
   client: SupabaseClient,
   limit: number,
   excludeUserId?: string | null
-): Promise<{ ok: true; rows: RegisteredLineupRow[]; statsByLineupId: Record<string, LineupStats> } | { ok: false; error: string }> {
+): Promise<{ ok: true; rows: PublishedLineupRow[]; statsByLineupId: Record<string, LineupStats> } | { ok: false; error: string }> {
   let query = client
     .from(TABLE)
     .select(
@@ -411,19 +331,19 @@ export async function listRegisteredByRecent(
       profile:profiles!bp_lineups_owner_user_id_fkey(nickname, display_name)
     `
     )
-    .eq("status", "registered")
+    .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (excludeUserId) query = query.neq("owner_user_id", excludeUserId);
   const { data, error } = await query;
 
-  let rows: RegisteredLineupRow[];
+  let rows: PublishedLineupRow[];
   if (error) {
-    // profiles FK 이름 불일치 등으로 join 실패 시 — 닉네임 없이 fallback
+    // profiles join 실패 → 닉네임 null fallback
     let fallbackQuery = client
       .from(TABLE)
       .select("*")
-      .eq("status", "registered")
+      .eq("is_published", true)
       .order("created_at", { ascending: false })
       .limit(limit);
     if (excludeUserId) fallbackQuery = fallbackQuery.neq("owner_user_id", excludeUserId);
@@ -433,7 +353,7 @@ export async function listRegisteredByRecent(
       ...(r as BpLineupRow),
       owner_nickname: null,
       owner_display_name: null
-    })) as RegisteredLineupRow[];
+    })) as PublishedLineupRow[];
   } else {
     rows = (data ?? []).map((r) => {
       const row = r as BpLineupRow & {
@@ -443,17 +363,15 @@ export async function listRegisteredByRecent(
         ...row,
         owner_nickname: row.profile?.nickname ?? null,
         owner_display_name: row.profile?.display_name ?? null
-      } as RegisteredLineupRow;
+      } as PublishedLineupRow;
     });
   }
 
-  // 전적 일괄 조회
   const ids = rows.map((r) => r.id);
   const stats = await fetchLineupStatsBulk(client, ids);
   return { ok: true, rows, statsByLineupId: stats };
 }
 
-/** 라인업 ID 배열의 전적을 한 번에 조회 (RPC). */
 export async function fetchLineupStatsBulk(
   client: SupabaseClient,
   lineupIds: string[]

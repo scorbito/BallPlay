@@ -477,13 +477,18 @@ export function PlayScreen() {
           mvpName: mvpEntity?.name ?? null,
           isWalkoff: isWalkOff,
           totalInnings,
-          // 라인업 전적 집계용 — 등록 카드 매치인 경우 채워짐
-          homeLineupId: session.userSide === "home"
-            ? (session.myLineupId ?? null)
-            : (session.opponentLineupId ?? null),
-          awayLineupId: session.userSide === "home"
-            ? (session.opponentLineupId ?? null)
-            : (session.myLineupId ?? null)
+          // 라인업 전적 집계용 — 공개 매치만 양쪽 lineup_id 기록 (view가 user_side로 본인측 집계).
+          // friend는 친선이라 lineup_id 무관(view에서 source='public'만 집계).
+          homeLineupId: session.source === "public"
+            ? (session.userSide === "home"
+                ? (session.myLineupId ?? null)
+                : (session.opponentLineupId ?? null))
+            : null,
+          awayLineupId: session.source === "public"
+            ? (session.userSide === "home"
+                ? (session.opponentLineupId ?? null)
+                : (session.myLineupId ?? null))
+            : null
         });
 
         if (!result.ok) {

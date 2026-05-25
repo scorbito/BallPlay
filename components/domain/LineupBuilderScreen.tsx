@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Cloud, CloudOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Save, Share2, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { ShareLineupModal } from "@/components/domain/modals/ShareLineupModal";
-import { RegisterLineupModal } from "@/components/domain/modals/RegisterLineupModal";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { getRoster, getSeededTeamIds } from "@/lib/rosters";
@@ -101,7 +100,8 @@ export function LineupBuilderScreen() {
     syncedUpsert,
     syncedDelete,
     syncedRename,
-    localUpsertEntry
+    localUpsertEntry,
+    togglePublished
   } = useLineupSync();
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const currentEntry = useMemo(
@@ -128,8 +128,9 @@ export function LineupBuilderScreen() {
   const [swapSource, setSwapSource] = useState<Position | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [registerOpen, setRegisterOpen] = useState(false);
-  const [registerToast, setRegisterToast] = useState<string | null>(null);
+  // 공개/비공개 토글 — 비공개로 갈 때 전적 리셋 확인 모달
+  const [confirmUnpublishOpen, setConfirmUnpublishOpen] = useState(false);
+  const [publishProcessing, setPublishProcessing] = useState(false);
   /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
   const [hydratedEntryId, setHydratedEntryId] = useState<string | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
@@ -217,8 +218,10 @@ export function LineupBuilderScreen() {
   }, [currentEntry?.entryId]);
 
   // 타자 라인업 변경 → 현재 entry의 batting 업데이트 + 저장. 복원 완료 전엔 skip.
+  // 공개 상태면 DB trigger가 변경을 막으므로 저장 시도 자체 skip.
   useEffect(() => {
     if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
+    if (currentEntry.isPublished) return;
     const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
     const now = new Date().toISOString();
     const updated: LineupEntry = {
@@ -243,8 +246,10 @@ export function LineupBuilderScreen() {
 
   // 투수 라인업 변경 → 현재 entry의 pitching 업데이트 + 저장.
   // 타선이 9명일 때만 DB sync. 타선 미완성이면 localStorage만.
+  // 공개 상태면 변경 차단.
   useEffect(() => {
     if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
+    if (currentEntry.isPublished) return;
     const hasAny = pitcherSlots.some(Boolean);
     const now = new Date().toISOString();
     const updated: LineupEntry = {
@@ -670,7 +675,12 @@ export function LineupBuilderScreen() {
         </button>
       </header>
 
-      <div className="lineup-layout">
+      {currentEntry?.isPublished ? (
+        <div className="lineup-published-banner" role="status">
+          🔒 공개 라인업 — 수정하려면 비공개로 전환하세요 (전적 리셋)
+        </div>
+      ) : null}
+      <div className={`lineup-layout ${currentEntry?.isPublished ? "is-locked" : ""}`}>
         {/* 야구장 다이아몬드 — 타자 모드: 9수비, 투수 모드: 선발만 P 표시 */}
         <section className="lineup-diamond-card" aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}>
           <LineupDiamond
@@ -723,16 +733,47 @@ export function LineupBuilderScreen() {
                 투수
               </button>
             </div>
-            <button
-              type="button"
-              className="lineup-action-btn lineup-action-btn-primary"
-              onClick={() => setRegisterOpen(true)}
-              disabled={!currentEntry || filledCount !== 9}
-              title={filledCount === 9 ? "경기장에 등록 — 변경 불가, 전적 누적" : "타순 9명 모두 채운 뒤 등록 가능"}
-            >
-              <Save size={12} />
-              경기장 등록
-            </button>
+            {/* 공개/비공개 토글 */}
+            {(() => {
+              if (!currentEntry) return null;
+              const isOn = !!currentEntry.isPublished;
+              const isLoggedIn = syncStatus !== "local-only";
+              const filled = filledCount === 9;
+              // 끄기는 항상 가능, 켜기는 로그인 + 9명 완성 시만
+              const disabled = !isLoggedIn || publishProcessing || (!isOn && !filled);
+              const tip = !isLoggedIn
+                ? "로그인하면 공개할 수 있어요"
+                : isOn
+                  ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로 (전적 리셋)"
+                  : !filled
+                    ? "타선 9명을 채워야 공개할 수 있어요"
+                    : "공개로 바꾸면 다른 사람이 도전할 수 있어요";
+              return (
+                <button
+                  type="button"
+                  className={`lineup-action-btn ${isOn ? "lineup-action-btn-published" : "lineup-action-btn-primary"}`}
+                  disabled={disabled}
+                  title={tip}
+                  onClick={async () => {
+                    if (!currentEntry) return;
+                    // 비공개로 가는 경우 확인 모달 (전적 리셋 안내)
+                    if (isOn) {
+                      setConfirmUnpublishOpen(true);
+                      return;
+                    }
+                    // 공개로 즉시 전환
+                    setPublishProcessing(true);
+                    const res = await togglePublished(currentEntry.entryId, true);
+                    setPublishProcessing(false);
+                    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
+                    else showToast("공개됐어요");
+                  }}
+                >
+                  {isOn ? <Eye size={12} /> : <EyeOff size={12} />}
+                  {isOn ? "공개 중" : "공개하기"}
+                </button>
+              );
+            })()}
           </div>
           {/* PC 와이드 모드에서만 노출 — 대기 선수 카드 헤더 자리 절약. 모바일은 풀 카드 자체에 헤더 유지. */}
           <div className="lineup-action-pool-badge" aria-hidden="true">
@@ -1010,19 +1051,47 @@ export function LineupBuilderScreen() {
         playersById={playersById}
       />
 
-      <RegisterLineupModal
-        open={registerOpen}
-        entry={currentEntry}
-        onClose={() => setRegisterOpen(false)}
-        onSuccess={() => {
-          setRegisterToast("경기장에 등록됐어요!");
-          window.setTimeout(() => setRegisterToast(null), 2400);
-        }}
-      />
-
-      {registerToast ? (
-        <div className="lineup-register-toast" role="status">{registerToast}</div>
-      ) : null}
+      {/* 공개 → 비공개 전환 확인 모달 (전적 리셋 안내) */}
+      <ModalShell
+        open={confirmUnpublishOpen}
+        title="비공개로 전환"
+        onClose={() => setConfirmUnpublishOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            비공개로 전환하면 이 라인업의 <strong>전적이 모두 리셋</strong>됩니다.<br />
+            그래도 비공개로 바꿀까요?
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setConfirmUnpublishOpen(false)}
+              disabled={publishProcessing}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-destruct"
+              disabled={publishProcessing}
+              onClick={async () => {
+                if (!currentEntry) return;
+                setPublishProcessing(true);
+                const res = await togglePublished(currentEntry.entryId, false);
+                setPublishProcessing(false);
+                setConfirmUnpublishOpen(false);
+                if (!res.ok) showToast(res.error ?? "비공개 전환 실패");
+                else showToast("비공개로 바꿨어요 (전적 리셋)");
+              }}
+            >
+              비공개로
+            </button>
+          </div>
+        </div>
+      </ModalShell>
 
       {/* 새 슬롯 만들기 모달 */}
       <ModalShell

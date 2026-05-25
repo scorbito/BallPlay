@@ -1237,6 +1237,52 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+/* ── 공개 라인업 lock 처리 ── */
+.phone-frame-light .lineup-published-banner {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 10px;
+  color: #1a7f3a;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.phone-frame-light .lineup-layout.is-locked .lineup-slots-card,
+.phone-frame-light .lineup-layout.is-locked .lineup-pool-card,
+.phone-frame-light .lineup-layout.is-locked .lineup-diamond {
+  pointer-events: none;
+  opacity: 0.65;
+  filter: saturate(0.7);
+}
+
+/* 공개 중 — 공개 버튼 톤 */
+.phone-frame-light .lineup-action-btn.lineup-action-btn-published {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: #1a7f3a;
+}
+
+.phone-frame-light .lineup-action-btn.lineup-action-btn-published:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.28);
+}
+
+/* 본인 라인업 표시 — 도전 불가 안내 */
+.phone-frame-light .stadium-mine-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  white-space: nowrap;
+}
+
 /* 시즌 기록 없음 배지 — 출장 0 선수에 표시 (평균값 fallback) */
 .phone-frame-light .lineup-no-stats-badge {
   display: inline-flex;

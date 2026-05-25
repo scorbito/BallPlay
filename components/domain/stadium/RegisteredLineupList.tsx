@@ -1,15 +1,16 @@
 "use client";
 
-// 등록된 라인업 목록 — 경기장 메인/전체보기 둘 다 사용.
-// 메인(6개): 승률 정렬 (표본 5경기 가중)
-// 전체보기: 최신순
-// 카드 표시: 라인업명·팀배지·닉네임·설명·전적(W-L)
-// 도전: 본인 슬롯(LineupEntry) picker → opponentLineupId 세팅 후 매치 시작
+// 공개 라인업 목록 — 경기장 메인/전체보기 둘 다 사용.
+// 메인(6개): 승률 정렬 (표본 5경기 가중). 본인 카드 제외 (도전 대상만).
+// 전체보기: 최신순. includeMine=true면 본인 공개 카드도 표시 (도전 불가).
+//
+// 도전: 본인 공개 라인업이 있어야 가능. picker에 본인 공개 슬롯만 표시.
+// 본인 vs 본인은 차단 (RegisteredLineupList 호출 측에서 본인 카드 제외).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, List, LogIn, RefreshCw, Swords, Trash2 } from "lucide-react";
+import { ArrowRight, List, LogIn, RefreshCw, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
@@ -17,13 +18,11 @@ import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
-  deleteRegisteredLineup,
-  fetchLineupStatsBulk,
-  fetchRegisteredLineupsByIds,
-  listRegisteredByRecent,
-  listRegisteredByWinrate,
+  fetchPublishedLineupsByIds,
+  listPublishedByRecent,
+  listPublishedByWinrate,
   type LineupStats,
-  type RegisteredLineupRow
+  type PublishedLineupRow
 } from "@/lib/supabase/query-parts/bpLineups";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { PITCHER_SLOTS_COUNT, type LineupEntry, type SavedPitcherLineup } from "@/lib/types/lineup";
@@ -42,8 +41,8 @@ function autoFillPitcherLineup(teamId: string): SavedPitcherLineup | null {
   return { teamId, slots, updatedAt: new Date().toISOString() };
 }
 
-function formatOwnerLabel(row: RegisteredLineupRow): string {
-  return row.owner_display_name?.trim() || row.owner_nickname?.trim() || "익명 등록자";
+function formatOwnerLabel(row: PublishedLineupRow): string {
+  return row.owner_display_name?.trim() || row.owner_nickname?.trim() || "익명";
 }
 
 function formatRecord(stats: LineupStats | undefined): string {
@@ -57,10 +56,8 @@ type Props = {
   maxItems?: number;
   /** "winrate": 승률 정렬 (메인). "recent": 최신순 (전체보기). */
   sortBy: "winrate" | "recent";
-  /** 헤더 (새로고침 버튼) 렌더 여부. 기본 true. */
   showHeader?: boolean;
-  /** 본인이 등록한 카드도 목록에 포함할지. 기본 false (도전 대상만 표시).
-   *  전체보기에선 true로 켜서 본인 카드(삭제 가능)도 노출. */
+  /** 본인 카드도 표시할지. true면 본인 카드는 도전 불가 (라벨로 표시). */
   includeMine?: boolean;
 };
 
@@ -71,37 +68,35 @@ export function RegisteredLineupList({
   includeMine = false
 }: Props) {
   const router = useRouter();
-  const [rows, setRows] = useState<RegisteredLineupRow[] | null>(null);
+  const [rows, setRows] = useState<PublishedLineupRow[] | null>(null);
   const [statsByLineupId, setStatsByLineupId] = useState<Record<string, LineupStats>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [ownerIdForExclude, setOwnerIdForExclude] = useState<string | null>(null);
-  const [myEntries, setMyEntries] = useState<LineupEntry[]>([]);
+  const [myPublishedEntries, setMyPublishedEntries] = useState<LineupEntry[]>([]);
 
-  const [selectedOpponent, setSelectedOpponent] = useState<RegisteredLineupRow | null>(null);
+  const [selectedOpponent, setSelectedOpponent] = useState<PublishedLineupRow | null>(null);
   const [myEntryId, setMyEntryId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [loginGateOpen, setLoginGateOpen] = useState(false);
+  const [needPublishGateOpen, setNeedPublishGateOpen] = useState(false);
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadList = useCallback(
     async (excludeUid: string | null) => {
       const client = createSupabaseBrowserClient();
       setLoading(true);
       setError(null);
-      // includeMine=true면 본인 카드도 함께 보여줌 (도전 대신 삭제 버튼 노출됨)
       const filterUid = includeMine ? null : excludeUid;
       if (sortBy === "winrate") {
-        // RPC로 정렬된 lineup_id 목록 + stats 받고, 카드 데이터는 별도 fetch
-        const sorted = await listRegisteredByWinrate(client, maxItems);
+        const sorted = await listPublishedByWinrate(client, maxItems);
         if (!sorted.ok) {
           setLoading(false);
           setError(sorted.error);
           return;
         }
-        const fetched = await fetchRegisteredLineupsByIds(client, sorted.lineupIds);
+        const fetched = await fetchPublishedLineupsByIds(client, sorted.lineupIds);
         setLoading(false);
         if (!fetched.ok) {
           setError(fetched.error);
@@ -113,7 +108,7 @@ export function RegisteredLineupList({
         setRows(filtered);
         setStatsByLineupId(sorted.statsByLineupId);
       } else {
-        const res = await listRegisteredByRecent(client, maxItems, filterUid);
+        const res = await listPublishedByRecent(client, maxItems, filterUid);
         setLoading(false);
         if (!res.ok) {
           setError(res.error);
@@ -136,10 +131,13 @@ export function RegisteredLineupList({
       setUserId(realUid);
       setOwnerIdForExclude(anyUid);
 
-      const allLocalEntries = loadLineupEntries();
-      const ready = allLocalEntries.filter((e) => e.batting.slots.length === 9);
-      setMyEntries(ready);
-      if (ready.length > 0) setMyEntryId(ready[0].entryId);
+      // 본인의 공개 라인업만 picker에 노출 — 공개 라인업만 다른 공개 라인업과 매치 가능.
+      const allLocal = loadLineupEntries();
+      const myPublished = allLocal.filter(
+        (e) => e.batting.slots.length === 9 && e.isPublished === true
+      );
+      setMyPublishedEntries(myPublished);
+      if (myPublished.length > 0) setMyEntryId(myPublished[0].entryId);
 
       await loadList(anyUid);
     })();
@@ -149,7 +147,6 @@ export function RegisteredLineupList({
     await loadList(ownerIdForExclude);
   }, [loadList, ownerIdForExclude]);
 
-  // 모바일: 백그라운드 복귀 시 재조회
   useEffect(() => {
     if (typeof document === "undefined") return;
     const onVisible = () => {
@@ -161,12 +158,12 @@ export function RegisteredLineupList({
   }, [refresh]);
 
   const myEntry = useMemo(
-    () => myEntries.find((e) => e.entryId === myEntryId) ?? null,
-    [myEntries, myEntryId]
+    () => myPublishedEntries.find((e) => e.entryId === myEntryId) ?? null,
+    [myPublishedEntries, myEntryId]
   );
 
-  // 등록 카드 미리보기 — SimTeamInput으로 변환
-  const openLineupPreview = (row: RegisteredLineupRow) => {
+  // 공개 라인업 미리보기 → SimTeamInput으로 변환
+  const openLineupPreview = (row: PublishedLineupRow) => {
     const pitching = row.pitching ?? autoFillPitcherLineup(row.team_id);
     if (!pitching) return;
     const stats = buildStatsDirectory([row.team_id]);
@@ -175,22 +172,24 @@ export function RegisteredLineupList({
     setPreviewTeam(built.team);
   };
 
-  // 본인 등록 카드 삭제
-  const handleDelete = async (row: RegisteredLineupRow) => {
-    if (deletingId) return;
-    if (!confirm(`"${row.name}" 등록을 삭제할까요?\n전적은 사라집니다.`)) return;
-    setDeletingId(row.id);
-    const client = createSupabaseBrowserClient();
-    const res = await deleteRegisteredLineup(client, row.id);
-    setDeletingId(null);
-    if (!res.ok) {
-      setError(res.error);
+  // 도전 클릭 — 본인 공개 라인업 보유 여부 검증
+  const handleChallenge = (row: PublishedLineupRow) => {
+    if (!userId) {
+      setLoginGateOpen(true);
       return;
     }
-    await refresh();
+    if (myPublishedEntries.length === 0) {
+      setNeedPublishGateOpen(true);
+      return;
+    }
+    setSelectedOpponent(row);
   };
 
-  const startChallenge = useCallback(() => {
+  // 본인의 공개 라인업 row 찾기 (myEntry의 entry_id → bp_lineups.id)
+  // — 매치 시작 시 myLineupId로 세팅 (전적 누적).
+  // 본인 공개 라인업 row id는 별도로 lookup 필요. listMyLineups를 다시 호출하기보단
+  // picker entry_id → bp_lineups.id를 미리 매핑해두는 게 효율적. 여기선 매치 시작 시 1회 조회.
+  const startChallenge = useCallback(async () => {
     if (!selectedOpponent || !myEntry || starting) return;
     if (!userId) {
       setSelectedOpponent(null);
@@ -229,6 +228,16 @@ export function RegisteredLineupList({
       return;
     }
 
+    // 본인 공개 라인업의 bp_lineups.id lookup
+    const client = createSupabaseBrowserClient();
+    const myRow = await client
+      .from("bp_lineups")
+      .select("id")
+      .eq("owner_user_id", userId)
+      .eq("entry_id", myEntry.entryId)
+      .maybeSingle();
+    const myLineupId = (myRow.data as { id: string } | null)?.id ?? null;
+
     const seed = generateSeed();
     saveMatchSession({
       myTeamId: myEntry.teamId,
@@ -238,8 +247,7 @@ export function RegisteredLineupList({
       startedAt: new Date().toISOString(),
       source: "public",
       userSide: "home",
-      // 상대는 등록 카드라 lineup_id 채움. 본인 슬롯은 등록 카드 아니므로 null.
-      // (본인 등록 카드로 도전하는 흐름은 추후 확장)
+      myLineupId: myLineupId ?? undefined,
       opponentLineupId: selectedOpponent.id
     });
     router.push("/stadium/play");
@@ -254,8 +262,8 @@ export function RegisteredLineupList({
   if (rows.length === 0) {
     return (
       <section className="stadium-discover-empty">
-        <strong>아직 등록된 라인업이 없어요</strong>
-        <p>라인업 짜기에서 9명 채운 뒤 &lsquo;경기장에 등록&rsquo;을 눌러보세요.</p>
+        <strong>아직 공개된 라인업이 없어요</strong>
+        <p>라인업 짜기에서 9명 채운 뒤 &lsquo;공개하기&rsquo;를 눌러보세요.</p>
       </section>
     );
   }
@@ -286,9 +294,6 @@ export function RegisteredLineupList({
                 <span className="stadium-registered-meta">
                   {formatOwnerLabel(row)} · {team.shortName} · <span className="stadium-registered-record">{formatRecord(stats)}</span>
                 </span>
-                {row.description ? (
-                  <span className="stadium-registered-desc">{row.description}</span>
-                ) : null}
               </div>
               <div className="stadium-lobby-card-actions">
                 <button
@@ -301,27 +306,12 @@ export function RegisteredLineupList({
                   <span>라인업</span>
                 </button>
                 {isMine ? (
-                  <button
-                    type="button"
-                    className="stadium-lobby-card-btn stadium-lobby-card-btn-danger"
-                    onClick={() => handleDelete(row)}
-                    disabled={deletingId === row.id}
-                    aria-label={`${row.name} 등록 삭제`}
-                  >
-                    <Trash2 size={14} />
-                    <span>삭제</span>
-                  </button>
+                  <span className="stadium-mine-tag" aria-label="내 공개 라인업">내 라인업</span>
                 ) : (
                   <button
                     type="button"
                     className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
-                    onClick={() => {
-                      if (!userId) {
-                        setLoginGateOpen(true);
-                        return;
-                      }
-                      setSelectedOpponent(row);
-                    }}
+                    onClick={() => handleChallenge(row)}
                     aria-label={`${row.name}에 도전`}
                   >
                     <Swords size={14} />
@@ -340,6 +330,7 @@ export function RegisteredLineupList({
         onClose={() => setPreviewTeam(null)}
       />
 
+      {/* 도전 모달 — 본인 공개 라인업 picker */}
       <ModalShell
         open={selectedOpponent !== null}
         title="도전 시작"
@@ -366,16 +357,16 @@ export function RegisteredLineupList({
                       <strong>{myEntry.name}</strong>
                     </>
                   ) : (
-                    <span className="stadium-enter-empty">완성된 라인업이 없음</span>
+                    <span className="stadium-enter-empty">공개 라인업이 없음</span>
                   )}
                 </div>
               </div>
 
-              {myEntries.length > 1 ? (
+              {myPublishedEntries.length > 1 ? (
                 <div className="stadium-discover-my-picker">
-                  <span className="stadium-discover-my-picker-label">내 라인업 선택</span>
+                  <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
                   <div className="stadium-discover-my-picker-list">
-                    {myEntries.map((entry) => (
+                    {myPublishedEntries.map((entry) => (
                       <button
                         key={entry.entryId}
                         type="button"
@@ -388,12 +379,6 @@ export function RegisteredLineupList({
                     ))}
                   </div>
                 </div>
-              ) : null}
-
-              {myEntries.length === 0 ? (
-                <p className="stadium-error">
-                  9명을 채운 라인업이 없어요. 라인업 짜기에서 먼저 완성해주세요.
-                </p>
               ) : null}
 
               <button
@@ -411,6 +396,7 @@ export function RegisteredLineupList({
         </div>
       </ModalShell>
 
+      {/* 로그인 게이트 */}
       <ModalShell
         open={loginGateOpen}
         title="로그인이 필요해요"
@@ -420,8 +406,8 @@ export function RegisteredLineupList({
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            등록 라인업과 대결하려면 로그인이 필요해요.<br />
-            로그인하면 내 라인업도 경기장에 등록할 수 있어요.
+            공개 라인업과 대결하려면 로그인이 필요해요.<br />
+            로그인하면 내 라인업도 공개해서 전적을 쌓을 수 있어요.
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -438,12 +424,34 @@ export function RegisteredLineupList({
           </div>
         </div>
       </ModalShell>
+
+      {/* 본인이 공개 라인업이 없을 때 안내 */}
+      <ModalShell
+        open={needPublishGateOpen}
+        title="공개 라인업이 필요해요"
+        onClose={() => setNeedPublishGateOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            다른 공개 라인업과 도전하려면 본인도 공개 라인업이 있어야 해요.<br />
+            라인업 짜기에서 9명을 채운 뒤 &lsquo;공개하기&rsquo;를 눌러주세요.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setNeedPublishGateOpen(false)}
+            >
+              닫기
+            </button>
+            <Link href="/play" className="lineup-confirm-primary" prefetch>
+              라인업 짜기
+            </Link>
+          </div>
+        </div>
+      </ModalShell>
     </>
   );
-}
-
-/** 단순 fallback — RegisteredLineupList의 stats가 비어 있을 때 별도 fetch (선택). */
-export async function fetchStatsForRows(rows: RegisteredLineupRow[]): Promise<Record<string, LineupStats>> {
-  const client = createSupabaseBrowserClient();
-  return fetchLineupStatsBulk(client, rows.map((r) => r.id));
 }

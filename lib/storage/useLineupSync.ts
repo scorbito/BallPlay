@@ -30,11 +30,14 @@ import type { LineupEntry } from "@/lib/types/lineup";
 import {
   bulkUpsertLineups,
   deleteLineupByEntryId,
+  existsOwnerPublishedHash,
   listMyLineups,
+  publishLineup as dbPublishLineup,
   rowToEntry,
-  togglePublished as dbTogglePublished,
+  unpublishLineup as dbUnpublishLineup,
   upsertLineup
 } from "@/lib/supabase/query-parts/bpLineups";
+import { computeLineupHash } from "@/lib/sim/lineupHash";
 
 export type SyncStatus =
   | "loading"        // 초기 로드 또는 sync 진행 중
@@ -319,33 +322,57 @@ export function useLineupSync() {
   }, []);
 
   // 공개 풀 토글 — 로그인 + 9명 완성된 라인업에서만 호출 (UI에서 강제).
+  // - 공개 ON: lineup_hash 계산 → publishLineup (중복 차단)
+  // - 공개 OFF: unpublishLineup (본인 매치 기록 삭제 + lineup_hash null)
   const togglePublished = useCallback(
     async (entryId: string, nextPublished: boolean): Promise<{ ok: boolean; error?: string }> => {
       const userId = state.userId;
       if (!userId) return { ok: false, error: "로그인이 필요합니다." };
-      // optimistic: localStorage + state 먼저 갱신
       const current = state.entries.find((e) => e.entryId === entryId);
       if (!current) return { ok: false, error: "라인업을 찾을 수 없습니다." };
+
+      // optimistic: localStorage + state 먼저 갱신
       const optimistic = { ...current, isPublished: nextPublished };
       localUpsert(optimistic);
       setState((s) => ({
         ...s,
         entries: s.entries.map((e) => (e.entryId === entryId ? optimistic : e))
       }));
-      // DB 반영
-      const res = await dbTogglePublished(clientRef.current, entryId, userId, nextPublished);
-      if (!res.ok) {
-        // 롤백
+
+      const rollback = (errMsg: string) => {
         localUpsert(current);
         setState((s) => ({
           ...s,
           entries: s.entries.map((e) => (e.entryId === entryId ? current : e)),
           status: "error",
-          errorMessage: res.error
+          errorMessage: errMsg
         }));
-        return { ok: false, error: res.error };
+      };
+
+      if (nextPublished) {
+        // 공개로 전환: hash 계산 + 중복 사전 체크 + publish
+        const hash = computeLineupHash(current.teamId, current.batting, current.pitching);
+        const dup = await existsOwnerPublishedHash(clientRef.current, userId, hash, entryId);
+        if (dup) {
+          rollback("이미 같은 라인업을 공개했어요");
+          return { ok: false, error: "이미 같은 라인업을 공개했어요" };
+        }
+        const res = await dbPublishLineup(clientRef.current, { entryId, userId, lineupHash: hash });
+        if (!res.ok) {
+          const msg = res.code === "duplicate" ? "이미 같은 라인업을 공개했어요" : res.error;
+          rollback(msg);
+          return { ok: false, error: msg };
+        }
+        return { ok: true };
+      } else {
+        // 비공개로 전환: 전적 리셋 + lineup_hash null
+        const res = await dbUnpublishLineup(clientRef.current, { entryId, userId });
+        if (!res.ok) {
+          rollback(res.error);
+          return { ok: false, error: res.error };
+        }
+        return { ok: true };
       }
-      return { ok: true };
     },
     [state.userId, state.entries]
   );

@@ -130,12 +130,16 @@ export function ResultScreen() {
           mvpName: mvpPlayer?.name ?? null,
           isWalkoff: isWalkOff,
           totalInnings,
-          homeLineupId: session.userSide === "home"
-            ? (session.myLineupId ?? null)
-            : (session.opponentLineupId ?? null),
-          awayLineupId: session.userSide === "home"
-            ? (session.opponentLineupId ?? null)
-            : (session.myLineupId ?? null)
+          homeLineupId: session.source === "public"
+            ? (session.userSide === "home"
+                ? (session.myLineupId ?? null)
+                : (session.opponentLineupId ?? null))
+            : null,
+          awayLineupId: session.source === "public"
+            ? (session.userSide === "home"
+                ? (session.opponentLineupId ?? null)
+                : (session.myLineupId ?? null))
+            : null
         });
 
         if (cancelled) return;
