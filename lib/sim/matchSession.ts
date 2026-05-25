@@ -23,6 +23,10 @@ export type MatchSession = {
   liveMode?: "normal" | "live"; // 매치 생성자가 선택한 진행 모드. 양쪽 클라이언트 동일.
   // 친구 대전이면 사용자 측 (home/away) — 기록 저장 시 user_side로 사용.
   userSide?: "home" | "away";
+  // 등록된 라인업(bp_lineups.id status='registered') ID — 매치 종료 시 라인업 전적 집계에 사용.
+  // 슬롯끼리/슬롯vs등록 매치도 가능하므로 둘 다 옵션. 등록 카드 ID인 경우만 채움.
+  myLineupId?: string;
+  opponentLineupId?: string;
   // 기록에서 재생 중이면 원본 record id. 결과 화면에서 중복 저장 방지에 사용.
   replayOfRecordId?: string;
   // 경기 종료 시 PlayScreen에서 저장한 record id. ResultScreen 중복 저장 방지에 사용.

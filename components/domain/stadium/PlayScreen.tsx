@@ -462,7 +462,14 @@ export function PlayScreen() {
           mvpPlayerId: mvp.playerId,
           mvpName: mvpEntity?.name ?? null,
           isWalkoff: isWalkOff,
-          totalInnings
+          totalInnings,
+          // 라인업 전적 집계용 — 등록 카드 매치인 경우 채워짐
+          homeLineupId: session.userSide === "home"
+            ? (session.myLineupId ?? null)
+            : (session.opponentLineupId ?? null),
+          awayLineupId: session.userSide === "home"
+            ? (session.opponentLineupId ?? null)
+            : (session.myLineupId ?? null)
         });
 
         if (cancelled) return;
