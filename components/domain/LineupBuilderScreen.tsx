@@ -658,7 +658,6 @@ export function LineupBuilderScreen() {
                       {stats && stats.matches > 0 ? (
                         <span className="lineup-slot-menu-record">{stats.wins}-{stats.losses}{winPct !== null ? ` (${winPct}%)` : ""}</span>
                       ) : null}
-                      {active ? <Check size={14} strokeWidth={3} /> : null}
                     </button>
                     <div className="lineup-slot-menu-actions">
                       <button
