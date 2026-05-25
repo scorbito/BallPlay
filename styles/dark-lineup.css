@@ -203,27 +203,8 @@
   transform: translateY(-50%);
 }
 
-/* ── 동기화 상태 배지 (헤더 우측 absolute — mode-toggle이 빠진 자리) ── */
+/* ── 동기화 상태 배지 (헤더 좌측 absolute — 이전 공개 토글 자리) ── */
 .phone-frame-light .lineup-sync-badge {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  border: 1px solid var(--bp-line-soft);
-  background: rgba(20, 30, 50, 0.04);
-  color: var(--bp-text-secondary);
-  white-space: nowrap;
-}
-
-/* ── 공개/비공개 토글 (헤더 좌측 absolute) ── */
-.phone-frame-light .lineup-publish-toggle {
   position: absolute;
   left: 0;
   top: 50%;
@@ -239,26 +220,14 @@
   background: rgba(20, 30, 50, 0.04);
   color: var(--bp-text-secondary);
   white-space: nowrap;
-  cursor: pointer;
 }
 
-.phone-frame-light .lineup-publish-toggle.is-on {
-  border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.14);
-  color: var(--bp-success);
-}
-
-.phone-frame-light .lineup-publish-toggle:hover:not(:disabled) {
-  background: rgba(20, 30, 50, 0.06);
-}
-
-.phone-frame-light .lineup-publish-toggle.is-on:hover:not(:disabled) {
-  background: rgba(34, 197, 94, 0.20);
-}
-
-.phone-frame-light .lineup-publish-toggle:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+/* ── 헤더 우측 공유 버튼 (이전 동기화 배지 자리) ── */
+.phone-frame-light .lineup-header-share {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* 전역 button:active { transform: scale(0.97) } 무효화 —
