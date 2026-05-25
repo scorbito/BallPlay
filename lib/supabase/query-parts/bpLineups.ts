@@ -394,7 +394,7 @@ export async function fetchRegisteredLineupsByIds(
   return { ok: true, rows: sorted };
 }
 
-/** 전체 보기용 — 최신순으로 등록 카드 + 닉네임 + 전적. */
+/** 전체 보기용 — 최신순으로 등록 카드 + 닉네임 + 전적. join 실패 시 닉네임 없이 fallback. */
 export async function listRegisteredByRecent(
   client: SupabaseClient,
   limit: number,
@@ -413,17 +413,36 @@ export async function listRegisteredByRecent(
     .limit(limit);
   if (excludeUserId) query = query.neq("owner_user_id", excludeUserId);
   const { data, error } = await query;
-  if (error) return { ok: false, error: error.message };
-  const rows = (data ?? []).map((r) => {
-    const row = r as BpLineupRow & {
-      profile?: { nickname?: string | null; display_name?: string | null } | null;
-    };
-    return {
-      ...row,
-      owner_nickname: row.profile?.nickname ?? null,
-      owner_display_name: row.profile?.display_name ?? null
-    } as RegisteredLineupRow;
-  });
+
+  let rows: RegisteredLineupRow[];
+  if (error) {
+    // profiles FK 이름 불일치 등으로 join 실패 시 — 닉네임 없이 fallback
+    let fallbackQuery = client
+      .from(TABLE)
+      .select("*")
+      .eq("status", "registered")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (excludeUserId) fallbackQuery = fallbackQuery.neq("owner_user_id", excludeUserId);
+    const fb = await fallbackQuery;
+    if (fb.error) return { ok: false, error: fb.error.message };
+    rows = (fb.data ?? []).map((r) => ({
+      ...(r as BpLineupRow),
+      owner_nickname: null,
+      owner_display_name: null
+    })) as RegisteredLineupRow[];
+  } else {
+    rows = (data ?? []).map((r) => {
+      const row = r as BpLineupRow & {
+        profile?: { nickname?: string | null; display_name?: string | null } | null;
+      };
+      return {
+        ...row,
+        owner_nickname: row.profile?.nickname ?? null,
+        owner_display_name: row.profile?.display_name ?? null
+      } as RegisteredLineupRow;
+    });
+  }
 
   // 전적 일괄 조회
   const ids = rows.map((r) => r.id);
