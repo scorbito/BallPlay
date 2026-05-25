@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { History, Play, Trash2, Lock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
-import { TierBadge } from "@/components/common/TierBadge";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
@@ -212,11 +211,8 @@ export function RecordsScreen() {
 
   return (
     <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
-      <header className="play-hub-header records-header-with-badge">
-        <div className="records-header-titlebar">
-          <h1>내 기록</h1>
-          <TierBadge size="md" hideGuest />
-        </div>
+      <header className="play-hub-header">
+        <h1>내 기록</h1>
         <p>자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
       </header>
       <section className="records-list">

@@ -6,6 +6,7 @@ import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogOut, Mail, Shiel
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
+import { TierBadge } from "@/components/common/TierBadge";
 import { signOutAction } from "@/lib/actions/auth";
 import { updateProfileAction } from "@/lib/actions/profile";
 import { useAppState } from "@/lib/state/AppState";
@@ -81,6 +82,7 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
                 {accountLabel.provider}
               </span>
               <span className="settings-account-id">{accountLabel.label}</span>
+              <TierBadge size="sm" hideGuest />
             </div>
             <button className="settings-account-logout" type="button" onClick={() => setLogoutConfirmOpen(true)}>
               <LogOut size={14} /> 로그아웃
