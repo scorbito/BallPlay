@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Save, Share2, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { ShareLineupModal } from "@/components/domain/modals/ShareLineupModal";
+import { RegisterLineupModal } from "@/components/domain/modals/RegisterLineupModal";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { getRoster, getSeededTeamIds } from "@/lib/rosters";
@@ -128,6 +129,8 @@ export function LineupBuilderScreen() {
   const [swapSource, setSwapSource] = useState<Position | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [registerToast, setRegisterToast] = useState<string | null>(null);
   /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
   const [hydratedEntryId, setHydratedEntryId] = useState<string | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
@@ -747,6 +750,16 @@ export function LineupBuilderScreen() {
             </div>
             <button
               type="button"
+              className="lineup-action-btn lineup-action-btn-secondary"
+              onClick={() => setRegisterOpen(true)}
+              disabled={!currentEntry || filledCount !== 9}
+              title={filledCount === 9 ? "경기장에 등록 — 변경 불가, 전적 누적" : "타순 9명 모두 채운 뒤 등록 가능"}
+            >
+              <Save size={12} />
+              등록
+            </button>
+            <button
+              type="button"
               className="lineup-action-btn lineup-action-btn-primary"
               onClick={() => setShareOpen(true)}
             >
@@ -1029,6 +1042,20 @@ export function LineupBuilderScreen() {
         pitcherSlots={pitcherSlots}
         playersById={playersById}
       />
+
+      <RegisterLineupModal
+        open={registerOpen}
+        entry={currentEntry}
+        onClose={() => setRegisterOpen(false)}
+        onSuccess={() => {
+          setRegisterToast("경기장에 등록됐어요!");
+          window.setTimeout(() => setRegisterToast(null), 2400);
+        }}
+      />
+
+      {registerToast ? (
+        <div className="lineup-register-toast" role="status">{registerToast}</div>
+      ) : null}
 
       {/* 새 슬롯 만들기 모달 */}
       <ModalShell

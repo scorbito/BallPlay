@@ -16,8 +16,20 @@ export type BpLineupRow = {
   batting: SavedLineup;
   pitching: SavedPitcherLineup | null;
   is_published: boolean;
+  // 2026-05-25 추가 (add-bp-lineups-register.sql) — 등록 카드 시스템
+  status?: "draft" | "registered";
+  description?: string | null;
+  lineup_hash?: string | null;
   created_at: string;
   updated_at: string;
+};
+
+// 라인업 전적 (bp_lineup_stats view + RPC).
+export type LineupStats = {
+  matches: number;
+  wins: number;
+  losses: number;
+  draws: number;
 };
 
 // ============================================================
@@ -221,4 +233,222 @@ export async function togglePublished(
     .single();
   if (error || !data) return { ok: false, error: error?.message ?? "공개 상태 변경 실패" };
   return { ok: true, row: data as BpLineupRow };
+}
+
+// ============================================================
+// 등록 카드 (status='registered') — 2026-05-25 신규
+//   - 빌더 슬롯의 스냅샷을 별도 row로 INSERT (변경 불가)
+//   - 본인 중복은 lineup_hash unique constraint로 차단
+//   - 모든 인증 사용자가 read 가능
+// ============================================================
+
+export type RegisteredLineupRow = BpLineupRow & {
+  owner_nickname: string | null;
+  owner_display_name: string | null;
+};
+
+/** 슬롯 entry를 등록 카드로 INSERT. entry_id는 새로 발급 (슬롯 entry_id 재사용 X). */
+export async function registerLineup(
+  client: SupabaseClient,
+  params: {
+    userId: string;
+    name: string;
+    teamId: string;
+    batting: SavedLineup;
+    pitching: SavedPitcherLineup | null;
+    lineupHash: string;
+    description: string | null;
+    /** 새 등록 카드의 entry_id (클라이언트가 UUID 생성해서 전달). */
+    entryId: string;
+  }
+): Promise<{ ok: true; row: BpLineupRow } | { ok: false; error: string; code?: "duplicate" | "unknown" }> {
+  const { data, error } = await client
+    .from(TABLE)
+    .insert({
+      owner_user_id: params.userId,
+      entry_id: params.entryId,
+      name: params.name,
+      team_id: params.teamId,
+      batting: params.batting,
+      pitching: params.pitching,
+      is_published: true,
+      status: "registered",
+      description: params.description,
+      lineup_hash: params.lineupHash
+    })
+    .select()
+    .single();
+  if (error || !data) {
+    // unique constraint 위반 (본인 중복 등록)
+    if (error?.code === "23505") {
+      return { ok: false, error: "이미 같은 라인업을 등록했어요", code: "duplicate" };
+    }
+    return { ok: false, error: error?.message ?? "라인업 등록 실패", code: "unknown" };
+  }
+  return { ok: true, row: data as BpLineupRow };
+}
+
+/** 본인의 등록 카드 중 같은 lineup_hash 존재 여부 확인 (UI에서 미리 안내). */
+export async function existsOwnerRegisteredHash(
+  client: SupabaseClient,
+  userId: string,
+  lineupHash: string
+): Promise<boolean> {
+  const { data } = await client
+    .from(TABLE)
+    .select("id")
+    .eq("owner_user_id", userId)
+    .eq("status", "registered")
+    .eq("lineup_hash", lineupHash)
+    .maybeSingle();
+  return data !== null;
+}
+
+/** 등록 카드 삭제 (본인만 가능 — RLS로 보장). */
+export async function deleteRegisteredLineup(
+  client: SupabaseClient,
+  lineupId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await client.from(TABLE).delete().eq("id", lineupId).eq("status", "registered");
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** 등록 카드 description 업데이트 (본인만, 트리거가 description만 허용). */
+export async function updateRegisteredDescription(
+  client: SupabaseClient,
+  lineupId: string,
+  description: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await client
+    .from(TABLE)
+    .update({ description })
+    .eq("id", lineupId)
+    .eq("status", "registered");
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** 메인 6개용 — 승률 정렬 RPC. 표본 5경기 가중. */
+export async function listRegisteredByWinrate(
+  client: SupabaseClient,
+  limit: number
+): Promise<{ ok: true; statsByLineupId: Record<string, LineupStats>; lineupIds: string[] } | { ok: false; error: string }> {
+  const { data, error } = await client.rpc("list_registered_lineups_by_winrate", { p_limit: limit });
+  if (error) return { ok: false, error: error.message };
+  const rows = (data ?? []) as Array<{
+    lineup_id: string;
+    matches: number;
+    wins: number;
+    losses: number;
+    draws: number;
+  }>;
+  const ids = rows.map((r) => r.lineup_id);
+  const stats: Record<string, LineupStats> = {};
+  for (const r of rows) {
+    stats[r.lineup_id] = { matches: r.matches, wins: r.wins, losses: r.losses, draws: r.draws };
+  }
+  return { ok: true, statsByLineupId: stats, lineupIds: ids };
+}
+
+/** 라인업 ID 배열 → 등록 카드 row + 닉네임 join. 정렬 순서는 호출자가 결정 (id 배열 순서로). */
+export async function fetchRegisteredLineupsByIds(
+  client: SupabaseClient,
+  lineupIds: string[]
+): Promise<{ ok: true; rows: RegisteredLineupRow[] } | { ok: false; error: string }> {
+  if (lineupIds.length === 0) return { ok: true, rows: [] };
+  const { data, error } = await client
+    .from(TABLE)
+    .select(
+      `
+      *,
+      profile:profiles!bp_lineups_owner_user_id_fkey(nickname, display_name)
+    `
+    )
+    .in("id", lineupIds);
+  if (error) {
+    // profiles join 실패 fallback (닉네임 null)
+    const noJoin = await client.from(TABLE).select("*").in("id", lineupIds);
+    if (noJoin.error) return { ok: false, error: noJoin.error.message };
+    const rows = (noJoin.data ?? []).map((r) => ({
+      ...(r as BpLineupRow),
+      owner_nickname: null,
+      owner_display_name: null
+    })) as RegisteredLineupRow[];
+    // id 배열 순서 유지
+    const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is RegisteredLineupRow => Boolean(r));
+    return { ok: true, rows: sorted };
+  }
+  const rows = (data ?? []).map((r) => {
+    const row = r as BpLineupRow & {
+      profile?: { nickname?: string | null; display_name?: string | null } | null;
+    };
+    return {
+      ...row,
+      owner_nickname: row.profile?.nickname ?? null,
+      owner_display_name: row.profile?.display_name ?? null
+    } as RegisteredLineupRow;
+  });
+  // id 배열 순서 유지
+  const sorted = lineupIds.map((id) => rows.find((r) => r.id === id)).filter((r): r is RegisteredLineupRow => Boolean(r));
+  return { ok: true, rows: sorted };
+}
+
+/** 전체 보기용 — 최신순으로 등록 카드 + 닉네임 + 전적. */
+export async function listRegisteredByRecent(
+  client: SupabaseClient,
+  limit: number,
+  excludeUserId?: string | null
+): Promise<{ ok: true; rows: RegisteredLineupRow[]; statsByLineupId: Record<string, LineupStats> } | { ok: false; error: string }> {
+  let query = client
+    .from(TABLE)
+    .select(
+      `
+      *,
+      profile:profiles!bp_lineups_owner_user_id_fkey(nickname, display_name)
+    `
+    )
+    .eq("status", "registered")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (excludeUserId) query = query.neq("owner_user_id", excludeUserId);
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  const rows = (data ?? []).map((r) => {
+    const row = r as BpLineupRow & {
+      profile?: { nickname?: string | null; display_name?: string | null } | null;
+    };
+    return {
+      ...row,
+      owner_nickname: row.profile?.nickname ?? null,
+      owner_display_name: row.profile?.display_name ?? null
+    } as RegisteredLineupRow;
+  });
+
+  // 전적 일괄 조회
+  const ids = rows.map((r) => r.id);
+  const stats = await fetchLineupStatsBulk(client, ids);
+  return { ok: true, rows, statsByLineupId: stats };
+}
+
+/** 라인업 ID 배열의 전적을 한 번에 조회 (RPC). */
+export async function fetchLineupStatsBulk(
+  client: SupabaseClient,
+  lineupIds: string[]
+): Promise<Record<string, LineupStats>> {
+  if (lineupIds.length === 0) return {};
+  const { data, error } = await client.rpc("get_lineup_stats_bulk", { p_lineup_ids: lineupIds });
+  if (error) return {};
+  const rows = (data ?? []) as Array<{
+    lineup_id: string;
+    matches: number;
+    wins: number;
+    losses: number;
+    draws: number;
+  }>;
+  const result: Record<string, LineupStats> = {};
+  for (const r of rows) {
+    result[r.lineup_id] = { matches: r.matches, wins: r.wins, losses: r.losses, draws: r.draws };
+  }
+  return result;
 }

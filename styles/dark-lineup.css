@@ -1130,6 +1130,144 @@
   margin-left: auto;
 }
 
+/* ── 라인업 등록 모달 ── */
+.modal-panel.lineup-register-modal-panel,
+.phone-frame-light .modal-panel.lineup-register-modal-panel {
+  width: calc(100% - 32px);
+  max-width: 420px;
+  background: var(--bp-card) !important;
+  color: var(--bp-text) !important;
+  border: 1px solid var(--bp-line) !important;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.phone-frame-light .lineup-register-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0;
+}
+
+.phone-frame-light .lineup-register-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 10px;
+}
+
+.phone-frame-light .lineup-register-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.phone-frame-light .lineup-register-summary-text strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .lineup-register-summary-text span {
+  font-size: 11px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .lineup-register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.phone-frame-light .lineup-register-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .lineup-register-field-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  margin-left: 4px;
+}
+
+.phone-frame-light .lineup-register-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--bp-text);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.phone-frame-light .lineup-register-input:focus {
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .lineup-register-field-count {
+  position: absolute;
+  right: 4px;
+  bottom: -16px;
+  font-size: 10px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .lineup-register-warn {
+  margin: 0;
+  padding: 8px 12px;
+  background: rgba(255, 184, 0, 0.12);
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #b27a00;
+  font-weight: 600;
+}
+
+.phone-frame-light .lineup-register-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.phone-frame-light .lineup-register-gate p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bp-text-secondary);
+}
+
+/* 등록 완료 토스트 */
+.phone-frame-light .lineup-register-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background: rgba(20, 30, 50, 0.92);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 9999;
+  animation: lineupRegisterToastIn 0.2s ease-out;
+}
+
+@keyframes lineupRegisterToastIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
 /* 시즌 기록 없음 배지 — 출장 0 선수에 표시 (평균값 fallback) */
 .phone-frame-light .lineup-no-stats-badge {
   display: inline-flex;
