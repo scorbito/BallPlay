@@ -419,6 +419,11 @@ export function PlayScreen() {
     let cancelled = false;
     (async () => {
       setRecordSaving(true);
+      // race condition 차단: 저장 시작 시점에 즉시 matchSession에 placeholder 세팅.
+      // ResultScreen이 그 사이 마운트되어 stale session으로 또 저장하는 케이스 차단.
+      // 저장 완료 시 실제 id로 교체. 실패하면 finally에서 다시 비움.
+      const before = loadMatchSession();
+      if (before) saveMatchSession({ ...before, savedRecordId: "saving" });
       try {
         const client = createSupabaseBrowserClient();
         const { data: { user } } = await client.auth.getUser();
@@ -485,6 +490,12 @@ export function PlayScreen() {
         if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
       } finally {
         if (!cancelled) setRecordSaving(false);
+        // placeholder가 실제 id로 교체 안 됐으면 — 비로그인/실패/예외 — 정리.
+        // ResultScreen이 fallback으로 저장을 시도할 수 있게 함.
+        const fin = loadMatchSession();
+        if (fin?.savedRecordId === "saving") {
+          saveMatchSession({ ...fin, savedRecordId: undefined });
+        }
       }
     })();
 

@@ -73,6 +73,18 @@ export function ResultScreen() {
     (async () => {
       setSaving(true);
       try {
+        // race condition 방지: PlayScreen이 GAME_END에서 비동기로 저장하는 사이
+        // ResultScreen이 stale session(savedRecordId 없음)으로 마운트되면 양쪽 저장됨.
+        // sessionStorage에서 최신 session을 다시 읽어 PlayScreen이 이미 저장했는지 확인.
+        const fresh = loadMatchSession();
+        if (fresh?.savedRecordId) {
+          if (!cancelled) {
+            setSavedId(fresh.savedRecordId);
+            setSession((prev) => (prev ? { ...prev, savedRecordId: fresh.savedRecordId } : prev));
+          }
+          return;
+        }
+
         const client = createSupabaseBrowserClient();
         const { data: { user } } = await client.auth.getUser();
         if (!user || user.is_anonymous) return;
