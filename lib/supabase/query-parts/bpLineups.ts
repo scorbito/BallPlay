@@ -70,12 +70,15 @@ export async function listMyLineups(
   client: SupabaseClient,
   userId: string
 ): Promise<{ ok: true; rows: BpLineupRow[] } | { ok: false; error: string }> {
-  // 명시적으로 owner_user_id 필터 — RLS가 본인 + 공개 row 둘 다 허용하므로
-  // 명시 안 하면 다른 user의 공개 라인업까지 "내 라인업"으로 가져옴.
+  // 명시적으로 owner_user_id 필터 — RLS가 본인 + 등록 카드(registered) 둘 다 허용하므로
+  // 명시 안 하면 다른 user의 등록 라인업까지 "내 라인업"으로 가져옴.
+  // 또한 status='registered'(경기장 등록 카드)는 슬롯이 아니라 별도 영구 카드라 빌더에서 제외.
+  // status 컬럼이 없는 레거시 row는 'draft' default로 잡힘.
   const { data, error } = await client
     .from(TABLE)
     .select("*")
     .eq("owner_user_id", userId)
+    .neq("status", "registered")
     .order("updated_at", { ascending: false });
   if (error) return { ok: false, error: error.message };
   return { ok: true, rows: (data ?? []) as BpLineupRow[] };
