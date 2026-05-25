@@ -1,0 +1,32 @@
+name: Curate YouTube Videos
+
+# 매일 09:00 KST (= 00:00 UTC) 실행 + 수동 트리거 가능.
+# 놀이터봇이 YouTube에서 인기 야구 영상을 수집해 bp_videos에 INSERT.
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  curate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run YouTube curation
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          BALLPLAY_BOT_USER_ID: ${{ secrets.BALLPLAY_BOT_USER_ID }}
+        run: npm run curate:youtube

@@ -1,106 +1,21 @@
 "use client";
 
-// 재밌는 야구 영상 모아 보기 — 프로토타입 (하드코딩 샘플).
-// v1.1+에서 DB로 옮기고 사용자 등록 + 자동 큐레이션 붙임.
+// 재밌는 야구 영상 — 사용자 등록 풀 (Supabase bp_videos).
+// 모든 인증 사용자가 SELECT, 본인만 INSERT/DELETE.
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { Camera, ExternalLink, Film, MessageSquareText, Play, X } from "lucide-react";
+import { Bot, Camera, ExternalLink, Film, MessageSquareText, Play, Plus, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  createVideo,
+  deleteVideo,
+  listVideos,
+  type BpVideoWithOwnerRow
+} from "@/lib/supabase/query-parts/bpVideos";
 import { parseVideoUrl, type VideoPlatform, type ParsedVideo } from "@/lib/utils/videoUrl";
-
-type SampleVideo = {
-  id: string;
-  url: string;
-  title: string;
-  description: string;
-  author: string;
-};
-
-// 샘플 데이터 — 실제 KBO 관련 YouTube 쇼츠/영상.
-// 시간순(최신 → 오래된) 정렬을 가정해서 일부러 가로/세로 섞어 놨음.
-const SAMPLE_VIDEOS: SampleVideo[] = [
-  {
-    id: "s1",
-    url: "https://www.youtube.com/shorts/QXbSR5Hfj0k",
-    title: "대타 이대호 끝내기 홈런",
-    description: "대타로 나와서 끝내기 홈런 치는 이대호.",
-    author: "롯빠"
-  },
-  {
-    id: "s2",
-    url: "https://www.youtube.com/shorts/I4PRwqtp_ik",
-    title: "역대 29번째 백투백투백 홈런",
-    description: "덕아웃의 순간까지 다 잡힌 명장면.",
-    author: "KBO 공식"
-  },
-  // 가로 — 중간에 끼어듦
-  {
-    id: "h1",
-    url: "https://www.youtube.com/watch?v=g84qCkc8zEI",
-    title: "끝내기 홈런 두 방 모음",
-    description: "한 경기에 끝내기 홈런이 두 번? 호쾌한 홈런 모음.ZIP",
-    author: "KBO 모음집"
-  },
-  {
-    id: "s3",
-    url: "https://www.youtube.com/shorts/xsz3vFDCT8s",
-    title: "김하성 연장 끝내기 홈런",
-    description: "김민성 9회말 동점 → 김하성 연장 끝내기.",
-    author: "야구하이라이트"
-  },
-  {
-    id: "s4",
-    url: "https://www.youtube.com/shorts/hyGfVnKaLXg",
-    title: "LG 아웃송 홀리몰리",
-    description: "잠실 직관 가서 찍은 LG 아웃송.",
-    author: "트윈스러버"
-  },
-  {
-    id: "s5",
-    url: "https://www.youtube.com/shorts/EyKI34abBpE",
-    title: "KBO 치어리더 인기 TOP5",
-    description: "올 시즌 가장 핫한 치어리더 5명 모음.",
-    author: "야구놀이터 운영자"
-  },
-  // 가로 — 한 번 더
-  {
-    id: "h2",
-    url: "https://www.youtube.com/watch?v=tAntXQxnS-M",
-    title: "디아즈 끝내기 홈런 인터뷰",
-    description: "\"영원히 한국에 남고 싶어\" — 디아즈 단독 인터뷰.",
-    author: "스포츠채널"
-  },
-  {
-    id: "s6",
-    url: "https://www.instagram.com/reel/Cxxxxxxxxx/",
-    title: "잠실 직관 브이로그",
-    description: "야간 경기 후기 + 푸드트럭 추천.",
-    author: "야구덕후"
-  },
-  {
-    id: "s7",
-    url: "https://www.threads.net/@username/post/AbcDefGhi",
-    title: "오늘 경기 짤방",
-    description: "캐스터 멘트 보고 빵 터졌어요 ㅋㅋ",
-    author: "야빠123"
-  },
-  {
-    id: "s8",
-    url: "https://www.youtube.com/shorts/af-tXNiExjo",
-    title: "끝내기 안타 + 멀티홈런",
-    description: "퓨처스리그 헤이 걸~ 유로결 다이렉트 안타.",
-    author: "퓨처스팬"
-  },
-  {
-    id: "s9",
-    url: "https://www.youtube.com/shorts/Aas8ZiWDh5E",
-    title: "니케 AT BAT 끝내기 홈런",
-    description: "승리의 여신 NIKKE 콜라보 영상.",
-    author: "겜덕야빠"
-  }
-];
 
 const PLATFORM_ICON: Record<VideoPlatform, typeof Film> = {
   youtube: Film,
@@ -117,11 +32,14 @@ const PLATFORM_LABEL: Record<VideoPlatform, string> = {
 };
 
 function renderCard(
-  video: SampleVideo,
+  video: BpVideoWithOwnerRow,
   parsed: ParsedVideo,
-  onOpen: (v: SampleVideo) => void
+  onOpen: (v: BpVideoWithOwnerRow) => void
 ) {
   const Icon = PLATFORM_ICON[parsed.platform];
+  const author = video.is_auto_curated
+    ? "놀이터봇"
+    : (video.owner_nickname?.trim() || "익명");
   return (
     <button
       key={video.id}
@@ -147,32 +65,33 @@ function renderCard(
         <span className="videos-card-platform">
           <Icon size={10} />
         </span>
+        {video.is_auto_curated ? (
+          <span className="videos-card-bot" title="놀이터봇이 자동 등록한 영상">
+            <Bot size={11} />
+          </span>
+        ) : null}
         {parsed.platform === "youtube" ? (
           <span className="videos-card-play">
             <Play size={16} fill="currentColor" />
           </span>
         ) : null}
         <div className="videos-card-overlay">
-          <strong>{video.title}</strong>
-          <span className="videos-card-author">@{video.author}</span>
+          <span className="videos-card-author">@{author}</span>
         </div>
       </div>
     </button>
   );
 }
 
-// 행 단위 그룹핑:
-// - 쇼츠(세로)는 무조건 3개 모이면 한 행으로 묶음 — 가로 영상 만나도 끊지 않음
-// - 가로 영상은 일단 대기열에 쌓아뒀다가 쇼츠 행이 완성될 때 그 뒤에 push
-// - 결과: 쇼츠 행은 항상 3개로 가득 참(마지막 행만 예외), 가로는 쇼츠 행 사이사이에 등장
+// 행 단위 그룹핑 — 쇼츠 3개 모이면 한 행, 가로는 단독 행.
 type VideoRow =
-  | { kind: "shorts"; items: Array<{ video: SampleVideo; parsed: ParsedVideo }> }
-  | { kind: "horizontal"; item: { video: SampleVideo; parsed: ParsedVideo } };
+  | { kind: "shorts"; items: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> }
+  | { kind: "horizontal"; item: { video: BpVideoWithOwnerRow; parsed: ParsedVideo } };
 
-function groupIntoRows(videos: SampleVideo[]): VideoRow[] {
+function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
   const rows: VideoRow[] = [];
-  let shortsBuf: Array<{ video: SampleVideo; parsed: ParsedVideo }> = [];
-  const pendingHorizontals: Array<{ video: SampleVideo; parsed: ParsedVideo }> = [];
+  let shortsBuf: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
+  const pendingHorizontals: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
 
   const flushPendingHorizontals = () => {
     while (pendingHorizontals.length > 0) {
@@ -199,26 +118,123 @@ function groupIntoRows(videos: SampleVideo[]): VideoRow[] {
       pendingHorizontals.push({ video: v, parsed });
     }
   }
-  // 끝까지 못 채운 쇼츠 1~2개는 그대로 마지막 행으로, 남은 가로도 그 뒤로
   flushShorts();
   flushPendingHorizontals();
   return rows;
 }
 
 export function VideosScreen() {
-  const [openVideo, setOpenVideo] = useState<SampleVideo | null>(null);
+  const [videos, setVideos] = useState<BpVideoWithOwnerRow[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  const [openVideo, setOpenVideo] = useState<BpVideoWithOwnerRow | null>(null);
   const closeModal = () => setOpenVideo(null);
 
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [registerUrl, setRegisterUrl] = useState("");
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registerSubmitting, setRegisterSubmitting] = useState(false);
+
+  const loadVideos = useCallback(async () => {
+    const client = createSupabaseBrowserClient();
+    setLoading(true);
+    setError(null);
+    const res = await listVideos(client, 100);
+    setLoading(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setVideos(res.rows);
+  }, []);
+
+  useEffect(() => {
+    const client = createSupabaseBrowserClient();
+    void (async () => {
+      const { data } = await client.auth.getUser();
+      const user = data.user;
+      setUserId(user && !user.is_anonymous ? user.id : null);
+      await loadVideos();
+    })();
+  }, [loadVideos]);
+
+  const handleRegisterSubmit = async () => {
+    if (registerSubmitting) return;
+    if (!userId) {
+      setRegisterError("로그인이 필요해요");
+      return;
+    }
+    const url = registerUrl.trim();
+    if (!url) {
+      setRegisterError("URL을 입력해주세요");
+      return;
+    }
+    setRegisterSubmitting(true);
+    const client = createSupabaseBrowserClient();
+    const res = await createVideo(client, { userId, url });
+    setRegisterSubmitting(false);
+    if (!res.ok) {
+      setRegisterError(res.error);
+      return;
+    }
+    setRegisterUrl("");
+    setRegisterError(null);
+    setRegisterOpen(false);
+    await loadVideos();
+  };
+
+  const handleDelete = async (video: BpVideoWithOwnerRow) => {
+    if (!userId || video.owner_user_id !== userId) return;
+    if (!confirm("이 영상을 삭제할까요?")) return;
+    const client = createSupabaseBrowserClient();
+    const res = await deleteVideo(client, video.id);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    await loadVideos();
+  };
+
   const openParsed = openVideo ? parseVideoUrl(openVideo.url) : null;
-  const rows = groupIntoRows(SAMPLE_VIDEOS);
+  const rows = videos ? groupIntoRows(videos) : [];
 
   return (
-    <AppShell activeTab="home" title="재밌는 야구 영상" theme="light" backHref="/" wide>
-      <header className="videos-header">
-        <h1>재밌는 야구 영상</h1>
-        <p>모아 보고, 같이 즐겨요. (테스트 화면 — 샘플 데이터)</p>
-      </header>
+    <AppShell
+      activeTab="home"
+      title="재밌는 야구 영상"
+      theme="light"
+      backHref="/"
+      wide
+      headerAction={
+        <button
+          type="button"
+          className="videos-register-btn videos-register-btn-header"
+          onClick={() => setRegisterOpen(true)}
+        >
+          <Plus size={14} />
+          등록
+        </button>
+      }
+    >
+      <p className="videos-intro">
+        끝내기 홈런 · 호수비 · 응원가 · 짤방 · 직캠 등 재밌는 야구 영상을 함께 모아봐요.
+        누구나 유튜브 링크를 등록하고 같이 즐길 수 있어요.
+      </p>
+
+      {loading && videos === null ? (
+        <p className="stadium-loading">불러오는 중...</p>
+      ) : null}
+
+      {error ? <p className="stadium-error">{error}</p> : null}
+
+      {videos !== null && videos.length === 0 ? (
+        <section className="stadium-discover-empty">
+          <strong>아직 등록된 영상이 없어요</strong>
+          <p>우측 상단 &lsquo;영상 등록&rsquo;으로 첫 영상을 올려보세요.</p>
+        </section>
+      ) : null}
 
       <section className="videos-list">
         {rows.map((row, idx) => {
@@ -239,7 +255,11 @@ export function VideosScreen() {
 
       <ModalShell
         open={openVideo !== null}
-        title={openVideo?.title ?? ""}
+        title={
+          openVideo
+            ? `@${openVideo.is_auto_curated ? "놀이터봇" : (openVideo.owner_nickname?.trim() || "익명")}`
+            : ""
+        }
         onClose={closeModal}
         panelClassName={`video-player-panel video-player-panel-${openParsed?.orientation ?? "horizontal"}`}
         closeOnBackdrop
@@ -259,7 +279,7 @@ export function VideosScreen() {
                 <div className="video-player-iframe-wrap">
                   <iframe
                     src={openParsed.embedUrl}
-                    title={openVideo.title}
+                    title="영상 재생"
                     loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
@@ -292,12 +312,67 @@ export function VideosScreen() {
                 </a>
               </div>
             )}
-            <div className="video-player-meta">
-              <p className="video-player-desc">{openVideo.description}</p>
-              <span className="video-player-author">— {openVideo.author}</span>
-            </div>
+            {userId && openVideo.owner_user_id === userId ? (
+              <button
+                type="button"
+                className="video-player-delete"
+                onClick={() => {
+                  void (async () => {
+                    await handleDelete(openVideo);
+                    closeModal();
+                  })();
+                }}
+                aria-label="내 영상 삭제"
+              >
+                <Trash2 size={14} />
+                삭제
+              </button>
+            ) : null}
           </div>
         ) : null}
+      </ModalShell>
+
+      {/* 영상 등록 모달 */}
+      <ModalShell
+        open={registerOpen}
+        title="영상 등록"
+        onClose={() => {
+          setRegisterOpen(false);
+          setRegisterError(null);
+        }}
+        panelClassName="videos-register-panel"
+        closeOnBackdrop
+      >
+        <div className="videos-register-body">
+          <label className="videos-register-field">
+            <span className="videos-register-label">영상 URL</span>
+            <input
+              type="url"
+              className="videos-register-input"
+              placeholder="https://www.youtube.com/shorts/... 또는 watch?v=..."
+              value={registerUrl}
+              onChange={(e) => {
+                setRegisterUrl(e.target.value);
+                if (registerError) setRegisterError(null);
+              }}
+              autoFocus
+            />
+          </label>
+          <p className="videos-register-hint">
+            유튜브 URL만 지원 (쇼츠 / 일반 영상)
+          </p>
+          {registerError ? (
+            <p className="videos-register-error">{registerError}</p>
+          ) : null}
+          <button
+            type="button"
+            className="videos-register-submit"
+            onClick={handleRegisterSubmit}
+            disabled={registerSubmitting}
+          >
+            {registerSubmitting ? "등록 중..." : "등록하기"}
+          </button>
+        </div>
       </ModalShell>
     </AppShell>
   );

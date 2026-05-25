@@ -44,16 +44,18 @@ export function AppShell({
         <div className="app-scroll">
           {hideHeader ? null : (
             <header className="app-header">
-              {backHref ? (
-                <Link className="header-back" href={backHref} aria-label="뒤로" prefetch>
-                  <ArrowLeft size={18} />
-                </Link>
-              ) : null}
+              <div className="app-header-left">
+                {backHref ? (
+                  <Link className="header-back" href={backHref} aria-label="뒤로" prefetch>
+                    <ArrowLeft size={18} />
+                  </Link>
+                ) : null}
+              </div>
               <Link className="brand" href="/" prefetch>
                 <span>{title}</span>
                 {showBeta ? <span className="brand-beta">BETA</span> : null}
               </Link>
-              {headerAction}
+              <div className="app-header-right">{headerAction}</div>
             </header>
           )}
           <div className={`app-content${hideHeader ? " app-content-no-header" : ""}`}>
