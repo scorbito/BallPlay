@@ -397,7 +397,8 @@
 .phone-frame-light .stadium-discover-actions {
   display: flex;
   justify-content: flex-end;
-  margin: 6px 0 10px;
+  /* 헤더(stadium-enter-head) 우측 상단으로 끌어올림. LobbyScreen은 showHeader=false라 영향 X. */
+  margin: -46px 0 10px;
 }
 
 .phone-frame-light .stadium-discover-refresh {
