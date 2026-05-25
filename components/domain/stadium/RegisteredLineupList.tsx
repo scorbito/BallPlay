@@ -59,12 +59,16 @@ type Props = {
   sortBy: "winrate" | "recent";
   /** 헤더 (새로고침 버튼) 렌더 여부. 기본 true. */
   showHeader?: boolean;
+  /** 본인이 등록한 카드도 목록에 포함할지. 기본 false (도전 대상만 표시).
+   *  전체보기에선 true로 켜서 본인 카드(삭제 가능)도 노출. */
+  includeMine?: boolean;
 };
 
 export function RegisteredLineupList({
   maxItems = 50,
   sortBy,
-  showHeader = true
+  showHeader = true,
+  includeMine = false
 }: Props) {
   const router = useRouter();
   const [rows, setRows] = useState<RegisteredLineupRow[] | null>(null);
@@ -87,6 +91,8 @@ export function RegisteredLineupList({
       const client = createSupabaseBrowserClient();
       setLoading(true);
       setError(null);
+      // includeMine=true면 본인 카드도 함께 보여줌 (도전 대신 삭제 버튼 노출됨)
+      const filterUid = includeMine ? null : excludeUid;
       if (sortBy === "winrate") {
         // RPC로 정렬된 lineup_id 목록 + stats 받고, 카드 데이터는 별도 fetch
         const sorted = await listRegisteredByWinrate(client, maxItems);
@@ -101,14 +107,13 @@ export function RegisteredLineupList({
           setError(fetched.error);
           return;
         }
-        // 본인 라인업 제외 — 도전 대상 아님
-        const filtered = excludeUid
-          ? fetched.rows.filter((r) => r.owner_user_id !== excludeUid)
+        const filtered = filterUid
+          ? fetched.rows.filter((r) => r.owner_user_id !== filterUid)
           : fetched.rows;
         setRows(filtered);
         setStatsByLineupId(sorted.statsByLineupId);
       } else {
-        const res = await listRegisteredByRecent(client, maxItems, excludeUid);
+        const res = await listRegisteredByRecent(client, maxItems, filterUid);
         setLoading(false);
         if (!res.ok) {
           setError(res.error);
@@ -118,7 +123,7 @@ export function RegisteredLineupList({
         setStatsByLineupId(res.statsByLineupId);
       }
     },
-    [sortBy, maxItems]
+    [sortBy, maxItems, includeMine]
   );
 
   useEffect(() => {

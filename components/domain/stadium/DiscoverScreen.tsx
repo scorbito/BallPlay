@@ -45,7 +45,8 @@ export function DiscoverScreen() {
         </p>
       </header>
 
-      <RegisteredLineupList maxItems={50} sortBy="recent" />
+      {/* 전체보기는 본인 카드도 포함해서 표시 (도전 대신 삭제 버튼 노출) */}
+      <RegisteredLineupList maxItems={50} sortBy="recent" includeMine />
     </AppShell>
   );
 }
