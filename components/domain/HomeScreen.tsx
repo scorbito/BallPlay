@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { BarChart3, CalendarDays, ClipboardCheck, History, ListChecks, Settings, Sparkles, Swords, Trophy } from "lucide-react";
+import { BarChart3, CalendarDays, ClipboardCheck, History, ListChecks, PlaySquare, Settings, Sparkles, Swords, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 
 type HomeCard = {
@@ -87,6 +87,15 @@ const sections: HomeSection[] = [
     label: "준비 중",
     cards: [
       {
+        id: "videos",
+        href: "#",
+        title: "재밌는 야구 영상",
+        description: "끝내기·호수비·짤방 등 야구 영상 모아 보기",
+        icon: PlaySquare,
+        available: false,
+        badge: "준비중"
+      },
+      {
         id: "prediction",
         href: "#",
         title: "오늘 경기 예측",
@@ -154,6 +163,7 @@ export function HomeScreen() {
                     <strong>{card.title}</strong>
                     <p>{card.description}</p>
                   </div>
+                  {card.badge ? <span className="play-hub-card-badge">{card.badge}</span> : null}
                 </Link>
               );
             })}

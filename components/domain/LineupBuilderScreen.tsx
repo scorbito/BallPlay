@@ -806,6 +806,9 @@ export function LineupBuilderScreen() {
                           {hand ? (
                             <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
                           ) : null}
+                          {(player.seasonGames ?? 0) === 0 ? (
+                            <span className="lineup-no-stats-badge" title="1군 출장 기록 없음 — 리그 평균값으로 시뮬됩니다">기록없음</span>
+                          ) : null}
                         </span>
                       ) : (
                         <span className="lineup-slot-placeholder">선택</span>
@@ -884,6 +887,9 @@ export function LineupBuilderScreen() {
                           {hand ? (
                             <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
                           ) : null}
+                          {(player.seasonGames ?? 0) === 0 ? (
+                            <span className="lineup-no-stats-badge" title="1군 출장 기록 없음 — 리그 평균값으로 시뮬됩니다">기록없음</span>
+                          ) : null}
                         </span>
                       ) : (
                         <span className="lineup-slot-placeholder">{roleLabel} 선택</span>
@@ -924,6 +930,7 @@ export function LineupBuilderScreen() {
             <ul className="lineup-pool-list">
               {poolPlayers.map((player) => {
                 const hand = formatHandBadge(player);
+                const noStats = (player.seasonGames ?? 0) === 0;
                 return (
                   <li key={player.id}>
                     <button
@@ -935,6 +942,9 @@ export function LineupBuilderScreen() {
                       <span className="lineup-pool-row-name">{player.name}</span>
                       {hand ? (
                         <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
+                      ) : null}
+                      {noStats ? (
+                        <span className="lineup-no-stats-badge" title="시즌 기록 없음 — 리그 평균값으로 시뮬됩니다">기록없음</span>
                       ) : null}
                     </button>
                   </li>

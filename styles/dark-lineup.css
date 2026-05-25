@@ -1130,6 +1130,27 @@
   margin-left: auto;
 }
 
+/* 시즌 기록 없음 배지 — 출장 0 선수에 표시 (평균값 fallback) */
+.phone-frame-light .lineup-no-stats-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  background: rgba(255, 184, 0, 0.18);
+  color: #b27a00;
+  flex-shrink: 0;
+  line-height: 1.4;
+  margin-left: 4px;
+}
+
+/* 풀 row의 기록없음 배지 — hand badge 다음 자리에 */
+.phone-frame-light .lineup-pool-row .lineup-no-stats-badge {
+  margin-left: 4px;
+}
+
 .phone-frame-light .lineup-pool-row .lineup-pool-pos {
   padding: 2px 5px;
   background: rgba(232, 74, 138, 0.16);
@@ -1227,7 +1248,7 @@
   cursor: not-allowed;
 }
 
-/* ── 라인업 비우기 확인 모달 (다크 카드형) ── */
+/* ── 확인 모달 (라이트 카드형) ── */
 .modal-backdrop:has(.lineup-confirm-modal-panel) {
   align-items: center;
   padding: 16px;
@@ -1236,33 +1257,33 @@
 .modal-panel.lineup-confirm-modal-panel {
   width: calc(100% - 32px);
   max-width: 340px;
-  background: #0d1a30;
-  color: #f7f9fc;
-  border: 1px solid rgba(20, 30, 50, 0.12);
+  background: var(--bp-card);
+  color: var(--bp-text);
+  border: 1px solid var(--bp-line);
   border-radius: 20px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
 }
 
 .lineup-confirm-modal-panel .modal-header {
-  background: #0d1a30;
-  border-bottom: 1px solid rgba(20, 30, 50, 0.06);
-  color: #f7f9fc;
+  background: var(--bp-card);
+  border-bottom: 1px solid var(--bp-line-soft);
+  color: var(--bp-text);
 }
 
 .lineup-confirm-modal-panel .modal-header strong {
-  color: #f7f9fc;
+  color: var(--bp-text);
   font-size: 15px;
   font-weight: 800;
 }
 
 .lineup-confirm-modal-panel .modal-close {
-  color: rgba(247, 249, 252, 0.72);
+  color: var(--bp-text-secondary);
   background: transparent;
   border: 0;
 }
 
 .lineup-confirm-modal-panel .modal-body {
-  background: #0d1a30;
+  background: var(--bp-card);
   padding: 18px 18px 20px;
 }
 
@@ -1274,7 +1295,7 @@
 
 .lineup-confirm-msg {
   margin: 0;
-  color: #f7f9fc;
+  color: var(--bp-text);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.55;
@@ -1299,23 +1320,24 @@
 }
 
 .lineup-confirm-cancel {
-  background: rgba(20, 30, 50, 0.05);
-  border-color: rgba(20, 30, 50, 0.10);
-  color: #f7f9fc;
+  background: var(--bp-bg);
+  border-color: var(--bp-line);
+  color: var(--bp-text);
 }
 
 .lineup-confirm-cancel:hover {
-  background: rgba(20, 30, 50, 0.08);
+  background: var(--bp-card);
+  border-color: var(--bp-text-muted);
 }
 
 .lineup-confirm-destruct {
-  background: rgba(244, 67, 54, 0.85);
-  border-color: rgba(244, 67, 54, 0.85);
+  background: var(--bp-danger);
+  border-color: var(--bp-danger);
   color: #ffffff;
 }
 
 .lineup-confirm-destruct:hover {
-  background: rgba(244, 67, 54, 1);
+  filter: brightness(1.05);
 }
 
 /* ── 포지션 변경 모달 (다크 카드형, phone-frame 밖에서도 동작) ── */

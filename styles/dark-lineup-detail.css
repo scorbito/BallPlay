@@ -10,19 +10,20 @@
   width: calc(100% - 32px);
   max-width: 560px;
   max-height: 85vh;
-  background: #0d1a30 !important;
-  color: #f7f9fc !important;
-  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  background: var(--bp-card) !important;
+  color: var(--bp-text) !important;
+  border: 1px solid var(--bp-line) !important;
   border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
 }
 
 /* 모달 본문 스크롤바 */
 .lineup-detail-panel .modal-body {
-  background: #0d1a30 !important;
-  color: #f7f9fc !important;
+  background: var(--bp-card) !important;
+  color: var(--bp-text) !important;
   scrollbar-width: thin;
-  scrollbar-color: rgba(20, 30, 50, 0.12) transparent;
+  scrollbar-color: rgba(20, 30, 50, 0.18) transparent;
 }
 .lineup-detail-panel .modal-body::-webkit-scrollbar {
   width: 4px;
@@ -31,26 +32,26 @@
   background: transparent;
 }
 .lineup-detail-panel .modal-body::-webkit-scrollbar-thumb {
-  background: rgba(20, 30, 50, 0.12);
+  background: rgba(20, 30, 50, 0.18);
   border-radius: 2px;
 }
 .lineup-detail-panel .modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(20, 30, 50, 0.16);
+  background: rgba(20, 30, 50, 0.28);
 }
 
 .lineup-detail-panel .modal-header {
-  background: #0d1a30 !important;
-  border-bottom: 1px solid rgba(20, 30, 50, 0.06) !important;
-  color: #f7f9fc;
+  background: var(--bp-card) !important;
+  border-bottom: 1px solid var(--bp-line-soft) !important;
+  color: var(--bp-text);
 }
 
 .lineup-detail-panel .modal-header strong {
-  color: #f7f9fc !important;
+  color: var(--bp-text) !important;
 }
 
 .lineup-detail-panel .modal-close {
   background: transparent !important;
-  color: #f7f9fc !important;
+  color: var(--bp-text-secondary) !important;
 }
 
 /* 헤더 타이틀 — 배지 + 라인업 이름 */
@@ -78,7 +79,7 @@
 .lineup-detail-panel .lineup-detail-col h3 {
   font-size: 12px;
   font-weight: 800;
-  color: rgba(247, 249, 252, 0.72);
+  color: var(--bp-text-secondary);
   margin: 0 0 8px;
   letter-spacing: 0.3px;
 }
@@ -99,8 +100,8 @@
   align-items: center;
   gap: 6px;
   padding: 7px 8px;
-  background: rgba(20, 30, 50, 0.03);
-  border: 1px solid rgba(20, 30, 50, 0.06);
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 6px;
   font-size: 12px;
 }
@@ -116,7 +117,7 @@
 .lineup-detail-panel .lineup-detail-name {
   font-weight: 800;
   font-size: 13px;
-  color: #f7f9fc;
+  color: var(--bp-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -129,8 +130,8 @@
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
-  background: rgba(109, 140, 255, 0.18);
-  color: var(--bp-info);
+  background: rgba(167, 139, 250, 0.18);
+  color: var(--bp-accent-2);
   border-radius: 4px;
   letter-spacing: 0.2px;
 }
@@ -140,9 +141,10 @@
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
-  background: rgba(20, 30, 50, 0.05);
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 999px;
-  color: rgba(247, 249, 252, 0.72);
+  color: var(--bp-text-secondary);
   white-space: nowrap;
 }
 
@@ -153,7 +155,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px;
-  background: rgba(232, 74, 138, 0.1);
+  background: rgba(232, 74, 138, 0.08);
   border: 1px solid rgba(232, 74, 138, 0.3);
   border-radius: 6px;
   margin-bottom: 6px;
@@ -175,8 +177,8 @@
   align-items: center;
   gap: 6px;
   padding: 7px 8px;
-  background: rgba(20, 30, 50, 0.03);
-  border: 1px solid rgba(20, 30, 50, 0.06);
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line-soft);
   border-radius: 6px;
   font-size: 12px;
 }
@@ -193,15 +195,15 @@
 }
 
 .lineup-detail-panel .lineup-detail-bullpen .lineup-detail-role {
-  background: rgba(20, 30, 50, 0.06);
-  color: rgba(247, 249, 252, 0.72);
+  background: var(--bp-line);
+  color: var(--bp-text-secondary);
 }
 
 .lineup-detail-panel .lineup-detail-empty {
   font-size: 11px;
-  color: rgba(247, 249, 252, 0.48);
+  color: var(--bp-text-muted);
   text-align: center;
   padding: 10px;
-  background: rgba(20, 30, 50, 0.03);
+  background: var(--bp-bg);
   border-radius: 6px;
 }

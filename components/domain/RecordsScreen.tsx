@@ -17,6 +17,7 @@ import {
 } from "@/lib/supabase/query-parts/bpRecords";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { saveMatchSession } from "@/lib/sim/matchSession";
+import { withTimeout } from "@/lib/utils/withTimeout";
 
 type AuthState = "loading" | "anonymous" | "loggedIn" | "loggedOut";
 
@@ -31,7 +32,18 @@ export function RecordsScreen() {
   const fetchRecords = useCallback(async () => {
     setLoadError(null);
     const client = createSupabaseBrowserClient();
-    const { data: { user } } = await client.auth.getUser();
+    // 네트워크가 끊겼거나 Supabase fetch가 limbo에 빠지면 영원히 "불러오는 중..."에
+    // 머무는 걸 방지 — 6초 안에 응답 없으면 에러 노출 + 다시 시도 가능하게
+    let user: Awaited<ReturnType<typeof client.auth.getUser>>["data"]["user"];
+    try {
+      const res = await withTimeout(client.auth.getUser(), 6_000);
+      user = res.data.user;
+    } catch {
+      setAuthState("loggedIn");
+      setLoadError("네트워크 응답이 너무 느려요. 다시 시도해 주세요.");
+      setRows([]);
+      return;
+    }
     if (!user) {
       setAuthState("loggedOut");
       setRows([]);
@@ -43,7 +55,14 @@ export function RecordsScreen() {
       return;
     }
     setAuthState("loggedIn");
-    const result = await listMyRecords(client, user.id);
+    let result: Awaited<ReturnType<typeof listMyRecords>>;
+    try {
+      result = await withTimeout(listMyRecords(client, user.id), 6_000);
+    } catch {
+      setLoadError("네트워크 응답이 너무 느려요. 다시 시도해 주세요.");
+      setRows([]);
+      return;
+    }
     if (!result.ok) {
       setLoadError(result.error);
       setRows([]);
@@ -155,7 +174,17 @@ export function RecordsScreen() {
         <header className="play-hub-header">
           <h1>내 기록</h1>
         </header>
-        <p className="stadium-error">{loadError}</p>
+        <section className="records-empty">
+          <strong>불러오기 실패</strong>
+          <p>{loadError}</p>
+          <button
+            type="button"
+            className="records-empty-cta"
+            onClick={() => fetchRecords()}
+          >
+            다시 시도
+          </button>
+        </section>
       </AppShell>
     );
   }

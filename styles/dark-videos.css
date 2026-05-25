@@ -1,0 +1,422 @@
+/* 재밌는 야구 영상 — 쇼츠(세로 9:16) 중심 그리드 + 모달. */
+
+.phone-frame-light .videos-header {
+  padding: 12px 4px 8px;
+}
+
+.phone-frame-light .videos-header h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .videos-header p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bp-text-secondary);
+  font-weight: 600;
+}
+
+/* ── 행 단위 레이아웃 — 쇼츠 3개 행 + 가로 영상 단독 행 혼합 ── */
+
+.phone-frame-light .videos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* 쇼츠 행 — 한 줄에 3개 (마지막 행 1~2개는 빈 칸으로 두기) */
+.phone-frame-light .videos-row-shorts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* 가로 영상 행 — 풀폭 단독 (button 폭 강제 위해 grid 1열 사용) */
+.phone-frame-light .videos-row-horizontal {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1025px) {
+  .phone-frame-wide .videos-row-shorts {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+  .phone-frame-wide .videos-row-horizontal {
+    /* PC에선 가로 카드가 너무 커지지 않게 폭 제한 + 가운데 정렬 */
+    max-width: 760px;
+    margin: 0 auto;
+  }
+}
+
+.phone-frame-light .videos-card {
+  display: block;
+  position: relative;
+  background: #000;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-light .videos-card:hover {
+  border-color: var(--bp-line-strong);
+  transform: translateY(-1px);
+}
+
+/* ── 썸네일 — orientation별 비율 ── */
+
+.phone-frame-light .videos-card-thumb {
+  position: relative;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+.phone-frame-light .videos-card-vertical .videos-card-thumb {
+  aspect-ratio: 9 / 16;
+}
+
+.phone-frame-light .videos-card-horizontal .videos-card-thumb {
+  aspect-ratio: 16 / 9;
+}
+
+.phone-frame-light .videos-card-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.phone-frame-light .videos-card-thumb-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 플랫폼 아이콘 — 아주 작게, 좌상단 */
+.phone-frame-light .videos-card-platform {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  border-radius: 999px;
+}
+
+/* "긴 영상" — 가로 영상 표시용 */
+.phone-frame-light .videos-card-orient {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.phone-frame-light .videos-card-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0.85;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.phone-frame-light .videos-card-play svg {
+  background: rgba(232, 74, 138, 0.92);
+  border-radius: 50%;
+  padding: 8px;
+  width: 32px;
+  height: 32px;
+}
+
+/* 본문 — 썸네일 위 그라데이션 오버레이 */
+.phone-frame-light .videos-card-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 18px 8px 8px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.85) 100%);
+  color: #fff;
+  pointer-events: none;
+}
+
+.phone-frame-light .videos-card-overlay strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.phone-frame-light .videos-card-overlay .videos-card-author {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
+}
+
+/* 가로 카드는 폭이 커서 본문도 키움 */
+.phone-frame-light .videos-card-horizontal .videos-card-overlay {
+  padding: 24px 14px 12px;
+}
+.phone-frame-light .videos-card-horizontal .videos-card-overlay strong {
+  font-size: 14px;
+  -webkit-line-clamp: 2;
+}
+.phone-frame-light .videos-card-horizontal .videos-card-overlay .videos-card-author {
+  font-size: 11px;
+}
+.phone-frame-light .videos-card-horizontal .videos-card-play svg {
+  width: 48px;
+  height: 48px;
+  padding: 12px;
+}
+
+/* PC wide에서는 글자/플레이 버튼 조금 키움 */
+@media (min-width: 1025px) {
+  .phone-frame-wide .videos-card-overlay strong {
+    font-size: 12px;
+  }
+  .phone-frame-wide .videos-card-overlay .videos-card-author {
+    font-size: 10px;
+  }
+  .phone-frame-wide .videos-card-play svg {
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+  }
+  .phone-frame-wide .videos-card-horizontal .videos-card-overlay strong {
+    font-size: 16px;
+  }
+  .phone-frame-wide .videos-card-horizontal .videos-card-overlay .videos-card-author {
+    font-size: 12px;
+  }
+}
+
+/* ── 재생 모달 — 가로/세로 모두 viewport 풀화면 ── */
+
+.modal-backdrop:has(.video-player-panel) {
+  padding: 0;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.modal-panel.video-player-panel {
+  position: relative;
+  width: 100vw;
+  max-width: none;
+  /* dvh = dynamic viewport height (모바일 주소창 포함/제외 자동 반영) */
+  max-height: 100dvh;
+  height: 100dvh;
+  border-radius: 0;
+  background: #000;
+  color: #f7f9fc;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 모달 헤더 자체를 숨김 — 별도 floating 닫기 버튼으로 대체 */
+.video-player-panel .modal-header {
+  display: none;
+}
+
+/* Floating 닫기 버튼 — 모달 panel 좌상단 (panel 기준 absolute, phone-frame 밖으로 안 나감) */
+.video-player-close {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.video-player-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* description은 풀화면에선 숨김 */
+.video-player-panel .video-player-meta {
+  display: none;
+}
+
+.video-player-panel .modal-header {
+  background: #0d1a30;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f7f9fc;
+}
+
+.video-player-panel .modal-header strong {
+  color: #f7f9fc;
+}
+
+.video-player-panel .modal-close {
+  background: transparent;
+  color: #f7f9fc;
+}
+
+.video-player-panel .modal-body {
+  background: #000;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-player-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.video-player-iframe-wrap {
+  position: relative;
+  background: #000;
+  margin: 0 auto;
+}
+
+/* 가로형 — 16:9, viewport 안에 fit. dvh로 모바일 주소창 변동 대응. */
+.video-player-panel-horizontal .video-player-iframe-wrap {
+  width: min(100vw, calc(100dvh * 16 / 9));
+  height: min(100dvh, calc(100vw * 9 / 16));
+}
+
+/* 세로형 — 9:16, viewport 안에 fit. */
+.video-player-panel-vertical .video-player-iframe-wrap {
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: min(100dvh, calc(100vw * 16 / 9));
+}
+
+.video-player-iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* iframe 임베드가 막힐 때 폴백 — 풀화면 모달에선 하단 floating */
+.video-player-fallback {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(247, 249, 252, 0.7);
+  border-radius: 999px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.video-player-fallback a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: rgba(247, 249, 252, 0.85);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.video-player-external {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 40px 24px;
+  color: rgba(247, 249, 252, 0.85);
+}
+
+.video-player-external-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: rgba(247, 249, 252, 0.7);
+}
+
+.video-player-external p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.video-player-external-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--bp-accent, #e84a8a);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  margin-top: 4px;
+}
+
+.video-player-meta {
+  padding: 14px 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-player-desc {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(247, 249, 252, 0.85);
+}
+
+.video-player-author {
+  font-size: 11px;
+  color: rgba(247, 249, 252, 0.5);
+  font-weight: 700;
+}

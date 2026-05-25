@@ -34,6 +34,13 @@ export function AuthRefreshOnVisible() {
   useEffect(() => {
     if (typeof document === "undefined") return;
 
+    // probe + reload 폴백은 iOS Safari/PWA의 fetch limbo 버그 대응. 데스크톱
+    // 브라우저는 같은 증상이 없는데도 매 탭 전환마다 probe→타임아웃→리로드가
+    // 터져서 사용자가 "네트워크 끊김"으로 인지함. 모바일에서만 활성화.
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    if (!isMobile) return;
+
     const client = createSupabaseBrowserClient();
 
     /** 엄격 probe — auth.refreshSession + 실제 쿼리 둘 다 1.5초 안에 성공해야 true.
