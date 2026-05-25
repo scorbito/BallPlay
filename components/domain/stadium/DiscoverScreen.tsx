@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import { Globe, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { RegisteredLineupList } from "./RegisteredLineupList";
@@ -36,17 +36,26 @@ export function DiscoverScreen() {
     );
   }
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
   return (
     <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="light" wide>
-      <header className="stadium-enter-head">
-        <h1 className="stadium-h1">공개 라인업</h1>
-        <p className="stadium-sub">
-          다른 플레이어가 공개한 라인업과 매칭해서 시뮬을 돌립니다.
-        </p>
+      <header className="stadium-discover-head">
+        <p className="stadium-discover-sub">다른 플레이어가 공개한 라인업과 매칭해서 시뮬</p>
+        <button
+          type="button"
+          className="stadium-discover-refresh"
+          onClick={() => setRefreshKey((k) => k + 1)}
+          aria-label="새로고침"
+        >
+          <RefreshCw size={12} />
+          새로고침
+        </button>
       </header>
 
-      {/* 전체보기는 본인 카드도 포함해서 표시 (도전 대신 삭제 버튼 노출) */}
-      <RegisteredLineupList maxItems={50} sortBy="recent" includeMine />
+      {/* 전체보기는 본인 카드도 포함해서 표시 (도전 대신 삭제 버튼 노출).
+          key 변경으로 컴포넌트 재마운트 → 데이터 재조회. */}
+      <RegisteredLineupList key={refreshKey} maxItems={50} sortBy="recent" includeMine showHeader={false} />
     </AppShell>
   );
 }

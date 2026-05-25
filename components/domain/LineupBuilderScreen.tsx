@@ -133,6 +133,8 @@ export function LineupBuilderScreen() {
   // 공개/비공개 토글 — 비공개로 갈 때 전적 리셋 확인 모달
   const [confirmUnpublishOpen, setConfirmUnpublishOpen] = useState(false);
   const [publishProcessing, setPublishProcessing] = useState(false);
+  // 공개 상태에서 잠긴 영역(슬롯/풀/다이아몬드) 클릭 시 안내 모달
+  const [lockInfoOpen, setLockInfoOpen] = useState(false);
   // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
   const [statsByEntryId, setStatsByEntryId] = useState<Record<string, { matches: number; wins: number; losses: number; draws: number }>>({});
 
@@ -558,6 +560,10 @@ export function LineupBuilderScreen() {
   const selectedTeam = getTeam(selectedTeamId);
   const filledCount = slots.filter((s) => s !== null).length;
   const pitcherFilled = pitcherSlots.filter(Boolean).length;
+  // 공개 가능 조건 — 타선 9명 + 선발 투수(slot[0]) 선택 필수
+  const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] != null;
+  const canPublish = filledCount === 9 && hasStarter;
+
 
   // 선수 풀: 모드에 따라 야수만 / 투수만 노출. 이미 배치된 선수는 제외.
   // 정렬: 시즌 1군 출장 경기수(seasonGames) 내림차순 → 1군 주전이 위로.
@@ -726,23 +732,13 @@ export function LineupBuilderScreen() {
         </button>
       </header>
 
-      {currentEntry?.isPublished ? (() => {
-        const stats = currentEntry ? statsByEntryId[currentEntry.entryId] : undefined;
-        const winPct = stats && stats.matches > 0
-          ? Math.round((stats.wins / stats.matches) * 100)
-          : null;
-        const recordTxt = stats && stats.matches > 0
-          ? ` · ${stats.wins}-${stats.losses}${winPct !== null ? ` (${winPct}%)` : ""}`
-          : " · 전적 없음";
-        return (
-          <div className="lineup-published-banner" role="status">
-            🔒 공개 라인업{recordTxt} — 수정하려면 비공개 전환 (전적 리셋)
-          </div>
-        );
-      })() : null}
       <div className={`lineup-layout ${currentEntry?.isPublished ? "is-locked" : ""}`}>
         {/* 야구장 다이아몬드 — 타자 모드: 9수비, 투수 모드: 선발만 P 표시 */}
-        <section className="lineup-diamond-card" aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}>
+        <section
+          className="lineup-diamond-card"
+          aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}
+          onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}
+        >
           <LineupDiamond
             slots={diamondSlots}
             playersById={playersById}
@@ -762,9 +758,23 @@ export function LineupBuilderScreen() {
         </section>
 
         <div className="lineup-action-row">
-          <p className="lineup-action-hint">
-            삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
-          </p>
+          {currentEntry?.isPublished ? (() => {
+            const stats = statsByEntryId[currentEntry.entryId];
+            const wins = stats?.wins ?? 0;
+            const losses = stats?.losses ?? 0;
+            const draws = stats?.draws ?? 0;
+            const matches = stats?.matches ?? 0;
+            const winPct = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+            return (
+              <p className="lineup-action-hint lineup-action-hint-published">
+                🔒 공개 라인업 · {wins}승 {losses}패 {draws}무 ({winPct}%)
+              </p>
+            );
+          })() : (
+            <p className="lineup-action-hint">
+              삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
+            </p>
+          )}
           <div className="lineup-action-buttons">
             {/* 타자/투수 토글 — 공유 옆에 배치 */}
             <div className="lineup-mode-toggle lineup-mode-toggle-inline" role="tablist" aria-label="라인업 종류">
@@ -798,16 +808,17 @@ export function LineupBuilderScreen() {
               if (!currentEntry) return null;
               const isOn = !!currentEntry.isPublished;
               const isLoggedIn = syncStatus !== "local-only";
-              const filled = filledCount === 9;
-              // 끄기는 항상 가능, 켜기는 로그인 + 9명 완성 시만
-              const disabled = !isLoggedIn || publishProcessing || (!isOn && !filled);
+              // 끄기는 항상 가능, 켜기는 로그인 + 공개 가능 조건 (타선 9 + 선발) 만족 시만
+              const disabled = !isLoggedIn || publishProcessing || (!isOn && !canPublish);
               const tip = !isLoggedIn
                 ? "로그인하면 공개할 수 있어요"
                 : isOn
                   ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로 (전적 리셋)"
-                  : !filled
+                  : filledCount !== 9
                     ? "타선 9명을 채워야 공개할 수 있어요"
-                    : "공개로 바꾸면 다른 사람이 도전할 수 있어요";
+                    : !hasStarter
+                      ? "선발 투수를 골라야 공개할 수 있어요"
+                      : "공개로 바꾸면 다른 사람이 도전할 수 있어요";
               return (
                 <button
                   type="button"
@@ -844,7 +855,7 @@ export function LineupBuilderScreen() {
 
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 불펜 1~8 */}
         {mode === "batter" ? (
-          <section className="lineup-slots-card" aria-label="타순">
+          <section className="lineup-slots-card" aria-label="타순" onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}>
             <div className="lineup-section-head">
               <strong>타순</strong>
               <span className="lineup-section-count">{filledCount} / 9</span>
@@ -1000,7 +1011,11 @@ export function LineupBuilderScreen() {
           </section>
         )}
 
-        <section className="lineup-pool-card lineup-pool-card-side" aria-label="대기 선수">
+        <section
+          className="lineup-pool-card lineup-pool-card-side"
+          aria-label="대기 선수"
+          onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}
+        >
           <div className="lineup-section-head">
             <strong>대기</strong>
             <span className="lineup-section-count">{poolPlayers.length}</span>
@@ -1153,6 +1168,43 @@ export function LineupBuilderScreen() {
         </div>
       </ModalShell>
 
+      {/* 공개 라인업 잠금 안내 모달 — 슬롯/풀/다이아몬드 클릭 시 */}
+      <ModalShell
+        open={lockInfoOpen}
+        title="공개 라인업은 수정할 수 없어요"
+        onClose={() => setLockInfoOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            이 라인업은 <strong>공개 상태</strong>예요.<br />
+            수정하려면 먼저 <strong>비공개로 전환</strong>해야 하고,<br />
+            전환하면 누적된 전적은 <strong>리셋</strong>됩니다.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setLockInfoOpen(false)}
+            >
+              닫기
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-destruct"
+              onClick={() => {
+                // 전적 리셋이 중요하므로 한 번 더 확인 모달 띄움
+                setLockInfoOpen(false);
+                setConfirmUnpublishOpen(true);
+              }}
+            >
+              비공개로 전환
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
       {/* 새 슬롯 만들기 모달 */}
       <ModalShell
         open={newSlotOpen}
@@ -1212,6 +1264,7 @@ export function LineupBuilderScreen() {
                 const newEntry = createEmptyEntry(newSlotTeamId, newSlotName.trim() || undefined);
                 localUpsertEntry(newEntry);
                 setSelectedEntryId(newEntry.entryId);
+                setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
                 setNewSlotOpen(false);
               }}
             >

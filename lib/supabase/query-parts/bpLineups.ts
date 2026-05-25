@@ -288,7 +288,7 @@ export async function fetchPublishedLineupsByIds(
     .select(
       `
       *,
-      profile:profiles!bp_lineups_owner_user_id_fkey(nickname, display_name)
+      profile:profiles!bp_lineups_owner_user_id_fkey(nickname)
     `
     )
     .in("id", lineupIds);
@@ -343,7 +343,7 @@ export async function listPublishedByRecent(
     .select(
       `
       *,
-      profile:profiles!bp_lineups_owner_user_id_fkey(nickname, display_name)
+      profile:profiles!bp_lineups_owner_user_id_fkey(nickname)
     `
     )
     .eq("is_published", true)
@@ -401,23 +401,22 @@ export async function listPublishedByRecent(
   return { ok: true, rows, statsByLineupId: stats };
 }
 
-/** owner_user_id 배열 → profiles의 nickname/display_name 매핑.
- *  RLS에서 다른 사용자 profile select 가능해야 동작 (가능 시 일반 정책). */
+/** owner_user_id 배열 → profiles의 nickname 매핑.
+ *  운영 DB의 profiles 컬럼이 nickname만 있어서 display_name select 시 400. nickname만 가져옴. */
 export async function fetchProfilesByUserIds(
   client: SupabaseClient,
   userIds: string[]
 ): Promise<Record<string, { nickname: string | null; display_name: string | null }>> {
   if (userIds.length === 0) return {};
-  // 중복 제거
   const uniq = Array.from(new Set(userIds));
   const { data, error } = await client
     .from("profiles")
-    .select("id, nickname, display_name")
+    .select("id, nickname")
     .in("id", uniq);
   if (error) return {};
   const result: Record<string, { nickname: string | null; display_name: string | null }> = {};
-  for (const row of (data ?? []) as Array<{ id: string; nickname: string | null; display_name: string | null }>) {
-    result[row.id] = { nickname: row.nickname ?? null, display_name: row.display_name ?? null };
+  for (const row of (data ?? []) as Array<{ id: string; nickname: string | null }>) {
+    result[row.id] = { nickname: row.nickname ?? null, display_name: null };
   }
   return result;
 }

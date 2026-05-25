@@ -101,7 +101,7 @@ export function createEmptyEntry(teamId: string, nameSuggestion?: string): Lineu
     batting: { teamId, slots: [], useDH: true, updatedAt: now },
     pitching: null,
     updatedAt: now,
-    isPublished: true // 디폴트 공개 — 사용자가 빌더에서 직접 비공개로 바꿀 수 있음
+    isPublished: false // 비공개로 시작 — 9명 채우면 공개 유도 모달이 뜸
   };
 }
 
@@ -187,5 +187,66 @@ function migrateLegacyIfNeeded(): void {
     } catch {
       // ignore
     }
+  }
+}
+
+// ============================================================
+// 공개 유도 모달 추적 — 한 슬롯당 한 번만 띄움
+// ============================================================
+
+const PUBLISH_PROMPT_KEY = "ballplay:publish-prompt-dismissed";
+
+export function isPublishPromptDismissed(entryId: string): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(PUBLISH_PROMPT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as string[];
+    return Array.isArray(parsed) && parsed.includes(entryId);
+  } catch {
+    return false;
+  }
+}
+
+export function dismissPublishPrompt(entryId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem(PUBLISH_PROMPT_KEY);
+    const parsed = raw ? (JSON.parse(raw) as string[]) : [];
+    const next = Array.isArray(parsed) ? parsed : [];
+    if (next.includes(entryId)) return;
+    next.push(entryId);
+    window.localStorage.setItem(PUBLISH_PROMPT_KEY, JSON.stringify(next));
+  } catch {
+    // ignore
+  }
+}
+
+// 타자 9명 채움 안내 모달 — 선발 안 골랐을 때 한 번
+const BATTER_DONE_PROMPT_KEY = "ballplay:batter-done-prompt-dismissed";
+
+export function isBatterDonePromptDismissed(entryId: string): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(BATTER_DONE_PROMPT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as string[];
+    return Array.isArray(parsed) && parsed.includes(entryId);
+  } catch {
+    return false;
+  }
+}
+
+export function dismissBatterDonePrompt(entryId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem(BATTER_DONE_PROMPT_KEY);
+    const parsed = raw ? (JSON.parse(raw) as string[]) : [];
+    const next = Array.isArray(parsed) ? parsed : [];
+    if (next.includes(entryId)) return;
+    next.push(entryId);
+    window.localStorage.setItem(BATTER_DONE_PROMPT_KEY, JSON.stringify(next));
+  } catch {
+    // ignore
   }
 }

@@ -63,14 +63,15 @@
   font-weight: 800;
 }
 
-/* ── 2열 레이아웃: 왼쪽 투수, 오른쪽 타순 ── */
+/* ── 2열 레이아웃: 왼쪽 타순, 오른쪽 투수 ── */
 .lineup-detail-panel .lineup-detail-cols {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 12px;
 }
 
-@media (max-width: 480px) {
+/* 정말 좁은 화면(360px 미만)에서만 1-column fallback. 모바일 phone-frame(540px)에선 2-col 유지 */
+@media (max-width: 360px) {
   .lineup-detail-panel .lineup-detail-cols {
     grid-template-columns: 1fr;
   }
