@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Play, Pause, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -163,7 +163,10 @@ export function PlayScreen() {
   const [hydrated, setHydrated] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
-  // 경기 종료 시 자동 저장 — 한 번만 실행하도록 추적
+  // 경기 종료 시 자동 저장 — 한 번만 실행하도록 추적.
+  // useState는 비동기 업데이트라 두 번째 effect 실행에서 stale 값이 보일 수 있음 →
+  // useRef로 동기 가드. StrictMode/의존성 변경으로 effect가 두 번 실행돼도 INSERT 1회만.
+  const recordSaveAttemptedRef = useRef(false);
   const [recordSaving, setRecordSaving] = useState(false);
   const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
   // 진행 모드 — normal(현재 기본) / fast(2배) / live(실시간 중계, SITUATION phase + 단계 narration)
@@ -415,6 +418,12 @@ export function PlayScreen() {
     const canSave = session.source === "public" || session.source === "friend";
     if (!canSave) return;
     if (recordSavedId || recordSaving) return;
+    // 동기 ref 가드 — useEffect가 어떤 이유로든 두 번 실행돼도 INSERT 1회로 제한.
+    if (recordSaveAttemptedRef.current) return;
+    // sessionStorage 기준 추가 가드 — 이미 다른 마운트에서 저장했거나 진행 중이면 skip.
+    const sessionFresh = loadMatchSession();
+    if (sessionFresh?.savedRecordId) return;
+    recordSaveAttemptedRef.current = true;
 
     let cancelled = false;
     (async () => {

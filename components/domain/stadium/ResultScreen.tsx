@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RotateCcw, Share2, Trophy } from "lucide-react";
@@ -27,6 +27,8 @@ export function ResultScreen() {
   const [sharing, setSharing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
+  // 동기 ref 가드 — useEffect가 두 번 실행돼도 INSERT 1회만 시도하도록 차단.
+  const saveAttemptedRef = useRef(false);
 
   useEffect(() => {
     const s = loadMatchSession();
@@ -68,14 +70,22 @@ export function ResultScreen() {
     if (!hydrated || !session?.input || !session.result) return;
     if (!canSave) return;
     if (savedId || saving) return;
+    // 동기 ref 가드 — effect 두 번 실행 차단
+    if (saveAttemptedRef.current) return;
+    // sessionStorage 기준 가드 — PlayScreen이 이미 진행/완료했으면 skip
+    const sessionFresh = loadMatchSession();
+    if (sessionFresh?.savedRecordId) {
+      setSavedId(sessionFresh.savedRecordId);
+      setSession((prev) => (prev ? { ...prev, savedRecordId: sessionFresh.savedRecordId } : prev));
+      return;
+    }
+    saveAttemptedRef.current = true;
 
     let cancelled = false;
     (async () => {
       setSaving(true);
       try {
-        // race condition 방지: PlayScreen이 GAME_END에서 비동기로 저장하는 사이
-        // ResultScreen이 stale session(savedRecordId 없음)으로 마운트되면 양쪽 저장됨.
-        // sessionStorage에서 최신 session을 다시 읽어 PlayScreen이 이미 저장했는지 확인.
+        // 한 번 더 확인 (async 시점에 변경됐을 수 있음)
         const fresh = loadMatchSession();
         if (fresh?.savedRecordId) {
           if (!cancelled) {
@@ -131,9 +141,14 @@ export function ResultScreen() {
         if (cancelled) return;
         if (!result.ok) {
           showToast(`기록 자동 저장 실패: ${result.error}`);
+          // 실패 시 ref 풀어 재시도 가능하게
+          saveAttemptedRef.current = false;
           return;
         }
         setSavedId(result.row.id);
+        // matchSession에도 표시 — 다음 마운트에서 중복 시도 차단
+        const cur = loadMatchSession();
+        if (cur) saveMatchSession({ ...cur, savedRecordId: result.row.id });
       } catch {
         if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
       } finally {
