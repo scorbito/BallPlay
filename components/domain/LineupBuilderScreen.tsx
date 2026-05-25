@@ -693,7 +693,7 @@ export function LineupBuilderScreen() {
 
         <div className="lineup-action-row">
           <p className="lineup-action-hint">
-            삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>해주세요.
+            삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
           </p>
           <div className="lineup-action-buttons">
             {/* 타자/투수 토글 — 공유 옆에 배치 */}
