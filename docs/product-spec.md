@@ -15,6 +15,8 @@
 
 야구놀이터는 **우산 브랜드**로, 향후 승부 예측·트레이드 시뮬·명장면 퀴즈 등 야구 미니게임을 같은 우산 아래 확장할 수 있도록 구조를 설계한다 (§11 v4+ 참조).
 
+**공식 도메인**: `ballnori.com` (2026-05-22 결정, .com만 단독 등록)
+
 ---
 
 ## 2. 왜 만드는가 (Vision)
@@ -340,13 +342,18 @@ LLM 없이도 게임 성립. 비용 0원. 출시 빠름.
 
 | 테이블 | 용도 | 비고 |
 |---|---|---|
-| `bp_lineups` | 사용자 저장 라인업 | 공개/비공개 플래그 |
+| `bp_lineups` | 사용자 저장 라인업 | 공개/비공개 플래그 + immutable 트리거 (공개 시 락) |
 | `bp_matches` | 매치업 결과 | 캐싱 키 포함 |
 | `bp_match_innings` | 이닝별 이벤트 로그 | 결과 재현용 |
-| `bp_user_stats` | 개인 전적·승률 | |
+| `bp_records` ✅ | 경기 기록 (자동 저장) | 7일 retention, source 분류 (public/friend/self) |
+| `bp_user_stats` | 개인 전적·승률 | `bp_lineup_stats` 뷰로 라인업별 집계 (user_side 기준) |
+| `bp_videos` ✅ | 사용자 등록 야구 영상 | 봇 자동 큐레이션 (`is_auto_curated`), YouTube only |
+| `bp_predictions` ✅ | 일일 경기 승리팀 예측 | 적중률 랭킹 산출용 |
 | `bp_player_daily_stats` | 일자별 선수 스탯 스냅샷 | Statiz 정제본 |
 | `bp_team_mood_daily` | 일자별 팀 분위기 요약 | 뉴스 LLM 정제본 |
 | `bp_user_points` | 대결 포인트 잔액 | BM 연계 |
+
+✅ = 구현 완료 테이블. 나머지는 v2+ 예정.
 
 ### 8.3 스크래핑 전략
 
@@ -517,16 +524,18 @@ cease and desist 등 법적 압박이 들어오면 즉시 대응:
 - [ ] 시즌 개념 (월간/분기 랭킹 리셋)
 - [ ] 뱃지·업적
 
-### v4+ — 야구놀이터 우산 확장 (시점 미정)
+### v4+ — 야구놀이터 우산 확장 (일부 조기 출시됨)
 
-야구놀이터라는 이름을 정당화할 추가 미니게임 후보. 시점은 v1~v3 트래픽 반응 보고 결정.
+야구놀이터라는 이름을 정당화할 추가 미니게임. 일부는 v1 출시 사이클에 함께 묶여 조기 출시됐고, 나머지는 트래픽 반응 보고 결정.
 
-- [ ] **일일 승부 예측** — 그날의 KBO 경기 결과 예측, 적중 시 포인트 보상. 매일 출석 동기 + 무료 포인트 획득 경로 (BM이 부드러워짐). 라인업 대결과 데이터 인프라(§8) 재활용 가능
+- [x] **일일 승부 예측 + 적중률 랭킹** — `/predict/winner` (오늘 경기 승리팀 예측) + `/predict/ranking` (적중률 랭킹: 오늘/주/월/시즌, 최소 5경기). `bp_predictions` 테이블 + 랭킹 RPC — 2026-05-25
+- [x] **재밌는 야구 영상** — 사용자 등록 풀 + 놀이터봇 자동 큐레이션. `bp_videos` + YouTube Data API v3 + GitHub Actions cron (매일 09:00 KST). 키워드 9개 × top 15/일 (쇼츠 12 + 가로 3). 봇 영상은 🤖 배지 — 2026-05-26
+- [ ] **AI 승리팀 예측** — AI가 최근 폼·상대 전적·라인업 기반 예측 (준비중)
 - [ ] **트레이드 시뮬** — 가상 트레이드 시나리오 + AI 평가
 - [ ] **명장면 퀴즈** — KBO 명장면·역대 기록 퀴즈
 - [ ] **감독 시뮬** — 라인업 + 작전 카드로 한 경기 감독 시점 플레이
 
-가장 자연스러운 다음 콘텐츠는 **일일 승부 예측** — 데이터 인프라 재활용도 + retention 강화 + 무료 포인트 경로 제공의 3박자. 단, 게임 내 포인트는 환금 불가 통화로 명시해 사행성 규제 경계를 분명히 한다.
+조기 출시된 두 콘텐츠(승부 예측 + 영상)는 데이터 인프라 재활용 + retention 강화 + 외부 데이터 자동 수집(YouTube/KBO 일정)으로 운영 부담이 낮아 v1 사이클에 흡수. 게임 내 포인트는 환금 불가 통화로 명시해 사행성 규제 경계를 분명히 한다.
 
 ---
 
@@ -603,6 +612,19 @@ cease and desist 등 법적 압박이 들어오면 즉시 대응:
 - [x] **경기 기록 자동 저장 + 재생** — `bp_records` 테이블 + 결과 화면 자동 INSERT (source 가 public/friend일 때만, 익명 skip) + 내 기록 탭에서 카드 목록·재생·삭제, 7일 retention + 엔진 버전 mismatch 시 재생 차단 — 2026-05-23
 - [x] **라인업 상세 모달** — 로비 AI 카드 / 공개 풀 / 친구 매치 카드 클릭 시 타순+투수진 풀버전 표시. "라인업/도전" split 버튼 — 2026-05-23
 - [x] **결과 화면 점수보드** — 가로 정렬 (홈 카드 미러), 팀 배지 사이즈 균형 — 2026-05-23
+
+- [x] **공개 라인업 등록 시스템 폐기 → public/private 모델 회귀** — 별도 등록 카드 관리 방식을 폐기하고 `bp_lineups.is_published` 토글로 단순화. 공개 슬롯은 immutable 트리거로 락, 비공개 전환 시 전적 리셋. 본인 vs 본인 매치는 `source='self'`로 전적 미누적. 라인업 hash 기반 dedup — 2026-05-24
+- [x] **라인업 전적 표시** — 라인업 picker 카드 + 그라운드 카드에 승패 0-0 형식 누적 표시. `bp_lineup_stats` 뷰 (user_side 기준 own matches만 집계) — 2026-05-24
+- [x] **`missing_pitcher` fallback** — 1군 출장 0인 선수(부상 등)에 KBO 평균값(AVG 0.250) 적용. 시즌별 final 스냅샷 보존해 다음 시즌 초 fallback 예정 — 2026-05-25
+- [x] **승부 예측 + 적중률 랭킹** — `/predict/winner` 오늘 경기 승리팀 예측 + `/predict/ranking` 적중률 랭킹. `bp_predictions` 테이블 + 랭킹 RPC (최소 5경기, 오늘/주/월/시즌 필터) — 2026-05-25
+- [x] **재밌는 야구 영상 — 사용자 등록 풀** — `bp_videos` + YouTube URL 등록/삭제 + 쇼츠/가로 row 그루핑 (3쇼츠 + 가로 솔로) + 모달 autoplay + 본인 영상 삭제 + RLS (모든 인증 사용자 SELECT, 본인만 INSERT/DELETE) — 2026-05-26
+- [x] **놀이터봇 자동 큐레이션** — `scripts/curate-youtube.mjs` + `.github/workflows/curate-youtube.yml`. 매일 09:00 KST cron, YouTube Data API v3로 9개 키워드 검색. 조회수 1만 이상 + 최근 60일 필터 + orientation별 cap (쇼츠 12 + 가로 3 = 일일 15개). 무료 quota 약 9% 사용. 봇 영상은 🤖 배지 + `@놀이터봇` 표기 — 2026-05-26
+- [x] **AppShell 헤더 3-column grid** — 타이틀 중앙 고정 (`grid-template-columns: 1fr auto 1fr`). 좌측 백버튼/우측 헤더 액션 슬롯 분리 — 2026-05-26
+- [x] **HomeScreen 카드 팝오버 + 메뉴 재정렬** — 카드별 `!` 버튼 → 설명 팝오버 (progressive disclosure). "예측" 섹션 신설 + "재밌는 야구 영상" 활성화 → "프로야구 정보"로 이동 — 2026-05-26
+- [x] **TierBadge 위치 이동** — 내 기록 헤더 → 마이 설정 계정 영역. 내 기록 헤더는 미니멀하게 정리 — 2026-05-26
+- [x] **navigator.locks 우회** — auth-js 토큰 refresh 시 origin 단위 lock이 영구 점유돼 같은 origin 모든 탭이 hang되는 케이스 우회. noop lock으로 대체, refresh race는 SDK 자동 재시도로 무해 — 2026-05-26
+- [x] **중복 INSERT 가드 (`bp_records`)** — PlayScreen unmount + ResultScreen mount 사이 race로 동일 매치가 2회 저장되던 문제. 3-layer 가드 (useRef + state + sessionStorage placeholder "saving") + PlayScreen `saveMatchSession`을 cancelled flag와 무관하게 항상 호출 — 2026-05-24
+- [x] **공식 도메인 `ballnori.com` 등록** — 야구놀이터 공식 도메인 결정 (.com만 단독 등록) — 2026-05-22
 
 **후순위 (현재 계류)**
 - [ ] 시뮬 엔진 단위 테스트 인프라 (Vitest 도입 검토) + 결정성·분포 테스트
