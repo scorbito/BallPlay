@@ -1,7 +1,7 @@
 {
   "teamId": "samsung",
   "teamName": "삼성 라이온즈",
-  "_scrapedAt": "2026-05-22T16:05:43.463Z",
+  "_scrapedAt": "2026-05-25T03:36:59.972Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
   "players": [
@@ -12,7 +12,7 @@
       "primaryPosition": "3B",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 45
+      "seasonGames": 47
     },
     {
       "id": "samsung-1",
@@ -57,7 +57,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 28
+      "seasonGames": 30
     },
     {
       "id": "samsung-6",
@@ -75,7 +75,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 26
+      "seasonGames": 28
     },
     {
       "id": "samsung-8",
@@ -102,7 +102,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 12
     },
     {
       "id": "samsung-11",
@@ -147,7 +147,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 22
     },
     {
       "id": "samsung-16",
@@ -156,7 +156,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "samsung-17",
@@ -182,7 +182,7 @@
       "jerseyNumber": 19,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 1
     },
     {
       "id": "samsung-20",
@@ -281,7 +281,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 37
     },
     {
       "id": "samsung-34",
@@ -290,7 +290,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "samsung-35",
@@ -315,7 +315,7 @@
       "jerseyNumber": 38,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "samsung-39",
@@ -324,7 +324,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 28
+      "seasonGames": 30
     },
     {
       "id": "samsung-40",
@@ -351,7 +351,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 7
+      "seasonGames": 8
     },
     {
       "id": "samsung-45",
@@ -369,7 +369,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 15
+      "seasonGames": 17
     },
     {
       "id": "samsung-47",
@@ -378,7 +378,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 35
     },
     {
       "id": "samsung-48",
@@ -387,7 +387,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 1
     },
     {
       "id": "samsung-49",
@@ -423,7 +423,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 25
     },
     {
       "id": "samsung-53",
@@ -477,7 +477,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 44
+      "seasonGames": 46
     },
     {
       "id": "samsung-60",
@@ -486,7 +486,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "samsung-61",
@@ -495,7 +495,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 38
+      "seasonGames": 40
     },
     {
       "id": "samsung-62",
@@ -531,7 +531,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 31
+      "seasonGames": 33
     },
     {
       "id": "samsung-67",
