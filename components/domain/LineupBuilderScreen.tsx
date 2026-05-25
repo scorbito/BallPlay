@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Save, Share2, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Cloud, CloudOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Save, Share2, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -101,8 +101,7 @@ export function LineupBuilderScreen() {
     syncedUpsert,
     syncedDelete,
     syncedRename,
-    localUpsertEntry,
-    togglePublished
+    localUpsertEntry
   } = useLineupSync();
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const currentEntry = useMemo(
@@ -548,39 +547,24 @@ export function LineupBuilderScreen() {
   return (
     <AppShell activeTab="play" title="라인업 짜기" theme="light" hideHeader wide>
       <header className="lineup-header lineup-header-no-back">
-        {/* 헤더 좌측: 공개/비공개 토글 (이 슬롯의 속성, 액션) */}
-        {(() => {
-          if (!currentEntry) return null;
-          const filled = (currentEntry.batting?.slots?.length ?? 0) === 9;
-          const isLoggedIn = syncStatus !== "local-only";
-          const isOn = !!currentEntry.isPublished;
-          // 끄기는 항상 가능, 켜기만 조건 검사
-          const disabled = !isLoggedIn || (!isOn && !filled);
-          const tip = !isLoggedIn
-            ? "로그인하면 공개할 수 있어요"
-            : isOn
-              ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로"
-              : !filled
-                ? "타선 9명을 채워야 공개할 수 있어요"
-                : "공개로 바꾸면 다른 사람이 도전할 수 있어요";
-          return (
-            <button
-              type="button"
-              className={`lineup-publish-toggle ${isOn ? "is-on" : ""}`}
-              disabled={disabled}
-              title={tip}
-              onClick={async () => {
-                if (!currentEntry) return;
-                const res = await togglePublished(currentEntry.entryId, !isOn);
-                if (!res.ok) showToast(res.error ?? "공개 상태 변경 실패");
-                else showToast(!isOn ? "이 라인업을 공개로 바꿨어요" : "비공개로 바꿨어요");
-              }}
-            >
-              {isOn ? <Eye size={12} /> : <EyeOff size={12} />}
-              <span>{isOn ? "공개" : "비공개"}</span>
-            </button>
-          );
-        })()}
+        {/* 헤더 좌측: 동기화 상태 배지 (이전 공개 토글 자리. 공개/비공개 개념은 "경기장 등록"으로 대체됨) */}
+        <div className={`lineup-sync-badge is-${syncStatus}`} title={
+          syncStatus === "local-only" ? "이 기기에만 저장 — 로그인하면 다른 기기에서도 사용 가능" :
+          syncStatus === "synced" ? "DB와 동기화됨 — 다른 기기에서도 사용 가능" :
+          syncStatus === "loading" ? "동기화 중..." :
+          "동기화 실패 (이 기기 저장은 정상)"
+        }>
+          {syncStatus === "loading" ? <Loader2 size={12} className="lineup-sync-spin" /> :
+           syncStatus === "synced" ? <Cloud size={12} /> :
+           syncStatus === "local-only" ? <HardDrive size={12} /> :
+           <CloudOff size={12} />}
+          <span>{
+            syncStatus === "loading" ? "동기화 중" :
+            syncStatus === "synced" ? "동기화됨" :
+            syncStatus === "local-only" ? "이 기기만" :
+            "동기화 실패"
+          }</span>
+        </div>
 
         {/* 슬롯 picker — 현재 슬롯 + 드롭다운으로 다른 슬롯 / 새 슬롯 / 이름 편집 / 삭제 */}
         <div className="lineup-slot-picker" ref={slotPickerRef}>
@@ -675,24 +659,15 @@ export function LineupBuilderScreen() {
             </ul>
           ) : null}
         </div>
-        {/* 헤더 우측: 동기화 상태 배지 (mode toggle은 공유 버튼 옆으로 이동) */}
-        <div className={`lineup-sync-badge is-${syncStatus}`} title={
-          syncStatus === "local-only" ? "이 기기에만 저장 — 로그인하면 다른 기기에서도 사용 가능" :
-          syncStatus === "synced" ? "DB와 동기화됨 — 다른 기기에서도 사용 가능" :
-          syncStatus === "loading" ? "동기화 중..." :
-          "동기화 실패 (이 기기 저장은 정상)"
-        }>
-          {syncStatus === "loading" ? <Loader2 size={12} className="lineup-sync-spin" /> :
-           syncStatus === "synced" ? <Cloud size={12} /> :
-           syncStatus === "local-only" ? <HardDrive size={12} /> :
-           <CloudOff size={12} />}
-          <span>{
-            syncStatus === "loading" ? "동기화 중" :
-            syncStatus === "synced" ? "동기화됨" :
-            syncStatus === "local-only" ? "이 기기만" :
-            "동기화 실패"
-          }</span>
-        </div>
+        {/* 헤더 우측: 공유 버튼 (이전 동기화 배지 자리) */}
+        <button
+          type="button"
+          className="lineup-action-btn lineup-action-btn-primary lineup-header-share"
+          onClick={() => setShareOpen(true)}
+        >
+          <Share2 size={12} />
+          공유
+        </button>
       </header>
 
       <div className="lineup-layout">
@@ -750,21 +725,13 @@ export function LineupBuilderScreen() {
             </div>
             <button
               type="button"
-              className="lineup-action-btn lineup-action-btn-secondary"
+              className="lineup-action-btn lineup-action-btn-primary"
               onClick={() => setRegisterOpen(true)}
               disabled={!currentEntry || filledCount !== 9}
               title={filledCount === 9 ? "경기장에 등록 — 변경 불가, 전적 누적" : "타순 9명 모두 채운 뒤 등록 가능"}
             >
               <Save size={12} />
               등록
-            </button>
-            <button
-              type="button"
-              className="lineup-action-btn lineup-action-btn-primary"
-              onClick={() => setShareOpen(true)}
-            >
-              <Share2 size={12} />
-              공유
             </button>
           </div>
           {/* PC 와이드 모드에서만 노출 — 대기 선수 카드 헤더 자리 절약. 모바일은 풀 카드 자체에 헤더 유지. */}
