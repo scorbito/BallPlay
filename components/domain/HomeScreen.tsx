@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { BarChart3, CalendarDays, ClipboardCheck, History, ListChecks, PlaySquare, Settings, Sparkles, Swords, Trophy } from "lucide-react";
+import { AlertCircle, BarChart3, Bot, CalendarDays, ClipboardCheck, Crown, History, ListChecks, PlaySquare, Settings, Swords, Target, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 
 type HomeCard = {
@@ -53,6 +54,37 @@ const sections: HomeSection[] = [
     ]
   },
   {
+    id: "predict",
+    label: "예측",
+    cards: [
+      {
+        id: "winner-predict",
+        href: "/predict/winner",
+        title: "승리팀 예측하기",
+        description: "오늘 경기 승리팀을 직접 예측. 결과는 경기 끝나고 확인",
+        icon: Target,
+        available: true
+      },
+      {
+        id: "predict-ranking",
+        href: "/predict/ranking",
+        title: "적중률 랭킹",
+        description: "예측을 잘하는 사람들 순위 (최소 5경기 · 오늘/주/월/시즌)",
+        icon: Crown,
+        available: true
+      },
+      {
+        id: "ai-predict",
+        href: "#",
+        title: "AI 승리팀 예측",
+        description: "AI가 최근 폼·상대 전적·라인업으로 승부 예측",
+        icon: Bot,
+        available: false,
+        badge: "준비중"
+      }
+    ]
+  },
+  {
     id: "kbo-info",
     label: "프로야구 정보",
     cards: [
@@ -79,6 +111,14 @@ const sections: HomeSection[] = [
         description: "2026 KBO 정규시즌 순위와 최근 5경기",
         icon: BarChart3,
         available: true
+      },
+      {
+        id: "videos",
+        href: "/videos",
+        title: "재밌는 야구 영상",
+        description: "끝내기·호수비·짤방 등 야구 영상 모아 보기",
+        icon: PlaySquare,
+        available: true
       }
     ]
   },
@@ -86,24 +126,6 @@ const sections: HomeSection[] = [
     id: "coming-soon",
     label: "준비 중",
     cards: [
-      {
-        id: "videos",
-        href: "#",
-        title: "재밌는 야구 영상",
-        description: "끝내기·호수비·짤방 등 야구 영상 모아 보기",
-        icon: PlaySquare,
-        available: false,
-        badge: "준비중"
-      },
-      {
-        id: "prediction",
-        href: "#",
-        title: "오늘 경기 예측",
-        description: "승부·점수·MVP 예측. 결과는 경기 끝나고 확인",
-        icon: Sparkles,
-        available: false,
-        badge: "공사중"
-      },
       {
         id: "more",
         href: "#",
@@ -118,6 +140,28 @@ const sections: HomeSection[] = [
 ];
 
 export function HomeScreen() {
+  // 카드 설명 팝오버 — 한 번에 하나만 열림. 카드 ID 저장. 다른 데 클릭하면 닫힘.
+  const [openInfoId, setOpenInfoId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!openInfoId) return;
+    const onDocClick = (e: globalThis.MouseEvent) => {
+      const t = e.target as Element | null;
+      // 같은 카드의 info 버튼/툴팁 클릭은 닫지 않음 — 그 외 어디든 클릭하면 닫음
+      if (t?.closest(".play-hub-card-info") || t?.closest(".play-hub-card-tooltip")) return;
+      setOpenInfoId(null);
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [openInfoId]);
+
+  const toggleInfo = (id: string) => (e: ReactMouseEvent) => {
+    // 카드 navigation 막기 — info 버튼은 설명만 토글
+    e.preventDefault();
+    e.stopPropagation();
+    setOpenInfoId((prev) => (prev === id ? null : id));
+  };
+
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
       <header className="play-hub-header">
@@ -131,7 +175,7 @@ export function HomeScreen() {
             className="play-hub-logo"
           />
           <span>야구놀이터</span>
-          <span className="play-hub-tagline">가볍게 즐기는 야구 미니게임 모음</span>
+          <span className="play-hub-tagline">가볍게 즐기는 야구 놀이 모음</span>
         </h1>
         <Link href="/my/settings" className="play-hub-settings" prefetch aria-label="설정">
           <Settings size={20} />
@@ -144,27 +188,45 @@ export function HomeScreen() {
           <div className="play-hub-grid">
             {section.cards.map((card) => {
               const Icon = card.icon;
-              if (!card.available) {
-                return (
-                  <div className="play-hub-card play-hub-card-disabled" key={card.id} aria-disabled="true">
-                    <span className="play-hub-card-icon"><Icon size={22} /></span>
-                    <div>
-                      <strong>{card.title}</strong>
-                      <p>{card.description}</p>
-                    </div>
-                    {card.badge ? <span className="play-hub-card-badge">{card.badge}</span> : null}
-                  </div>
-                );
-              }
-              return (
-                <Link className="play-hub-card" href={card.href} key={card.id} prefetch>
+              const infoOpen = openInfoId === card.id;
+              // 활성/비활성 카드 모두 같은 wrap을 쓰고, 안쪽만 Link/div로 분기.
+              const cornerNode = card.available ? (
+                <button
+                  type="button"
+                  className="play-hub-card-info"
+                  aria-label={`${card.title} 설명 보기`}
+                  aria-expanded={infoOpen}
+                  onClick={toggleInfo(card.id)}
+                >
+                  <AlertCircle size={14} />
+                </button>
+              ) : card.badge ? (
+                <span className="play-hub-card-badge">{card.badge}</span>
+              ) : null;
+              const cardInner = (
+                <>
                   <span className="play-hub-card-icon"><Icon size={22} /></span>
-                  <div>
-                    <strong>{card.title}</strong>
-                    <p>{card.description}</p>
-                  </div>
-                  {card.badge ? <span className="play-hub-card-badge">{card.badge}</span> : null}
-                </Link>
+                  <strong className="play-hub-card-title">{card.title}</strong>
+                </>
+              );
+              return (
+                <div className="play-hub-card-wrap" key={card.id}>
+                  {card.available ? (
+                    <Link className="play-hub-card" href={card.href} prefetch>
+                      {cardInner}
+                    </Link>
+                  ) : (
+                    <div className="play-hub-card play-hub-card-disabled" aria-disabled="true">
+                      {cardInner}
+                    </div>
+                  )}
+                  {cornerNode}
+                  {infoOpen ? (
+                    <div className="play-hub-card-tooltip" role="tooltip">
+                      {card.description}
+                    </div>
+                  ) : null}
+                </div>
               );
             })}
           </div>
