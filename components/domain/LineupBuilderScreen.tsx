@@ -32,6 +32,8 @@ import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
 import { TIER_LABEL } from "@/lib/auth/userTier";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { fetchLineupStatsBulk } from "@/lib/supabase/query-parts/bpLineups";
 
 const ORDERS: LineupOrder[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -131,6 +133,42 @@ export function LineupBuilderScreen() {
   // 공개/비공개 토글 — 비공개로 갈 때 전적 리셋 확인 모달
   const [confirmUnpublishOpen, setConfirmUnpublishOpen] = useState(false);
   const [publishProcessing, setPublishProcessing] = useState(false);
+  // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
+  const [statsByEntryId, setStatsByEntryId] = useState<Record<string, { matches: number; wins: number; losses: number; draws: number }>>({});
+
+  // 본인 라인업 stats 일괄 fetch — 빌더 마운트 시 + 공개 토글 후 자동 갱신.
+  // entries의 entryId + isPublished 시그니처를 기준으로 변경 감지.
+  const publishedSignature = useMemo(
+    () => entries.map((e) => `${e.entryId}:${e.isPublished ? 1 : 0}`).join(","),
+    [entries]
+  );
+
+  useEffect(() => {
+    if (syncStatus !== "synced") return;
+    let cancelled = false;
+    void (async () => {
+      const client = createSupabaseBrowserClient();
+      const { data: { user } } = await client.auth.getUser();
+      if (!user || user.is_anonymous) return;
+      // 본인 라인업 row 모두 fetch (id ↔ entry_id 매핑 필요)
+      const { data: rows } = await client
+        .from("bp_lineups")
+        .select("id, entry_id")
+        .eq("owner_user_id", user.id);
+      if (cancelled || !rows) return;
+      const ids = (rows as Array<{ id: string; entry_id: string }>).map((r) => r.id);
+      const stats = await fetchLineupStatsBulk(client, ids);
+      if (cancelled) return;
+      const byEntryId: Record<string, { matches: number; wins: number; losses: number; draws: number }> = {};
+      for (const r of rows as Array<{ id: string; entry_id: string }>) {
+        if (stats[r.id]) byEntryId[r.entry_id] = stats[r.id];
+      }
+      setStatsByEntryId(byEntryId);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [syncStatus, publishedSignature]);
   /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
   const [hydratedEntryId, setHydratedEntryId] = useState<string | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
@@ -594,6 +632,10 @@ export function LineupBuilderScreen() {
             <ul className="lineup-slot-menu" role="listbox" aria-label="라인업 슬롯">
               {entries.map((entry) => {
                 const active = entry.entryId === selectedEntryId;
+                const stats = statsByEntryId[entry.entryId];
+                const winPct = stats && stats.matches > 0
+                  ? Math.round((stats.wins / stats.matches) * 100)
+                  : null;
                 return (
                   <li key={entry.entryId} className="lineup-slot-menu-item-wrap">
                     <button
@@ -608,6 +650,14 @@ export function LineupBuilderScreen() {
                     >
                       <TeamBadge teamId={entry.teamId} size="sm" />
                       <span className="lineup-slot-menu-name">{entry.name}</span>
+                      {entry.isPublished ? (
+                        <span className="lineup-slot-menu-badge is-public" title="공개 중">공개</span>
+                      ) : (
+                        <span className="lineup-slot-menu-badge" title="비공개">비공개</span>
+                      )}
+                      {stats && stats.matches > 0 ? (
+                        <span className="lineup-slot-menu-record">{stats.wins}-{stats.losses}{winPct !== null ? ` (${winPct}%)` : ""}</span>
+                      ) : null}
                       {active ? <Check size={14} strokeWidth={3} /> : null}
                     </button>
                     <div className="lineup-slot-menu-actions">
@@ -675,11 +725,20 @@ export function LineupBuilderScreen() {
         </button>
       </header>
 
-      {currentEntry?.isPublished ? (
-        <div className="lineup-published-banner" role="status">
-          🔒 공개 라인업 — 수정하려면 비공개로 전환하세요 (전적 리셋)
-        </div>
-      ) : null}
+      {currentEntry?.isPublished ? (() => {
+        const stats = currentEntry ? statsByEntryId[currentEntry.entryId] : undefined;
+        const winPct = stats && stats.matches > 0
+          ? Math.round((stats.wins / stats.matches) * 100)
+          : null;
+        const recordTxt = stats && stats.matches > 0
+          ? ` · ${stats.wins}-${stats.losses}${winPct !== null ? ` (${winPct}%)` : ""}`
+          : " · 전적 없음";
+        return (
+          <div className="lineup-published-banner" role="status">
+            🔒 공개 라인업{recordTxt} — 수정하려면 비공개 전환 (전적 리셋)
+          </div>
+        );
+      })() : null}
       <div className={`lineup-layout ${currentEntry?.isPublished ? "is-locked" : ""}`}>
         {/* 야구장 다이아몬드 — 타자 모드: 9수비, 투수 모드: 선발만 P 표시 */}
         <section className="lineup-diamond-card" aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}>
