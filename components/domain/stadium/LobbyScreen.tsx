@@ -7,7 +7,7 @@ import { Bot, ChevronRight, KeyRound, List, Lock, Swords, Users } from "lucide-r
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
-import { PublishedLineupList } from "./PublishedLineupList";
+import { RegisteredLineupList } from "./RegisteredLineupList";
 import { MyLineupList } from "./MyLineupList";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
@@ -54,7 +54,7 @@ export function LobbyScreen() {
         </Link>
       </div>
 
-      {/* 2. 공개 라인업 풀 — 메인 영역 */}
+      {/* 2. 등록 라인업 풀 — 메인 영역 (승률 정렬 + 5경기 가중) */}
       <section className="stadium-lobby-section stadium-lobby-section-main">
         <header className="stadium-lobby-section-head">
           <h2 className="stadium-lobby-section-title">공개 라인업</h2>
@@ -63,7 +63,7 @@ export function LobbyScreen() {
             <ChevronRight size={14} />
           </Link>
         </header>
-        <PublishedLineupList maxItems={6} showHeader={false} />
+        <RegisteredLineupList maxItems={6} sortBy="winrate" showHeader={false} />
       </section>
 
       {/* 3. 내 라인업 — 본인만 보임. 두 개 이상이면 내 라인업끼리 대결 가능 */}

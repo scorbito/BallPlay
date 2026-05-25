@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Globe } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { PublishedLineupList } from "./PublishedLineupList";
+import { RegisteredLineupList } from "./RegisteredLineupList";
 
 export function DiscoverScreen() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export function DiscoverScreen() {
         </p>
       </header>
 
-      <PublishedLineupList maxItems={50} />
+      <RegisteredLineupList maxItems={50} sortBy="recent" />
     </AppShell>
   );
 }

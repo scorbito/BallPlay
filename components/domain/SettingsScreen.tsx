@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, FileText, HelpCircle, LogOut, Mail, ShieldCheck, UserCircle } from "lucide-react";
+import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogOut, Mail, ShieldCheck, UserCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
 import { signOutAction } from "@/lib/actions/auth";
+import { updateProfileAction } from "@/lib/actions/profile";
 import { useAppState } from "@/lib/state/AppState";
 import type { AuthAccountInfo } from "@/lib/supabase/queries";
+
+const NICKNAME_MAX = 16;
 
 function formatAccountLabel(info: AuthAccountInfo | null | undefined): { label: string; provider: string } | null {
   if (!info || info.isAnonymous) return null;
@@ -29,9 +32,39 @@ type SettingsScreenProps = {
 };
 
 export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
-  const { isAnonymous } = useAppState();
+  const { isAnonymous, profile } = useAppState();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const accountLabel = formatAccountLabel(accountInfo);
+
+  // 닉네임 편집 — 라인업 등록 시 노출되는 식별자
+  const [nicknameDraft, setNicknameDraft] = useState(profile?.nickname ?? "");
+  const [savingNickname, setSavingNickname] = useState(false);
+  const [nicknameSavedAt, setNicknameSavedAt] = useState<number | null>(null);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
+
+  // profile.nickname이 외부에서 갱신될 때 초안 동기화 (다른 탭/페이지에서 변경됐을 때)
+  useEffect(() => {
+    setNicknameDraft(profile?.nickname ?? "");
+  }, [profile?.nickname]);
+
+  const nicknameTrimmed = nicknameDraft.trim();
+  const nicknameDirty = nicknameTrimmed.length > 0 && nicknameTrimmed !== (profile?.nickname ?? "");
+
+  const handleSaveNickname = async () => {
+    if (!nicknameDirty || savingNickname || isAnonymous) return;
+    setSavingNickname(true);
+    setNicknameError(null);
+    try {
+      await updateProfileAction({ nickname: nicknameTrimmed });
+      setNicknameSavedAt(Date.now());
+      window.setTimeout(() => setNicknameSavedAt(null), 1800);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "저장에 실패했습니다.";
+      setNicknameError(msg);
+    } finally {
+      setSavingNickname(false);
+    }
+  };
 
   return (
     <AppShell activeTab="home" title="설정" theme="light" backHref="/">
@@ -63,6 +96,42 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
               <LogOut size={14} /> 로그아웃
             </button>
           </div>
+        )}
+      </section>
+
+      {/* 닉네임 패널 — 라인업 등록 시 다른 사용자에게 노출되는 이름 */}
+      <section className="settings-nickname-section" aria-label="닉네임">
+        <header className="settings-section-head">
+          <UserCircle size={14} /> 닉네임
+        </header>
+        <div className="settings-nickname-card">
+          <input
+            type="text"
+            className="settings-nickname-input"
+            value={nicknameDraft}
+            placeholder={isAnonymous ? "로그인하면 변경 가능" : "닉네임 입력"}
+            maxLength={NICKNAME_MAX}
+            disabled={isAnonymous || savingNickname}
+            onChange={(e) => setNicknameDraft(e.target.value.slice(0, NICKNAME_MAX))}
+          />
+          <button
+            type="button"
+            className="settings-nickname-save"
+            disabled={!nicknameDirty || savingNickname || isAnonymous}
+            onClick={handleSaveNickname}
+          >
+            {savingNickname ? (
+              <Loader2 size={14} className="settings-nickname-spin" />
+            ) : nicknameSavedAt ? (
+              <Check size={14} />
+            ) : null}
+            <span>{savingNickname ? "저장 중" : nicknameSavedAt ? "저장됨" : "저장"}</span>
+          </button>
+        </div>
+        {nicknameError ? (
+          <p className="settings-nickname-error">{nicknameError}</p>
+        ) : (
+          <p className="settings-nickname-hint">경기장 등록 라인업에 닉네임이 표시됩니다 (최대 {NICKNAME_MAX}자)</p>
         )}
       </section>
 

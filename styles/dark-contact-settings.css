@@ -490,3 +490,86 @@
   cursor: not-allowed;
 }
 
+/* ============================================================
+ * 설정 페이지 — 닉네임 패널 (라이트)
+ * ============================================================ */
+.phone-frame-light .settings-nickname-section {
+  margin: 0 0 14px;
+}
+
+.phone-frame-light .settings-nickname-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  border-radius: 14px;
+}
+
+.phone-frame-light .settings-nickname-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bp-text);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.phone-frame-light .settings-nickname-input:focus {
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .settings-nickname-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.phone-frame-light .settings-nickname-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  background: var(--bp-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.phone-frame-light .settings-nickname-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.phone-frame-light .settings-nickname-spin {
+  animation: settingsNicknameSpin 0.8s linear infinite;
+}
+
+@keyframes settingsNicknameSpin {
+  to { transform: rotate(360deg); }
+}
+
+.phone-frame-light .settings-nickname-hint {
+  margin: 6px 4px 0;
+  font-size: 11px;
+  color: var(--bp-text-muted);
+  font-weight: 600;
+}
+
+.phone-frame-light .settings-nickname-error {
+  margin: 6px 4px 0;
+  font-size: 11px;
+  color: var(--bp-danger, #d9534f);
+  font-weight: 700;
+}
+
