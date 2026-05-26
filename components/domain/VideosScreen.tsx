@@ -83,34 +83,68 @@ function renderCard(
   );
 }
 
-// 행 단위 그룹핑 — 쇼츠를 먼저 한 grid 블록으로 모두 모은 다음, 가로 영상을
-// 단독 행으로 줄줄이 표시. 시간 순으로 섞여 들어와도 화면 상단부터 빈 칸 없이 채워짐.
-// 한 줄에 몇 개를 보여줄지는 CSS grid가 결정 (모바일 3, PC wide 5).
-// JS에서 N개로 자르지 않음 — 자르면 PC에서 오른쪽 빈 칸 생김.
+// 행 단위 그룹핑 — 시간순 유지하면서 쇼츠 그리드가 꽉 차는 시점(% 3 == 0)에서만
+// 가로 영상을 끼워 넣음. 쇼츠 1~2개만 사이에 있으면 가로 영상을 잠시 대기시켰다가
+// 다음 쇼츠가 행을 채우면 한꺼번에 노출.
+// 모바일 한 줄 3개 기준으로 break 결정 (PC wide는 CSS가 5열로 wrap).
+//
+// 예: [H1, S1, S2, H2, S3, S4, S5] (모두 같은 날)
+//   → [H1] (쇼츠 0개, 바로 노출)
+//   → S1,S2 누적, H2 대기
+//   → S3로 쇼츠 3개 됨 → 쇼츠 행 + 대기중 H2 flush
+//   → S4, S5 누적
+//   → 끝: 쇼츠 [S4, S5] (마지막 부분 행만 partial OK)
+// 결과: H1 / [S1 S2 S3] / H2 / [S4 S5 _]
+//
+// 봇이 매일 12쇼츠 + 3가로 같은 분에 INSERT → 같은 created_at 내에서 위 로직이
+// 시간순 유지 + 가로/쇼츠 자연스러운 interleave를 만들어줌.
 type VideoRow =
   | { kind: "shorts"; items: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> }
   | { kind: "horizontal"; item: { video: BpVideoWithOwnerRow; parsed: ParsedVideo } };
 
+const SHORTS_PER_ROW_MOBILE = 3;
+
 function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
-  const shorts: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
-  const horizontals: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
+  const rows: VideoRow[] = [];
+  let shortsBuf: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
+  const pendingHorizontals: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
+
+  const flushShorts = () => {
+    if (shortsBuf.length > 0) {
+      rows.push({ kind: "shorts", items: shortsBuf });
+      shortsBuf = [];
+    }
+  };
+  const flushPendingHorizontals = () => {
+    while (pendingHorizontals.length > 0) {
+      const h = pendingHorizontals.shift()!;
+      rows.push({ kind: "horizontal", item: h });
+    }
+  };
 
   for (const v of videos) {
     const parsed = parseVideoUrl(v.url);
     if (parsed.orientation === "vertical") {
-      shorts.push({ video: v, parsed });
+      shortsBuf.push({ video: v, parsed });
+      // 쇼츠가 한 행을 채우면 대기중 가로 영상도 함께 노출
+      if (shortsBuf.length % SHORTS_PER_ROW_MOBILE === 0 && pendingHorizontals.length > 0) {
+        flushShorts();
+        flushPendingHorizontals();
+      }
     } else {
-      horizontals.push({ video: v, parsed });
+      // 가로 영상: 현재까지 쇼츠 수가 행에 딱 맞으면 바로 flush + 노출,
+      // 아니면 대기열에 추가하고 다음 쇼츠가 행을 채울 때까지 기다림.
+      if (shortsBuf.length % SHORTS_PER_ROW_MOBILE === 0) {
+        flushShorts();
+        rows.push({ kind: "horizontal", item: { video: v, parsed } });
+      } else {
+        pendingHorizontals.push({ video: v, parsed });
+      }
     }
   }
-
-  const rows: VideoRow[] = [];
-  if (shorts.length > 0) {
-    rows.push({ kind: "shorts", items: shorts });
-  }
-  for (const h of horizontals) {
-    rows.push({ kind: "horizontal", item: h });
-  }
+  // 마지막 partial 쇼츠 행 + 남은 대기 가로 영상은 끝에 그대로 표시
+  flushShorts();
+  flushPendingHorizontals();
   return rows;
 }
 
