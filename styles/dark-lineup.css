@@ -270,7 +270,9 @@
   flex: 1;
   align-items: flex-start;
   text-align: left;
-  padding-right: 18px; /* 우상단 ! 버튼 자리 */
+  /* ! 버튼은 top-right 코너만 차지 (22px), 텍스트는 vertical center라 padding-right 최소화 →
+     "경기장 들어가기" "내 라인업 기록" 등 5~6자 제목이 1줄에 들어감 */
+  padding-right: 4px;
 }
 
 .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
@@ -278,6 +280,10 @@
   font-weight: 800;
   line-height: 1.25;
   text-align: left;
+  /* 좁은 카드 폭에서 5~6자 제목이 2줄로 떨어지지 않게 1줄 강제 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {

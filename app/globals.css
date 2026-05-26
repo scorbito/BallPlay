@@ -224,7 +224,9 @@ button {
   .phone-frame {
     width: min(640px, 100% - 32px);
     max-width: 640px;
-    height: min(960px, calc(100dvh - 48px));
+    /* 세로는 viewport 거의 끝까지 — 기존 960px 캡 제거.
+       iPad Pro 12.9" portrait(1366px)에서도 위아래 빈 영역이 거의 안 생김. */
+    height: calc(100dvh - 48px);
     min-height: min(640px, calc(100dvh - 48px));
     border-radius: 24px;
   }
@@ -334,6 +336,8 @@ button {
   background: rgba(255, 255, 255, 0.94);
   border-top: 1px solid #ebedf0;
   backdrop-filter: blur(14px);
+  /* 카드 안의 배지(z-index:2) 위에 항상 떠 있도록 — 안 그러면 스크롤된 카드의 '준비중' 배지가 탭바 위로 비집고 나옴. */
+  z-index: 10;
 }
 
 .tab-item {
