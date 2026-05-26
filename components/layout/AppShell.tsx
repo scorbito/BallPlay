@@ -14,6 +14,9 @@ type AppShellProps = {
   /** 상단 헤더(타이틀바)를 완전히 숨김. 뒤로가기·타이틀·헤더 액션 모두 함께 사라짐.
    *  일정/커뮤니티/마이 상위 페이지처럼 헤더 없이 콘텐츠를 위로 올리고 싶을 때 사용. */
   hideHeader?: boolean;
+  /** 하단 BottomTabs를 숨김. 시뮬 진행·친구 대결 등 몰입 화면에서 사용해
+   *  실수 탭으로 매치를 잃지 않게 한다. 뒤로가기는 유지되므로 명시적 이탈만 가능. */
+  hideBottomTabs?: boolean;
   /** PC(≥1025px)에서 phone-frame을 와이드로 확장. 콘텐츠가 가로로 더 펼쳐져야 하는 페이지(라인업 등)용. */
   wide?: boolean;
   children: ReactNode;
@@ -27,6 +30,7 @@ export function AppShell({
   headerAction,
   backHref,
   hideHeader = false,
+  hideBottomTabs = false,
   wide = false,
   children
 }: AppShellProps) {
@@ -62,7 +66,7 @@ export function AppShell({
             <PullToRefresh>{children}</PullToRefresh>
           </div>
         </div>
-        <BottomTabs activeTab={activeTab} />
+        {hideBottomTabs ? null : <BottomTabs activeTab={activeTab} />}
       </section>
     </main>
   );
