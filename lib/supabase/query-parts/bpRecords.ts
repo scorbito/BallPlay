@@ -71,7 +71,7 @@ export type CreateRecordInput = {
 export async function createRecord(
   client: SupabaseClient,
   input: CreateRecordInput
-): Promise<{ ok: true; row: BpRecordRow } | { ok: false; error: string }> {
+): Promise<{ ok: true; row: BpRecordRow | null; alreadyExists?: boolean } | { ok: false; error: string }> {
   const insertRow = {
     owner_user_id: input.ownerUserId,
     source: input.source,
@@ -96,6 +96,11 @@ export async function createRecord(
   };
 
   const { data, error } = await client.from(TABLE).insert(insertRow).select().single();
+  // 23505 = unique violation. 친구 대전 race로 상대방 trigger가 이미 mirror row를 만들었을 때 발생.
+  // 사용자 입장에선 row가 이미 존재하므로 graceful success로 처리.
+  if (error?.code === "23505") {
+    return { ok: true, row: null, alreadyExists: true };
+  }
   if (error) return { ok: false, error: error.message };
   return { ok: true, row: data as BpRecordRow };
 }

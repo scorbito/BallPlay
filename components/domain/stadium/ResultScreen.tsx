@@ -149,10 +149,11 @@ export function ResultScreen() {
           saveAttemptedRef.current = false;
           return;
         }
-        setSavedId(result.row.id);
-        // matchSession에도 표시 — 다음 마운트에서 중복 시도 차단
+        // alreadyExists: 상대방 mirror trigger가 먼저 만든 경우 — row.id 없음. "mirrored" placeholder로 마킹.
+        const recordId = result.row?.id ?? "mirrored";
+        setSavedId(recordId);
         const cur = loadMatchSession();
-        if (cur) saveMatchSession({ ...cur, savedRecordId: result.row.id });
+        if (cur) saveMatchSession({ ...cur, savedRecordId: recordId });
       } catch {
         if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
       } finally {

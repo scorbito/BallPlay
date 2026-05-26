@@ -495,12 +495,13 @@ export function PlayScreen() {
           if (!cancelled) showToast(`기록 자동 저장 실패: ${result.error}`);
           return;
         }
-        // matchSession은 cancelled와 무관하게 무조건 업데이트 — PlayScreen이 unmount되어도
-        // ResultScreen이 중복 INSERT 하지 않도록 sessionStorage에 결과를 영구 기록.
+        // alreadyExists: 친구 대전 race로 상대 trigger가 이미 mirror row 만든 경우 → row.id 없음.
+        // "saved" placeholder로 마킹해 ResultScreen 중복 INSERT만 차단.
+        const recordId = result.row?.id ?? "mirrored";
         const cur = loadMatchSession();
-        if (cur) saveMatchSession({ ...cur, savedRecordId: result.row.id });
+        if (cur) saveMatchSession({ ...cur, savedRecordId: recordId });
         if (cancelled) return;
-        setRecordSavedId(result.row.id);
+        setRecordSavedId(recordId);
       } catch {
         if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
       } finally {

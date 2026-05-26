@@ -14,11 +14,41 @@ import {
   canReplay,
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
+import { listMyLineups } from "@/lib/supabase/query-parts/bpLineups";
+import { getTeam } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { saveMatchSession } from "@/lib/sim/matchSession";
 import { withTimeout } from "@/lib/utils/withTimeout";
 
 type AuthState = "loading" | "loggedIn" | "loggedOut";
+
+type LineupOption = { id: string; name: string; teamId: string };
+
+type Stats = { wins: number; losses: number; draws: number };
+
+// 특정 라인업(또는 전체)의 본인 시점 전적 집계.
+// user_side가 mirror row에선 flip되어 있으므로, user_side+final_score 조합이 곧 "본인 측 결과".
+function computeStats(records: BpRecordRow[], lineupId: string | null): Stats {
+  let wins = 0;
+  let losses = 0;
+  let draws = 0;
+  for (const r of records) {
+    if (lineupId && r.home_lineup_id !== lineupId && r.away_lineup_id !== lineupId) continue;
+    const home = r.final_score.home;
+    const away = r.final_score.away;
+    if (home === away) {
+      draws += 1;
+    } else if (
+      (r.user_side === "home" && home > away) ||
+      (r.user_side === "away" && away > home)
+    ) {
+      wins += 1;
+    } else {
+      losses += 1;
+    }
+  }
+  return { wins, losses, draws };
+}
 
 export function RecordsScreen() {
   const router = useRouter();
@@ -27,6 +57,9 @@ export function RecordsScreen() {
   const [rows, setRows] = useState<BpRecordRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // 내 라인업 목록 — 필터 chip 노출용. 본인의 bp_lineups row id ↔ 이름 매핑.
+  const [myLineups, setMyLineups] = useState<LineupOption[]>([]);
+  const [filterLineupId, setFilterLineupId] = useState<string | null>(null);
 
   const fetchRecords = useCallback(async () => {
     setLoadError(null);
@@ -64,6 +97,17 @@ export function RecordsScreen() {
       return;
     }
     setRows(result.rows);
+    // 라인업 필터용 매핑 — 실패해도 기록 표시엔 영향 없음 (필터 chip만 안 뜸).
+    const linRes = await listMyLineups(client, user.id);
+    if (linRes.ok) {
+      setMyLineups(
+        linRes.rows.map((r) => ({
+          id: r.id,
+          name: r.name?.trim() || getTeam(r.team_id).shortName,
+          teamId: r.team_id
+        }))
+      );
+    }
   }, []);
 
   useEffect(() => {
@@ -189,11 +233,68 @@ export function RecordsScreen() {
     );
   }
 
+  // 라인업 필터 적용 — 선택된 라인업이 home/away 어느 쪽이든 매칭되는 row만 노출
+  const filteredRows = filterLineupId
+    ? (rows ?? []).filter(
+        (r) => r.home_lineup_id === filterLineupId || r.away_lineup_id === filterLineupId
+      )
+    : rows ?? [];
+
   return (
     <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
       <p className="records-subtitle">자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
+
+      {/* 라인업 필터 chip — 라인업이 2개 이상일 때만 노출. "전체" + 본인 라인업 각각.
+          각 chip에 본인 시점 승·패·무 표시. 가로 스크롤 (오른쪽 끝 fade로 hint). */}
+      {myLineups.length >= 2 ? (
+        <div className="records-filter" role="tablist" aria-label="라인업 필터">
+          {(() => {
+            const total = computeStats(rows ?? [], null);
+            return (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filterLineupId === null}
+                className={`records-filter-chip ${filterLineupId === null ? "is-active" : ""}`}
+                onClick={() => setFilterLineupId(null)}
+              >
+                <span>전체</span>
+                <span className="records-filter-chip-stats">{total.wins}·{total.losses}·{total.draws}</span>
+              </button>
+            );
+          })()}
+          {myLineups.map((lineup) => {
+            const s = computeStats(rows ?? [], lineup.id);
+            return (
+              <button
+                key={lineup.id}
+                type="button"
+                role="tab"
+                aria-selected={filterLineupId === lineup.id}
+                className={`records-filter-chip ${filterLineupId === lineup.id ? "is-active" : ""}`}
+                onClick={() => setFilterLineupId(lineup.id)}
+              >
+                <TeamBadge teamId={lineup.teamId} size="sm" />
+                <span>{lineup.name}</span>
+                <span className="records-filter-chip-stats">{s.wins}·{s.losses}·{s.draws}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {filterLineupId && filteredRows.length === 0 ? (
+        <section className="records-empty">
+          <span className="records-empty-icon">
+            <History size={28} />
+          </span>
+          <strong>이 라인업으로 한 경기가 아직 없어요</strong>
+          <p>다른 라인업 기록을 보려면 위 필터를 바꿔보세요.</p>
+        </section>
+      ) : null}
+
       <section className="records-list">
-        {rows?.map((row) => {
+        {filteredRows.map((row: BpRecordRow) => {
           const replay = canReplay(row, SIM_ENGINE_VERSION);
           const isWinner =
             (row.user_side === "home" && row.final_score.home > row.final_score.away) ||
