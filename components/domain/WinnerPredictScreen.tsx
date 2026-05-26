@@ -7,7 +7,7 @@
 //
 // 디자인: 일정 페이지처럼 컴팩트한 1줄 행 — 5경기가 한 화면에 다 보이도록.
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, Crown, Lock, X } from "lucide-react";
@@ -31,6 +31,9 @@ export type WinnerPredictGame = {
   homeScore: number | null;
   awayScore: number | null;
   status: "scheduled" | "in_progress" | "finished" | "canceled";
+  /** 선발 투수 이름 — KBO 미발표 시 null */
+  homeStarter: string | null;
+  awayStarter: string | null;
   predictedWinnerTeamId: string | null;
   lockedAt: string | null;
   actualWinnerTeamId: string | null;
@@ -49,7 +52,8 @@ type Props = {
   prevDateISO: string;
   nextDateISO: string;
   games: WinnerPredictGame[];
-  todayStats: Stats;
+  /** 선택된 날짜 기준 적중률 (어제로 가면 어제 통계) */
+  dateStats: Stats;
   allTimeStats: Stats;
 };
 
@@ -76,7 +80,7 @@ export function WinnerPredictScreen({
   prevDateISO,
   nextDateISO,
   games,
-  todayStats,
+  dateStats,
   allTimeStats
 }: Props) {
   const router = useRouter();
@@ -103,6 +107,54 @@ export function WinnerPredictScreen({
     () => (isToday ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id]) : []),
     [games, lockedMap, isToday]
   );
+  // 애니메이션 트리거 조건: 픽한 경기 + 그 경기 결과(isJudged)가 하나라도 있을 때.
+  //   - 오늘 픽 직후(결과 없음) → 정적
+  //   - 다음날 들어와서 결과 확인 → 전체 stagger + 펄스
+  //   - 픽 없는 일반 경기 둘러보기 → 정적
+  const hasAnyJudgedPick = useMemo(
+    () => games.some((g) => predictions[g.id] && g.isJudged),
+    [games, predictions]
+  );
+
+  // 카드 stagger 애니메이션이 끝나는 시점 = 마지막 카드 등장(슬라이드 완료) ms.
+  // 마지막 카드 인덱스 = games.length - 1, stagger 간격 500ms, 슬라이드 0.45s.
+  const lastCardEndMs = useMemo(
+    () => (games.length > 0 ? (games.length - 1) * 500 + 450 : 0),
+    [games.length]
+  );
+
+  // 날짜 적중률 카운트업 — hasAnyJudgedPick일 때만 0 → target 부드럽게 증가.
+  const dateRateTarget =
+    dateStats.total > 0 ? Math.round((dateStats.correct / dateStats.total) * 100) : 0;
+  const shouldAnimateDateRate = hasAnyJudgedPick && dateStats.total > 0;
+  const [displayDateRate, setDisplayDateRate] = useState(
+    shouldAnimateDateRate ? 0 : dateRateTarget
+  );
+
+  useEffect(() => {
+    if (!shouldAnimateDateRate) {
+      setDisplayDateRate(dateRateTarget);
+      return;
+    }
+    let raf = 0;
+    let startTime = 0;
+    const animDuration = 800;
+    const tick = (now: number) => {
+      if (!startTime) startTime = now;
+      const elapsed = now - startTime;
+      if (elapsed < lastCardEndMs) {
+        setDisplayDateRate(0);
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const progress = Math.min(1, (elapsed - lastCardEndMs) / animDuration);
+      const eased = 1 - Math.pow(1 - progress, 2); // ease-out
+      setDisplayDateRate(Math.round(dateRateTarget * eased));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [shouldAnimateDateRate, dateRateTarget, lastCardEndMs]);
   const unselectedCount = useMemo(
     () => editableGames.filter((g) => !predictions[g.id]).length,
     [editableGames, predictions]
@@ -178,12 +230,25 @@ export function WinnerPredictScreen({
 
   return (
     <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/">
-      {/* 상단 적중률 — 한 줄 컴팩트 */}
+      {/* 상단 적중률 — 한 줄 컴팩트. 좌측은 선택 날짜 기준이라 어제로 가면 어제 통계.
+          애니메이션 트리거(hasAnyJudgedPick) 시 카드 등장 끝난 후 페이드인 + 숫자 카운트업. */}
       <section className="predict-stats" aria-label="적중률">
-        <div className="predict-stat">
-          <span className="predict-stat-label">오늘</span>
-          <strong className="predict-stat-value">{rateLabel(todayStats)}</strong>
-          <span className="predict-stat-detail">{rateDetail(todayStats)}</span>
+        <div
+          className="predict-stat"
+          style={
+            hasAnyJudgedPick
+              ? {
+                  opacity: 0,
+                  animation: `predict-stat-fade-in 0.5s ease-out ${lastCardEndMs}ms forwards`
+                }
+              : undefined
+          }
+        >
+          <span className="predict-stat-label">{isToday ? "오늘" : dateLabel}</span>
+          <strong className="predict-stat-value">
+            {shouldAnimateDateRate ? `${displayDateRate}%` : rateLabel(dateStats)}
+          </strong>
+          <span className="predict-stat-detail">{rateDetail(dateStats)}</span>
         </div>
         <div className="predict-stat-divider" aria-hidden="true" />
         <div className="predict-stat">
@@ -245,7 +310,7 @@ export function WinnerPredictScreen({
       ) : (
         <>
           <section className="predict-row-list" aria-label="오늘 경기">
-            {games.map((game) => {
+            {games.map((game, idx) => {
               const home = getTeam(game.homeTeamId);
               const away = getTeam(game.awayTeamId);
               const picked = predictions[game.id];
@@ -258,6 +323,17 @@ export function WinnerPredictScreen({
               const homeWon = showScores && game.homeScore !== null && game.awayScore !== null && game.homeScore > game.awayScore;
               const awayWon = showScores && game.homeScore !== null && game.awayScore !== null && game.awayScore > game.homeScore;
 
+              // 페이지에 픽이 하나라도 있으면 모든 카드 stagger로 등장 (예측 페이지 톤).
+              // 픽이 전혀 없는 날(일반 경기 둘러보기)에선 다 정적.
+              const isPicked = picked !== null;
+              const isPredictedAndJudged = isPicked && game.isJudged;
+              const isCorrect = isPredictedAndJudged && game.isCorrect === true;
+              const isWrong = isPredictedAndJudged && game.isCorrect === false;
+
+              const rowClasses = ["predict-row"];
+              if (editable) rowClasses.push("is-editable");
+              if (hasAnyJudgedPick) rowClasses.push("is-staggered");
+
               const sideClass = (isPicked: boolean, won: boolean) => {
                 const parts = ["predict-row-side"];
                 if (isPicked) parts.push("is-picked");
@@ -267,11 +343,21 @@ export function WinnerPredictScreen({
                 return parts.join(" ");
               };
 
+              // 카드 stagger — inline shorthand로 animation 전체 명시 (CSS hot reload 누락 방지).
+              // 0.5초 간격으로 위에서부터 순차 등장.
+              const animationStyle = hasAnyJudgedPick
+                ? {
+                    animation: `predict-row-judged-in 0.45s ease-out ${idx * 500}ms backwards`
+                  }
+                : undefined;
+              // 결과 라벨 펄스 = 카드 등장 시점 + 카드 슬라이드 완료(0.45s)
+              const resultDelayMs = hasAnyJudgedPick ? idx * 500 + 450 : 0;
+
               return (
-                <article key={game.id} className={`predict-row ${editable ? "is-editable" : ""}`}>
+                <article key={game.id} className={rowClasses.join(" ")} style={animationStyle}>
                   <span className="predict-row-time">{shortTime(game.gameTime)}</span>
 
-                  {/* Away */}
+                  {/* Away — grid 1fr auto 1fr로 team-block을 카드 정중앙에 고정 */}
                   <button
                     type="button"
                     className={sideClass(awayPicked, awayWon)}
@@ -280,18 +366,28 @@ export function WinnerPredictScreen({
                     aria-pressed={awayPicked}
                   >
                     <TeamBadge teamId={game.awayTeamId} size="sm" />
-                    <span className="predict-row-team">{away.shortName}</span>
-                    {showScores ? <span className="predict-row-score">{game.awayScore ?? "-"}</span> : null}
-                    {awayPicked && game.isJudged && game.isCorrect === true ? (
-                      <Check size={12} className="predict-row-mark predict-row-mark-ok" />
-                    ) : awayPicked && game.isJudged && game.isCorrect === false ? (
-                      <X size={12} className="predict-row-mark predict-row-mark-no" />
-                    ) : null}
+                    <span className="predict-row-team-block">
+                      <span className="predict-row-team">{away.shortName}</span>
+                      {game.awayStarter ? (
+                        <span className="predict-row-starter-inline">⚾ {game.awayStarter}</span>
+                      ) : null}
+                    </span>
+                    <span className="predict-row-side-trail">
+                      {showScores ? <span className="predict-row-score">{game.awayScore ?? "-"}</span> : null}
+                      {/* 픽 마크: 적중=초록✓, 오답=빨강X, 미채점=핑크✓ */}
+                      {awayPicked && game.isJudged && game.isCorrect === true ? (
+                        <Check size={14} className="predict-row-mark predict-row-mark-ok" strokeWidth={3} aria-label="적중" />
+                      ) : awayPicked && game.isJudged && game.isCorrect === false ? (
+                        <X size={14} className="predict-row-mark predict-row-mark-no" strokeWidth={3} aria-label="오답" />
+                      ) : awayPicked ? (
+                        <Check size={14} className="predict-row-mark predict-row-mark-pick" strokeWidth={3} aria-label="내 픽" />
+                      ) : null}
+                    </span>
                   </button>
 
                   <span className="predict-row-vs">VS</span>
 
-                  {/* Home */}
+                  {/* Home — 미러 구조 (trail | team | badge) */}
                   <button
                     type="button"
                     className={`${sideClass(homePicked, homeWon)} predict-row-side-right`}
@@ -299,30 +395,58 @@ export function WinnerPredictScreen({
                     disabled={!editable || saving}
                     aria-pressed={homePicked}
                   >
-                    {homePicked && game.isJudged && game.isCorrect === true ? (
-                      <Check size={12} className="predict-row-mark predict-row-mark-ok" />
-                    ) : homePicked && game.isJudged && game.isCorrect === false ? (
-                      <X size={12} className="predict-row-mark predict-row-mark-no" />
-                    ) : null}
-                    {showScores ? <span className="predict-row-score">{game.homeScore ?? "-"}</span> : null}
-                    <span className="predict-row-team">{home.shortName}</span>
+                    <span className="predict-row-side-trail">
+                      {/* 픽 마크: 적중=초록✓, 오답=빨강X, 미채점=핑크✓ */}
+                      {homePicked && game.isJudged && game.isCorrect === true ? (
+                        <Check size={14} className="predict-row-mark predict-row-mark-ok" strokeWidth={3} aria-label="적중" />
+                      ) : homePicked && game.isJudged && game.isCorrect === false ? (
+                        <X size={14} className="predict-row-mark predict-row-mark-no" strokeWidth={3} aria-label="오답" />
+                      ) : homePicked ? (
+                        <Check size={14} className="predict-row-mark predict-row-mark-pick" strokeWidth={3} aria-label="내 픽" />
+                      ) : null}
+                      {showScores ? <span className="predict-row-score">{game.homeScore ?? "-"}</span> : null}
+                    </span>
+                    <span className="predict-row-team-block">
+                      <span className="predict-row-team">{home.shortName}</span>
+                      {game.homeStarter ? (
+                        <span className="predict-row-starter-inline">⚾ {game.homeStarter}</span>
+                      ) : null}
+                    </span>
                     <TeamBadge teamId={game.homeTeamId} size="sm" />
                   </button>
 
-                  {/* 우측 상태 */}
-                  <span className={`predict-row-status predict-row-status-${game.status}`}>
-                    {locked && game.status === "scheduled" ? (
-                      <Lock size={11} />
-                    ) : game.status === "in_progress" ? (
-                      "진행중"
-                    ) : game.status === "finished" ? (
-                      "종료"
-                    ) : game.status === "canceled" ? (
-                      "취소"
-                    ) : (
-                      "예정"
-                    )}
-                  </span>
+                  {/* 우측 상태 — 채점된 본인 예측이면 적중/실패 큰 배지, 그 외엔 기본 상태.
+                      펄스 delay를 카드별 stagger에 맞춰 inline으로 — 늦게 등장한 카드도 등장 직후 펄스. */}
+                  {isCorrect ? (
+                    <span
+                      className="predict-row-result predict-row-result-correct"
+                      style={{ animationDelay: `${resultDelayMs}ms` }}
+                    >
+                      적중!
+                    </span>
+                  ) : isWrong ? (
+                    <span
+                      className="predict-row-result predict-row-result-wrong"
+                      style={{ animationDelay: `${resultDelayMs}ms` }}
+                    >
+                      아쉬워요
+                    </span>
+                  ) : (
+                    <span className={`predict-row-status predict-row-status-${game.status}`}>
+                      {locked && game.status === "scheduled" ? (
+                        <Lock size={11} />
+                      ) : game.status === "in_progress" ? (
+                        "진행중"
+                      ) : game.status === "finished" ? (
+                        "종료"
+                      ) : game.status === "canceled" ? (
+                        "취소"
+                      ) : (
+                        "예정"
+                      )}
+                    </span>
+                  )}
+
                 </article>
               );
             })}

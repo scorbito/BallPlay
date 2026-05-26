@@ -31,6 +31,8 @@ function toGame(row: {
   away_score: number | null;
   status: GameRecord["status"];
   innings: number | null;
+  home_starter?: string | null;
+  away_starter?: string | null;
 }): GameRecord {
   return {
     id: row.id,
@@ -42,7 +44,9 @@ function toGame(row: {
     homeScore: row.home_score ?? undefined,
     awayScore: row.away_score ?? undefined,
     status: row.status,
-    innings: row.innings
+    innings: row.innings,
+    homeStarter: row.home_starter ?? null,
+    awayStarter: row.away_starter ?? null
   };
 }
 
@@ -90,25 +94,37 @@ export async function listTeamsFromDb(): Promise<Team[]> {
 
 export async function listGamesFromDb(params: { from: string; to: string; teamId?: string }): Promise<GameRecord[]> {
   const supabase = createSupabaseAdminClient();
-  let query = supabase
-    .from("games")
-    .select("id,game_date,game_time,stadium,home_team_id,away_team_id,home_score,away_score,status,innings")
-    .gte("game_date", params.from)
-    .lte("game_date", params.to)
-    .order("game_date", { ascending: true })
-    .order("game_time", { ascending: true });
 
-  if (params.teamId) {
-    query = query.or(`home_team_id.eq.${params.teamId},away_team_id.eq.${params.teamId}`);
-  }
+  // 선발 컬럼 포함 select — add-games-starters.sql 적용 전이면 42703(undefined_column)으로 실패하므로
+  // 그 경우 기본 컬럼만으로 fallback. SQL 적용 후엔 fallback 분기 안 탐.
+  const baseCols = "id,game_date,game_time,stadium,home_team_id,away_team_id,home_score,away_score,status,innings";
+  const withStarterCols = `${baseCols},home_starter,away_starter`;
 
-  const { data, error } = await query;
+  const runQuery = async (cols: string) => {
+    let q = supabase
+      .from("games")
+      .select(cols)
+      .gte("game_date", params.from)
+      .lte("game_date", params.to)
+      .order("game_date", { ascending: true })
+      .order("game_time", { ascending: true });
+    if (params.teamId) {
+      q = q.or(`home_team_id.eq.${params.teamId},away_team_id.eq.${params.teamId}`);
+    }
+    return q;
+  };
 
-  if (error) {
+  let { data, error } = await runQuery(withStarterCols);
+  if (error?.code === "42703") {
+    const fb = await runQuery(baseCols);
+    if (fb.error) throw new Error(`Failed to load games: ${fb.error.message}`);
+    data = fb.data;
+    error = null;
+  } else if (error) {
     throw new Error(`Failed to load games: ${error.message}`);
   }
 
-  return data.map(toGame);
+  return (data ?? []).map((row) => toGame(row as Parameters<typeof toGame>[0]));
 }
 
 export async function listStandingsFromDb(season: number): Promise<TeamStanding[]> {

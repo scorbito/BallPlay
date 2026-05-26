@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { History, Play, Trash2, Lock } from "lucide-react";
@@ -60,6 +60,8 @@ export function RecordsScreen() {
   // 내 라인업 목록 — 필터 chip 노출용. 본인의 bp_lineups row id ↔ 이름 매핑.
   const [myLineups, setMyLineups] = useState<LineupOption[]>([]);
   const [filterLineupId, setFilterLineupId] = useState<string | null>(null);
+  // 필터 chip 컨테이너 — PC에서 마우스 드래그로 가로 스크롤 가능하게 ref 부착.
+  const filterRef = useRef<HTMLDivElement | null>(null);
 
   const fetchRecords = useCallback(async () => {
     setLoadError(null);
@@ -113,6 +115,56 @@ export function RecordsScreen() {
   useEffect(() => {
     fetchRecords();
   }, [fetchRecords]);
+
+  // PC 마우스 드래그 가로 스크롤 — chip 컨테이너에 mousedown/mousemove/mouseup 부착.
+  // 모바일은 native touch scroll 그대로 동작. 드래그 거리 5px 넘으면 click 무효화해 chip 오선택 방지.
+  useEffect(() => {
+    const el = filterRef.current;
+    if (!el || myLineups.length < 2) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollStart = 0;
+    let dragDist = 0;
+
+    const onDown = (e: MouseEvent) => {
+      isDown = true;
+      dragDist = 0;
+      startX = e.pageX;
+      scrollStart = el.scrollLeft;
+      el.classList.add("is-dragging");
+    };
+    const onMove = (e: MouseEvent) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const walk = e.pageX - startX;
+      dragDist = Math.max(dragDist, Math.abs(walk));
+      el.scrollLeft = scrollStart - walk;
+    };
+    const onUp = () => {
+      isDown = false;
+      el.classList.remove("is-dragging");
+    };
+    // 드래그 후 발생하는 click은 무효화 — chip 의도치 않은 선택 방지
+    const onClickCapture = (e: MouseEvent) => {
+      if (dragDist > 5) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragDist = 0;
+      }
+    };
+
+    el.addEventListener("mousedown", onDown);
+    el.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    el.addEventListener("click", onClickCapture, true);
+    return () => {
+      el.removeEventListener("mousedown", onDown);
+      el.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      el.removeEventListener("click", onClickCapture, true);
+    };
+  }, [myLineups.length]);
 
   // 모바일: 백그라운드 → 포그라운드 복귀 시 목록 재조회.
   // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
@@ -245,9 +297,9 @@ export function RecordsScreen() {
       <p className="records-subtitle">자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
 
       {/* 라인업 필터 chip — 라인업이 2개 이상일 때만 노출. "전체" + 본인 라인업 각각.
-          각 chip에 본인 시점 승·패·무 표시. 가로 스크롤 (오른쪽 끝 fade로 hint). */}
+          각 chip: 1줄 라인업명 + 2줄 승·패·무. PC는 마우스 드래그로도 가로 스크롤. */}
       {myLineups.length >= 2 ? (
-        <div className="records-filter" role="tablist" aria-label="라인업 필터">
+        <div className="records-filter" role="tablist" aria-label="라인업 필터" ref={filterRef}>
           {(() => {
             const total = computeStats(rows ?? [], null);
             return (
@@ -258,8 +310,10 @@ export function RecordsScreen() {
                 className={`records-filter-chip ${filterLineupId === null ? "is-active" : ""}`}
                 onClick={() => setFilterLineupId(null)}
               >
-                <span>전체</span>
-                <span className="records-filter-chip-stats">{total.wins}·{total.losses}·{total.draws}</span>
+                <span className="records-filter-chip-text">
+                  <span className="records-filter-chip-name">전체</span>
+                  <span className="records-filter-chip-stats">{total.wins}·{total.losses}·{total.draws}</span>
+                </span>
               </button>
             );
           })()}
@@ -275,8 +329,10 @@ export function RecordsScreen() {
                 onClick={() => setFilterLineupId(lineup.id)}
               >
                 <TeamBadge teamId={lineup.teamId} size="sm" />
-                <span>{lineup.name}</span>
-                <span className="records-filter-chip-stats">{s.wins}·{s.losses}·{s.draws}</span>
+                <span className="records-filter-chip-text">
+                  <span className="records-filter-chip-name">{lineup.name}</span>
+                  <span className="records-filter-chip-stats">{s.wins}·{s.losses}·{s.draws}</span>
+                </span>
               </button>
             );
           })}

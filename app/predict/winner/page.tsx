@@ -7,6 +7,7 @@ import {
   listMyPredictionResultsForDate,
   type BpPredictionResultRow
 } from "@/lib/supabase/query-parts/bpPredictions";
+import { refreshTodayStartersIfStale } from "@/lib/server/kbo/refreshStarters";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +49,18 @@ export default async function WinnerPredictPage({
   const prevDate = addDays(selectedDate, -1);
   const nextDate = addDays(selectedDate, 1);
 
-  // 해당 날짜의 경기 + 본인 예측 + 통계 — 병렬 fetch
-  const [gamesResult, predictionsResult, todayStatsResult, allTimeStatsResult] = await Promise.all([
+  // 오늘 날짜 진입 시에만 선발 투수 on-demand refresh (throttle 10분, 모두 채워지면 skip).
+  // listGamesFromDb 호출 BEFORE 실행해야 갱신된 값이 fetch에 반영됨.
+  if (isToday) {
+    await refreshTodayStartersIfStale();
+  }
+
+  // 해당 날짜의 경기 + 본인 예측 + 통계 — 병렬 fetch.
+  // dateStats는 화면에 표시 중인 selectedDate 기준 (어제로 가면 어제 적중률).
+  const [gamesResult, predictionsResult, dateStatsResult, allTimeStatsResult] = await Promise.all([
     listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
     listMyPredictionResultsForDate(supabase, user.id, selectedDate),
-    getMyPredictionStats(supabase, user.id, { dateISO: today }),
+    getMyPredictionStats(supabase, user.id, { dateISO: selectedDate }),
     getMyPredictionStats(supabase, user.id)
   ]);
 
@@ -74,6 +82,8 @@ export default async function WinnerPredictPage({
       homeScore: g.homeScore ?? null,
       awayScore: g.awayScore ?? null,
       status: g.status,
+      homeStarter: g.homeStarter ?? null,
+      awayStarter: g.awayStarter ?? null,
       predictedWinnerTeamId: pred?.predicted_winner_team_id ?? null,
       lockedAt: pred?.locked_at ?? null,
       actualWinnerTeamId: pred?.actual_winner_team_id ?? null,
@@ -84,13 +94,16 @@ export default async function WinnerPredictPage({
 
   return (
     <WinnerPredictScreen
+      // 날짜가 바뀌면 컴포넌트 강제 재마운트 — predictions/lockedMap state가 새 날짜 기준으로 초기화되도록.
+      // 없으면 이전 날짜의 state가 그대로 남아 picked가 undefined → 애니메이션 트리거 못 함.
+      key={selectedDate}
       selectedDateISO={selectedDate}
       isToday={isToday}
       isFuture={isFuture}
       prevDateISO={prevDate}
       nextDateISO={nextDate}
       games={games}
-      todayStats={todayStatsResult.ok ? todayStatsResult.stats : { total: 0, correct: 0, pending: 0 }}
+      dateStats={dateStatsResult.ok ? dateStatsResult.stats : { total: 0, correct: 0, pending: 0 }}
       allTimeStats={allTimeStatsResult.ok ? allTimeStatsResult.stats : { total: 0, correct: 0, pending: 0 }}
     />
   );

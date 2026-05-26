@@ -22,7 +22,10 @@ function toRow(game: RawGame) {
     home_score: game.homeScore,
     away_score: game.awayScore,
     status: game.status,
-    innings: game.innings
+    innings: game.innings,
+    home_starter: game.homeStarter,
+    away_starter: game.awayStarter,
+    starter_fetched_at: new Date().toISOString()
   };
 }
 
@@ -67,19 +70,26 @@ export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> 
   }
 
   for (const row of updates) {
+    // 선발 투수는 null이 오면 기존 값 보존 (KBO가 발표 후 응답에서 누락하는 케이스 방지).
+    // 값이 있을 때만 덮어씀. 또한 starter_fetched_at은 항상 갱신 → throttle 정상 작동.
+    const payload: Record<string, unknown> = {
+      game_date: row.game_date,
+      game_time: row.game_time,
+      stadium: row.stadium,
+      home_team_id: row.home_team_id,
+      away_team_id: row.away_team_id,
+      home_score: row.home_score,
+      away_score: row.away_score,
+      status: row.status,
+      innings: row.innings,
+      starter_fetched_at: new Date().toISOString()
+    };
+    if (row.home_starter !== null) payload.home_starter = row.home_starter;
+    if (row.away_starter !== null) payload.away_starter = row.away_starter;
+
     const { error: updateErr } = await supabase
       .from("games")
-      .update({
-        game_date: row.game_date,
-        game_time: row.game_time,
-        stadium: row.stadium,
-        home_team_id: row.home_team_id,
-        away_team_id: row.away_team_id,
-        home_score: row.home_score,
-        away_score: row.away_score,
-        status: row.status,
-        innings: row.innings
-      })
+      .update(payload)
       .eq("external_id", row.external_id);
     if (updateErr) {
       console.error(`update failed for ${row.external_id}:`, updateErr.message);

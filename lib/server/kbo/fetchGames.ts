@@ -12,6 +12,10 @@ export type RawGame = {
   awayScore: number | null;
   status: "scheduled" | "in_progress" | "finished" | "canceled";
   innings: number | null;
+  // KBO 공식 응답에 같이 오는 선발 투수 이름. 미발표 시 null.
+  // 필드명은 KBO ASMX 응답 컨벤션 따라 여러 candidate를 fallback으로 try.
+  homeStarter: string | null;
+  awayStarter: string | null;
 };
 
 type KboDateInput = Date | string;
@@ -96,6 +100,12 @@ export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
     const awayScore = status === "finished" || status === "in_progress" ? parseInt(awayScoreRaw || "0", 10) : null;
     const inningRaw = parseInt(String(g.GAME_INN_NO ?? "0"), 10);
 
+    // 선발 투수 이름 — KBO API 필드명이 정확치 않아 several candidates 시도.
+    // 흔한 컨벤션: T_PIT_P_NM (away), B_PIT_P_NM (home). T_S_PIT_NM(starter)도 가능.
+    // 미발표면 빈 문자열로 옴 → null로 정규화.
+    const homeStarterRaw = String(g.B_PIT_P_NM ?? g.B_S_PIT_NM ?? g.HOME_STARTER_NM ?? "").trim();
+    const awayStarterRaw = String(g.T_PIT_P_NM ?? g.T_S_PIT_NM ?? g.AWAY_STARTER_NM ?? "").trim();
+
     games.push({
       externalId: toExternalId(dateStr, awayTeamId, homeTeamId),
       gameDate: dateStr,
@@ -111,7 +121,9 @@ export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
           ? (inningRaw > 0 ? inningRaw : 9)
           : status === "in_progress" && inningRaw > 0
             ? inningRaw
-            : null
+            : null,
+      homeStarter: homeStarterRaw || null,
+      awayStarter: awayStarterRaw || null
     });
   }
 
@@ -174,7 +186,10 @@ export async function fetchNaverGames(date: KboDateInput): Promise<RawGame[]> {
       homeScore,
       awayScore,
       status,
-      innings: status === "finished" ? 9 : liveInnings
+      innings: status === "finished" ? 9 : liveInnings,
+      // Naver HTML엔 선발 안 노출. KBO API 폴백으로만 가능 → null.
+      homeStarter: null,
+      awayStarter: null
     });
   });
 

@@ -111,8 +111,9 @@
 }
 
 /* ── 라인업 필터 (chip 가로 스크롤) ──
-   chip 끝이 화면 밖으로 잘리는 걸 사용자가 인지하기 어려워서 오른쪽 edge에
-   mask fade로 "더 있어요" hint. iOS Safari는 momentum scroll로 자연스럽게 스크롤됨. */
+   - 모바일: native touch scroll
+   - PC: 마우스 드래그로 스크롤 (RecordsScreen useEffect에서 핸들러 부착) + 휠 스크롤
+   - chip 끝 잘림 인지 hint: 우측 mask fade */
 
 .phone-frame-light .records-filter {
   display: flex;
@@ -123,9 +124,14 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
-  /* 우측 16px 페이드 — 잘림 hint */
+  cursor: grab;
+  user-select: none; /* 드래그 시 텍스트 선택 방지 */
   mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
+}
+
+.phone-frame-light .records-filter.is-dragging {
+  cursor: grabbing;
 }
 
 .phone-frame-light .records-filter::-webkit-scrollbar {
@@ -135,14 +141,13 @@
 .phone-frame-light .records-filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
   padding: 5px 10px;
   border: 1px solid var(--bp-line);
-  border-radius: 999px;
+  border-radius: 12px;
   background: var(--bp-bg);
   color: var(--bp-text);
-  font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -159,12 +164,25 @@
   color: #fff;
 }
 
-/* 승·패·무 표시 — 라인업 이름 옆에 작은 보조 텍스트 */
+/* chip 텍스트 — 2줄(라인업명 위, 승패무 아래) */
+.phone-frame-light .records-filter-chip-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.15;
+}
+
+.phone-frame-light .records-filter-chip-name {
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .phone-frame-light .records-filter-chip-stats {
   font-size: 10px;
   font-weight: 700;
-  opacity: 0.7;
-  letter-spacing: 0.2px;
+  opacity: 0.65;
+  letter-spacing: 0.3px;
   font-variant-numeric: tabular-nums;
 }
 

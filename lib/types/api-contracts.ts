@@ -25,6 +25,9 @@ export type GameRecord = Omit<Game, "date" | "time" | "status"> & {
   time: string | null;
   status: GameStatus;
   innings: number | null;
+  /** 선발 투수 이름 — KBO 미발표 시 null */
+  homeStarter?: string | null;
+  awayStarter?: string | null;
 };
 
 export type UpdateProfileInput = {
