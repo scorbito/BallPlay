@@ -83,7 +83,9 @@ function renderCard(
   );
 }
 
-// 행 단위 그룹핑 — 쇼츠 3개 모이면 한 행, 가로는 단독 행.
+// 행 단위 그룹핑 — 연속된 쇼츠는 하나의 grid 블록으로 묶음, 가로는 단독 행.
+// 한 줄에 몇 개를 보여줄지는 CSS grid가 결정 (모바일 3, PC wide 5).
+// JS에서 N개로 자르지 않음 — 자르면 PC에서 오른쪽 빈 칸 생김.
 type VideoRow =
   | { kind: "shorts"; items: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> }
   | { kind: "horizontal"; item: { video: BpVideoWithOwnerRow; parsed: ParsedVideo } };
@@ -91,14 +93,7 @@ type VideoRow =
 function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
   const rows: VideoRow[] = [];
   let shortsBuf: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
-  const pendingHorizontals: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
 
-  const flushPendingHorizontals = () => {
-    while (pendingHorizontals.length > 0) {
-      const h = pendingHorizontals.shift()!;
-      rows.push({ kind: "horizontal", item: h });
-    }
-  };
   const flushShorts = () => {
     if (shortsBuf.length > 0) {
       rows.push({ kind: "shorts", items: shortsBuf });
@@ -110,16 +105,13 @@ function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
     const parsed = parseVideoUrl(v.url);
     if (parsed.orientation === "vertical") {
       shortsBuf.push({ video: v, parsed });
-      if (shortsBuf.length === 3) {
-        flushShorts();
-        flushPendingHorizontals();
-      }
     } else {
-      pendingHorizontals.push({ video: v, parsed });
+      // 가로 영상 만나면 누적된 쇼츠 한 번에 flush + 가로는 단독 행
+      flushShorts();
+      rows.push({ kind: "horizontal", item: { video: v, parsed } });
     }
   }
   flushShorts();
-  flushPendingHorizontals();
   return rows;
 }
 
