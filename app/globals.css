@@ -190,10 +190,10 @@ button {
     box-shadow: none;
   }
   /* iOS notch / 안드로이드 system bar 안전영역.
-     상단은 시스템 상태바(시각·배터리) 영역을 침범하지 않도록 safe-area-inset-top 필수.
-     0으로 줄이면 상태바와 헤더 타이틀/뒤로가기 버튼이 겹쳐 보임. */
+     기본 safe-area-inset-top(~50px)에서 24px 빼서 상태바와 콘텐츠 사이 간격 축소.
+     0으로 줄이면 헤더와 상태바가 겹치므로 최소 8px은 확보. */
   .app-scroll {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(8px, calc(env(safe-area-inset-top, 0px) - 24px));
     padding-bottom: calc(92px + env(safe-area-inset-bottom));
   }
 }
