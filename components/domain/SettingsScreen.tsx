@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogOut, Mail, ShieldCheck, UserCircle } from "lucide-react";
+import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, ShieldCheck, UserCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -94,9 +94,11 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
               <span className="settings-account-provider settings-account-provider-anonymous">익명</span>
               <span className="settings-account-id">아직 계정을 연동하지 않았어요</span>
             </div>
-            <button className="settings-account-logout" type="button" onClick={() => setLogoutConfirmOpen(true)}>
-              <LogOut size={14} /> 로그아웃
-            </button>
+            {/* 익명/비로그인 상태에선 로그아웃 대신 로그인 버튼.
+                경기장 도전·내 기록 등 로그인 필요 메뉴와 동일한 진입점. */}
+            <Link className="settings-account-login" href="/login" prefetch>
+              <LogIn size={14} /> 로그인
+            </Link>
           </div>
         )}
       </section>

@@ -435,6 +435,29 @@
   background: rgba(239, 68, 68, 0.16);
 }
 
+/* 로그인 버튼 — 익명/비로그인 상태일 때 노출. logout과 같은 크기/형태, 핑크 강조 */
+.phone-frame-light .settings-account-login {
+  align-items: center;
+  background: var(--bp-accent-soft);
+  border: 1px solid rgba(232, 74, 138, 0.35);
+  border-radius: 999px;
+  color: var(--bp-accent);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 850;
+  gap: 4px;
+  height: 30px;
+  justify-content: center;
+  padding: 0 10px;
+  text-decoration: none;
+}
+
+.phone-frame-light .settings-account-login:hover {
+  background: rgba(232, 74, 138, 0.16);
+}
+
 /* 공개 범위 선택 모달 */
 .scope-options {
   gap: 8px;
