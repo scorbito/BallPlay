@@ -39,11 +39,12 @@ export function parseVideoUrl(url: string): ParsedVideo {
         thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
         // 표준 youtube.com 임베드. nocookie 도메인은 일부 환경에서 더 엄격.
         // autoplay=1 + mute=1: iOS Safari·모바일 Chrome 모두 자동재생 허용.
-        //   (iOS는 음소거 아닌 자동재생을 무조건 차단. TikTok·IG Reels 표준 패턴)
-        //   사용자가 플레이어 🔊 아이콘으로 unmute 가능.
+        //   (브라우저는 사용자 입력 없는 unmuted 자동재생을 무조건 차단)
+        // enablejsapi=1: 우리 코드에서 postMessage로 unMute() 호출 가능하게.
+        //   사용자가 한 번 unmute하면 localStorage 기억 → 이후 영상은 자동 unmute.
         // playsinline=1: iOS에서 풀스크린으로 안 빠짐. modestbranding=1: 유튜브 로고 최소화.
         // iv_load_policy=3: 영상 주석 숨김.
-        embedUrl: `https://www.youtube.com/embed/${id}?rel=0&autoplay=1&mute=1&controls=${controls}&playsinline=1&modestbranding=1&iv_load_policy=3`,
+        embedUrl: `https://www.youtube.com/embed/${id}?rel=0&autoplay=1&mute=1&enablejsapi=1&controls=${controls}&playsinline=1&modestbranding=1&iv_load_policy=3`,
         watchUrl: trimmed,
         orientation
       };

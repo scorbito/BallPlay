@@ -3,9 +3,9 @@
 // 재밌는 야구 영상 — 사용자 등록 풀 (Supabase bp_videos).
 // 모든 인증 사용자가 SELECT, 본인만 INSERT/DELETE.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Bot, Camera, ExternalLink, Film, MessageSquareText, Play, Plus, Trash2, X } from "lucide-react";
+import { Bot, Camera, ExternalLink, Film, MessageSquareText, Play, Plus, Trash2, Volume2, VolumeX, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -123,6 +123,69 @@ export function VideosScreen() {
 
   const [openVideo, setOpenVideo] = useState<BpVideoWithOwnerRow | null>(null);
   const closeModal = () => setOpenVideo(null);
+
+  // 음소거 상태 — 브라우저 정책상 첫 재생은 무조건 muted.
+  // 사용자가 한 번 unmute하면 localStorage에 저장 → 다음 영상부터 자동 unmute 시도.
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [muted, setMuted] = useState(true);
+  const [userUnmutePref, setUserUnmutePref] = useState(false);
+
+  useEffect(() => {
+    try {
+      setUserUnmutePref(localStorage.getItem("videos:auto-unmute") === "true");
+    } catch {
+      // localStorage 접근 불가 (시크릿 모드 등) — 기본값 유지
+    }
+  }, []);
+
+  // YouTube IFrame Player API — postMessage로 명령 전송
+  const sendPlayerCommand = useCallback((func: "mute" | "unMute") => {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) return;
+    win.postMessage(JSON.stringify({ event: "command", func, args: "" }), "*");
+  }, []);
+
+  // 모달 열릴 때마다 muted 상태 리셋 (브라우저 정책) + 자동 unmute 시도
+  useEffect(() => {
+    if (!openVideo) return;
+    setMuted(true);
+    if (!userUnmutePref) return;
+    // iframe이 ready되기 전에 명령 보내면 무시되므로 약간 지연 + 여러 번 시도.
+    // 첫 시도가 빠르면 ready 전이라 실패할 수 있어 500/1500ms 2회 보냄.
+    const t1 = window.setTimeout(() => {
+      sendPlayerCommand("unMute");
+      setMuted(false);
+    }, 500);
+    const t2 = window.setTimeout(() => {
+      sendPlayerCommand("unMute");
+    }, 1500);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [openVideo, userUnmutePref, sendPlayerCommand]);
+
+  const toggleMute = () => {
+    if (muted) {
+      sendPlayerCommand("unMute");
+      setMuted(false);
+      setUserUnmutePref(true);
+      try {
+        localStorage.setItem("videos:auto-unmute", "true");
+      } catch {
+        // 무시
+      }
+    } else {
+      sendPlayerCommand("mute");
+      setMuted(true);
+      setUserUnmutePref(false);
+      try {
+        localStorage.setItem("videos:auto-unmute", "false");
+      } catch {
+        // 무시
+      }
+    }
+  };
 
   const [registerOpen, setRegisterOpen] = useState(false);
   const [registerUrl, setRegisterUrl] = useState("");
@@ -270,6 +333,7 @@ export function VideosScreen() {
               <>
                 <div className="video-player-iframe-wrap">
                   <iframe
+                    ref={iframeRef}
                     src={openParsed.embedUrl}
                     title="영상 재생"
                     loading="lazy"
@@ -277,6 +341,15 @@ export function VideosScreen() {
                     allowFullScreen
                   />
                 </div>
+                <button
+                  type="button"
+                  className="video-player-mute-toggle"
+                  onClick={toggleMute}
+                  aria-label={muted ? "음소거 해제" : "음소거"}
+                  title={muted ? "음소거 해제" : "음소거"}
+                >
+                  {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                </button>
                 <div className="video-player-fallback">
                   재생 안 되면 ▶
                   <a href={openParsed.watchUrl} target="_blank" rel="noopener noreferrer">
