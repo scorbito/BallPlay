@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, List, Swords } from "lucide-react";
+import { ArrowRight, List, Plus, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
@@ -55,6 +55,8 @@ export function MyLineupList({ maxItems = 6 }: Props) {
   // 도전 모달: 내 팀(클릭한 카드) vs 다른 내 라인업
   const [myEntry, setMyEntry] = useState<LineupEntry | null>(null);
   const [opponentEntryId, setOpponentEntryId] = useState<string | null>(null);
+  // 라인업이 1개뿐일 때 도전 누르면 안내 모달
+  const [needSecondLineupOpen, setNeedSecondLineupOpen] = useState(false);
 
   useEffect(() => {
     const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
@@ -81,7 +83,12 @@ export function MyLineupList({ maxItems = 6 }: Props) {
   };
 
   const openChallenge = (entry: LineupEntry) => {
-    if (!entries || entries.length < 2) return;
+    if (!entries) return;
+    // 라인업이 1개뿐이면 안내 모달 — silent return 대신 사용자 인지 가능하게.
+    if (entries.length < 2) {
+      setNeedSecondLineupOpen(true);
+      return;
+    }
     setMyEntry(entry);
     const firstOpponent = entries.find((e) => e.entryId !== entry.entryId);
     setOpponentEntryId(firstOpponent?.entryId ?? null);
@@ -150,7 +157,6 @@ export function MyLineupList({ maxItems = 6 }: Props) {
   }
 
   const list = entries.slice(0, maxItems);
-  const canChallenge = entries.length >= 2;
 
   return (
     <>
@@ -176,12 +182,11 @@ export function MyLineupList({ maxItems = 6 }: Props) {
                   <List size={14} />
                   <span>라인업</span>
                 </button>
+                {/* disabled 제거 — 라인업 1개일 때도 클릭 등록되어 안내 모달 노출되도록 */}
                 <button
                   type="button"
                   className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
                   onClick={() => openChallenge(entry)}
-                  disabled={!canChallenge}
-                  title={canChallenge ? undefined : "내 라인업이 2개 이상 있어야 대결할 수 있어요"}
                   aria-label={`${entry.name}로 도전 시작`}
                 >
                   <Swords size={14} />
@@ -260,6 +265,42 @@ export function MyLineupList({ maxItems = 6 }: Props) {
               </button>
             </>
           ) : null}
+        </div>
+      </ModalShell>
+
+      {/* 라인업 1개일 때 도전 클릭 시 안내 모달 — 새 라인업 만들기 CTA 포함 */}
+      <ModalShell
+        open={needSecondLineupOpen}
+        title="라인업이 2개 필요해요"
+        onClose={() => setNeedSecondLineupOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            내 라인업끼리 대결하려면 <strong>라인업이 2개</strong> 필요해요.<br />
+            새 라인업을 하나 더 만들어보세요.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setNeedSecondLineupOpen(false)}
+            >
+              닫기
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              onClick={() => {
+                setNeedSecondLineupOpen(false);
+                router.push("/play");
+              }}
+            >
+              <Plus size={14} />
+              라인업 만들기
+            </button>
+          </div>
         </div>
       </ModalShell>
     </>

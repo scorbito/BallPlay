@@ -124,7 +124,10 @@ export async function listGamesFromDb(params: { from: string; to: string; teamId
     throw new Error(`Failed to load games: ${error.message}`);
   }
 
-  return (data ?? []).map((row) => toGame(row as Parameters<typeof toGame>[0]));
+  // select에 변수 문자열을 넘기면 Supabase는 row 타입을 추론 못해 GenericStringError로 떨어짐.
+  // unknown 거쳐 우리가 아는 row 타입으로 캐스팅.
+  const rows = (data ?? []) as unknown as Parameters<typeof toGame>[0][];
+  return rows.map(toGame);
 }
 
 export async function listStandingsFromDb(season: number): Promise<TeamStanding[]> {

@@ -165,17 +165,14 @@
 }
 
 /* ── 히어로 섹션 (내 라인업 플레이) ──
-   통합 배경 이미지(패턴 + 일러스트 한 장) + 헤더(텍스트만) + 카드들이 한 컨테이너.
+   배경 이미지가 해상도별로 깨져 보여 핑크 단색으로 대체. 일러스트는 absolute로 유지.
+   헤더(텍스트만) + 카드들이 한 컨테이너.
    모바일: 카드가 비대칭 (1 big + 2 small). PC/태블릿: 3-col 균등. */
 .phone-frame-light .play-hub-hero {
   position: relative;
   padding: 14px 14px 14px;
   border-radius: 20px;
   background-color: #fde6ee;
-  background-image: url("/assets/home-pattern-bg.png");
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
   /* overflow: hidden 시 카드의 ! 버튼 툴팁이 잘림 + 일러스트 top:-50px도 잘림.
      visible로 두면 모두 정상 노출. 둥근 모서리는 배경에 적용되어 그대로 유지됨. */
   overflow: visible;
@@ -2685,9 +2682,14 @@
 }
 
 /* ── confirm modal primary 액션 (새 슬롯·이름 저장·가이드 확인) ── */
-/* cancel 버튼과 같은 너비/높이로 정렬되도록 flex: 1 + 동일 padding 적용 */
+/* cancel 버튼과 같은 너비/높이로 정렬되도록 flex: 1 + 동일 padding 적용.
+   inline-flex로 아이콘+텍스트 가로 정렬 (아이콘 없는 케이스도 그대로 OK). */
 .phone-frame-light .lineup-confirm-primary {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 12px 0;
   background: var(--bp-accent);
   border: none;
