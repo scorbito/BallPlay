@@ -3,7 +3,7 @@
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { AlertCircle, BarChart3, Bot, CalendarDays, ClipboardCheck, Crown, History, ListChecks, PlaySquare, Settings, Swords, Target, Trophy } from "lucide-react";
+import { AlertCircle, BarChart3, Bot, CalendarDays, ClipboardCheck, Crown, ExternalLink, History, ListChecks, PlaySquare, Settings, Swords, Target, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 
 type HomeCard = {
@@ -14,6 +14,10 @@ type HomeCard = {
   icon: typeof ListChecks;
   available: boolean;
   badge?: string;
+  /** 외부 사이트 링크 — 새 탭으로 열고 우상단 ↗ 표시 */
+  external?: boolean;
+  /** 아이콘 자리에 lucide 대신 이미지 사용 */
+  iconImage?: string;
 };
 
 type HomeSection = {
@@ -136,6 +140,22 @@ const sections: HomeSection[] = [
         badge: "곧 만나요"
       }
     ]
+  },
+  {
+    id: "related",
+    label: "함께 보는 야구 앱",
+    cards: [
+      {
+        id: "oneul-seungyo",
+        href: "https://oneul-seungyo.vercel.app/",
+        title: "오늘은 승요",
+        description: "직관 기록과 응원팀 관리를 위한 외부 웹앱",
+        icon: Trophy,
+        iconImage: "/assets/oneul-seungyo-logo.png",
+        available: true,
+        external: true
+      }
+    ]
   }
 ];
 
@@ -189,8 +209,12 @@ export function HomeScreen() {
             {section.cards.map((card) => {
               const Icon = card.icon;
               const infoOpen = openInfoId === card.id;
-              // 활성/비활성 카드 모두 같은 wrap을 쓰고, 안쪽만 Link/div로 분기.
-              const cornerNode = card.available ? (
+              // 우상단 코너: 외부 링크면 ↗, 비활성이면 배지, 그 외엔 ! 버튼
+              const cornerNode = card.external ? (
+                <span className="play-hub-card-external-mark" aria-hidden="true">
+                  <ExternalLink size={14} />
+                </span>
+              ) : card.available ? (
                 <button
                   type="button"
                   className="play-hub-card-info"
@@ -203,15 +227,32 @@ export function HomeScreen() {
               ) : card.badge ? (
                 <span className="play-hub-card-badge">{card.badge}</span>
               ) : null;
+              // 아이콘 영역: iconImage 있으면 이미지, 없으면 lucide
+              const iconNode = card.iconImage ? (
+                <span className="play-hub-card-icon play-hub-card-icon-image">
+                  <Image src={card.iconImage} alt="" width={36} height={36} />
+                </span>
+              ) : (
+                <span className="play-hub-card-icon"><Icon size={22} /></span>
+              );
               const cardInner = (
                 <>
-                  <span className="play-hub-card-icon"><Icon size={22} /></span>
+                  {iconNode}
                   <strong className="play-hub-card-title">{card.title}</strong>
                 </>
               );
               return (
                 <div className="play-hub-card-wrap" key={card.id}>
-                  {card.available ? (
+                  {card.external ? (
+                    <a
+                      className="play-hub-card play-hub-card-external"
+                      href={card.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {cardInner}
+                    </a>
+                  ) : card.available ? (
                     <Link className="play-hub-card" href={card.href} prefetch>
                       {cardInner}
                     </Link>
