@@ -28,6 +28,7 @@ import {
   type SavedPitcherLineup
 } from "@/lib/types/lineup";
 import { createEmptyEntry } from "@/lib/storage/lineupEntries";
+import { hasSeenGuide, markGuideSeen } from "@/lib/storage/lineupGuides";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
@@ -135,6 +136,11 @@ export function LineupBuilderScreen() {
   const [publishProcessing, setPublishProcessing] = useState(false);
   // 공개 상태에서 잠긴 영역(슬롯/풀/다이아몬드) 클릭 시 안내 모달
   const [lockInfoOpen, setLockInfoOpen] = useState(false);
+  // 새 슬롯 onboarding 안내 — 슬롯별 한 번씩만 노출.
+  //   step1: 타순 9명 채우면 "선발 투수만 선택하면 공개 가능"
+  //   step2: 선발 투수 고르면 "이제 공개해서 가상경기 가능"
+  const [guideStep1Open, setGuideStep1Open] = useState(false);
+  const [guideStep2Open, setGuideStep2Open] = useState(false);
   // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
   const [statsByEntryId, setStatsByEntryId] = useState<Record<string, { matches: number; wins: number; losses: number; draws: number }>>({});
 
@@ -563,6 +569,32 @@ export function LineupBuilderScreen() {
   // 공개 가능 조건 — 타선 9명 + 선발 투수(slot[0]) 선택 필수
   const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] != null;
   const canPublish = filledCount === 9 && hasStarter;
+
+  // 슬롯별 가이드 트리거 상태 추적 — transition(0~8→9, false→true)만 캐치.
+  // 첫 마운트(prev 없음)는 무시 → 기존 슬롯이 페이지 진입 시 즉시 popup되는 것 차단.
+  const guideTrackRef = useRef<Map<string, { filledCount: number; hasStarter: boolean }>>(new Map());
+
+  useEffect(() => {
+    if (!currentEntry) return;
+    const key = currentEntry.entryId;
+    const prev = guideTrackRef.current.get(key);
+    guideTrackRef.current.set(key, { filledCount, hasStarter });
+    if (currentEntry.isPublished) return;
+    if (!prev) return; // 슬롯 첫 추적은 트리거 X (기존 슬롯 보호)
+
+    // step1: 타순 미완성 → 9명 완성
+    if (prev.filledCount < 9 && filledCount === 9 && !hasSeenGuide("step1", key)) {
+      markGuideSeen("step1", key);
+      setGuideStep1Open(true);
+      return;
+    }
+    // step2: 선발 투수 새로 채워짐 (타순 9 + step1 안내 본 후)
+    if (!prev.hasStarter && hasStarter && filledCount === 9
+        && hasSeenGuide("step1", key) && !hasSeenGuide("step2", key)) {
+      markGuideSeen("step2", key);
+      setGuideStep2Open(true);
+    }
+  }, [currentEntry?.entryId, currentEntry?.isPublished, filledCount, hasStarter]);
 
 
   // 선수 풀: 모드에 따라 야수만 / 투수만 노출. 이미 배치된 선수는 제외.
@@ -1137,8 +1169,18 @@ export function LineupBuilderScreen() {
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            비공개로 전환하면 이 라인업의 <strong>전적이 모두 리셋</strong>됩니다.<br />
-            그래도 비공개로 바꿀까요?
+            {(() => {
+              const stats = currentEntry ? statsByEntryId[currentEntry.entryId] : undefined;
+              const wins = stats?.wins ?? 0;
+              const losses = stats?.losses ?? 0;
+              const draws = stats?.draws ?? 0;
+              return (
+                <>
+                  비공개로 전환하면 이 라인업의 <strong>현재 전적({wins}승 {losses}패 {draws}무)이 모두 리셋</strong>됩니다.<br />
+                  그래도 비공개로 바꿀까요?
+                </>
+              );
+            })()}
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -1201,6 +1243,82 @@ export function LineupBuilderScreen() {
               }}
             >
               비공개로 전환
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 선발 투수" 안내 */}
+      <ModalShell
+        open={guideStep1Open}
+        title="타순 9명을 다 채웠습니다"
+        onClose={() => setGuideStep1Open(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            이제 <strong>선발 투수</strong>만 선택하면 라인업을 공개할 수 있어요.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setGuideStep1Open(false)}
+            >
+              닫기
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              onClick={() => {
+                setGuideStep1Open(false);
+                setMode("pitcher");
+                setSwapSource(null);
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* 새 슬롯 onboarding step2 — 선발 투수 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개 */}
+      <ModalShell
+        open={guideStep2Open}
+        title="라인업 준비 완료!"
+        onClose={() => setGuideStep2Open(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            이제 라인업을 <strong>공개</strong>해서 경기장에서 다른 사람 라인업과 가상경기를 할 수 있어요.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setGuideStep2Open(false)}
+              disabled={publishProcessing}
+            >
+              닫기
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              disabled={publishProcessing}
+              onClick={async () => {
+                if (!currentEntry) return;
+                setPublishProcessing(true);
+                const res = await togglePublished(currentEntry.entryId, true);
+                setPublishProcessing(false);
+                setGuideStep2Open(false);
+                if (!res.ok) showToast(res.error ?? "공개 전환 실패");
+                else showToast("공개됐어요");
+              }}
+            >
+              확인
             </button>
           </div>
         </div>

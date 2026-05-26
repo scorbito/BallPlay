@@ -18,7 +18,7 @@ import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { saveMatchSession } from "@/lib/sim/matchSession";
 import { withTimeout } from "@/lib/utils/withTimeout";
 
-type AuthState = "loading" | "anonymous" | "loggedIn" | "loggedOut";
+type AuthState = "loading" | "loggedIn" | "loggedOut";
 
 export function RecordsScreen() {
   const router = useRouter();
@@ -48,11 +48,7 @@ export function RecordsScreen() {
       setRows([]);
       return;
     }
-    if (user.is_anonymous) {
-      setAuthState("anonymous");
-      setRows([]);
-      return;
-    }
+    // 익명도 본인 기록 조회 — 2026-05-27부터 익명 매치 기록 저장 활성화됨
     setAuthState("loggedIn");
     let result: Awaited<ReturnType<typeof listMyRecords>>;
     try {
@@ -139,20 +135,16 @@ export function RecordsScreen() {
     );
   }
 
-  if (authState === "loggedOut" || authState === "anonymous") {
+  if (authState === "loggedOut") {
     return (
       <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
-        <p className="records-subtitle">경기 기록은 정식 계정에 저장돼요</p>
+        <p className="records-subtitle">경기 기록은 계정에 저장돼요</p>
         <section className="records-empty">
           <span className="records-empty-icon">
             <Lock size={28} />
           </span>
           <strong>로그인이 필요해요</strong>
-          <p>
-            {authState === "anonymous"
-              ? "익명 로그인 상태에서는 기록이 저장되지 않아요. 정식 계정으로 로그인하면 다른 기기에서도 기록을 볼 수 있어요."
-              : "공개 라인업 매칭이나 친구 대전 결과는 로그인한 계정에 저장돼요."}
-          </p>
+          <p>공개 라인업 매칭이나 친구 대전 결과는 로그인한 계정에 저장돼요.</p>
           <Link className="records-empty-cta" href="/login" prefetch>
             로그인하러 가기
           </Link>
