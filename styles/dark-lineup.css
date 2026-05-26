@@ -157,18 +157,36 @@
   object-fit: contain;
 }
 
-.phone-frame-light .play-hub-card-title {
-  display: block;
+/* 제목 + 부제 컬럼 래퍼 — flex로 카드 가로 공간 차지, 우상단 ! / ↗ 자리 확보용 padding */
+.phone-frame-light .play-hub-card-text {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-right: 18px;
+}
+
+.phone-frame-light .play-hub-card-title {
+  display: block;
   font-size: 13.5px;
   font-weight: 800;
   letter-spacing: -0.3px;
   color: var(--bp-text);
-  /* 제목 길어도 한 줄 — 우상단 ! 버튼 자리 확보 */
-  padding-right: 18px;
   word-break: keep-all;
   line-height: 1.25;
+}
+
+.phone-frame-light .play-hub-card-subtitle {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.1px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .phone-frame-light .play-hub-card-disabled {

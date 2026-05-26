@@ -18,6 +18,8 @@ type HomeCard = {
   external?: boolean;
   /** 아이콘 자리에 lucide 대신 이미지 사용 */
   iconImage?: string;
+  /** 제목 아래 작은 부제 — 외부 링크 등 추가 식별이 필요한 경우만 */
+  subtitle?: string;
 };
 
 type HomeSection = {
@@ -149,6 +151,7 @@ const sections: HomeSection[] = [
         id: "oneul-seungyo",
         href: "https://oneul-seungyo.vercel.app/",
         title: "오늘은 승요",
+        subtitle: "직관 관리 앱",
         description: "직관 기록과 응원팀 관리를 위한 외부 웹앱",
         icon: Trophy,
         iconImage: "/assets/oneul-seungyo-logo.png",
@@ -238,7 +241,12 @@ export function HomeScreen() {
               const cardInner = (
                 <>
                   {iconNode}
-                  <strong className="play-hub-card-title">{card.title}</strong>
+                  <span className="play-hub-card-text">
+                    <strong className="play-hub-card-title">{card.title}</strong>
+                    {card.subtitle ? (
+                      <span className="play-hub-card-subtitle">{card.subtitle}</span>
+                    ) : null}
+                  </span>
                 </>
               );
               return (
