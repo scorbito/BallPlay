@@ -326,8 +326,7 @@
     height: 180px;
   }
 
-  /* PC/태블릿: 비대칭 레이아웃 유지 (시안과 동일 룩), 사이즈만 키움.
-     변경 전엔 3-col 균등으로 바꿨었는데, 사용자 피드백상 비대칭이 더 맞음. */
+  /* PC/태블릿: 비대칭 레이아웃 유지 (시안과 동일 룩), 사이즈만 키움. */
   .phone-frame-light .play-hub-hero-cards {
     gap: 10px;
   }
@@ -494,7 +493,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   padding-right: 18px;
 }
 

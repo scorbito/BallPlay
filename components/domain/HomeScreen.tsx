@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ComponentType, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useState, type ElementType, type MouseEvent as ReactMouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -70,8 +70,8 @@ type HomeSection = {
   cards: HomeCard[];
   /** "hero": 패턴 배경 + 일러스트 + 부제가 있는 강조 섹션. "standard": 아이콘+라벨 + 카드 그리드. */
   variant: "hero" | "standard";
-  /** 섹션 헤더 좌측 아이콘 (standard variant only). lucide 또는 size prop을 받는 커스텀 컴포넌트. */
-  sectionIcon?: ComponentType<{ size?: number }>;
+  /** 섹션 헤더 좌측 아이콘 (standard variant only). lucide 아이콘 또는 size prop을 받는 커스텀 SVG 컴포넌트 모두 허용. */
+  sectionIcon?: ElementType;
   /** 히어로 일러스트 경로 (hero variant only) */
   heroIllustration?: string;
   /** 히어로 섹션 부제 (hero variant only) */
@@ -234,13 +234,13 @@ const sections: HomeSection[] = [
 
 export function HomeScreen() {
   // 카드 설명 팝오버 — 한 번에 하나만 열림. 카드 ID 저장. 다른 데 클릭하면 닫힘.
+  // ! 버튼 → 툴팁 (모바일에서만 노출. 태블릿/PC는 CSS로 ! 숨김 + 설명 본문에 항상 표시)
   const [openInfoId, setOpenInfoId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!openInfoId) return;
     const onDocClick = (e: globalThis.MouseEvent) => {
       const t = e.target as Element | null;
-      // 같은 카드의 info 버튼/툴팁 클릭은 닫지 않음 — 그 외 어디든 클릭하면 닫음
       if (t?.closest(".play-hub-card-info") || t?.closest(".play-hub-card-tooltip")) return;
       setOpenInfoId(null);
     };
@@ -249,7 +249,6 @@ export function HomeScreen() {
   }, [openInfoId]);
 
   const toggleInfo = (id: string) => (e: ReactMouseEvent) => {
-    // 카드 navigation 막기 — info 버튼은 설명만 토글
     e.preventDefault();
     e.stopPropagation();
     setOpenInfoId((prev) => (prev === id ? null : id));
@@ -294,8 +293,8 @@ export function HomeScreen() {
             {section.cards.map((card) => {
                 const Icon = card.icon;
                 const infoOpen = openInfoId === card.id;
-                // 우상단 코너: featured(★추천) > external(↗) > badge(준비중) > info(!)
-                // featured 카드는 ★추천 + !버튼을 우상단에 가로로 나란히 배치.
+                // 우상단 코너: featured(★추천) > external(↗) > badge(준비중) > info(!).
+                // ! 버튼은 모바일 전용 (CSS @media로 태블릿/PC에선 숨김).
                 let cornerNode: React.ReactNode = null;
                 if (card.featured) {
                   cornerNode = (
