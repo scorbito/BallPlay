@@ -126,9 +126,9 @@ export function RegisteredLineupList({
     void (async () => {
       const { data: authData } = await client.auth.getUser();
       const user = authData.user;
-      const realUid = user && !user.is_anonymous ? user.id : null;
+      // 익명도 본인 row 보유 가능하도록 변경 → realUid 분리 폐지, user.id 그대로 사용
       const anyUid = user?.id ?? null;
-      setUserId(realUid);
+      setUserId(anyUid);
       setOwnerIdForExclude(anyUid);
 
       // 본인의 공개 라인업만 picker에 노출 — 공개 라인업만 다른 공개 라인업과 매치 가능.

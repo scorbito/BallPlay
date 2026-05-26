@@ -151,8 +151,8 @@ export function LineupBuilderScreen() {
     void (async () => {
       const client = createSupabaseBrowserClient();
       const { data: { user } } = await client.auth.getUser();
-      if (!user || user.is_anonymous) return;
-      // 본인 라인업 row 모두 fetch (id ↔ entry_id 매핑 필요)
+      if (!user) return;
+      // 본인 라인업 row 모두 fetch (id ↔ entry_id 매핑 필요) — 익명도 DB sync되므로 포함
       const { data: rows } = await client
         .from("bp_lineups")
         .select("id, entry_id")

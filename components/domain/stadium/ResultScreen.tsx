@@ -97,7 +97,7 @@ export function ResultScreen() {
 
         const client = createSupabaseBrowserClient();
         const { data: { user } } = await client.auth.getUser();
-        if (!user || user.is_anonymous) return;
+        if (!user) return;
 
         const { home, away } = session.input!;
         const { finalScore, mvp, innings } = session.result!;

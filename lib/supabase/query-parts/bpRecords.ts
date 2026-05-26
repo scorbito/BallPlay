@@ -1,5 +1,5 @@
 // bp_records CRUD — 경기 기록 저장/조회 (공개 라인업 + 친구 대전 한정).
-// 익명 계정은 DB 저장 불가 — 호출 측에서 user.is_anonymous 체크 후 skip.
+// 익명 계정도 본인 row 저장 가능 (2026-05-26 정책 변경).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SimGameInput, SimGameResult } from "@/lib/sim/types";
