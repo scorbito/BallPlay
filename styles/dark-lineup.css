@@ -3,15 +3,18 @@
  * ============================================================ */
 
 /* ── /play 허브 ── */
+/* 헤더 — flex 컨테이너로 h1과 설정 버튼이 자동으로 세로 가운데 정렬됨 */
 .phone-frame-light .play-hub-header {
   position: relative;
-  padding: 24px 4px 4px;
+  padding: 24px 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .phone-frame-light .play-hub-settings {
-  position: absolute;
-  top: 20px;
-  right: 4px;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -30,19 +33,22 @@
 }
 
 .phone-frame-light .play-hub-header h1 {
-  margin: 0 0 4px;
-  font-size: 22px;
+  /* header flex 컨테이너의 좌측 슬롯 — flex:1 + min-width:0으로 tagline ellipsis 동작 */
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 26px;
   font-weight: 900;
   color: var(--bp-text);
-  letter-spacing: -0.3px;
-  display: inline-flex;
+  letter-spacing: -0.4px;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .phone-frame-light .play-hub-logo {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   flex: 0 0 auto;
 }
@@ -67,28 +73,344 @@
   min-width: 0;
 }
 
-/* 항상 2열 그리드. 카드는 아이콘+제목만 — 설명은 우상단 ! 버튼 탭 시 툴팁으로 노출 */
+/* 카드 그리드 — 섹션별 열 수가 다름.
+   .play-hub-grid-3: 메뉴 3개 (라인업·예측·정보) — 3열 균등.
+   .play-hub-grid-2: 메뉴 2개 (콘텐츠) — 2열.
+   .play-hub-grid-1: 메뉴 1개 (외부 앱) — 1열 풀폭.
+   카드는 아이콘+제목만 — 설명은 우상단 ! 버튼 탭 시 툴팁으로 노출. */
 .phone-frame-light .play-hub-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+}
+.phone-frame-light .play-hub-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.phone-frame-light .play-hub-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.phone-frame-light .play-hub-grid-1 {
+  grid-template-columns: 1fr;
 }
 
 /* 섹션 그룹 — 라벨 + 카드 묶음.
    .app-content의 flex gap이 18px이라 그대로 두면 섹션 간격이 너무 큼.
-   음수 margin으로 상쇄해서 실효 간격 ~6px로 좁힘. 첫 섹션은 헤더 바로 아래라
-   first-of-type 별도 처리 없이 기본 18px 간격 유지. */
+   음수 margin -4로 상쇄 → 실효 간격 ~14px (적당히 호흡 공간 있음). */
 .phone-frame-light .play-hub-section + .play-hub-section {
-  margin-top: -12px;
+  margin-top: -4px;
+}
+
+/* 페이지 헤더 → 첫 섹션 간격 축소 — .app-content flex gap 18px를 음수 margin으로 상쇄 */
+.phone-frame-light .play-hub-header + .play-hub-section {
+  margin-top: -10px;
 }
 
 .phone-frame-light .play-hub-section-label {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
-  color: var(--bp-text-muted, #94a3b8);
-  letter-spacing: 0.5px;
-  margin: 0 0 8px 4px;
+  color: var(--bp-text);
+  letter-spacing: 0.2px;
+  margin: 0 0 10px 4px;
   text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* 섹션 라벨 좌측 아이콘 — 작은 핑크 원형 배지 */
+.phone-frame-light .play-hub-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
+  border-radius: 7px;
+}
+
+.phone-frame-light .play-hub-section-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── 히어로 섹션 (내 라인업 플레이) ──
+   통합 배경 이미지(패턴 + 일러스트 한 장) + 헤더(텍스트만) + 카드들이 한 컨테이너.
+   모바일: 카드가 비대칭 (1 big + 2 small). PC/태블릿: 3-col 균등. */
+.phone-frame-light .play-hub-hero {
+  position: relative;
+  padding: 14px 14px 14px;
+  border-radius: 20px;
+  background-color: #fde6ee;
+  background-image: url("/assets/home-pattern-bg.png");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  /* overflow: hidden 시 카드의 ! 버튼 툴팁이 잘림 + 일러스트 top:-50px도 잘림.
+     visible로 두면 모두 정상 노출. 둥근 모서리는 배경에 적용되어 그대로 유지됨. */
+  overflow: visible;
+}
+
+/* 헤더 (텍스트만) — 일러스트는 absolute로 분리돼 flex row 높이를 늘리지 않음 → 텍스트 ↔ 카드 사이 갭 작게 유지.
+   ⚠️ z-index 설정 금지: 안 그러면 header가 새 stacking context를 만들어,
+   안에 들어있는 illust(z-index:2)가 외부 cards를 덮을 수 없게 됨. */
+.phone-frame-light .play-hub-hero-header {
+  display: block;
+  margin-bottom: 10px;
+  padding: 4px 0 0 4px;
+}
+
+.phone-frame-light .play-hub-hero-text {
+  /* 일러스트가 우측에 absolute로 올라가 있으므로 텍스트 영역에 우측 padding 확보 */
+  padding-right: 38%;
+}
+
+/* 일러스트 — absolute 배치로 layout flow에서 빠짐. z-index: 0이라 카드 뒤에 위치. */
+.phone-frame-light .play-hub-hero-illust {
+  position: absolute;
+  top: -35px;
+  right: 5px;
+  width: 160px;
+  height: 160px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.phone-frame-light .play-hub-hero-illust img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(232, 74, 138, 0.18));
+}
+
+/* 카드는 일러스트 위로 z-index 처리. 일러스트 하단부와 우측 카드 1번이 겹치면 카드가 앞으로 표시. */
+.phone-frame-light .play-hub-hero-cards {
+  position: relative;
+  z-index: 1;
+}
+
+.phone-frame-light .play-hub-hero-title {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+.phone-frame-light .play-hub-hero-subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.4;
+  letter-spacing: -0.1px;
+}
+
+/* (구) 일러스트 사이즈 오버라이드 자리 — 새 분리 자산 적용으로 위의 .play-hub-hero-illust 정의가 유효. */
+
+/* 히어로 카드 그리드 — 모바일 비대칭 (1 big + 2 small) */
+.phone-frame-light .play-hub-hero-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 8px;
+}
+
+/* 첫 카드(추천: 팀 라인업 짜기)가 좌측 2-row span으로 크게 — 비주얼 강조 */
+.phone-frame-light .play-hub-hero-cards > :first-child {
+  grid-row: span 2;
+}
+
+/* ── 작은 카드 (경기장 들어가기, 내 라인업 기록) ──
+   가로 배치 (아이콘 좌 + 텍스트 우). 흰 배경 카드. */
+.phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
+  background: #ffffff;
+  border-color: rgba(232, 74, 138, 0.08);
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 10px;
+  padding: 12px 12px 12px 10px;
+  min-height: 64px;
+  height: 100%;
+}
+
+.phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-text {
+  flex: 1;
+  align-items: flex-start;
+  text-align: left;
+  padding-right: 18px; /* 우상단 ! 버튼 자리 */
+}
+
+.phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(232, 74, 138, 0.12);
+}
+
+/* ── 큰 카드 "팀 라인업 짜기" (추천) ──
+   핑크 솔리드 배경 + 흰색 텍스트 + 흰 아이콘 컨테이너.
+   아이콘 상단 + 제목 하단 (세로 강조 레이아웃). */
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
+  background: linear-gradient(135deg, #f04681, var(--bp-accent, #e84a8a));
+  border: none;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  text-align: left;
+  padding: 16px;
+  gap: 12px;
+  height: 100%;
+  min-height: 130px;
+  box-shadow: 0 6px 18px rgba(232, 74, 138, 0.28);
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card:hover {
+  background: linear-gradient(135deg, #e63d77, #d83f7c);
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--bp-accent, #e84a8a);
+  border-radius: 14px;
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-text {
+  padding-right: 0;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffffff;
+  text-align: left;
+  line-height: 1.2;
+}
+
+/* PC/태블릿: hero 패딩/카드 그리드 변경 — 비대칭 → 3-col 균등 */
+@media (min-width: 481px) {
+  .phone-frame-light .play-hub-hero {
+    padding: 18px 20px 18px;
+  }
+  .phone-frame-light .play-hub-hero-header {
+    margin-bottom: 12px;
+  }
+  .phone-frame-light .play-hub-hero-title {
+    font-size: 28px;
+  }
+  .phone-frame-light .play-hub-hero-subtitle {
+    font-size: 15px;
+  }
+  .phone-frame-light .play-hub-hero-illust {
+    top: -38px;
+    right: 15px;
+    width: 180px;
+    height: 180px;
+  }
+
+  /* PC/태블릿: 비대칭 레이아웃 유지 (시안과 동일 룩), 사이즈만 키움.
+     변경 전엔 3-col 균등으로 바꿨었는데, 사용자 피드백상 비대칭이 더 맞음. */
+  .phone-frame-light .play-hub-hero-cards {
+    gap: 10px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
+    padding: 22px 20px;
+    min-height: 170px;
+    gap: 14px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
+    width: 64px;
+    height: 64px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
+    width: 34px;
+    height: 34px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
+    font-size: 26px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
+    padding: 16px 16px 16px 14px;
+    min-height: 80px;
+    gap: 12px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {
+    width: 46px;
+    height: 46px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .phone-frame-light .play-hub-hero {
+    padding: 24px 30px 24px;
+  }
+  .phone-frame-light .play-hub-hero-header {
+    margin-bottom: 16px;
+  }
+  .phone-frame-light .play-hub-hero-title {
+    font-size: 32px;
+  }
+  .phone-frame-light .play-hub-hero-subtitle {
+    font-size: 16px;
+  }
+  .phone-frame-light .play-hub-hero-illust {
+    top: -45px;
+    right: 18px;
+    width: 220px;
+    height: 220px;
+  }
+  .phone-frame-light .play-hub-hero-cards {
+    gap: 14px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
+    padding: 28px 24px;
+    min-height: 200px;
+    gap: 18px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
+    width: 72px;
+    height: 72px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
+    font-size: 30px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
+    padding: 18px 18px 18px 16px;
+    min-height: 92px;
+    gap: 14px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {
+    width: 52px;
+    height: 52px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
+    font-size: 19px;
+  }
 }
 
 /* PC 와이드 모드 — 그리드 gap만 약간 키움 */
@@ -100,7 +422,11 @@
     padding-top: 32px;
   }
   .phone-frame-wide .play-hub-header h1 {
-    font-size: 26px;
+    font-size: 32px;
+  }
+  .phone-frame-wide .play-hub-logo {
+    width: 52px;
+    height: 52px;
   }
 }
 
@@ -113,15 +439,15 @@
 .phone-frame-light .play-hub-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 12px;
+  gap: 12px;
+  padding: 16px 14px;
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
   color: var(--bp-text);
   text-decoration: none;
   transition: background 0.15s ease, transform 0.12s ease;
-  min-height: 64px;
+  min-height: 72px;
 }
 
 .phone-frame-light .play-hub-card:hover {
@@ -133,8 +459,8 @@
 }
 
 .phone-frame-light .play-hub-card-icon {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -142,6 +468,11 @@
   color: var(--bp-accent);
   border-radius: 10px;
   flex-shrink: 0;
+}
+
+.phone-frame-light .play-hub-card-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 /* 이미지 아이콘 — 핑크 배경 대신 흰 배경 + 실제 로고 contain */
@@ -169,7 +500,7 @@
 
 .phone-frame-light .play-hub-card-title {
   display: block;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.3px;
   color: var(--bp-text);
@@ -179,7 +510,7 @@
 
 .phone-frame-light .play-hub-card-subtitle {
   display: block;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--bp-text-secondary);
   letter-spacing: -0.1px;
@@ -217,6 +548,23 @@
 .phone-frame-light .play-hub-card-info:hover,
 .phone-frame-light .play-hub-card-info[aria-expanded="true"] {
   background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
+}
+
+/* 추천 카드는 ★추천 배지가 우상단을 차지하므로, !버튼은 우하단으로 이동.
+   핑크 솔리드 배경 위라 흰색 동그라미로 대비 강조. */
+.phone-frame-light .play-hub-card-info-bottom {
+  top: auto;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--bp-accent, #e84a8a);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.phone-frame-light .play-hub-card-info-bottom:hover,
+.phone-frame-light .play-hub-card-info-bottom[aria-expanded="true"] {
+  background: #ffffff;
   color: var(--bp-accent);
 }
 
@@ -264,6 +612,105 @@
   color: var(--bp-text-secondary);
   letter-spacing: 0.2px;
   z-index: 2;
+}
+
+/* 추천 카드 우상단 코너 행 — ★추천 배지 + !버튼을 가로로 나란히 배치 */
+.phone-frame-light .play-hub-card-corner-row {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+/* "추천" 배지 — 강조 카드 우상단. 핑크 배경 위(추천 카드)에 올라가므로 흰 배경 + 핑크 텍스트로 대비 강조 */
+.phone-frame-light .play-hub-card-featured {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  background: #ffffff;
+  color: var(--bp-accent, #e84a8a);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.phone-frame-light .play-hub-card-featured svg {
+  margin-right: 1px;
+}
+
+/* 추천 카드의 !버튼 — corner-row 안에서 추천 배지 옆에 위치. 흰 동그라미로 핑크 카드 위 대비. */
+.phone-frame-light .play-hub-card-info-on-featured {
+  position: static;
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--bp-accent, #e84a8a);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.phone-frame-light .play-hub-card-info-on-featured:hover,
+.phone-frame-light .play-hub-card-info-on-featured[aria-expanded="true"] {
+  background: #ffffff;
+  color: var(--bp-accent);
+}
+
+/* ── 3열 카드 컴팩트 변형 ──
+   3열 그리드 내에선 카드 가로 폭이 좁아서 (모바일 ~90px) 가로 배치 불가.
+   아이콘 위 + 텍스트 아래로 세로 정렬해 짧은 카드로 표시. */
+.phone-frame-light .play-hub-grid-3 .play-hub-card {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 14px 6px;
+  min-height: 96px;
+}
+
+.phone-frame-light .play-hub-grid-3 .play-hub-card-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.phone-frame-light .play-hub-grid-3 .play-hub-card-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.phone-frame-light .play-hub-grid-3 .play-hub-card-text {
+  padding-right: 0;
+  align-items: center;
+}
+
+.phone-frame-light .play-hub-grid-3 .play-hub-card-title {
+  font-size: 13.5px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* PC/태블릿 wide에서 3열 카드 폰트 살짝 키움 */
+@media (min-width: 481px) {
+  .phone-frame-light .play-hub-grid-3 .play-hub-card {
+    padding: 18px 10px;
+    min-height: 112px;
+    gap: 10px;
+  }
+  .phone-frame-light .play-hub-grid-3 .play-hub-card-icon {
+    width: 52px;
+    height: 52px;
+  }
+  .phone-frame-light .play-hub-grid-3 .play-hub-card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .phone-frame-light .play-hub-grid-3 .play-hub-card-title {
+    font-size: 15px;
+  }
 }
 
 /* 툴팁 — 카드 아래쪽에 absolute로 띄움 */
