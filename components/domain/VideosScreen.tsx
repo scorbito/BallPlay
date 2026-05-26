@@ -83,7 +83,8 @@ function renderCard(
   );
 }
 
-// 행 단위 그룹핑 — 연속된 쇼츠는 하나의 grid 블록으로 묶음, 가로는 단독 행.
+// 행 단위 그룹핑 — 쇼츠를 먼저 한 grid 블록으로 모두 모은 다음, 가로 영상을
+// 단독 행으로 줄줄이 표시. 시간 순으로 섞여 들어와도 화면 상단부터 빈 칸 없이 채워짐.
 // 한 줄에 몇 개를 보여줄지는 CSS grid가 결정 (모바일 3, PC wide 5).
 // JS에서 N개로 자르지 않음 — 자르면 PC에서 오른쪽 빈 칸 생김.
 type VideoRow =
@@ -91,27 +92,25 @@ type VideoRow =
   | { kind: "horizontal"; item: { video: BpVideoWithOwnerRow; parsed: ParsedVideo } };
 
 function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
-  const rows: VideoRow[] = [];
-  let shortsBuf: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
-
-  const flushShorts = () => {
-    if (shortsBuf.length > 0) {
-      rows.push({ kind: "shorts", items: shortsBuf });
-      shortsBuf = [];
-    }
-  };
+  const shorts: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
+  const horizontals: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
 
   for (const v of videos) {
     const parsed = parseVideoUrl(v.url);
     if (parsed.orientation === "vertical") {
-      shortsBuf.push({ video: v, parsed });
+      shorts.push({ video: v, parsed });
     } else {
-      // 가로 영상 만나면 누적된 쇼츠 한 번에 flush + 가로는 단독 행
-      flushShorts();
-      rows.push({ kind: "horizontal", item: { video: v, parsed } });
+      horizontals.push({ video: v, parsed });
     }
   }
-  flushShorts();
+
+  const rows: VideoRow[] = [];
+  if (shorts.length > 0) {
+    rows.push({ kind: "shorts", items: shorts });
+  }
+  for (const h of horizontals) {
+    rows.push({ kind: "horizontal", item: h });
+  }
   return rows;
 }
 
