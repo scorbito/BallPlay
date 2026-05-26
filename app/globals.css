@@ -189,9 +189,11 @@ button {
     border-radius: 0;
     box-shadow: none;
   }
-  /* iOS notch / 안드로이드 system bar 안전영역 */
+  /* iOS notch / 안드로이드 system bar 안전영역.
+     상단은 거의 0으로 — iOS 상태바와 콘텐츠 사이 여백 최소화.
+     iOS Safari 상태바는 반투명이라 흰 배경 위에서도 글자(시각·배터리) 가독성 유지됨. */
   .app-scroll {
-    padding-top: env(safe-area-inset-top);
+    padding-top: 0;
     padding-bottom: calc(92px + env(safe-area-inset-bottom));
   }
 }
