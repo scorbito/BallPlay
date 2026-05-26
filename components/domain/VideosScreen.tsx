@@ -3,7 +3,7 @@
 // 재밌는 야구 영상 — 사용자 등록 풀 (Supabase bp_videos).
 // 모든 인증 사용자가 SELECT, 본인만 INSERT/DELETE.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import Image from "next/image";
 import { Bot, Camera, ExternalLink, Film, MessageSquareText, Play, Plus, Trash2, Volume2, VolumeX, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -156,6 +156,56 @@ export function VideosScreen() {
 
   const [openVideo, setOpenVideo] = useState<BpVideoWithOwnerRow | null>(null);
   const closeModal = () => setOpenVideo(null);
+
+  // 유튜브 쇼츠 스타일 네비게이션 — 위로 스와이프 = 다음, 아래로 스와이프 = 이전.
+  // 플랫 리스트 기준으로 wrap-around (끝에서 첫 영상으로).
+  const flatVideos = videos ?? [];
+  const currentIndex = openVideo ? flatVideos.findIndex((v) => v.id === openVideo.id) : -1;
+
+  const navigate = useCallback(
+    (delta: 1 | -1) => {
+      if (currentIndex < 0 || flatVideos.length === 0) return;
+      const len = flatVideos.length;
+      const next = (currentIndex + delta + len) % len;
+      setOpenVideo(flatVideos[next]);
+    },
+    [currentIndex, flatVideos]
+  );
+
+  // PC 키보드 ↑/↓ 네비게이션
+  useEffect(() => {
+    if (!openVideo) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        navigate(1);
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        navigate(-1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openVideo, navigate]);
+
+  // 터치 스와이프 — 50px 이상 수직 이동이면 네비게이션 (수평 이동은 무시)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const handleTouchStart = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleTouchEnd = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dy = t.clientY - start.y;
+    const dx = t.clientX - start.x;
+    // 수직 우세 + 임계값(50px) 넘을 때만
+    if (Math.abs(dy) < 50 || Math.abs(dy) < Math.abs(dx)) return;
+    if (dy < 0) navigate(1);  // 위로 스와이프 → 다음
+    else navigate(-1);        // 아래로 스와이프 → 이전
+  };
 
   // 음소거 상태 — 브라우저 정책상 첫 재생은 무조건 muted.
   // 사용자가 한 번 unmute하면 localStorage에 저장 → 다음 영상부터 자동 unmute 시도.
@@ -372,6 +422,14 @@ export function VideosScreen() {
                     loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
+                  />
+                  {/* 스와이프 캡처 overlay — iframe touch를 가로채 위/아래 스와이프로 영상 전환.
+                      트레이드오프: 영상 내부 탭(YouTube 자체 일시정지)은 안 됨. 음소거/닫기 버튼은 z-index 더 높아서 OK. */}
+                  <div
+                    className="video-player-swipe-capture"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    aria-hidden="true"
                   />
                 </div>
                 <button
