@@ -807,11 +807,12 @@ export function LineupBuilderScreen() {
             {(() => {
               if (!currentEntry) return null;
               const isOn = !!currentEntry.isPublished;
-              const isLoggedIn = syncStatus !== "local-only";
-              // 끄기는 항상 가능, 켜기는 로그인 + 공개 가능 조건 (타선 9 + 선발) 만족 시만
-              const disabled = !isLoggedIn || publishProcessing || (!isOn && !canPublish);
-              const tip = !isLoggedIn
-                ? "로그인하면 공개할 수 있어요"
+              // 익명도 DB sync되므로 syncStatus가 "synced"면 통과. "local-only"는 sync 실패 fallback.
+              const canSync = syncStatus !== "local-only";
+              // 끄기는 항상 가능, 켜기는 sync 가능 + 공개 가능 조건 (타선 9 + 선발) 만족 시만
+              const disabled = !canSync || publishProcessing || (!isOn && !canPublish);
+              const tip = !canSync
+                ? "잠시 후 다시 시도해주세요"
                 : isOn
                   ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로 (전적 리셋)"
                   : filledCount !== 9

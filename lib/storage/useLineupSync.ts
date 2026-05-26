@@ -115,10 +115,11 @@ export function useLineupSync() {
       const user = authData.user;
       const lastSyncedUid = readLastSyncedUserId();
 
-      // 비로그인 또는 익명 로그인 — local-only (기획 §10: 정식 계정 연동만 다기기 동기화)
-      if (!user || user.is_anonymous) {
+      // 비로그인만 local-only — 익명도 user.id 보유 + 슬롯 2개 한정이라 DB 동기화 허용.
+      // (이전 정책: 익명도 local-only. 익명이 라인업 공개/매치 못 해 재미 못 느낀다는 피드백으로 풀어줌)
+      if (!user) {
         if (cancelled) return;
-        // 정식 → 비로그인/익명 전환 시 localStorage 정리 (보안 + 깨끗한 시작)
+        // 로그인 → 비로그인 전환 시 localStorage 정리 (보안 + 깨끗한 시작)
         if (lastSyncedUid) {
           saveLineupEntries([]);
           writeLastSyncedUserId(null);
