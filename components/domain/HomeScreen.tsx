@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ElementType, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useState, type ElementType, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -8,6 +8,7 @@ import {
   BarChart3,
   Bot,
   CalendarDays,
+  ChevronRight,
   ClipboardCheck,
   ExternalLink,
   FileText,
@@ -94,7 +95,7 @@ const sections: HomeSection[] = [
         id: "lineup",
         href: "/play/lineup",
         title: "팀 라인업 짜기",
-        description: "원하는 팀의 9인 타순과 수비 위치를 직접 구성",
+        description: "9인 타순 + 수비 위치 구성",
         icon: ListChecks,
         available: true,
         featured: true
@@ -103,7 +104,7 @@ const sections: HomeSection[] = [
         id: "stadium",
         href: "/stadium",
         title: "경기장 들어가기",
-        description: "내가 만든 라인업으로 경기 시뮬 & 친구 대결",
+        description: "라인업 경기 시뮬 + 친구 대결",
         icon: Swords,
         available: true
       },
@@ -111,7 +112,7 @@ const sections: HomeSection[] = [
         id: "records",
         href: "/records",
         title: "내 라인업 기록",
-        description: "자동 저장된 공개 매칭·친구 대전 결과와 리플레이",
+        description: "공개 매칭·친구 대전 기록",
         icon: History,
         available: true
       }
@@ -128,7 +129,7 @@ const sections: HomeSection[] = [
         id: "winner-predict",
         href: "/predict/winner",
         title: "승리팀 예측하기",
-        description: "오늘 경기 승리팀을 직접 예측. 결과는 경기 끝나고 확인",
+        description: "오늘 승리팀 예측",
         icon: Target,
         available: true
       },
@@ -136,7 +137,7 @@ const sections: HomeSection[] = [
         id: "predict-ranking",
         href: "/predict/ranking",
         title: "적중률 랭킹",
-        description: "예측을 잘하는 사람들 순위 (최소 5경기 · 오늘/주/월/시즌)",
+        description: "예측 적중률 순위",
         icon: BarChart3,
         available: true
       },
@@ -144,7 +145,7 @@ const sections: HomeSection[] = [
         id: "ai-predict",
         href: "#",
         title: "AI 승리팀 예측",
-        description: "AI가 최근 폼·상대 전적·라인업으로 승부 예측",
+        description: "AI 기반 승부 예측",
         icon: Bot,
         available: false,
         badge: "준비중"
@@ -162,7 +163,7 @@ const sections: HomeSection[] = [
         id: "today-results",
         href: "/schedule?focus=today",
         title: "오늘 경기 결과",
-        description: "오늘 KBO 경기 스코어와 진행 상황 한 번에",
+        description: "오늘 경기 스코어",
         icon: ClipboardCheck,
         available: true
       },
@@ -170,7 +171,7 @@ const sections: HomeSection[] = [
         id: "schedule",
         href: "/schedule",
         title: "경기 일정",
-        description: "오늘과 이번 주 KBO 경기 일정 확인",
+        description: "이번 주 KBO 일정",
         icon: CalendarDays,
         available: true
       },
@@ -178,7 +179,7 @@ const sections: HomeSection[] = [
         id: "rankings",
         href: "/rankings",
         title: "팀 순위",
-        description: "2026 KBO 정규시즌 순위와 최근 5경기",
+        description: "순위 + 최근 5경기",
         icon: Trophy,
         available: true
       }
@@ -195,7 +196,7 @@ const sections: HomeSection[] = [
         id: "videos",
         href: "/videos",
         title: "재밌는 야구 영상",
-        description: "끝내기·호수비·짤방 등 야구 영상 모아 보기",
+        description: "끝내기·호수비·짤방 모음",
         icon: PlaySquare,
         available: true
       },
@@ -203,7 +204,7 @@ const sections: HomeSection[] = [
         id: "news",
         href: "#",
         title: "야구 뉴스",
-        description: "KBO 헤드라인·트레이드·부상 소식 (준비 중)",
+        description: "KBO 헤드라인·트레이드",
         icon: FileText,
         available: false,
         badge: "준비중"
@@ -274,7 +275,9 @@ export function HomeScreen() {
         </Link>
       </header>
 
-      {sections.map((section) => {
+      {(() => {
+        // Section 렌더링 함수 — pair wrapper 안에서 재사용하기 위해 추출.
+        const renderSection = (section: HomeSection) => {
         const SectionIcon = section.sectionIcon;
         // hero 섹션은 카드가 비대칭 그리드 (모바일: 1 big + 2 small, PC: 3-col).
         // standard 섹션은 gridCols에 따라 1/2/3-col.
@@ -295,7 +298,7 @@ export function HomeScreen() {
                 const infoOpen = openInfoId === card.id;
                 // 우상단 코너: featured(★추천) > external(↗) > badge(준비중) > info(!).
                 // ! 버튼은 모바일 전용 (CSS @media로 태블릿/PC에선 숨김).
-                let cornerNode: React.ReactNode = null;
+                let cornerNode: ReactNode = null;
                 if (card.featured) {
                   cornerNode = (
                     <div className="play-hub-card-corner-row">
@@ -347,6 +350,9 @@ export function HomeScreen() {
                   </span>
                 );
 
+                // Chevron(>) — 클릭 가능한 내부 메뉴에만 노출. 외부 링크(↗ 별도)와 비활성(준비중)은 제외.
+                // PC(≥1025px)에서만 시각적으로 노출 — 모바일/태블릿은 CSS @media에서 숨김.
+                const showChevron = card.available && !card.external;
                 const cardInner = (
                   <>
                     {iconNode}
@@ -355,7 +361,14 @@ export function HomeScreen() {
                       {card.subtitle ? (
                         <span className="play-hub-card-subtitle">{card.subtitle}</span>
                       ) : null}
+                      {/* description은 PC(≥1025px)에서만 노출 — CSS @media에서 처리 */}
+                      {card.description ? (
+                        <span className="play-hub-card-description">{card.description}</span>
+                      ) : null}
                     </span>
+                    {showChevron ? (
+                      <ChevronRight className="play-hub-card-chevron" size={18} aria-hidden="true" />
+                    ) : null}
                   </>
                 );
 
@@ -444,7 +457,32 @@ export function HomeScreen() {
             {cardsGrid}
           </section>
         );
-      })}
+        };
+
+        // 섹션 렌더링 — predict + kbo-info는 PC에서 한 줄 배치 위해 .play-hub-section-pair로 묶음.
+        const out: ReactNode[] = [];
+        let skip: string | null = null;
+        sections.forEach((section, idx) => {
+          if (skip === section.id) {
+            skip = null;
+            return;
+          }
+          // predict + kbo-info 연속이면 pair wrapper로 묶기
+          if (section.id === "predict" && sections[idx + 1]?.id === "kbo-info") {
+            const next = sections[idx + 1];
+            out.push(
+              <div className="play-hub-section-pair" key="pair-predict-info">
+                {renderSection(section)}
+                {renderSection(next)}
+              </div>
+            );
+            skip = "kbo-info";
+            return;
+          }
+          out.push(renderSection(section));
+        });
+        return out;
+      })()}
     </AppShell>
   );
 }

@@ -92,6 +92,37 @@
   grid-template-columns: 1fr;
 }
 
+/* 섹션 쌍 wrapper — 기본은 display: contents (자식 섹션이 부모의 flex 자식으로 동작해 stack됨).
+   PC(≥1025px)에서만 grid 2-col로 가로 배치 (파일 끝 PC media query에서 override). */
+.phone-frame-light .play-hub-section-pair {
+  display: contents;
+}
+
+/* 2-col 카드(야구 콘텐츠 등) — 가로 폭 좁아서 제목 1줄 유지 위해 컴팩트화.
+   "재밌는 야구 영상" 같은 5~6자 제목이 모바일에서 2줄로 떨어지지 않게.
+   ! 버튼이 우상단(top:6 right:6)에만 있어 텍스트와 수직 위치가 안 겹치므로 padding-right 축소. */
+.phone-frame-light .play-hub-grid-2 .play-hub-card {
+  padding: 14px 10px;
+  gap: 10px;
+}
+.phone-frame-light .play-hub-grid-2 .play-hub-card-icon {
+  width: 38px;
+  height: 38px;
+}
+.phone-frame-light .play-hub-grid-2 .play-hub-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.phone-frame-light .play-hub-grid-2 .play-hub-card-text {
+  padding-right: 4px;
+}
+.phone-frame-light .play-hub-grid-2 .play-hub-card-title {
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 섹션 그룹 — 라벨 + 카드 묶음.
    .app-content의 flex gap이 18px이라 그대로 두면 섹션 간격이 너무 큼.
    음수 margin -4로 상쇄 → 실효 간격 ~14px (적당히 호흡 공간 있음). */
@@ -379,36 +410,126 @@
     width: 220px;
     height: 220px;
   }
+  /* ── PC 전용: 시안 매칭 ──
+     1) Hero 카드: 비대칭 → 3-col 균등 그리드, 세로 배치 + 좌측 정렬 (아이콘 상단-좌, 텍스트 하단-좌)
+     2) 모든 카드 ! 버튼 숨김 (PC는 description이 본문에 항상 노출)
+     3) description 노출, > chevron 우측 가운데 */
+
+  /* hero cards 3-col 균등 + first-child span 해제 */
   .phone-frame-light .play-hub-hero-cards {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto;
     gap: 14px;
   }
+  .phone-frame-light .play-hub-hero-cards > :first-child {
+    grid-row: auto;
+  }
+  /* 추천 카드 — 핑크 솔리드 강조 + 세로 배치 + 좌측 정렬 */
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
-    padding: 28px 24px;
-    min-height: 200px;
+    padding: 24px 22px;
+    min-height: 180px;
     gap: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    justify-content: space-between;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
-    width: 72px;
-    height: 72px;
+    width: 56px;
+    height: 56px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-text {
+    align-items: flex-start;
+    text-align: left;
+    padding-right: 32px; /* chevron 자리 */
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
-    font-size: 30px;
+    font-size: 20px;
+    text-align: left;
   }
+  /* 작은 카드 — 추천 카드와 동일하게 세로+좌측 정렬 */
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
-    padding: 18px 18px 18px 16px;
-    min-height: 92px;
-    gap: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    justify-content: space-between;
+    padding: 24px 22px;
+    min-height: 180px;
+    gap: 18px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-text {
+    align-items: flex-start;
+    text-align: left;
+    padding-right: 32px; /* chevron 자리 */
   }
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
+  }
+  .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon svg {
+    width: 30px;
+    height: 30px;
   }
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
-    font-size: 19px;
+    font-size: 18px;
+    text-align: left;
+  }
+
+  /* PC: 모든 카드의 ! 버튼 숨김 (모바일/태블릿 전용으로 유지) */
+  .phone-frame-light .play-hub-card-info {
+    display: none;
+  }
+
+  /* PC: chevron(>) 노출 — 카드 본체에 absolute로 우측 가운데 위치.
+     vertical layout(hero cards on PC, 3-col cards)에서도 우측에 일관되게 떠 있음. */
+  .phone-frame-light .play-hub-card {
+    position: relative;
+  }
+  .phone-frame-light .play-hub-card-chevron {
+    display: inline-block;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bp-text-muted, #94a3b8);
+    pointer-events: none;
+  }
+  /* 핑크 카드(추천) 위에선 흰톤으로 대비 */
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-chevron {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* PC: description을 카드 본문에 2줄까지 노출 (ellipsis) */
+  .phone-frame-light .play-hub-card-description {
+    display: -webkit-box;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--bp-text-secondary);
+    line-height: 1.4;
+    letter-spacing: -0.1px;
+    margin-top: 3px;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* hero 추천 카드의 description은 흰 카드 위에 있으니 흰톤으로 (대비) */
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-description {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  /* ! 버튼 없어졌으므로 텍스트 영역 우측 padding 회수.
+     단, 배지/마크 있는 카드는 padding-right 유지해 텍스트와 안 겹치게. */
+  .phone-frame-light .play-hub-card-text {
+    padding-right: 0;
+  }
+  .phone-frame-light .play-hub-card-wrap:has(.play-hub-card-featured) .play-hub-card-text,
+  .phone-frame-light .play-hub-card-wrap:has(.play-hub-card-external-mark) .play-hub-card-text,
+  .phone-frame-light .play-hub-card-wrap:has(.play-hub-card-badge) .play-hub-card-text {
+    padding-right: 22px;
   }
 }
 
@@ -495,6 +616,16 @@
   flex-direction: column;
   gap: 2px;
   padding-right: 18px;
+}
+
+/* description은 기본 숨김 — PC(≥1025px)에서만 카드 본문에 노출. 모바일/태블릿은 ! 툴팁으로만. */
+.phone-frame-light .play-hub-card-description {
+  display: none;
+}
+
+/* chevron(>)도 기본 숨김 — PC(≥1025px)에서만 우측에 노출. */
+.phone-frame-light .play-hub-card-chevron {
+  display: none;
 }
 
 .phone-frame-light .play-hub-card-title {
@@ -2562,4 +2693,89 @@
 
 .phone-frame-light .lineup-confirm-primary:hover {
   filter: brightness(1.1);
+}
+
+/* ============================================================
+ * PC 전용 오버라이드 — 파일 가장 끝에 배치해서 모든 기본 정의를 덮어씀.
+ * 이 블록을 중간에 두면 base .play-hub-card-info / .play-hub-card-description
+ * 정의(파일 아래쪽)가 specificity 동률에서 늦은 순서로 이겨서 PC 변경이 무효화됨.
+ * ============================================================ */
+@media (min-width: 1025px) {
+  /* PC: 3-col 일반 카드 (예측, 정보) — 모바일에선 가운데 정렬이었지만 PC에선 좌측 정렬로 시안 매칭 */
+  .phone-frame-light .play-hub-grid-3 .play-hub-card {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .phone-frame-light .play-hub-grid-3 .play-hub-card-text {
+    align-items: flex-start;
+    text-align: left;
+    padding-right: 32px; /* chevron 자리 */
+  }
+  .phone-frame-light .play-hub-grid-3 .play-hub-card-title {
+    text-align: left;
+  }
+  /* 2-col 카드 (콘텐츠)도 chevron 자리 확보 */
+  .phone-frame-light .play-hub-grid-2 .play-hub-card-text {
+    padding-right: 32px;
+  }
+  .phone-frame-light .play-hub-grid-2 .play-hub-card-title {
+    white-space: normal; /* PC에서는 1줄 강제 해제, description도 보이므로 */
+    text-overflow: clip;
+    overflow: visible;
+  }
+  /* 1-col 카드 (외부 앱)도 chevron 자리 확보 */
+  .phone-frame-light .play-hub-grid-1 .play-hub-card-text {
+    padding-right: 32px;
+  }
+  /* PC: ! 버튼 완전 숨김 (모바일/태블릿 전용으로만 노출). 모든 variant 포함. */
+  .phone-frame-light .play-hub-card-info,
+  .phone-frame-light .play-hub-card-info-on-featured,
+  .phone-frame-light .play-hub-card-info-bottom {
+    display: none;
+  }
+
+  /* PC: description 카드 본문에 1줄 노출. 너무 길면 ellipsis. base의 display:none 보다 늦게 적용. */
+  .phone-frame-light .play-hub-card-description {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--bp-text-secondary);
+    line-height: 1.4;
+    letter-spacing: -0.2px;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-description {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  /* PC: chevron(>) — 설명 라인과 같은 높이로 우측 하단에 표시. 카드 내부 padding-bottom과 비슷한 위치. */
+  .phone-frame-light .play-hub-card-chevron {
+    display: inline-block;
+    position: absolute;
+    right: 16px;
+    bottom: 22px;
+    top: auto;
+    transform: none;
+    color: var(--bp-text-muted, #94a3b8);
+    pointer-events: none;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-chevron {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* PC 전용: 승부 예측 + 프로야구 정보 섹션을 한 줄에 가로 배치 (총 6 카드 한 행).
+     ⚠️ display: contents는 위에서 정의했고 이 PC override는 그 뒤에 와야 cascade에서 이김.
+     PC 미디어쿼리가 파일 끝(2776 이후)이라 OK. */
+  .phone-frame-light .play-hub-section-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  /* pair 안의 섹션끼리 사이 음수 margin은 비활성화 (가로 배치라서 불필요) */
+  .phone-frame-light .play-hub-section-pair > .play-hub-section + .play-hub-section {
+    margin-top: 0;
+  }
 }
