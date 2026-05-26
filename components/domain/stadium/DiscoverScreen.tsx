@@ -10,6 +10,7 @@ import { RegisteredLineupList } from "./RegisteredLineupList";
 export function DiscoverScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const client = createSupabaseBrowserClient();
@@ -35,8 +36,6 @@ export function DiscoverScreen() {
       </AppShell>
     );
   }
-
-  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="light" wide>
