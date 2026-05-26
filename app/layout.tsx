@@ -49,7 +49,7 @@ import "@/styles/dark-videos.css";
 import "@/styles/dark-predict.css";
 import "@/styles/light-bp-core.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://talkpark.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ballnori.com";
 const SITE_TITLE = "야구놀이터";
 const SITE_DESCRIPTION = "야구놀이터에서 승리팀 예측, 라인업 짜기 등 야구 미니 게임을 가볍게 즐겨보세요.";
 

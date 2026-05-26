@@ -1,13 +1,19 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://oneul-seungyo.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ballnori.com";
 
 // 공개 크롤링 가능한 페이지만 sitemap에 포함.
-// 메인("/")은 익명 세션 자동 부여로 누구나 접근 가능하지만 사용자별 동적 콘텐츠라 일단 sitemap에서 제외.
+// 메인("/")은 검색 진입점이므로 sitemap에 포함하고, 로그인/약관/도움말 등 공개 페이지를 함께 제출한다.
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
   return [
+    {
+      url: SITE_URL,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 1
+    },
     {
       url: `${SITE_URL}/login`,
       lastModified: now,
