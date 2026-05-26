@@ -19,6 +19,24 @@ export default function GlobalError({
       name: error.name,
       stack: error.stack
     });
+    // 텔레그램 알림 — 실패해도 사용자에겐 영향 X
+    if (typeof window !== "undefined") {
+      void fetch("/api/notify-error", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: error.message || String(error),
+          source: "GlobalError",
+          stack: error.stack,
+          meta: {
+            url: window.location.href,
+            digest: error.digest,
+            name: error.name
+          },
+          level: "error"
+        })
+      }).catch(() => {});
+    }
   }, [error]);
 
   return (

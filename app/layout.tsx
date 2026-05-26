@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { unstable_noStore as noStore } from "next/cache";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { InstallAppBanner } from "@/components/domain/InstallAppBanner";
@@ -88,21 +90,14 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: SITE_TITLE,
     title: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
-    description: SITE_DESCRIPTION,
-    images: [
-      {
-        url: "/assets/mainherobg.png",
-        width: 1448,
-        height: 1086,
-        alt: "야구놀이터 - 야구 미니 게임 & 예측"
-      }
-    ]
+    description: SITE_DESCRIPTION
+    // images는 app/opengraph-image.tsx가 자동 제공 (1200x630 PNG 동적 생성)
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
-    description: SITE_DESCRIPTION,
-    images: ["/assets/mainherobg.png"]
+    description: SITE_DESCRIPTION
+    // images는 app/twitter-image.tsx가 자동 제공
   },
   robots: {
     index: true,
@@ -171,6 +166,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </AppStateLoader>
           </Suspense>
         </ErrorBoundary>
+        {/* Vercel 무료 분석 — 페이지뷰/방문자/Web Vitals. 추가 설정 0, env 불필요. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

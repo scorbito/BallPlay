@@ -30,6 +30,22 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
     if (typeof window === "undefined") return;
 
+    // 텔레그램 알림 — 실패해도 메인 흐름에 영향 X (await 안 함)
+    void fetch("/api/notify-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: error.message || String(error),
+        source: "ErrorBoundary",
+        stack: error.stack,
+        meta: {
+          url: window.location.href,
+          componentStack: (info.componentStack ?? "").slice(0, 500)
+        },
+        level: "error"
+      })
+    }).catch(() => {});
+
     try {
       const lastReload = Number(window.sessionStorage.getItem(RELOAD_KEY) ?? "0");
       const elapsed = Date.now() - lastReload;
