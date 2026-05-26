@@ -133,10 +133,7 @@ export function RecordsScreen() {
 
   if (authState === "loading") {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
-        <header className="play-hub-header">
-          <h1>내 기록</h1>
-        </header>
+      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
         <p className="stadium-loading">불러오는 중...</p>
       </AppShell>
     );
@@ -144,11 +141,8 @@ export function RecordsScreen() {
 
   if (authState === "loggedOut" || authState === "anonymous") {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
-        <header className="play-hub-header">
-          <h1>내 기록</h1>
-          <p>경기 기록은 정식 계정에 저장돼요</p>
-        </header>
+      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
+        <p className="records-subtitle">경기 기록은 정식 계정에 저장돼요</p>
         <section className="records-empty">
           <span className="records-empty-icon">
             <Lock size={28} />
@@ -169,10 +163,7 @@ export function RecordsScreen() {
 
   if (loadError) {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
-        <header className="play-hub-header">
-          <h1>내 기록</h1>
-        </header>
+      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
         <section className="records-empty">
           <strong>불러오기 실패</strong>
           <p>{loadError}</p>
@@ -190,11 +181,8 @@ export function RecordsScreen() {
 
   if (rows && rows.length === 0) {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
-        <header className="play-hub-header">
-          <h1>내 기록</h1>
-          <p>공개 라인업 매칭과 친구 대전 결과가 자동으로 쌓여요</p>
-        </header>
+      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
+        <p className="records-subtitle">공개 라인업 매칭과 친구 대전 결과가 자동으로 쌓여요</p>
         <section className="records-empty">
           <span className="records-empty-icon">
             <History size={28} />
@@ -210,11 +198,8 @@ export function RecordsScreen() {
   }
 
   return (
-    <AppShell activeTab="records" title="내 기록" theme="light" hideHeader wide>
-      <header className="play-hub-header">
-        <h1>내 기록</h1>
-        <p>자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
-      </header>
+    <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
+      <p className="records-subtitle">자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
       <section className="records-list">
         {rows?.map((row) => {
           const replay = canReplay(row, SIM_ENGINE_VERSION);

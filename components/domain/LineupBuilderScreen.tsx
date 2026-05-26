@@ -594,7 +594,7 @@ export function LineupBuilderScreen() {
   }, [slots, pitcherSlots]);
 
   return (
-    <AppShell activeTab="play" title="라인업 짜기" theme="light" hideHeader wide>
+    <AppShell activeTab="play" title="라인업 짜기" theme="light" backHref="/" wide>
       <header className="lineup-header lineup-header-no-back">
         {/* 헤더 좌측: 동기화 상태 배지 (이전 공개 토글 자리. 공개/비공개 개념은 "경기장 등록"으로 대체됨) */}
         <div className={`lineup-sync-badge is-${syncStatus}`} title={
