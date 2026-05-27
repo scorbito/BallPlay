@@ -1,13 +1,11 @@
 "use client";
 
-// 재밌는 야구 영상 — 사용자 등록 풀 (Supabase bp_videos).
-// 모든 인증 사용자가 SELECT, 본인만 INSERT/DELETE.
-
-import { useCallback, useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { Bot, Camera, ExternalLink, Film, MessageSquareText, Play, Plus, Trash2, Volume2, VolumeX, X } from "lucide-react";
+import { Bot, Camera, ExternalLink, Film, MessageSquareText, Play, Plus } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
+import { VideoPlayerModal } from "@/components/domain/videos/VideoPlayerModal";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   createVideo,
@@ -15,7 +13,7 @@ import {
   listVideos,
   type BpVideoWithOwnerRow
 } from "@/lib/supabase/query-parts/bpVideos";
-import { parseVideoUrl, type VideoPlatform, type ParsedVideo } from "@/lib/utils/videoUrl";
+import { parseVideoUrl, type ParsedVideo, type VideoPlatform } from "@/lib/utils/videoUrl";
 
 const PLATFORM_ICON: Record<VideoPlatform, typeof Film> = {
   youtube: Film,
@@ -24,12 +22,11 @@ const PLATFORM_ICON: Record<VideoPlatform, typeof Film> = {
   other: ExternalLink
 };
 
-const PLATFORM_LABEL: Record<VideoPlatform, string> = {
-  youtube: "YouTube",
-  instagram: "Instagram",
-  threads: "Threads",
-  other: "외부"
-};
+type VideoRow =
+  | { kind: "shorts"; items: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> }
+  | { kind: "horizontal"; item: { video: BpVideoWithOwnerRow; parsed: ParsedVideo } };
+
+const SHORTS_PER_ROW_MOBILE = 3;
 
 function renderCard(
   video: BpVideoWithOwnerRow,
@@ -37,9 +34,8 @@ function renderCard(
   onOpen: (v: BpVideoWithOwnerRow) => void
 ) {
   const Icon = PLATFORM_ICON[parsed.platform];
-  const author = video.is_auto_curated
-    ? "놀이터봇"
-    : (video.owner_nickname?.trim() || "익명");
+  const author = video.is_auto_curated ? "놀이터봇" : (video.owner_nickname?.trim() || "익명");
+
   return (
     <button
       key={video.id}
@@ -83,38 +79,17 @@ function renderCard(
   );
 }
 
-// 행 단위 그룹핑 — 시간순 유지하면서 쇼츠 그리드가 꽉 차는 시점(% 3 == 0)에서만
-// 가로 영상을 끼워 넣음. 쇼츠 1~2개만 사이에 있으면 가로 영상을 잠시 대기시켰다가
-// 다음 쇼츠가 행을 채우면 한꺼번에 노출.
-// 모바일 한 줄 3개 기준으로 break 결정 (PC wide는 CSS가 5열로 wrap).
-//
-// 예: [H1, S1, S2, H2, S3, S4, S5] (모두 같은 날)
-//   → [H1] (쇼츠 0개, 바로 노출)
-//   → S1,S2 누적, H2 대기
-//   → S3로 쇼츠 3개 됨 → 쇼츠 행 + 대기중 H2 flush
-//   → S4, S5 누적
-//   → 끝: 쇼츠 [S4, S5] (마지막 부분 행만 partial OK)
-// 결과: H1 / [S1 S2 S3] / H2 / [S4 S5 _]
-//
-// 봇이 매일 12쇼츠 + 3가로 같은 분에 INSERT → 같은 created_at 내에서 위 로직이
-// 시간순 유지 + 가로/쇼츠 자연스러운 interleave를 만들어줌.
-type VideoRow =
-  | { kind: "shorts"; items: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> }
-  | { kind: "horizontal"; item: { video: BpVideoWithOwnerRow; parsed: ParsedVideo } };
-
-const SHORTS_PER_ROW_MOBILE = 3;
-
 function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
   const rows: VideoRow[] = [];
   let shortsBuf: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
   const pendingHorizontals: Array<{ video: BpVideoWithOwnerRow; parsed: ParsedVideo }> = [];
 
   const flushShorts = () => {
-    if (shortsBuf.length > 0) {
-      rows.push({ kind: "shorts", items: shortsBuf });
-      shortsBuf = [];
-    }
+    if (shortsBuf.length === 0) return;
+    rows.push({ kind: "shorts", items: shortsBuf });
+    shortsBuf = [];
   };
+
   const flushPendingHorizontals = () => {
     while (pendingHorizontals.length > 0) {
       const h = pendingHorizontals.shift()!;
@@ -126,23 +101,21 @@ function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
     const parsed = parseVideoUrl(v.url);
     if (parsed.orientation === "vertical") {
       shortsBuf.push({ video: v, parsed });
-      // 쇼츠가 한 행을 채우면 대기중 가로 영상도 함께 노출
       if (shortsBuf.length % SHORTS_PER_ROW_MOBILE === 0 && pendingHorizontals.length > 0) {
         flushShorts();
         flushPendingHorizontals();
       }
+      continue;
+    }
+
+    if (shortsBuf.length % SHORTS_PER_ROW_MOBILE === 0) {
+      flushShorts();
+      rows.push({ kind: "horizontal", item: { video: v, parsed } });
     } else {
-      // 가로 영상: 현재까지 쇼츠 수가 행에 딱 맞으면 바로 flush + 노출,
-      // 아니면 대기열에 추가하고 다음 쇼츠가 행을 채울 때까지 기다림.
-      if (shortsBuf.length % SHORTS_PER_ROW_MOBILE === 0) {
-        flushShorts();
-        rows.push({ kind: "horizontal", item: { video: v, parsed } });
-      } else {
-        pendingHorizontals.push({ video: v, parsed });
-      }
+      pendingHorizontals.push({ video: v, parsed });
     }
   }
-  // 마지막 partial 쇼츠 행 + 남은 대기 가로 영상은 끝에 그대로 표시
+
   flushShorts();
   flushPendingHorizontals();
   return rows;
@@ -153,14 +126,16 @@ export function VideosScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-
   const [openVideo, setOpenVideo] = useState<BpVideoWithOwnerRow | null>(null);
-  const closeModal = () => setOpenVideo(null);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [registerUrl, setRegisterUrl] = useState("");
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registerSubmitting, setRegisterSubmitting] = useState(false);
 
-  // 유튜브 쇼츠 스타일 네비게이션 — 위로 스와이프 = 다음, 아래로 스와이프 = 이전.
-  // 플랫 리스트 기준으로 wrap-around (끝에서 첫 영상으로).
-  const flatVideos = videos ?? [];
+  const flatVideos = useMemo(() => videos ?? [], [videos]);
   const currentIndex = openVideo ? flatVideos.findIndex((v) => v.id === openVideo.id) : -1;
+  const openParsed = openVideo ? parseVideoUrl(openVideo.url) : null;
+  const rows = useMemo(() => (videos ? groupIntoRows(videos) : []), [videos]);
 
   const navigate = useCallback(
     (delta: 1 | -1) => {
@@ -172,7 +147,6 @@ export function VideosScreen() {
     [currentIndex, flatVideos]
   );
 
-  // PC 키보드 ↑/↓ 네비게이션
   useEffect(() => {
     if (!openVideo) return;
     const onKey = (e: KeyboardEvent) => {
@@ -187,93 +161,6 @@ export function VideosScreen() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [openVideo, navigate]);
-
-  // 터치 스와이프 — 50px 이상 수직 이동이면 네비게이션 (수평 이동은 무시)
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const handleTouchStart = (e: ReactTouchEvent<HTMLDivElement>) => {
-    const t = e.touches[0];
-    touchStartRef.current = { x: t.clientX, y: t.clientY };
-  };
-  const handleTouchEnd = (e: ReactTouchEvent<HTMLDivElement>) => {
-    const start = touchStartRef.current;
-    touchStartRef.current = null;
-    if (!start) return;
-    const t = e.changedTouches[0];
-    const dy = t.clientY - start.y;
-    const dx = t.clientX - start.x;
-    // 수직 우세 + 임계값(50px) 넘을 때만
-    if (Math.abs(dy) < 50 || Math.abs(dy) < Math.abs(dx)) return;
-    if (dy < 0) navigate(1);  // 위로 스와이프 → 다음
-    else navigate(-1);        // 아래로 스와이프 → 이전
-  };
-
-  // 음소거 상태 — 브라우저 정책상 첫 재생은 무조건 muted.
-  // 사용자가 한 번 unmute하면 localStorage에 저장 → 다음 영상부터 자동 unmute 시도.
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [muted, setMuted] = useState(true);
-  const [userUnmutePref, setUserUnmutePref] = useState(false);
-
-  useEffect(() => {
-    try {
-      setUserUnmutePref(localStorage.getItem("videos:auto-unmute") === "true");
-    } catch {
-      // localStorage 접근 불가 (시크릿 모드 등) — 기본값 유지
-    }
-  }, []);
-
-  // YouTube IFrame Player API — postMessage로 명령 전송
-  const sendPlayerCommand = useCallback((func: "mute" | "unMute") => {
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
-    win.postMessage(JSON.stringify({ event: "command", func, args: "" }), "*");
-  }, []);
-
-  // 모달 열릴 때마다 muted 상태 리셋 (브라우저 정책) + 자동 unmute 시도
-  useEffect(() => {
-    if (!openVideo) return;
-    setMuted(true);
-    if (!userUnmutePref) return;
-    // iframe이 ready되기 전에 명령 보내면 무시되므로 약간 지연 + 여러 번 시도.
-    // 첫 시도가 빠르면 ready 전이라 실패할 수 있어 500/1500ms 2회 보냄.
-    const t1 = window.setTimeout(() => {
-      sendPlayerCommand("unMute");
-      setMuted(false);
-    }, 500);
-    const t2 = window.setTimeout(() => {
-      sendPlayerCommand("unMute");
-    }, 1500);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [openVideo, userUnmutePref, sendPlayerCommand]);
-
-  const toggleMute = () => {
-    if (muted) {
-      sendPlayerCommand("unMute");
-      setMuted(false);
-      setUserUnmutePref(true);
-      try {
-        localStorage.setItem("videos:auto-unmute", "true");
-      } catch {
-        // 무시
-      }
-    } else {
-      sendPlayerCommand("mute");
-      setMuted(true);
-      setUserUnmutePref(false);
-      try {
-        localStorage.setItem("videos:auto-unmute", "false");
-      } catch {
-        // 무시
-      }
-    }
-  };
-
-  const [registerOpen, setRegisterOpen] = useState(false);
-  const [registerUrl, setRegisterUrl] = useState("");
-  const [registerError, setRegisterError] = useState<string | null>(null);
-  const [registerSubmitting, setRegisterSubmitting] = useState(false);
 
   const loadVideos = useCallback(async () => {
     const client = createSupabaseBrowserClient();
@@ -309,6 +196,7 @@ export function VideosScreen() {
       setRegisterError("URL을 입력해주세요");
       return;
     }
+
     setRegisterSubmitting(true);
     const client = createSupabaseBrowserClient();
     const res = await createVideo(client, { userId, url });
@@ -317,6 +205,7 @@ export function VideosScreen() {
       setRegisterError(res.error);
       return;
     }
+
     setRegisterUrl("");
     setRegisterError(null);
     setRegisterOpen(false);
@@ -334,9 +223,6 @@ export function VideosScreen() {
     }
     await loadVideos();
   };
-
-  const openParsed = openVideo ? parseVideoUrl(openVideo.url) : null;
-  const rows = videos ? groupIntoRows(videos) : [];
 
   return (
     <AppShell
@@ -357,20 +243,16 @@ export function VideosScreen() {
       }
     >
       <p className="videos-intro">
-        끝내기 홈런 · 호수비 · 응원가 · 짤방 · 직캠 등 재밌는 야구 영상을 함께 모아봐요.
+        끝내기, 명수비, 응원가, 직캠 등 재밌는 야구 영상을 함께 모아봐요.
         누구나 유튜브 링크를 등록하고 같이 즐길 수 있어요.
       </p>
 
-      {loading && videos === null ? (
-        <p className="stadium-loading">불러오는 중...</p>
-      ) : null}
-
+      {loading && videos === null ? <p className="stadium-loading">불러오는 중...</p> : null}
       {error ? <p className="stadium-error">{error}</p> : null}
-
       {videos !== null && videos.length === 0 ? (
         <section className="stadium-discover-empty">
           <strong>아직 등록된 영상이 없어요</strong>
-          <p>우측 상단 &lsquo;영상 등록&rsquo;으로 첫 영상을 올려보세요.</p>
+          <p>우측 상단 영상 등록으로 첫 영상을 올려보세요.</p>
         </section>
       ) : null}
 
@@ -391,104 +273,15 @@ export function VideosScreen() {
         })}
       </section>
 
-      <ModalShell
-        open={openVideo !== null}
-        title={
-          openVideo
-            ? `@${openVideo.is_auto_curated ? "놀이터봇" : (openVideo.owner_nickname?.trim() || "익명")}`
-            : ""
-        }
-        onClose={closeModal}
-        panelClassName={`video-player-panel video-player-panel-${openParsed?.orientation ?? "horizontal"}`}
-        closeOnBackdrop
-      >
-        {openVideo && openParsed ? (
-          <div className="video-player-body">
-            <button
-              type="button"
-              className="video-player-close"
-              onClick={closeModal}
-              aria-label="닫기"
-            >
-              <X size={20} />
-            </button>
-            {openParsed.platform === "youtube" && openParsed.embedUrl ? (
-              <>
-                <div className="video-player-iframe-wrap">
-                  <iframe
-                    ref={iframeRef}
-                    src={openParsed.embedUrl}
-                    title="영상 재생"
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                  {/* 스와이프 캡처 overlay — iframe touch를 가로채 위/아래 스와이프로 영상 전환.
-                      트레이드오프: 영상 내부 탭(YouTube 자체 일시정지)은 안 됨. 음소거/닫기 버튼은 z-index 더 높아서 OK. */}
-                  <div
-                    className="video-player-swipe-capture"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                    aria-hidden="true"
-                  />
-                </div>
-                <button
-                  type="button"
-                  className="video-player-mute-toggle"
-                  onClick={toggleMute}
-                  aria-label={muted ? "음소거 해제" : "음소거"}
-                  title={muted ? "음소거 해제" : "음소거"}
-                >
-                  {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </button>
-                <div className="video-player-fallback">
-                  재생 안 되면 ▶
-                  <a href={openParsed.watchUrl} target="_blank" rel="noopener noreferrer">
-                    유튜브에서 보기 <ExternalLink size={11} />
-                  </a>
-                </div>
-              </>
-            ) : (
-              <div className="video-player-external">
-                <div className="video-player-external-icon">
-                  {(() => {
-                    const Icon = PLATFORM_ICON[openParsed.platform];
-                    return <Icon size={32} />;
-                  })()}
-                </div>
-                <p>이 플랫폼은 페이지 내 재생을 지원하지 않아요.</p>
-                <a
-                  href={openParsed.watchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="video-player-external-cta"
-                >
-                  <ExternalLink size={14} />
-                  {PLATFORM_LABEL[openParsed.platform]}에서 보기
-                </a>
-              </div>
-            )}
-            {userId && openVideo.owner_user_id === userId ? (
-              <button
-                type="button"
-                className="video-player-delete"
-                onClick={() => {
-                  void (async () => {
-                    await handleDelete(openVideo);
-                    closeModal();
-                  })();
-                }}
-                aria-label="내 영상 삭제"
-              >
-                <Trash2 size={14} />
-                삭제
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </ModalShell>
+      <VideoPlayerModal
+        openVideo={openVideo}
+        openParsed={openParsed}
+        userId={userId}
+        onClose={() => setOpenVideo(null)}
+        onNavigate={navigate}
+        onDelete={handleDelete}
+      />
 
-      {/* 영상 등록 모달 */}
       <ModalShell
         open={registerOpen}
         title="영상 등록"
@@ -514,12 +307,8 @@ export function VideosScreen() {
               autoFocus
             />
           </label>
-          <p className="videos-register-hint">
-            유튜브 URL만 지원 (쇼츠 / 일반 영상)
-          </p>
-          {registerError ? (
-            <p className="videos-register-error">{registerError}</p>
-          ) : null}
+          <p className="videos-register-hint">유튜브 URL만 지원해요. 쇼츠와 일반 영상 모두 가능해요.</p>
+          {registerError ? <p className="videos-register-error">{registerError}</p> : null}
           <button
             type="button"
             className="videos-register-submit"
