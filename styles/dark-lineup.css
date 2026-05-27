@@ -13,6 +13,14 @@
   gap: 12px;
 }
 
+/* 헤더 우측 액션 묶음 — 공지(메가폰) + 설정 아이콘 나란히 */
+.phone-frame-light .play-hub-header-actions {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .phone-frame-light .play-hub-settings {
   flex-shrink: 0;
   display: inline-flex;
@@ -32,18 +40,47 @@
   color: var(--bp-text);
 }
 
+/* 공지 아이콘 — 신규 공지 빨간점 배지 */
+.phone-frame-light .play-hub-notice {
+  position: relative;
+}
+
+.phone-frame-light .play-hub-notice-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bp-danger, #ef4444);
+  /* 아이콘 위에서 도드라지게 배경색 링 */
+  box-shadow: 0 0 0 2px var(--bp-bg, #fff);
+}
+
 .phone-frame-light .play-hub-header h1 {
-  /* header flex 컨테이너의 좌측 슬롯 — flex:1 + min-width:0으로 tagline ellipsis 동작 */
+  /* header flex 컨테이너의 좌측 슬롯 — 로고 + 제목그룹(제목/태그라인 세로 스택) */
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-size: 26px;
-  font-weight: 900;
-  color: var(--bp-text);
-  letter-spacing: -0.4px;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* 제목 + 태그라인 세로 스택 — 로고 우측. 태그라인을 제목 아래로 내려 헤더 가로 공간 확보. */
+.phone-frame-light .play-hub-title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.phone-frame-light .play-hub-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.4px;
+  line-height: 1.15;
 }
 
 .phone-frame-light .play-hub-logo {
@@ -60,13 +97,13 @@
   font-weight: 600;
 }
 
-/* 타이틀 옆 한 줄 태그라인 — h1 안에 inline. 모바일에선 한 줄 유지하기 위해
-   타이틀 자체 라인-높이에 맞춰 sublabel처럼 표시. */
+/* 태그라인 — 제목 바로 아래 작게. 제목과 세로 스택이라 가로 경쟁 없음. */
 .phone-frame-light .play-hub-tagline {
   font-size: 12px;
   font-weight: 600;
   color: var(--bp-text-secondary);
   letter-spacing: 0;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -227,8 +264,8 @@
 
 .phone-frame-light .play-hub-hero-subtitle {
   margin: 0;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--bp-text-secondary);
   line-height: 1.4;
   letter-spacing: -0.1px;
@@ -351,7 +388,7 @@
     font-size: 28px;
   }
   .phone-frame-light .play-hub-hero-subtitle {
-    font-size: 15px;
+    font-size: 14px;
   }
   .phone-frame-light .play-hub-hero-illust {
     top: -38px;
@@ -405,7 +442,7 @@
     font-size: 32px;
   }
   .phone-frame-light .play-hub-hero-subtitle {
-    font-size: 16px;
+    font-size: 15px;
   }
   .phone-frame-light .play-hub-hero-illust {
     top: -45px;
