@@ -758,8 +758,13 @@
   z-index: 2;
 }
 
-/* "추천" 배지 — 강조 카드 우상단. 핑크 배경 위(추천 카드)에 올라가므로 흰 배경 + 핑크 텍스트로 대비 강조 */
+/* "추천" 배지 — 강조 카드 우상단. 핑크 배경 위(추천 카드)에 올라가므로 흰 배경 + 핑크 텍스트로 대비 강조.
+   ! 정보 아이콘 제거(2026-05-27)로 corner-row 래퍼가 사라져, 배지가 직접 우상단 absolute 배치. */
 .phone-frame-light .play-hub-card-featured {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 3px;
