@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import type { Metadata, Viewport } from "next";
 import { unstable_noStore as noStore } from "next/cache";
 import { Analytics } from "@vercel/analytics/next";
@@ -121,10 +122,24 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   noStore();
 
-  // 빠른 auth 체크만 동기로 수행 — 무거운 DB 페치는 AppStateLoader가 Suspense 안에서.
-  const ssr = createSupabaseServerClient();
-  const { data: authData } = await ssr.auth.getUser();
-  const isAnonymous = Boolean(authData?.user?.is_anonymous);
+  // 미들웨어가 이미 getUser()로 검증하고 헤더로 user 정보를 넘겨줌 → 여기서 재호출 안 함.
+  // (auth.getUser()는 Supabase Auth 서버 네트워크 왕복이라 페이지마다 비용 큼)
+  // 헤더 없을 때만(미들웨어 미경유 등 예외) fallback으로 getUser 1회.
+  const hdrs = headers();
+  const headerUserId = hdrs.get("x-bp-user-id");
+  const headerIsAnon = hdrs.get("x-bp-is-anon");
+
+  let userId: string | null;
+  let isAnonymous: boolean;
+  if (headerUserId !== null || headerIsAnon !== null) {
+    userId = headerUserId && headerUserId.length > 0 ? headerUserId : null;
+    isAnonymous = headerIsAnon === "1";
+  } else {
+    const ssr = createSupabaseServerClient();
+    const { data: authData } = await ssr.auth.getUser();
+    userId = authData?.user?.id ?? null;
+    isAnonymous = Boolean(authData?.user?.is_anonymous);
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -159,7 +174,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             ErrorBoundary로 감싸 클라이언트 사이드 에러 발생 시 자동 reload로 복구. */}
         <ErrorBoundary>
           <Suspense fallback={null}>
-            <AppStateLoader isAnonymous={isAnonymous}>
+            <AppStateLoader isAnonymous={isAnonymous} userId={userId}>
               {children}
               <InstallAppBanner />
               <AuthRefreshOnVisible />

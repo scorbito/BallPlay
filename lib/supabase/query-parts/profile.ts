@@ -43,18 +43,27 @@ export async function getCurrentAuthAccountInfo(): Promise<AuthAccountInfo | nul
   return { provider: "unknown", identifier: user.email ?? null, isAnonymous: false };
 }
 
-export async function getCurrentProfileFromDb(): Promise<UserProfileRecord | null> {
+/**
+ * 현재 사용자 프로필 조회.
+ * @param userId 호출 측에서 이미 auth.getUser()로 user.id를 알고 있으면 전달 → 중복 auth 왕복 제거.
+ *               미전달 시 내부에서 auth.getUser() 1회 호출 (하위 호환).
+ */
+export async function getCurrentProfileFromDb(userId?: string): Promise<UserProfileRecord | null> {
   const supabase = createSupabaseServerClient();
-  const { data: authData, error: authError } = await supabase.auth.getUser();
 
-  if (authError || !authData.user) {
-    return null;
+  let uid = userId;
+  if (!uid) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      return null;
+    }
+    uid = authData.user.id;
   }
 
   const { data, error } = await supabase
     .from("profiles")
     .select("id,nickname,main_team_id,main_team_changed_at,interest_team_ids,notifications_enabled,default_public_scope,avatar_image_url,bio,created_at,updated_at")
-    .eq("id", authData.user.id)
+    .eq("id", uid)
     .maybeSingle();
 
   if (error) {

@@ -1,5 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+
+// 미들웨어가 검증한 user 정보를 서버 컴포넌트로 전달하는 헤더.
+// layout.tsx가 이 헤더를 읽어 중복 auth.getUser() 네트워크 왕복을 제거.
+// 클라이언트가 위조 못 하도록 미들웨어에서 항상 delete 후 set.
+const HEADER_USER_ID = "x-bp-user-id";
+const HEADER_IS_ANON = "x-bp-is-anon";
 
 // 비인증 사용자가 메인 진입 시 익명 세션을 자동 생성하기 위한 부트스트랩 경로 매칭.
 // 서버 컴포넌트의 redirect() 호출이 Next.js App Router의 React #310 버그를 트리거하므로
@@ -12,28 +18,33 @@ function isSearchCrawler(userAgent: string | null) {
 }
 
 export async function updateSupabaseSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    return response;
+    return NextResponse.next({ request });
   }
+
+  // 들어온 요청에 위조된 x-bp-* 헤더 있으면 제거 (보안). getUser 검증 후 다시 set.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete(HEADER_USER_ID);
+  requestHeaders.delete(HEADER_IS_ANON);
+
+  // 세션 갱신(getUser)이 set/remove 쿠키를 발생시킬 수 있음 → 모아뒀다가 최종 response에 적용.
+  const pendingCookies: Array<{ name: string; value: string; options: CookieOptions }> = [];
 
   const supabase = createServerClient(url, anonKey, {
     cookies: {
       get(name: string) {
         return request.cookies.get(name)?.value;
       },
-      set(name: string, value: string, options) {
+      set(name: string, value: string, options: CookieOptions) {
         request.cookies.set({ name, value, ...options });
-        response = NextResponse.next({ request });
-        response.cookies.set({ name, value, ...options });
+        pendingCookies.push({ name, value, options });
       },
-      remove(name: string, options) {
+      remove(name: string, options: CookieOptions) {
         request.cookies.set({ name, value: "", ...options });
-        response = NextResponse.next({ request });
-        response.cookies.set({ name, value: "", ...options });
+        pendingCookies.push({ name, value: "", options });
       }
     }
   });
@@ -54,5 +65,15 @@ export async function updateSupabaseSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // 검증된 user 정보를 헤더로 주입 → 서버 컴포넌트(layout)가 getUser 재호출 없이 사용.
+  if (data?.user) {
+    requestHeaders.set(HEADER_USER_ID, data.user.id);
+    requestHeaders.set(HEADER_IS_ANON, data.user.is_anonymous ? "1" : "0");
+  }
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  for (const c of pendingCookies) {
+    response.cookies.set(c.name, c.value, c.options);
+  }
   return response;
 }

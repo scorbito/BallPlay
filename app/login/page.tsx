@@ -20,7 +20,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   // 정식 user는 redirect, 익명 user는 upgrade 모드로 페이지 그대로 표시
   if (data.user && !data.user.is_anonymous) {
-    const profile = await getCurrentProfileFromDb().catch(() => null);
+    // 이미 가진 user.id 전달 → 중복 auth.getUser() 제거
+    const profile = await getCurrentProfileFromDb(data.user.id).catch(() => null);
     redirect(profile ? "/" : "/onboarding");
   }
 

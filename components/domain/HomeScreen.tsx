@@ -1,28 +1,24 @@
-"use client";
-
-import { useEffect, useState, type ElementType, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
+import { type ElementType, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  AlertCircle,
   BarChart3,
   Bot,
   CalendarDays,
   ChevronRight,
   ClipboardCheck,
-  ExternalLink,
   FileText,
   History,
   ListChecks,
   Play,
   PlaySquare,
   Settings,
-  Star,
   Swords,
   Target,
   Trophy,
   Users
 } from "lucide-react";
+import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -234,27 +230,8 @@ const sections: HomeSection[] = [
 ];
 
 export function HomeScreen() {
-  // 카드 설명 팝오버 — 한 번에 하나만 열림. 카드 ID 저장. 다른 데 클릭하면 닫힘.
-  // ! 버튼 → 툴팁 (모바일에서만 노출. 태블릿/PC는 CSS로 ! 숨김 + 설명 본문에 항상 표시)
-  const [openInfoId, setOpenInfoId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!openInfoId) return;
-    const onDocClick = (e: globalThis.MouseEvent) => {
-      const t = e.target as Element | null;
-      if (t?.closest(".play-hub-card-info") || t?.closest(".play-hub-card-tooltip")) return;
-      setOpenInfoId(null);
-    };
-    document.addEventListener("click", onDocClick);
-    return () => document.removeEventListener("click", onDocClick);
-  }, [openInfoId]);
-
-  const toggleInfo = (id: string) => (e: ReactMouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpenInfoId((prev) => (prev === id ? null : id));
-  };
-
+  // 정적 카드 그리드만 렌더하는 Server Component. 유일한 인터랙티브 영역(설명 팝오버)은
+  // HomeCardCorner client island가 담당 → 홈 진입 시 클라이언트 JS/hydration 최소화.
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
       <header className="play-hub-header">
@@ -295,49 +272,6 @@ export function HomeScreen() {
           <div className={gridClass}>
             {section.cards.map((card) => {
                 const Icon = card.icon;
-                const infoOpen = openInfoId === card.id;
-                // 우상단 코너: featured(★추천) > external(↗) > badge(준비중) > info(!).
-                // ! 버튼은 모바일 전용 (CSS @media로 태블릿/PC에선 숨김).
-                let cornerNode: ReactNode = null;
-                if (card.featured) {
-                  cornerNode = (
-                    <div className="play-hub-card-corner-row">
-                      <span className="play-hub-card-featured">
-                        <Star size={10} fill="currentColor" strokeWidth={0} />
-                        추천
-                      </span>
-                      <button
-                        type="button"
-                        className="play-hub-card-info play-hub-card-info-on-featured"
-                        aria-label={`${card.title} 설명 보기`}
-                        aria-expanded={infoOpen}
-                        onClick={toggleInfo(card.id)}
-                      >
-                        <AlertCircle size={14} />
-                      </button>
-                    </div>
-                  );
-                } else if (card.external) {
-                  cornerNode = (
-                    <span className="play-hub-card-external-mark" aria-hidden="true">
-                      <ExternalLink size={14} />
-                    </span>
-                  );
-                } else if (!card.available && card.badge) {
-                  cornerNode = <span className="play-hub-card-badge">{card.badge}</span>;
-                } else if (card.available) {
-                  cornerNode = (
-                    <button
-                      type="button"
-                      className="play-hub-card-info"
-                      aria-label={`${card.title} 설명 보기`}
-                      aria-expanded={infoOpen}
-                      onClick={toggleInfo(card.id)}
-                    >
-                      <AlertCircle size={14} />
-                    </button>
-                  );
-                }
 
                 // 아이콘 영역: iconImage 있으면 이미지, 없으면 lucide
                 const iconNode = card.iconImage ? (
@@ -396,12 +330,15 @@ export function HomeScreen() {
                         {cardInner}
                       </div>
                     )}
-                    {cornerNode}
-                    {infoOpen ? (
-                      <div className="play-hub-card-tooltip" role="tooltip">
-                        {card.description}
-                      </div>
-                    ) : null}
+                    <HomeCardCorner
+                      cardId={card.id}
+                      title={card.title}
+                      description={card.description}
+                      available={card.available}
+                      featured={card.featured}
+                      external={card.external}
+                      badge={card.badge}
+                    />
                   </div>
                 );
               })}
