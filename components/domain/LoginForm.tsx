@@ -7,17 +7,12 @@ import { emailAuthAction } from "@/lib/actions/auth";
 
 type LoginFormProps = {
   error?: string;
-  notice?: string;
 };
 
 const errorMessages: Record<string, string> = {
   missing: "이메일과 비밀번호를 입력해주세요.",
   "short-password": "비밀번호는 6자 이상이어야 합니다.",
   "auth-required": "로그인이 필요합니다."
-};
-
-const noticeMessages: Record<string, string> = {
-  "check-email": "이메일 인증 링크를 확인한 뒤 다시 로그인해주세요."
 };
 
 function LoginSubmit({ mode }: { mode: "sign-in" | "sign-up" }) {
@@ -39,10 +34,25 @@ function LoginSubmit({ mode }: { mode: "sign-in" | "sign-up" }) {
   );
 }
 
-export function LoginForm({ error, notice }: LoginFormProps) {
+export function LoginForm({ error }: LoginFormProps) {
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [open, setOpen] = useState(Boolean(error));
 
-  const message = error ? errorMessages[error] ?? error : notice ? noticeMessages[notice] ?? notice : "";
+  const message = error ? errorMessages[error] ?? error : "";
+
+  if (!open) {
+    return (
+      <div className="login-form-collapsed">
+        {message ? (
+          <p className={error ? "login-message login-message-error" : "login-message"}>{message}</p>
+        ) : null}
+        <button className="oauth-button oauth-email" type="button" onClick={() => setOpen(true)}>
+          <Mail size={16} />
+          이메일로 계속하기
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form action={emailAuthAction} className="login-form">

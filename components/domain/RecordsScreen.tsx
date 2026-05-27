@@ -3,9 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { History, Play, Trash2, Lock } from "lucide-react";
+import { History, Lock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
+import {
+  RematchLineupModal,
+  type RematchLineupOption
+} from "@/components/domain/records/RematchLineupModal";
+import { RecordCard } from "@/components/domain/records/RecordCard";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
@@ -14,18 +20,21 @@ import {
   canReplay,
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
-import { listMyLineups } from "@/lib/supabase/query-parts/bpLineups";
+import { listMyLineups, rowToEntry } from "@/lib/supabase/query-parts/bpLineups";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
-import { saveMatchSession } from "@/lib/sim/matchSession";
+import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
+import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
+import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
+import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import type { SimTeamInput } from "@/lib/sim/types";
 import { withTimeout } from "@/lib/utils/withTimeout";
 
 type AuthState = "loading" | "loggedIn" | "loggedOut";
 
-type LineupOption = { id: string; name: string; teamId: string };
+type LineupOption = RematchLineupOption;
 
 type Stats = { wins: number; losses: number; draws: number };
-
 // 특정 라인업(또는 전체)의 본인 시점 전적 집계.
 // user_side가 mirror row에선 flip되어 있으므로, user_side+final_score 조합이 곧 "본인 측 결과".
 function computeStats(records: BpRecordRow[], lineupId: string | null): Stats {
@@ -60,6 +69,10 @@ export function RecordsScreen() {
   // 내 라인업 목록 — 필터 chip 노출용. 본인의 bp_lineups row id ↔ 이름 매핑.
   const [myLineups, setMyLineups] = useState<LineupOption[]>([]);
   const [filterLineupId, setFilterLineupId] = useState<string | null>(null);
+  const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
+  const [rematchRecord, setRematchRecord] = useState<BpRecordRow | null>(null);
+  const [rematchEntryId, setRematchEntryId] = useState<string | null>(null);
+  const [startingRematch, setStartingRematch] = useState(false);
   // 필터 chip 컨테이너 — PC에서 마우스 드래그로 가로 스크롤 가능하게 ref 부착.
   const filterRef = useRef<HTMLDivElement | null>(null);
 
@@ -103,11 +116,18 @@ export function RecordsScreen() {
     const linRes = await listMyLineups(client, user.id);
     if (linRes.ok) {
       setMyLineups(
-        linRes.rows.map((r) => ({
-          id: r.id,
-          name: r.name?.trim() || getTeam(r.team_id).shortName,
-          teamId: r.team_id
-        }))
+        linRes.rows
+          .map((r) => {
+            const entry = rowToEntry(r);
+            return {
+              id: r.id,
+              entryId: entry.entryId,
+              name: r.name?.trim() || getTeam(r.team_id).shortName,
+              teamId: r.team_id,
+              entry
+            };
+          })
+          .filter((lineup) => lineup.entry.batting.slots.length === 9)
       );
     }
   }, []);
@@ -208,6 +228,87 @@ export function RecordsScreen() {
     router.push("/stadium/play");
   };
 
+  const getOpponentSide = (row: BpRecordRow): "home" | "away" => (
+    row.user_side === "home" ? "away" : "home"
+  );
+
+  const handleOpenOpponent = (row: BpRecordRow) => {
+    const side = getOpponentSide(row);
+    const team = row.input?.[side] ?? null;
+    if (!team) {
+      showToast("상대 라인업 데이터가 남아 있지 않아요.");
+      return;
+    }
+    setPreviewTeam(team);
+  };
+
+  const openRematchPicker = (row: BpRecordRow) => {
+    if (row.source !== "public") return;
+    if (!row.input) {
+      showToast("재대전할 라인업 데이터가 남아 있지 않아요.");
+      return;
+    }
+    const publicLineups = myLineups.filter((lineup) => lineup.entry.isPublished === true);
+    if (publicLineups.length === 0) {
+      showToast("먼저 저장된 내 라인업이 필요합니다.");
+      return;
+    }
+    setRematchRecord(row);
+    setRematchEntryId(publicLineups[0]?.entryId ?? null);
+  };
+
+  const startRematch = () => {
+    if (!rematchRecord?.input || startingRematch) return;
+    if (rematchRecord.source !== "public") return;
+    const publicLineups = myLineups.filter((lineup) => lineup.entry.isPublished === true);
+    const selected = publicLineups.find((lineup) => lineup.entryId === rematchEntryId) ?? publicLineups[0];
+    if (!selected) {
+      showToast("선택할 수 있는 내 라인업이 없습니다.");
+      return;
+    }
+    const opponentSide = getOpponentSide(rematchRecord);
+    const opponentTeam = rematchRecord.input[opponentSide];
+    const myPitching = selected.entry.pitching ?? autoFillPitcherLineup(selected.entry.teamId);
+    if (!myPitching) {
+      showToast("투수 라인업을 만들 수 없습니다.");
+      return;
+    }
+    const stats = buildStatsDirectory([selected.entry.teamId, opponentTeam.teamId]);
+    const mine = buildSimTeamInput(
+      selected.entry.teamId,
+      selected.entry.batting,
+      myPitching,
+      stats,
+      selected.entry.name
+    );
+    if (!mine.ok) {
+      showToast(`내 라인업을 경기용으로 변환하지 못했습니다. (${mine.issues.map((i) => i.kind).join(", ")})`);
+      return;
+    }
+    const input =
+      rematchRecord.user_side === "home"
+        ? { home: mine.team, away: opponentTeam, context: {} }
+        : { home: opponentTeam, away: mine.team, context: {} };
+    setStartingRematch(true);
+    saveMatchSession({
+      myTeamId: mine.team.teamId,
+      opponentTeamId: opponentTeam.teamId,
+      seed: generateSeed(),
+      input,
+      startedAt: new Date().toISOString(),
+      source: rematchRecord.source,
+      userSide: rematchRecord.user_side,
+      myLineupId: selected.id,
+      opponentLineupId:
+        rematchRecord.user_side === "home"
+          ? rematchRecord.away_lineup_id ?? undefined
+          : rematchRecord.home_lineup_id ?? undefined
+    });
+    setStartingRematch(false);
+    setRematchRecord(null);
+    router.push("/stadium/play");
+  };
+
   const handleDelete = async (row: BpRecordRow) => {
     if (deletingId) return;
     if (!confirm(`${row.away_label ?? row.away_team_id} vs ${row.home_label ?? row.home_team_id} 기록을 삭제할까요?`)) return;
@@ -291,6 +392,8 @@ export function RecordsScreen() {
         (r) => r.home_lineup_id === filterLineupId || r.away_lineup_id === filterLineupId
       )
     : rows ?? [];
+  const publicLineups = myLineups.filter((lineup) => lineup.entry.isPublished === true);
+  const rematchOpponentTeam = rematchRecord?.input?.[getOpponentSide(rematchRecord)] ?? null;
 
   return (
     <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
@@ -351,86 +454,40 @@ export function RecordsScreen() {
 
       <section className="records-list">
         {filteredRows.map((row: BpRecordRow) => {
-          const replay = canReplay(row, SIM_ENGINE_VERSION);
-          const isWinner =
-            (row.user_side === "home" && row.final_score.home > row.final_score.away) ||
-            (row.user_side === "away" && row.final_score.away > row.final_score.home);
-          const isDraw = row.final_score.home === row.final_score.away;
+          const opponentSide = getOpponentSide(row);
           return (
-            <article key={row.id} className="records-card">
-              <div className="records-card-head">
-                <span className={`records-card-source records-card-source-${row.source}`}>
-                  {row.source === "friend" ? "친구 대전" : "공개 매칭"}
-                </span>
-                <span
-                  className={`records-card-outcome ${
-                    isDraw ? "is-draw" : isWinner ? "is-win" : "is-lose"
-                  }`}
-                >
-                  {isDraw ? "무" : isWinner ? "승" : "패"}
-                </span>
-                <span className="records-card-date">
-                  {new Date(row.created_at).toLocaleDateString("ko-KR", {
-                    month: "2-digit",
-                    day: "2-digit"
-                  })}
-                </span>
-              </div>
-
-              <div className="records-card-score">
-                <div className="records-card-team">
-                  <TeamBadge teamId={row.away_team_id} size="sm" />
-                  <span>{row.away_label ?? row.away_team_id}</span>
-                  <strong>{row.final_score.away}</strong>
-                </div>
-                <span className="records-card-vs">:</span>
-                <div className="records-card-team is-right">
-                  <TeamBadge teamId={row.home_team_id} size="sm" />
-                  <span>{row.home_label ?? row.home_team_id}</span>
-                  <strong>{row.final_score.home}</strong>
-                </div>
-              </div>
-
-              {row.mvp_name ? (
-                <div className="records-card-mvp">
-                  MVP <strong>{row.mvp_name}</strong>
-                  {row.is_walkoff ? <span className="records-card-walkoff">끝내기</span> : null}
-                </div>
-              ) : null}
-
-              <footer className="records-card-actions">
-                <button
-                  type="button"
-                  className="records-card-replay"
-                  onClick={() => handleReplay(row)}
-                  disabled={!replay.ok}
-                  title={
-                    replay.ok
-                      ? "재생"
-                      : replay.reason === "expired"
-                      ? "재생 만료 (7일)"
-                      : replay.reason === "engine_mismatch"
-                      ? "엔진 버전 변경으로 재생 불가"
-                      : "재생 데이터 없음"
-                  }
-                >
-                  <Play size={14} />
-                  <span>{replay.ok ? "재생" : "재생 불가"}</span>
-                </button>
-                <button
-                  type="button"
-                  className="records-card-delete"
-                  onClick={() => handleDelete(row)}
-                  disabled={deletingId === row.id}
-                  aria-label="삭제"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </footer>
-            </article>
+            <RecordCard
+              key={row.id}
+              row={row}
+              deleting={deletingId === row.id}
+              canRematch={publicLineups.length > 0}
+              opponentSide={opponentSide}
+              onReplay={handleReplay}
+              onOpenOpponent={handleOpenOpponent}
+              onRematch={openRematchPicker}
+              onDelete={handleDelete}
+            />
           );
         })}
       </section>
+      <LineupDetailModal
+        open={previewTeam !== null}
+        team={previewTeam}
+        onClose={() => setPreviewTeam(null)}
+      />
+      <RematchLineupModal
+        open={rematchRecord !== null}
+        opponentTeam={rematchOpponentTeam}
+        lineups={publicLineups}
+        selectedEntryId={rematchEntryId}
+        starting={startingRematch}
+        onSelectEntry={setRematchEntryId}
+        onStart={startRematch}
+        onClose={() => {
+          if (startingRematch) return;
+          setRematchRecord(null);
+        }}
+      />
     </AppShell>
   );
 }

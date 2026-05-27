@@ -169,8 +169,8 @@ export function PlayScreen() {
   const recordSaveAttemptedRef = useRef(false);
   const [recordSaving, setRecordSaving] = useState(false);
   const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
-  // 진행 모드 — normal(현재 기본) / fast(2배) / live(실시간 중계, SITUATION phase + 단계 narration)
-  const [mode, setMode] = useState<"normal" | "fast" | "superfast" | "live">("normal");
+  // 진행 모드 — fast(기본) / normal / superfast / live(실시간 중계, SITUATION phase + 단계 narration)
+  const [mode, setMode] = useState<"normal" | "fast" | "superfast" | "live">("fast");
   // 진행 단계 — live에선 SITUATION → BATTER → OUTCOME → … / normal·fast는 SITUATION 스킵
   const [phase, setPhase] = useState<
     "SITUATION" | "BATTER" | "OUTCOME" | "INNING_END" | "PITCHER_CHANGE" | "GAME_END"

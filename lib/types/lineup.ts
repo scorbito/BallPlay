@@ -56,19 +56,20 @@ export type SavedLineup = {
 
 export const LINEUP_STORAGE_PREFIX = "ballplay:lineup:";
 
-/** 투수 라인업 — 오늘 경기의 선발 1명 + 불펜 8명 = 9명.
+/** 투수 라인업 — 오늘 경기의 선발 1명 + 마무리 1명 + 불펜 7명 = 9명.
  *  타자 라인업의 9슬롯과 동일한 모양으로 시각 일관성.
  *  슬롯 컨벤션 (시뮬레이션 엔진에서 역할로 매핑):
  *    0     : 선발 (SP)
- *    1..7  : 불펜 (RP) — 교체 시 순서대로 등판
- *    8     : 마무리 (CL) — 9회 1~3점 리드 시 자동 투입 */
+ *    1     : 마무리 (CL) — 9회 1~3점 리드 시 자동 투입
+ *    2..8  : 불펜 (RP) — 교체 시 순서대로 등판 */
 export const PITCHER_SLOTS_COUNT = 9;
 export const PITCHER_STARTER_INDEX = 0;
-export const PITCHER_CLOSER_INDEX = 8;
+export const PITCHER_CLOSER_INDEX = 1;
+export const PITCHER_REQUIRED_BULLPEN_INDEX = 2;
 
 export type SavedPitcherLineup = {
   teamId: string;
-  slots: (string | null)[]; // playerId × 9, [0]=선발, [1..8]=불펜
+  slots: (string | null)[]; // playerId × 9, [0]=선발, [1]=마무리, [2..8]=불펜
   updatedAt: string;
 };
 

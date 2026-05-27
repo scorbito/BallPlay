@@ -14,6 +14,8 @@ import {
   POSITIONS,
   POSITION_LABEL,
   POSITION_SHORT,
+  PITCHER_CLOSER_INDEX,
+  PITCHER_REQUIRED_BULLPEN_INDEX,
   PITCHER_SLOTS_COUNT,
   PITCHER_STARTER_INDEX,
   formatHandBadge,
@@ -137,8 +139,8 @@ export function LineupBuilderScreen() {
   // 공개 상태에서 잠긴 영역(슬롯/풀/다이아몬드) 클릭 시 안내 모달
   const [lockInfoOpen, setLockInfoOpen] = useState(false);
   // 새 슬롯 onboarding 안내 — 슬롯별 한 번씩만 노출.
-  //   step1: 타순 9명 채우면 "선발 투수만 선택하면 공개 가능"
-  //   step2: 선발 투수 고르면 "이제 공개해서 가상경기 가능"
+  //   step1: 타순 9명 채우면 "필수 투수를 선택하면 공개 가능"
+  //   step2: 선발/마무리/필수 불펜을 고르면 "이제 공개해서 가상경기 가능"
   const [guideStep1Open, setGuideStep1Open] = useState(false);
   const [guideStep2Open, setGuideStep2Open] = useState(false);
   // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
@@ -366,7 +368,7 @@ export function LineupBuilderScreen() {
       return;
     }
 
-    // 투수 모드: 선발(0번) → 불펜(1~8번) 순으로 빈 자리 채우기
+    // 투수 모드: 선발(0번) → 마무리(1번) → 불펜(2~8번) 순으로 빈 자리 채우기
     if (player.primaryPosition !== "P") {
       showToast("야수는 타자 라인업에서 관리해주세요.");
       return;
@@ -566,19 +568,31 @@ export function LineupBuilderScreen() {
   const selectedTeam = getTeam(selectedTeamId);
   const filledCount = slots.filter((s) => s !== null).length;
   const pitcherFilled = pitcherSlots.filter(Boolean).length;
-  // 공개 가능 조건 — 타선 9명 + 선발 투수(slot[0]) 선택 필수
+  // 공개 가능 조건 — 타선 9명 + 선발 + 마무리 + 필수 불펜 1명
   const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] != null;
-  const canPublish = filledCount === 9 && hasStarter;
+  const hasCloser = pitcherSlots[PITCHER_CLOSER_INDEX] != null;
+  const hasRequiredBullpen = pitcherSlots[PITCHER_REQUIRED_BULLPEN_INDEX] != null;
+  const hasRequiredPitchers = hasStarter && hasCloser && hasRequiredBullpen;
+  const publishRequirementMessage = filledCount !== 9
+    ? "타자 9명을 모두 채워야 공개할 수 있어요"
+    : !hasStarter
+      ? "선발 투수를 골라야 공개할 수 있어요"
+      : !hasCloser
+        ? "마무리 투수를 골라야 공개할 수 있어요"
+        : !hasRequiredBullpen
+          ? "필수 불펜 1명을 골라야 공개할 수 있어요"
+          : null;
+  const canPublish = publishRequirementMessage === null;
 
   // 슬롯별 가이드 트리거 상태 추적 — transition(0~8→9, false→true)만 캐치.
   // 첫 마운트(prev 없음)는 무시 → 기존 슬롯이 페이지 진입 시 즉시 popup되는 것 차단.
-  const guideTrackRef = useRef<Map<string, { filledCount: number; hasStarter: boolean }>>(new Map());
+  const guideTrackRef = useRef<Map<string, { filledCount: number; hasRequiredPitchers: boolean }>>(new Map());
 
   useEffect(() => {
     if (!currentEntry) return;
     const key = currentEntry.entryId;
     const prev = guideTrackRef.current.get(key);
-    guideTrackRef.current.set(key, { filledCount, hasStarter });
+    guideTrackRef.current.set(key, { filledCount, hasRequiredPitchers });
     if (currentEntry.isPublished) return;
     if (!prev) return; // 슬롯 첫 추적은 트리거 X (기존 슬롯 보호)
 
@@ -588,13 +602,13 @@ export function LineupBuilderScreen() {
       setGuideStep1Open(true);
       return;
     }
-    // step2: 선발 투수 새로 채워짐 (타순 9 + step1 안내 본 후)
-    if (!prev.hasStarter && hasStarter && filledCount === 9
+    // step2: 필수 투수 슬롯이 모두 채워짐 (타순 9 + step1 안내 본 후)
+    if (!prev.hasRequiredPitchers && hasRequiredPitchers && filledCount === 9
         && hasSeenGuide("step1", key) && !hasSeenGuide("step2", key)) {
       markGuideSeen("step2", key);
       setGuideStep2Open(true);
     }
-  }, [currentEntry?.entryId, currentEntry?.isPublished, filledCount, hasStarter]);
+  }, [currentEntry?.entryId, currentEntry?.isPublished, filledCount, hasRequiredPitchers]);
 
 
   // 선수 풀: 모드에 따라 야수만 / 투수만 노출. 이미 배치된 선수는 제외.
@@ -841,17 +855,13 @@ export function LineupBuilderScreen() {
               const isOn = !!currentEntry.isPublished;
               // 익명도 DB sync되므로 syncStatus가 "synced"면 통과. "local-only"는 sync 실패 fallback.
               const canSync = syncStatus !== "local-only";
-              // 끄기는 항상 가능, 켜기는 sync 가능 + 공개 가능 조건 (타선 9 + 선발) 만족 시만
-              const disabled = !canSync || publishProcessing || (!isOn && !canPublish);
+              // 공개 조건 미충족은 클릭 시 안내한다. 이미 공개 중이면 세션을 재확인해 비공개 전환을 시도한다.
+              const disabled = publishProcessing || (!isOn && !canSync);
               const tip = !canSync
                 ? "잠시 후 다시 시도해주세요"
                 : isOn
                   ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로 (전적 리셋)"
-                  : filledCount !== 9
-                    ? "타선 9명을 채워야 공개할 수 있어요"
-                    : !hasStarter
-                      ? "선발 투수를 골라야 공개할 수 있어요"
-                      : "공개로 바꾸면 다른 사람이 도전할 수 있어요";
+                  : publishRequirementMessage ?? "공개로 바꾸면 다른 사람이 도전할 수 있어요";
               return (
                 <button
                   type="button"
@@ -863,6 +873,10 @@ export function LineupBuilderScreen() {
                     // 비공개로 가는 경우 확인 모달 (전적 리셋 안내)
                     if (isOn) {
                       setConfirmUnpublishOpen(true);
+                      return;
+                    }
+                    if (!canPublish) {
+                      showToast("필수 선수를 다 채워야 공개 가능합니다.");
                       return;
                     }
                     // 공개로 즉시 전환
@@ -886,7 +900,7 @@ export function LineupBuilderScreen() {
           </div>
         </div>
 
-        {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 불펜 1~8 */}
+        {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 마무리 + 불펜 1~7 */}
         {mode === "batter" ? (
           <section className="lineup-slots-card" aria-label="타순" onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}>
             <div className="lineup-section-head">
@@ -915,7 +929,7 @@ export function LineupBuilderScreen() {
                 return (
                   <li
                     key={order}
-                    className={`lineup-slot ${slot ? "lineup-slot-filled" : "lineup-slot-empty"} ${orderSelected ? "lineup-slot-selected" : ""} ${swapAnimClass}`}
+                    className={`lineup-slot ${slot ? "lineup-slot-filled" : "lineup-slot-empty lineup-slot-required"} ${orderSelected ? "lineup-slot-selected" : ""} ${swapAnimClass}`}
                   >
                     <button
                       type="button"
@@ -936,7 +950,7 @@ export function LineupBuilderScreen() {
                           ) : null}
                         </span>
                       ) : (
-                        <span className="lineup-slot-placeholder">선택</span>
+                        <span className="lineup-slot-placeholder">타자 필수</span>
                       )}
                     </button>
                     {slot && player ? (
@@ -988,13 +1002,24 @@ export function LineupBuilderScreen() {
                 const player = playerId ? playersById.get(playerId) : undefined;
                 const hand = player ? formatHandBadge(player) : null;
                 const isStarter = idx === PITCHER_STARTER_INDEX;
-                const roleLabel = isStarter ? "선발" : "불펜";
+                const isCloser = idx === PITCHER_CLOSER_INDEX;
+                const isRequiredBullpen = idx === PITCHER_REQUIRED_BULLPEN_INDEX;
+                const roleLabel = isStarter ? "선발" : isCloser ? "마무리" : "불펜";
+                const slotBadge = isStarter ? "선" : isCloser ? "마" : String(idx - 1);
+                const isRequiredSlot = isStarter || isCloser || isRequiredBullpen;
+                const placeholder = isStarter
+                  ? "선발 필수"
+                  : isCloser
+                    ? "마무리 필수"
+                    : isRequiredBullpen
+                      ? "불펜 필수"
+                      : "불펜 선택";
                 const orderSelected = swapOrderSourceIdx === idx;
                 const swapAnimClass = getSwapAnimClass(swapOrderAnimation, idx);
                 return (
                   <li
                     key={`p-${idx}`}
-                    className={`lineup-slot ${player ? "lineup-slot-filled" : "lineup-slot-empty"} ${orderSelected ? "lineup-slot-selected" : ""} ${swapAnimClass}`}
+                    className={`lineup-slot ${player ? "lineup-slot-filled" : `lineup-slot-empty ${isRequiredSlot ? "lineup-slot-required" : ""}`} ${orderSelected ? "lineup-slot-selected" : ""} ${swapAnimClass}`}
                   >
                     <button
                       type="button"
@@ -1003,8 +1028,8 @@ export function LineupBuilderScreen() {
                       aria-label={`${roleLabel} ${orderSelected ? "선택 취소" : "선택"}`}
                       aria-pressed={orderSelected}
                     >
-                      <span className={`lineup-slot-order ${isStarter ? "lineup-slot-order-starter" : ""} ${orderSelected ? "lineup-slot-order-selected" : ""}`}>
-                        {isStarter ? "선" : idx}
+                      <span className={`lineup-slot-order ${isStarter || isCloser ? "lineup-slot-order-starter" : ""} ${orderSelected ? "lineup-slot-order-selected" : ""}`}>
+                        {slotBadge}
                       </span>
                       {player ? (
                         <span className="lineup-slot-player">
@@ -1017,7 +1042,7 @@ export function LineupBuilderScreen() {
                           ) : null}
                         </span>
                       ) : (
-                        <span className="lineup-slot-placeholder">{roleLabel} 선택</span>
+                        <span className="lineup-slot-placeholder">{placeholder}</span>
                       )}
                     </button>
                     {player ? (
@@ -1248,7 +1273,7 @@ export function LineupBuilderScreen() {
         </div>
       </ModalShell>
 
-      {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 선발 투수" 안내 */}
+      {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 필수 투수" 안내 */}
       <ModalShell
         open={guideStep1Open}
         title="타순 9명을 다 채웠습니다"
@@ -1258,7 +1283,7 @@ export function LineupBuilderScreen() {
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            이제 <strong>선발 투수</strong>만 선택하면 라인업을 공개할 수 있어요.
+            이제 <strong>선발, 마무리, 필수 불펜</strong>을 선택하면 라인업을 공개할 수 있어요.
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -1283,7 +1308,7 @@ export function LineupBuilderScreen() {
         </div>
       </ModalShell>
 
-      {/* 새 슬롯 onboarding step2 — 선발 투수 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개 */}
+      {/* 새 슬롯 onboarding step2 — 필수 투수 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개 */}
       <ModalShell
         open={guideStep2Open}
         title="라인업 준비 완료!"

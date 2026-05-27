@@ -13,21 +13,11 @@ import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
-import { PITCHER_SLOTS_COUNT, type LineupEntry, type SavedPitcherLineup } from "@/lib/types/lineup";
+import type { LineupEntry } from "@/lib/types/lineup";
+import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory, getTeamStats } from "@/lib/sim/statsLoader";
+import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
-
-function autoFillPitcherLineup(teamId: string): SavedPitcherLineup | null {
-  const stats = getTeamStats(teamId);
-  if (stats.pitchers.length < 1) return null;
-  const sorted = [...stats.pitchers].sort((a, b) => b.staminaPitches - a.staminaPitches);
-  const slots: (string | null)[] = Array.from({ length: PITCHER_SLOTS_COUNT }, () => null);
-  for (let i = 0; i < PITCHER_SLOTS_COUNT && i < sorted.length; i++) {
-    slots[i] = sorted[i].playerId;
-  }
-  return { teamId, slots, updatedAt: new Date().toISOString() };
-}
 
 function formatRelativeDate(iso: string): string {
   const t = Date.parse(iso);

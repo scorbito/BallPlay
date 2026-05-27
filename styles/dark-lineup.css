@@ -1344,6 +1344,21 @@
   background: transparent;
 }
 
+.phone-frame-light .lineup-slot-empty.lineup-slot-required {
+  background: rgba(255, 138, 76, 0.09);
+  border-color: rgba(255, 138, 76, 0.34);
+}
+
+.phone-frame-light .lineup-slot-empty.lineup-slot-required .lineup-slot-order {
+  background: rgba(255, 138, 76, 0.2);
+  color: #d85f21;
+}
+
+.phone-frame-light .lineup-slot-empty.lineup-slot-required .lineup-slot-placeholder {
+  color: #b95c2b;
+  font-weight: 800;
+}
+
 .phone-frame-light .lineup-slot-order {
   width: 20px;
   height: 20px;

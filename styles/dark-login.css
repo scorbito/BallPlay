@@ -190,7 +190,35 @@
   background: rgba(255, 255, 255, 0.09);
 }
 
+.oauth-guest {
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(247, 249, 252, 0.86);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  text-decoration: none;
+}
+
+.oauth-guest:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-style: solid;
+}
+
+.oauth-email {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.oauth-email:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
 /* Email login form */
+.login-form-collapsed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;

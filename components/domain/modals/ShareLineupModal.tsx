@@ -7,6 +7,8 @@ import { getTeam } from "@/lib/constants/teams";
 import {
   POSITIONS,
   POSITION_SHORT,
+  PITCHER_CLOSER_INDEX,
+  PITCHER_REQUIRED_BULLPEN_INDEX,
   PITCHER_STARTER_INDEX,
   formatHandBadge,
   type LineupMode,
@@ -172,7 +174,7 @@ export function ShareLineupModal({
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Canvas 렌더 — 다이아몬드 그라운드(/assets/ground.png) 위에 포지션별 선수,
- * 그 아래 타순 1~9(또는 선발 + 불펜 8) 리스트. 미리보기는 scale=0.5, 실제 공유는 1.
+ * 그 아래 타순 1~9(또는 선발 + 마무리 + 불펜 7) 리스트. 미리보기는 scale=0.5, 실제 공유는 1.
  * ────────────────────────────────────────────────────────────────────────── */
 
 type RenderOptions = {
@@ -509,13 +511,16 @@ function drawPitcherList(
     }
   }
 
-  // 불펜 8명 — 2열 4행
+  // 마무리 + 불펜 7명 — 2열 4행
   const bullStartY = startY + starterH + 10;
   const cellW = (colW - 8) / 2;
   const cellH = 28;
   for (let i = 0; i < 8; i += 1) {
     const id = pitcherSlots[i + 1];
     const p = id ? playersById.get(id) : undefined;
+    const slotIdx = i + 1;
+    const isCloser = slotIdx === PITCHER_CLOSER_INDEX;
+    const badge = isCloser ? "마" : String(slotIdx - PITCHER_REQUIRED_BULLPEN_INDEX + 1);
     const col = i % 2;
     const row = Math.floor(i / 2);
     const x = colX + col * (cellW + 8);
@@ -531,7 +536,7 @@ function drawPitcherList(
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#ffffff";
     ctx.font = `900 10px ${fontStack}`;
-    ctx.fillText(String(i + 1), x + 14, y + cellH / 2 + 1);
+    ctx.fillText(badge, x + 14, y + cellH / 2 + 1);
     ctx.textAlign = "left";
     ctx.fillStyle = p ? "#ffffff" : "rgba(255,255,255,0.35)";
     ctx.font = `700 13px ${fontStack}`;

@@ -10,8 +10,9 @@
 //   - engine version + snapshotDate를 함께 담아 받는 쪽에서 검증
 
 import { SIM_ENGINE_VERSION } from "./version";
-import { getStatsSnapshotDate, buildStatsDirectory, getTeamStats } from "./statsLoader";
+import { getStatsSnapshotDate, buildStatsDirectory } from "./statsLoader";
 import { buildSimTeamInput } from "./lineupAdapter";
+import { autoFillPitcherLineup } from "./autoPitcherLineup";
 import type {
   LineupEntry,
   Position,
@@ -204,21 +205,6 @@ export function buildSharedTeamFromEntry(
     return { ok: false, error: `라인업 변환 실패 (${kinds})` };
   }
   return { ok: true, team: encodeTeam(adapt.team) };
-}
-
-function autoFillPitcherLineup(teamId: string): SavedPitcherLineup | null {
-  const stats = getTeamStats(teamId);
-  if (stats.pitchers.length < 1) return null;
-  const sorted = [...stats.pitchers].sort((a, b) => b.staminaPitches - a.staminaPitches);
-  const slots: (string | null)[] = Array.from({ length: PITCHER_SLOTS_COUNT }, () => null);
-  for (let i = 0; i < PITCHER_SLOTS_COUNT && i < sorted.length; i++) {
-    slots[i] = sorted[i].playerId;
-  }
-  return {
-    teamId,
-    slots,
-    updatedAt: new Date().toISOString()
-  };
 }
 
 // ============================================================

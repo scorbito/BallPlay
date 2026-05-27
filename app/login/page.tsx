@@ -14,6 +14,11 @@ type LoginPageProps = {
   };
 };
 
+const noticeMessages: Record<string, string> = {
+  "check-email": "이메일 인증 링크를 확인한 뒤 다시 로그인해주세요.",
+  "logged-out": "로그아웃되었습니다. 다른 계정으로 로그인할 수 있어요."
+};
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
@@ -26,6 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   const upgradeMode = Boolean(data.user?.is_anonymous);
+  const noticeMessage = searchParams?.notice ? noticeMessages[searchParams.notice] ?? searchParams.notice : "";
 
   return (
     <main className="app-backdrop">
@@ -70,7 +76,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </p>
             ) : null}
             <OAuthButtons />
-            <LoginForm error={searchParams?.error} notice={searchParams?.notice} />
+            <LoginForm error={searchParams?.error} />
+            {!upgradeMode ? (
+              <Link className="oauth-button oauth-guest" href="/" prefetch>
+                게스트로 계속하기
+              </Link>
+            ) : null}
+            {noticeMessage ? <p className="login-message">{noticeMessage}</p> : null}
             <p className="login-footnote">
               로그인하면 서비스 이용약관 및 개인정보처리방침에<br />
               동의하는 것으로 간주됩니다.

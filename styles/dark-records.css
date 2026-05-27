@@ -294,6 +294,22 @@
   min-width: 0;
 }
 
+.phone-frame-light .records-card-team-button {
+  width: 100%;
+  min-height: 40px;
+  padding: 5px 7px;
+  background: rgba(232, 74, 138, 0.06);
+  border: 1px solid rgba(232, 74, 138, 0.16);
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.phone-frame-light .records-card-team-button:hover {
+  background: rgba(232, 74, 138, 0.1);
+  border-color: rgba(232, 74, 138, 0.28);
+}
+
 .phone-frame-light .records-card-team.is-right {
   flex-direction: row-reverse;
 }
@@ -381,6 +397,32 @@
 .phone-frame-light .records-card-replay:disabled {
   background: rgba(20, 30, 50, 0.05);
   color: var(--bp-text-muted);
+  cursor: not-allowed;
+}
+
+.phone-frame-light .records-card-rematch {
+  flex: 0 0 auto;
+  min-width: 82px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 10px;
+  background: rgba(20, 30, 50, 0.04);
+  color: var(--bp-text);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.phone-frame-light .records-card-rematch:hover:not(:disabled) {
+  background: rgba(20, 30, 50, 0.07);
+}
+
+.phone-frame-light .records-card-rematch:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 

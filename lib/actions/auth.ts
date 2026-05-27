@@ -74,33 +74,10 @@ export async function emailAuthAction(formData: FormData) {
 export async function signOutAction() {
   const supabase = createSupabaseServerClient();
   // scope: 'local'로 로컬 세션만 즉시 클리어 — 서버에 refresh token revoke 호출 안 함.
-  // 기본 scope:'global'은 Supabase API round trip(모바일 네트워크에서 1~3초) 발생.
-  // 트레이드오프: refresh token이 서버에 남지만 토큰 만료(기본 1시간) 후 자동 무효화.
+  // 계정 전환을 위해 로그아웃하는 경우가 많으므로 여기서는 새 익명 세션을 만들지 않는다.
   await supabase.auth.signOut({ scope: "local" });
 
-  // 새 익명 세션을 여기서 즉시 생성 → 미들웨어 부트스트랩(/api/anon-bootstrap) redirect 1번 절약.
-  // 안 그러면 logout 후 / 진입 시 middleware → /api/anon-bootstrap → / 로 redirect 2번 더 발생.
-  try {
-    const { data } = await supabase.auth.signInAnonymously();
-    if (data?.user) {
-      const admin = createSupabaseAdminClient();
-      await admin.from("profiles").upsert(
-        {
-          id: data.user.id,
-          nickname: generateDefaultNickname(data.user.id),
-          main_team_id: "doosan",
-          interest_team_ids: [],
-          notifications_enabled: true,
-          default_public_scope: "public"
-        },
-        { onConflict: "id" }
-      );
-    }
-  } catch {
-    // 익명 세션 생성 실패해도 redirect는 진행 — 미들웨어가 다시 시도함.
-  }
-
-  redirect("/");
+  redirect("/login?notice=logged-out");
 }
 
 /**

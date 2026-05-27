@@ -10,7 +10,21 @@ const HEADER_IS_ANON = "x-bp-is-anon";
 // 비인증 사용자가 메인 진입 시 익명 세션을 자동 생성하기 위한 부트스트랩 경로 매칭.
 // 서버 컴포넌트의 redirect() 호출이 Next.js App Router의 React #310 버그를 트리거하므로
 // (https://github.com/vercel/next.js/issues/78396), 미들웨어에서 HTTP 레벨로 처리.
-const ANON_BOOTSTRAP_PATHS = ["/"];
+const ANON_BOOTSTRAP_PREFIXES = [
+  "/",
+  "/play",
+  "/predict",
+  "/rankings",
+  "/records",
+  "/stadium"
+];
+
+function shouldBootstrapAnonymous(pathname: string): boolean {
+  return ANON_BOOTSTRAP_PREFIXES.some((prefix) => {
+    if (prefix === "/") return pathname === "/";
+    return pathname === prefix || pathname.startsWith(`${prefix}/`);
+  });
+}
 
 function isSearchCrawler(userAgent: string | null) {
   if (!userAgent) return false;
@@ -56,7 +70,7 @@ export async function updateSupabaseSession(request: NextRequest) {
   // 사용자는 랜딩 페이지 없이 곧장 메인으로 진입하게 됨.
   if (
     !data?.user &&
-    ANON_BOOTSTRAP_PATHS.includes(request.nextUrl.pathname) &&
+    shouldBootstrapAnonymous(request.nextUrl.pathname) &&
     !isSearchCrawler(request.headers.get("user-agent"))
   ) {
     const redirectUrl = request.nextUrl.clone();

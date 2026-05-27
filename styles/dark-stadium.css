@@ -650,6 +650,41 @@
   color: var(--bp-accent);
 }
 
+.phone-frame-light .records-rematch-vs {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.phone-frame-light .records-rematch-vs .stadium-discover-vs-team {
+  min-width: 0;
+}
+
+.phone-frame-light .records-rematch-vs .stadium-discover-vs-team strong {
+  width: 100%;
+  max-width: 120px;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.phone-frame-light .records-rematch-picker-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.phone-frame-light .records-rematch-picker-list .stadium-discover-my-pick {
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  padding: 8px 10px;
+}
+
+.phone-frame-light .records-rematch-picker-list .stadium-discover-my-pick span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .phone-frame-light .stadium-lobby-live-body {
   flex: 1;
   display: flex;

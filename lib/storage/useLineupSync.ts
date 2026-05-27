@@ -327,7 +327,15 @@ export function useLineupSync() {
   // - 공개 OFF: unpublishLineup (본인 매치 기록 삭제 + lineup_hash null)
   const togglePublished = useCallback(
     async (entryId: string, nextPublished: boolean): Promise<{ ok: boolean; error?: string }> => {
-      const userId = state.userId;
+      let userId = state.userId;
+      if (!userId) {
+        const { data: authData } = await clientRef.current.auth.getUser();
+        userId = authData.user?.id ?? null;
+        if (userId) {
+          setState((s) => ({ ...s, userId, status: s.status === "local-only" ? "synced" : s.status }));
+          writeLastSyncedUserId(userId);
+        }
+      }
       if (!userId) return { ok: false, error: "로그인이 필요합니다." };
       const current = state.entries.find((e) => e.entryId === entryId);
       if (!current) return { ok: false, error: "라인업을 찾을 수 없습니다." };

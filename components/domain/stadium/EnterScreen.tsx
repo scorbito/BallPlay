@@ -7,35 +7,16 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
-import {
-  PITCHER_SLOTS_COUNT,
-  type LineupEntry,
-  type SavedPitcherLineup
-} from "@/lib/types/lineup";
+import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
+import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
-import { buildStatsDirectory, getTeamStats } from "@/lib/sim/statsLoader";
+import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import {
   generateSeed,
   saveMatchSession
 } from "@/lib/sim/matchSession";
-
-// 저장된 투수 라인업이 없을 때 — 팀 stats에서 자동으로 9명(선발+불펜) 생성.
-function autoFillPitcherLineup(teamId: string): SavedPitcherLineup | null {
-  const stats = getTeamStats(teamId);
-  if (stats.pitchers.length < 1) return null;
-  const sorted = [...stats.pitchers].sort((a, b) => b.staminaPitches - a.staminaPitches);
-  const slots: (string | null)[] = Array.from({ length: PITCHER_SLOTS_COUNT }, () => null);
-  for (let i = 0; i < PITCHER_SLOTS_COUNT && i < sorted.length; i++) {
-    slots[i] = sorted[i].playerId;
-  }
-  return {
-    teamId,
-    slots,
-    updatedAt: new Date().toISOString()
-  };
-}
 
 export function EnterScreen() {
   const router = useRouter();
