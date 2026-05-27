@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Link2, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { ModalShell } from "@/components/common/ModalShell";
 import { getTeam } from "@/lib/constants/teams";
 import {
@@ -140,16 +140,6 @@ export function ShareLineupModal({
     }
   };
 
-  const copyLink = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareStatus("링크가 복사됐어요!");
-    } catch {
-      setShareStatus("복사에 실패했어요.");
-    }
-  };
-
   return (
     <ModalShell open={open} title="라인업 공유" onClose={onClose} panelClassName="share-lineup-modal-panel" closeOnBackdrop>
       <div className="share-lineup-body">
@@ -160,10 +150,6 @@ export function ShareLineupModal({
           <button type="button" className="share-lineup-primary" disabled={isSharing} onClick={shareImage}>
             <Share2 size={16} />
             {isSharing ? "준비 중..." : "이미지 공유"}
-          </button>
-          <button type="button" className="share-lineup-secondary" onClick={copyLink}>
-            <Link2 size={16} />
-            링크 복사
           </button>
         </div>
         {shareStatus ? <p className="share-lineup-status">{shareStatus}</p> : null}
@@ -289,10 +275,10 @@ async function renderShareCanvas(canvas: HTMLCanvasElement, opts: RenderOptions)
   ctx.textBaseline = "middle";
   ctx.fillStyle = "rgba(255,255,255,0.55)";
   ctx.font = `700 14px ${fontStack}`;
-  ctx.fillText("야구놀이터에서 만든 라인업", BASE_W / 2, BASE_H - 36);
+  ctx.fillText("야구의 모든 재미가 있는 곳", BASE_W / 2, BASE_H - 36);
   ctx.fillStyle = "#ff6a2b";
   ctx.font = `900 20px ${fontStack}`;
-  ctx.fillText("⚾ 야구놀이터", BASE_W / 2, BASE_H - 16);
+  ctx.fillText("야구놀이터 ballnori.com", BASE_W / 2, BASE_H - 16);
 }
 
 function drawFieldMarker(

@@ -238,7 +238,8 @@ export function RegisteredLineupList({
       source: "public",
       userSide: "home",
       myLineupId: myLineupId ?? undefined,
-      opponentLineupId: selectedOpponent.id
+      opponentLineupId: selectedOpponent.id,
+      opponentNickname: formatOwnerLabel(selectedOpponent)
     });
     router.push("/stadium/play");
   }, [selectedOpponent, myEntry, starting, router, userId]);
@@ -332,19 +333,20 @@ export function RegisteredLineupList({
           {selectedOpponent ? (
             <>
               <div className="stadium-discover-vs">
-                <div className="stadium-discover-vs-team">
-                  <span className="stadium-discover-vs-label">상대</span>
-                  <TeamBadge teamId={selectedOpponent.team_id} size="lg" />
-                  <strong>{selectedOpponent.name}</strong>
-                  <span className="stadium-discover-vs-owner">{formatOwnerLabel(selectedOpponent)}</span>
+                <span className="stadium-discover-vs-label stadium-discover-vs-label-left">
+                  상대({formatOwnerLabel(selectedOpponent)})
+                </span>
+                <span className="stadium-discover-vs-label stadium-discover-vs-label-right">내 팀</span>
+                <div className="stadium-play-team stadium-discover-vs-side-left">
+                  <TeamBadge teamId={selectedOpponent.team_id} size="md" />
+                  <span className="stadium-discover-vs-lineup">{selectedOpponent.name}</span>
                 </div>
                 <span className="stadium-discover-vs-divider">VS</span>
-                <div className="stadium-discover-vs-team">
-                  <span className="stadium-discover-vs-label">내 팀</span>
+                <div className="stadium-play-team stadium-discover-vs-side-right">
                   {myEntry ? (
                     <>
-                      <TeamBadge teamId={myEntry.teamId} size="lg" />
-                      <strong>{myEntry.name}</strong>
+                      <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
+                      <TeamBadge teamId={myEntry.teamId} size="md" />
                     </>
                   ) : (
                     <span className="stadium-enter-empty">공개 라인업이 없음</span>

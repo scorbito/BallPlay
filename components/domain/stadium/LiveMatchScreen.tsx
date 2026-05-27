@@ -146,31 +146,49 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
     if (redirectedRef.current) return;
     redirectedRef.current = true;
 
-    const home = restoreSimTeamFromShared(row.home_lineup_snapshot);
-    const away = restoreSimTeamFromShared(row.away_lineup_snapshot);
-    if (!home.ok || !away.ok) {
-      setError(`라인업 복원 실패: ${home.ok ? "" : `홈 ${home.reason}`} ${away.ok ? "" : `원정 ${away.reason}`}`);
-      redirectedRef.current = false;
-      return;
-    }
+    void (async () => {
+      const home = restoreSimTeamFromShared(row.home_lineup_snapshot!);
+      const away = restoreSimTeamFromShared(row.away_lineup_snapshot!);
+      if (!home.ok || !away.ok) {
+        setError(`라인업 복원 실패: ${home.ok ? "" : `홈 ${home.reason}`} ${away.ok ? "" : `원정 ${away.reason}`}`);
+        redirectedRef.current = false;
+        return;
+      }
 
-    const isHome =
-      (uid && row.home_owner_id === uid) || row.home_guest_id === guestId;
+      const isHome =
+        (uid && row.home_owner_id === uid) || row.home_guest_id === guestId;
 
-    saveMatchSession({
-      myTeamId: isHome ? home.team.teamId : away.team.teamId,
-      opponentTeamId: isHome ? away.team.teamId : home.team.teamId,
-      seed: row.seed,
-      input: { home: home.team, away: away.team, context: {} },
-      startedAt: new Date().toISOString(),
-      source: "friend",
-      userSide: isHome ? "home" : "away",
-      liveMatchId: row.id,
-      liveStartAt: row.start_at,
-      liveMode: row.mode ?? "live"
-    });
-    router.replace("/stadium/play");
-  }, [row, uid, guestId, router]);
+      const oppOwnerId = isHome ? row.away_owner_id : row.home_owner_id;
+      let opponentNickname: string | undefined;
+      if (oppOwnerId) {
+        const { data: profile } = await client
+          .from("profiles")
+          .select("nickname")
+          .eq("id", oppOwnerId)
+          .maybeSingle();
+        opponentNickname = profile?.nickname?.trim() || undefined;
+      }
+      if (!opponentNickname) {
+        const oppGuestId = isHome ? row.away_guest_id : row.home_guest_id;
+        if (oppGuestId) opponentNickname = "게스트";
+      }
+
+      saveMatchSession({
+        myTeamId: isHome ? home.team.teamId : away.team.teamId,
+        opponentTeamId: isHome ? away.team.teamId : home.team.teamId,
+        seed: row.seed,
+        input: { home: home.team, away: away.team, context: {} },
+        startedAt: new Date().toISOString(),
+        source: "friend",
+        userSide: isHome ? "home" : "away",
+        liveMatchId: row.id,
+        liveStartAt: row.start_at!,
+        liveMode: row.mode ?? "live",
+        opponentNickname
+      });
+      router.replace("/stadium/play");
+    })();
+  }, [row, uid, guestId, router, client]);
 
   const identity = useMemo<Identity | null>(() => {
     if (!row) return null;

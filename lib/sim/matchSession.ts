@@ -31,6 +31,8 @@ export type MatchSession = {
   replayOfRecordId?: string;
   // 경기 종료 시 PlayScreen에서 저장한 record id. ResultScreen 중복 저장 방지에 사용.
   savedRecordId?: string;
+  // 기록 저장 시 opponent_nickname 스냅샷 — 공개 매칭 owner / 친구 대전 profiles lookup.
+  opponentNickname?: string;
 };
 
 export function loadMatchSession(): MatchSession | null {

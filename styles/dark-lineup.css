@@ -938,9 +938,10 @@
 }
 
 /* 전역 button:active { transform: scale(0.97) } 무효화 —
-   이 토글은 translateY(-50%)로 세로 중앙 정렬돼 있어서 scale이 끼면
+   absolute + translateY(-50%)로 세로 중앙 정렬된 헤더 버튼은 scale이 끼면
    중앙 정렬이 깨져 "움직임"으로 보임. 그냥 상태만 변하도록 유지. */
-.phone-frame-light .lineup-publish-toggle:not(:disabled):active {
+.phone-frame-light .lineup-publish-toggle:not(:disabled):active,
+.phone-frame-light .lineup-header-share:not(:disabled):active {
   transform: translateY(-50%);
   filter: none;
 }

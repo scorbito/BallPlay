@@ -39,6 +39,7 @@ export type BpRecordRow = {
   // 라인업 전적 집계용 — bp_lineups(id) 참조. 등록 카드 매치인 경우만 채워짐.
   home_lineup_id?: string | null;
   away_lineup_id?: string | null;
+  opponent_nickname?: string | null;
 };
 
 export type CreateRecordInput = {
@@ -62,6 +63,7 @@ export type CreateRecordInput = {
   name?: string | null;
   homeLineupId?: string | null;
   awayLineupId?: string | null;
+  opponentNickname?: string | null;
 };
 
 // ============================================================
@@ -92,7 +94,8 @@ export async function createRecord(
     total_innings: input.totalInnings ?? 9,
     name: input.name ?? null,
     home_lineup_id: input.homeLineupId ?? null,
-    away_lineup_id: input.awayLineupId ?? null
+    away_lineup_id: input.awayLineupId ?? null,
+    opponent_nickname: input.opponentNickname?.trim() || null
   };
 
   const { data, error } = await client.from(TABLE).insert(insertRow).select().single();

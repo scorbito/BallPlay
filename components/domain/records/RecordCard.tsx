@@ -72,6 +72,9 @@ export function RecordCard({
       <div className="records-card-head">
         <span className={`records-card-source records-card-source-${row.source}`}>
           {row.source === "friend" ? "친구 대전" : "공개 매칭"}
+          {row.opponent_nickname ? (
+            <span className="records-card-opponent"> · vs {row.opponent_nickname}</span>
+          ) : null}
         </span>
         <span
           className={`records-card-outcome ${
@@ -127,13 +130,6 @@ export function RecordCard({
           </div>
         )}
       </div>
-
-      {row.mvp_name ? (
-        <div className="records-card-mvp">
-          MVP <strong>{row.mvp_name}</strong>
-          {row.is_walkoff ? <span className="records-card-walkoff">끝내기</span> : null}
-        </div>
-      ) : null}
 
       <footer className="records-card-actions">
         <button

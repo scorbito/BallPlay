@@ -488,7 +488,8 @@ export function PlayScreen() {
             ? (session.userSide === "home"
                 ? (session.opponentLineupId ?? null)
                 : (session.myLineupId ?? null))
-            : null
+            : null,
+          opponentNickname: session.opponentNickname ?? null
         });
 
         if (!result.ok) {

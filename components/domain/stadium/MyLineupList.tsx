@@ -205,18 +205,18 @@ export function MyLineupList({ maxItems = 6 }: Props) {
           {myEntry ? (
             <>
               <div className="stadium-discover-vs">
-                <div className="stadium-discover-vs-team">
-                  <span className="stadium-discover-vs-label">내 팀</span>
-                  <TeamBadge teamId={myEntry.teamId} size="lg" />
-                  <strong>{myEntry.name}</strong>
+                <span className="stadium-discover-vs-label stadium-discover-vs-label-left">내 팀</span>
+                <span className="stadium-discover-vs-label stadium-discover-vs-label-right">상대</span>
+                <div className="stadium-play-team stadium-discover-vs-side-left">
+                  <TeamBadge teamId={myEntry.teamId} size="md" />
+                  <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
                 </div>
                 <span className="stadium-discover-vs-divider">VS</span>
-                <div className="stadium-discover-vs-team">
-                  <span className="stadium-discover-vs-label">상대</span>
+                <div className="stadium-play-team stadium-discover-vs-side-right">
                   {opponentEntry ? (
                     <>
-                      <TeamBadge teamId={opponentEntry.teamId} size="lg" />
-                      <strong>{opponentEntry.name}</strong>
+                      <span className="stadium-discover-vs-lineup">{opponentEntry.name}</span>
+                      <TeamBadge teamId={opponentEntry.teamId} size="md" />
                     </>
                   ) : (
                     <span className="stadium-enter-empty">상대 선택</span>

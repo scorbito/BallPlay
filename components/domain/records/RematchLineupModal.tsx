@@ -48,18 +48,20 @@ export function RematchLineupModal({
     >
       {opponentTeam ? (
         <div className="stadium-discover-vs records-rematch-vs" aria-label="재대전 상대">
-          <div className="stadium-discover-vs-team">
-            <span className="stadium-discover-vs-label">상대</span>
-            <TeamBadge teamId={opponentTeam.teamId} size="lg" />
-            <strong>{opponentTeam.displayName ?? getTeam(opponentTeam.teamId).shortName}</strong>
+          <span className="stadium-discover-vs-label stadium-discover-vs-label-left">상대</span>
+          <span className="stadium-discover-vs-label stadium-discover-vs-label-right">내 라인업</span>
+          <div className="stadium-play-team stadium-discover-vs-side-left">
+            <TeamBadge teamId={opponentTeam.teamId} size="md" />
+            <span className="stadium-discover-vs-lineup">
+              {opponentTeam.displayName ?? getTeam(opponentTeam.teamId).shortName}
+            </span>
           </div>
           <span className="stadium-discover-vs-divider">VS</span>
-          <div className="stadium-discover-vs-team">
-            <span className="stadium-discover-vs-label">내 라인업</span>
+          <div className="stadium-play-team stadium-discover-vs-side-right">
             {selectedLineup ? (
               <>
-                <TeamBadge teamId={selectedLineup.teamId} size="lg" />
-                <strong>{selectedLineup.name}</strong>
+                <span className="stadium-discover-vs-lineup">{selectedLineup.name}</span>
+                <TeamBadge teamId={selectedLineup.teamId} size="md" />
               </>
             ) : (
               <strong>선택 필요</strong>
