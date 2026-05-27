@@ -5,6 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 const TABLE = "bp_predictions";
 const RESULTS_VIEW = "bp_prediction_results";
+export const PREDICTION_RANKING_MIN_GAMES = 5;
+export const PREDICTION_RANKING_ACTIVE_WITHIN_DAYS = 0; // 0 = no activity retention filter.
 
 // ============================================================
 // 타입
@@ -207,12 +209,14 @@ export async function getPredictionRanking(
   opts: {
     period: PredictionRankingPeriod;
     minGames?: number;
+    activeWithinDays?: number;
     limit?: number;
   }
 ): Promise<{ ok: true; rows: PredictionRankingRow[] } | { ok: false; error: string }> {
   const { data, error } = await client.rpc("get_prediction_ranking", {
     p_period: opts.period,
-    p_min_games: opts.minGames ?? 5,
+    p_min_games: opts.minGames ?? PREDICTION_RANKING_MIN_GAMES,
+    p_active_within_days: opts.activeWithinDays ?? PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
     p_limit: opts.limit ?? 20
   });
   if (error) return { ok: false, error: error.message };

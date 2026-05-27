@@ -17,7 +17,6 @@ export function RankingScreen({ currentUserId, initialRanking }: Props) {
     <AppShell activeTab="home" title="적중률 랭킹" theme="light" backHref="/">
       <PredictionRanking
         initialRows={initialRanking}
-        initialPeriod="season"
         currentUserId={currentUserId}
       />
     </AppShell>

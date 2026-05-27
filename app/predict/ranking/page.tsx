@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import { RankingScreen } from "@/components/domain/RankingScreen";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getPredictionRanking } from "@/lib/supabase/query-parts/bpPredictions";
+import {
+  PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
+  PREDICTION_RANKING_MIN_GAMES,
+  getPredictionRanking
+} from "@/lib/supabase/query-parts/bpPredictions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +20,8 @@ export default async function PredictionRankingPage() {
   // 시즌 탭 prefetch — 다른 탭은 클릭 시 클라이언트 fetch
   const rankingResult = await getPredictionRanking(supabase, {
     period: "season",
-    minGames: 5,
+    minGames: PREDICTION_RANKING_MIN_GAMES,
+    activeWithinDays: PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
     limit: 20
   });
 

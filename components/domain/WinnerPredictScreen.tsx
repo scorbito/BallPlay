@@ -369,7 +369,7 @@ export function WinnerPredictScreen({
                     <span className="predict-row-team-block">
                       <span className="predict-row-team">{away.shortName}</span>
                       {game.awayStarter ? (
-                        <span className="predict-row-starter-inline">⚾ {game.awayStarter}</span>
+                        <span className="predict-row-starter-inline">{game.awayStarter}</span>
                       ) : null}
                     </span>
                     <span className="predict-row-side-trail">
@@ -409,7 +409,7 @@ export function WinnerPredictScreen({
                     <span className="predict-row-team-block">
                       <span className="predict-row-team">{home.shortName}</span>
                       {game.homeStarter ? (
-                        <span className="predict-row-starter-inline">⚾ {game.homeStarter}</span>
+                        <span className="predict-row-starter-inline">{game.homeStarter}</span>
                       ) : null}
                     </span>
                     <TeamBadge teamId={game.homeTeamId} size="sm" />

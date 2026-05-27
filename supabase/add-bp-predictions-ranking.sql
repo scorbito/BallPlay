@@ -10,9 +10,12 @@
 --
 -- 본 SQL은 idempotent — 1회 실행.
 
+drop function if exists public.get_prediction_ranking(text, int, int);
+
 create or replace function public.get_prediction_ranking(
   p_period text default 'season',
   p_min_games int default 5,
+  p_active_within_days int default 0,
   p_limit int default 20
 )
 returns table (
@@ -43,7 +46,8 @@ as $$
     select
       r.user_id,
       count(*) filter (where r.is_judged) as total,
-      count(*) filter (where r.is_correct = true) as correct
+      count(*) filter (where r.is_correct = true) as correct,
+      max(r.game_date) filter (where r.locked_at is not null) as last_prediction_date
     from public.bp_prediction_results r, date_range dr
     where r.locked_at is not null
       and (dr.from_date is null or r.game_date >= dr.from_date)
@@ -57,6 +61,10 @@ as $$
       (a.correct::numeric / nullif(a.total, 0)) as rate
     from aggregated a
     where a.total >= p_min_games
+      and (
+        p_active_within_days <= 0
+        or a.last_prediction_date >= ((now() at time zone 'Asia/Seoul')::date - (p_active_within_days - 1))
+      )
   ),
   ranked as (
     select
@@ -85,4 +93,4 @@ comment on function public.get_prediction_ranking is
 -- ============================================================
 -- 권한 — 익명 포함 인증된 모든 사용자에게 실행 허용
 -- ============================================================
-grant execute on function public.get_prediction_ranking(text, int, int) to authenticated;
+grant execute on function public.get_prediction_ranking(text, int, int, int) to authenticated;
