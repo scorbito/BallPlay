@@ -188,7 +188,9 @@ const sections: HomeSection[] = [
     label: "야구 콘텐츠",
     variant: "standard",
     sectionIcon: Play,
-    gridCols: 2,
+    // 카드 2개지만 3열 그리드에 배치 — 왼쪽 2칸 채우고 오른쪽 1칸은 비움.
+    // 다른 메뉴(3열)와 동일한 카드 크기·형식 유지.
+    gridCols: 3,
     cards: [
       {
         id: "videos",
