@@ -200,12 +200,11 @@ const sections: HomeSection[] = [
       },
       {
         id: "news",
-        href: "#",
+        href: "/news",
         title: "야구 뉴스",
         description: "KBO 헤드라인·트레이드",
         icon: FileText,
-        available: false,
-        badge: "준비중"
+        available: true
       }
     ]
   },
