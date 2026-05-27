@@ -1,10 +1,10 @@
 name: Curate YouTube Videos
 
-# 매일 09:00 KST (= 00:00 UTC) 실행 + 수동 트리거 가능.
-# 놀이터봇이 YouTube에서 인기 야구 영상을 수집해 bp_videos에 INSERT.
+# Runs daily at 04:10 KST (= 19:10 UTC, previous day) plus manual dispatch.
+# The bot collects popular baseball videos from YouTube and inserts them into bp_videos.
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '10 19 * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,8 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # Node.js 22+ — 네이티브 WebSocket 포함. supabase-js Realtime 초기화 시 필요.
-          # (스크립트는 Realtime 안 쓰지만 라이브러리가 자동 init함)
+          # Node.js 22+ includes the native WebSocket used by supabase-js.
           node-version: '22'
           cache: 'npm'
 
