@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, ChevronRight, KeyRound, List, Lock, Swords, Users } from "lucide-react";
@@ -10,7 +10,9 @@ import { teams } from "@/lib/constants/teams";
 import { RegisteredLineupList } from "./RegisteredLineupList";
 import { MyLineupList } from "./MyLineupList";
 import { LineupDetailModal } from "./LineupDetailModal";
-import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
+import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { listLatestLineupsByTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import type { SimTeamInput } from "@/lib/sim/types";
 
 // 경기장 메인 — 공개 라인업이 메인 콘텐츠.
@@ -24,9 +26,19 @@ const PREVIEW_SEED = 0;
 export function LobbyScreen() {
   const router = useRouter();
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
+  // 팀별 최근 라인업 prefetch — AI 대결 카드 클릭 시 즉시 사용. 로드 전엔 폴백(시즌 랜덤).
+  const [recentByTeam, setRecentByTeam] = useState<Record<string, RecentLineupRow>>({});
+
+  useEffect(() => {
+    const client = createSupabaseBrowserClient();
+    void listLatestLineupsByTeam(client, { withinDays: 14 }).then((res) => {
+      if (res.ok) setRecentByTeam(res.byTeam);
+    });
+  }, []);
 
   const openAiPreview = (teamId: string) => {
-    const team = buildFakeOpponentTeam(teamId, PREVIEW_SEED);
+    const hint: RecentLineupHint | null = recentByTeam[teamId] ?? null;
+    const team = buildFakeOpponentTeam(teamId, PREVIEW_SEED, hint);
     if (team) setPreviewTeam(team);
   };
 
@@ -85,7 +97,7 @@ export function LobbyScreen() {
             <Bot size={14} />
             AI와 대결
           </h2>
-          <span className="stadium-lobby-section-sub">자동 생성된 팀 라인업과 시뮬</span>
+          <span className="stadium-lobby-section-sub">팀별 최신 라인업으로 시뮬 대결</span>
         </header>
         <div className="stadium-lobby-grid">
           {teams.map((team) => (
