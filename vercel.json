@@ -16,10 +16,6 @@
     {
       "path": "/api/cron/sync-kbo-lineups",
       "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/cron/crawl-news",
-      "schedule": "0 */3 * * *"
     }
   ]
 }
