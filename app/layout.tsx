@@ -61,6 +61,11 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_TITLE}`
   },
   description: SITE_DESCRIPTION,
+  // 페이지별 canonical은 각 page.tsx에서 alternates.canonical로 덮어씀.
+  // 루트는 "/"가 사이트 대표임을 Google에 명시 (중복 클러스터에서 / 가 선택되도록).
+  alternates: {
+    canonical: "/"
+  },
   keywords: [
     "야구놀이터",
     "ballplay",

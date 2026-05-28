@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { ScheduleScreen } from "@/components/domain/ScheduleScreen";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import type { Game } from "@/lib/types/domain";
+
+export const metadata: Metadata = {
+  title: "경기 일정",
+  description: "오늘의 KBO 프로야구 경기 일정과 결과를 한눈에 확인하세요.",
+  alternates: { canonical: "/schedule" }
+};
 
 // ISR 24시간 — 시즌 일정은 거의 정적이라 길게 캐싱.
 // 새 결과/일정 변동은 두 경로로 즉시 무효화됨:
