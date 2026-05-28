@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/crawl-news",
       "schedule": "0 */3 * * *"
+    },
+    {
+      "path": "/api/cron/sync-kbo-stats",
+      "schedule": "0 19 * * 0"
     }
   ]
 }
