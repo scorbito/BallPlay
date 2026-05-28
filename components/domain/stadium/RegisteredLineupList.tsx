@@ -26,7 +26,7 @@ import {
 } from "@/lib/supabase/query-parts/bpLineups";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
-import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
@@ -154,7 +154,7 @@ export function RegisteredLineupList({
 
   // 공개 라인업 미리보기 → SimTeamInput으로 변환
   const openLineupPreview = (row: PublishedLineupRow) => {
-    const pitching = row.pitching ?? autoFillPitcherLineup(row.team_id);
+    const pitching = fillMissingPitcherSlots(row.team_id, row.pitching?.slots ?? []);
     if (!pitching) return;
     const stats = buildStatsDirectory([row.team_id]);
     const built = buildSimTeamInput(row.team_id, row.batting, pitching, stats, row.name);
@@ -189,8 +189,8 @@ export function RegisteredLineupList({
     setStarting(true);
     setError(null);
 
-    const opponentPitching = selectedOpponent.pitching ?? autoFillPitcherLineup(selectedOpponent.team_id);
-    const myPitching = myEntry.pitching ?? autoFillPitcherLineup(myEntry.teamId);
+    const opponentPitching = fillMissingPitcherSlots(selectedOpponent.team_id, selectedOpponent.pitching?.slots ?? []);
+    const myPitching = fillMissingPitcherSlots(myEntry.teamId, myEntry.pitching?.slots ?? []);
 
     if (!opponentPitching || !myPitching) {
       setStarting(false);

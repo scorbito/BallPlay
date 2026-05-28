@@ -11,13 +11,21 @@ const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const BASE = "https://www.koreabaseball.com";
 
-// 박스스코어 포지션 약어 → 시뮬 포지션 코드 (한자 주의)
+// 박스스코어 포지션 약어 → 시뮬 포지션 코드 (한자 주의).
+// 경기 중 교체로 "三一"(3B→1B), "一二"(1B→2B) 등 두 자리 값이 올 수 있는데,
+// 우리는 선발 라인업만 저장하므로 첫 글자(선발 시 포지션)만 사용한다.
 const POSITION_MAP: Record<string, string> = {
   "투": "P", "포": "C",
   "一": "1B", "二": "2B", "三": "3B", "유": "SS",
   "좌": "LF", "중": "CF", "우": "RF",
   "지": "DH"
 };
+
+function mapKboPosition(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const first = raw.charAt(0);
+  return POSITION_MAP[first] ?? POSITION_MAP[raw] ?? raw ?? null;
+}
 
 export type LineupBatter = {
   order: number;
@@ -91,7 +99,7 @@ function extractStarters(table: BoxTable | undefined, nameMap: Map<string, strin
     starters.push({
       order,
       name,
-      position: POSITION_MAP[posAbbr] ?? posAbbr ?? null,
+      position: mapKboPosition(posAbbr),
       rosterId: nameMap.get(normalizeName(name)) ?? null
     });
   }

@@ -14,6 +14,25 @@ export const POSITION_LABEL: Record<Position, string> = {
   DH: "지명타자"
 };
 
+// KBO 박스스코어의 포지션 표기(한자) → 시뮬 포지션 코드.
+// 경기 중 포지션 교체 시 박스스코어가 "三一"(3B→1B) 같은 두 자리 값을 주는데,
+// 우리 라인업은 선발 시점만 의미가 있으므로 첫 글자(선발 포지션)만 사용한다.
+const KBO_POSITION_HANJA: Record<string, Position> = {
+  "투": "P", "포": "C",
+  "一": "1B", "二": "2B", "三": "3B", "유": "SS",
+  "좌": "LF", "중": "CF", "우": "RF",
+  "지": "DH"
+};
+
+/** 박스스코어 포지션 원문(혹은 이미 정규화된 "1B" 같은 값)을 시뮬 Position 코드로.
+ *  매핑 실패 시 null. 신규/구 데이터 양쪽에서 안전하게 사용 가능. */
+export function normalizeKboPosition(raw: string | null | undefined): Position | null {
+  if (!raw) return null;
+  if ((POSITIONS as readonly string[]).includes(raw)) return raw as Position;
+  const first = raw.charAt(0);
+  return KBO_POSITION_HANJA[first] ?? KBO_POSITION_HANJA[raw] ?? null;
+}
+
 export const POSITION_SHORT: Record<Position, string> = {
   P: "투수",
   C: "포수",

@@ -9,10 +9,12 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
-import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getLatestLineupForTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   generateSeed,
   saveMatchSession
@@ -28,6 +30,9 @@ export function EnterScreen() {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  // 상대팀 최근 라인업 prefetch — buildFakeOpponentTeam에 hint로 전달.
+  // 못 받아오면 null로 폴백(시즌 stats 랜덤).
+  const [opponentHint, setOpponentHint] = useState<RecentLineupRow | null>(null);
 
   useEffect(() => {
     // 9명 batting이 다 채워진 entry만 출전 가능
@@ -35,6 +40,13 @@ export function EnterScreen() {
     setMyEntries(ready);
     if (ready.length > 0) setSelectedEntryId(ready[0].entryId);
   }, []);
+
+  useEffect(() => {
+    const client = createSupabaseBrowserClient();
+    void getLatestLineupForTeam(client, opponentTeamId).then((res) => {
+      if (res.ok) setOpponentHint(res.row);
+    });
+  }, [opponentTeamId]);
 
   const selectedEntry = useMemo(
     () => myEntries.find((e) => e.entryId === selectedEntryId) ?? null,
@@ -50,7 +62,11 @@ export function EnterScreen() {
     const seed = generateSeed();
 
     // 투수 라인업 없으면 자동 보강
-    const pitchingToUse = selectedEntry.pitching ?? autoFillPitcherLineup(selectedEntry.teamId);
+    // partial pitching(선발만 있는 등)도 안전하게 9슬롯으로 보강
+    const pitchingToUse = fillMissingPitcherSlots(
+      selectedEntry.teamId,
+      selectedEntry.pitching?.slots ?? []
+    );
     if (!pitchingToUse) {
       setError("투수 라인업을 자동 생성하지 못했습니다.");
       return;
@@ -71,8 +87,8 @@ export function EnterScreen() {
       return;
     }
 
-    // 상대팀 자동 생성
-    const opponent = buildFakeOpponentTeam(opponentTeamId, seed);
+    // 상대팀 자동 생성 — 최근 라인업이 있으면 그걸 기준으로(타순·선발투수), 없으면 시즌 stats 랜덤 폴백
+    const opponent = buildFakeOpponentTeam(opponentTeamId, seed, opponentHint);
     if (!opponent) {
       setError("상대팀 데이터를 로드하지 못했습니다.");
       return;

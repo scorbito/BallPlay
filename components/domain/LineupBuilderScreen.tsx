@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, Loader2, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, History, Loader2, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { ShareLineupModal } from "@/components/domain/modals/ShareLineupModal";
+import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { getRoster, getSeededTeamIds } from "@/lib/rosters";
@@ -20,6 +21,7 @@ import {
   PITCHER_STARTER_INDEX,
   formatHandBadge,
   getPoolGroupLabel,
+  normalizeKboPosition,
   type LineupEntry,
   type LineupMode,
   type LineupOrder,
@@ -37,6 +39,8 @@ import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
 import { TIER_LABEL } from "@/lib/auth/userTier";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchLineupStatsBulk } from "@/lib/supabase/query-parts/bpLineups";
+import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
+import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 
 const ORDERS: LineupOrder[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -139,10 +143,15 @@ export function LineupBuilderScreen() {
   // 공개 상태에서 잠긴 영역(슬롯/풀/다이아몬드) 클릭 시 안내 모달
   const [lockInfoOpen, setLockInfoOpen] = useState(false);
   // 새 슬롯 onboarding 안내 — 슬롯별 한 번씩만 노출.
-  //   step1: 타순 9명 채우면 "필수 투수를 선택하면 공개 가능"
-  //   step2: 선발/마무리/필수 불펜을 고르면 "이제 공개해서 가상경기 가능"
+  //   step1: 타순 9명 채우면 "선발 투수만 선택하면 공개 가능"
+  //   step2: 선발 투수까지 고르면 "이제 공개해서 가상경기 가능 — 마무리/불펜은 자동"
   const [guideStep1Open, setGuideStep1Open] = useState(false);
   const [guideStep2Open, setGuideStep2Open] = useState(false);
+  // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
+  const [recentPickerOpen, setRecentPickerOpen] = useState(false);
+  const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
+  // 공개 시 마무리/불펜 빈 자리 자동 채움 안내 모달
+  const [confirmAutoFillOpen, setConfirmAutoFillOpen] = useState(false);
   // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
   const [statsByEntryId, setStatsByEntryId] = useState<Record<string, { matches: number; wins: number; losses: number; draws: number }>>({});
 
@@ -434,6 +443,67 @@ export function LineupBuilderScreen() {
     showToast("타순을 바꿨어요.");
   };
 
+  /** 팀 최근 라인업(bp_team_recent_lineups의 한 행)을 현재 entry에 적용.
+   *  - 타순 9명: rosterId 매칭되는 선수만 채움. 매칭 실패 자리는 비워두고 토스트로 알림.
+   *  - 선발 투수: starter_roster_id 매칭되면 pitcherSlots[0]에 세팅(나머지 불펜은 유지). */
+  const applyRecentLineup = (row: RecentLineupRow) => {
+    if (!currentEntry || currentEntry.isPublished) return;
+
+    const sorted = [...row.batting].sort((a, b) => a.order - b.order);
+    const nextSlots: SlotState[] = Array.from({ length: 9 }, () => null);
+    let missed = 0;
+    sorted.forEach((b, idx) => {
+      if (idx >= 9) return;
+      if (b.rosterId && playersById.has(b.rosterId)) {
+        const fallback = playersById.get(b.rosterId)!.primaryPosition;
+        // 한자 표기("三一" 등 경기 중 포지션 교체) 첫 글자 매핑 + 영문 코드 통과.
+        const pos: Position = normalizeKboPosition(b.position) ?? fallback;
+        nextSlots[idx] = {
+          order: (idx + 1) as LineupOrder,
+          playerId: b.rosterId,
+          position: pos
+        };
+      } else {
+        missed += 1;
+      }
+    });
+    setSlots(nextSlots);
+    setSwapOrderSourceIdx(null);
+    setSwapSource(null);
+
+    const starterId = row.starter_roster_id;
+    if (starterId && playersById.has(starterId)) {
+      setPitcherSlots((current) => current.map((id, i) => (i === PITCHER_STARTER_INDEX ? starterId : id)));
+    }
+
+    // 타자 9명 + 선발이 한 번에 채워지면 step1(타순 완성) 안내는 건너뛰고
+    // step2(공개 준비 완료)만 뜨도록 step1을 미리 "본 것"으로 표시한다.
+    if (starterId && playersById.has(starterId)) {
+      markGuideSeen("step1", currentEntry.entryId);
+    }
+
+    // 타자 모드로 전환해 적용 결과를 바로 확인할 수 있게 함
+    setMode("batter");
+
+    if (missed > 0) {
+      showToast(`${9 - missed}명 적용. ${missed}자리는 로스터 변경으로 비워뒀어요.`);
+    } else {
+      showToast("최근 라인업을 불러왔어요.");
+    }
+  };
+
+  /** "최근 라인업 불러오기" 모달에서 행을 선택했을 때. 기존 슬롯이 있으면 confirm 모달로 한 번 더 확인. */
+  const handleRecentLineupPick = (row: RecentLineupRow) => {
+    const hasFilledBatter = slots.some((s) => s !== null);
+    const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] !== null;
+    setRecentPickerOpen(false);
+    if (hasFilledBatter || hasStarter) {
+      setPendingRecentLineup(row);
+    } else {
+      applyRecentLineup(row);
+    }
+  };
+
   /** 슬롯의 포지션 변경. 다른 슬롯이 이미 그 포지션을 쓰고 있으면 자동으로 swap.
    *  다이아몬드 직접 swap과 동일한 traveler 애니메이션을 재사용해 이동/교체를 시각화. */
   const handleChangePosition = (order: LineupOrder, newPosition: Position) => {
@@ -568,21 +638,19 @@ export function LineupBuilderScreen() {
   const selectedTeam = getTeam(selectedTeamId);
   const filledCount = slots.filter((s) => s !== null).length;
   const pitcherFilled = pitcherSlots.filter(Boolean).length;
-  // 공개 가능 조건 — 타선 9명 + 선발 + 마무리 + 필수 불펜 1명
+  // 공개 가능 조건 — 타선 9명 + 선발 1명. 마무리/불펜은 공개 시 자동 채움.
   const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] != null;
   const hasCloser = pitcherSlots[PITCHER_CLOSER_INDEX] != null;
   const hasRequiredBullpen = pitcherSlots[PITCHER_REQUIRED_BULLPEN_INDEX] != null;
-  const hasRequiredPitchers = hasStarter && hasCloser && hasRequiredBullpen;
+  const hasRequiredPitchers = hasStarter; // 가이드 트리거용 — 선발만 있으면 공개 가능
   const publishRequirementMessage = filledCount !== 9
     ? "타자 9명을 모두 채워야 공개할 수 있어요"
     : !hasStarter
       ? "선발 투수를 골라야 공개할 수 있어요"
-      : !hasCloser
-        ? "마무리 투수를 골라야 공개할 수 있어요"
-        : !hasRequiredBullpen
-          ? "필수 불펜 1명을 골라야 공개할 수 있어요"
-          : null;
+      : null;
   const canPublish = publishRequirementMessage === null;
+  // 마무리/불펜 중 하나라도 비어있으면 공개 시 자동 채움 안내가 필요한 상태.
+  const needsAutoFillNotice = canPublish && pitcherSlots.slice(PITCHER_CLOSER_INDEX).some((id) => !id);
 
   // 슬롯별 가이드 트리거 상태 추적 — transition(0~8→9, false→true)만 캐치.
   // 첫 마운트(prev 없음)는 무시 → 기존 슬롯이 페이지 진입 시 즉시 popup되는 것 차단.
@@ -816,11 +884,17 @@ export function LineupBuilderScreen() {
                 🔒 공개 라인업 · {wins}승 {losses}패 {draws}무 ({winPct}%)
               </p>
             );
-          })() : (
-            <p className="lineup-action-hint">
-              삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
-            </p>
-          )}
+          })() : currentEntry ? (
+            <button
+              type="button"
+              className="lineup-recent-load-btn"
+              onClick={() => setRecentPickerOpen(true)}
+              title={`${selectedTeam.shortName}이(가) 최근 경기에서 실제로 쓴 선발 라인업으로 자동 세팅`}
+            >
+              <History size={12} />
+              <span>실제 경기 라인업 불러오기</span>
+            </button>
+          ) : null}
           <div className="lineup-action-buttons">
             {/* 타자/투수 토글 — 공유 옆에 배치 */}
             <div className="lineup-mode-toggle lineup-mode-toggle-inline" role="tablist" aria-label="라인업 종류">
@@ -876,10 +950,15 @@ export function LineupBuilderScreen() {
                       return;
                     }
                     if (!canPublish) {
-                      showToast("필수 선수를 다 채워야 공개 가능합니다.");
+                      showToast(publishRequirementMessage ?? "공개 조건을 확인해주세요.");
                       return;
                     }
-                    // 공개로 즉시 전환
+                    // 마무리/불펜 중 빈 자리가 있으면 자동 채움 안내 모달부터.
+                    if (needsAutoFillNotice) {
+                      setConfirmAutoFillOpen(true);
+                      return;
+                    }
+                    // 모두 채워져 있으면 즉시 공개
                     setPublishProcessing(true);
                     const res = await togglePublished(currentEntry.entryId, true);
                     setPublishProcessing(false);
@@ -945,9 +1024,6 @@ export function LineupBuilderScreen() {
                           {hand ? (
                             <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
                           ) : null}
-                          {(player.seasonGames ?? 0) === 0 ? (
-                            <span className="lineup-no-stats-badge" title="1군 출장 기록 없음 — 리그 평균값으로 시뮬됩니다">기록없음</span>
-                          ) : null}
                         </span>
                       ) : (
                         <span className="lineup-slot-placeholder">타자 필수</span>
@@ -979,6 +1055,11 @@ export function LineupBuilderScreen() {
                 );
               })}
             </ol>
+            {!currentEntry?.isPublished && filledCount > 0 ? (
+              <p className="lineup-slot-foot-hint">
+                삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
+              </p>
+            ) : null}
           </section>
         ) : (
           <section className="lineup-slots-card" aria-label="투수 라인업">
@@ -1006,14 +1087,13 @@ export function LineupBuilderScreen() {
                 const isRequiredBullpen = idx === PITCHER_REQUIRED_BULLPEN_INDEX;
                 const roleLabel = isStarter ? "선발" : isCloser ? "마무리" : "불펜";
                 const slotBadge = isStarter ? "선" : isCloser ? "마" : String(idx - 1);
-                const isRequiredSlot = isStarter || isCloser || isRequiredBullpen;
+                // 선발만 공개 필수. 나머지 자리는 자동 채움 가능.
+                const isRequiredSlot = isStarter;
                 const placeholder = isStarter
                   ? "선발 필수"
                   : isCloser
-                    ? "마무리 필수"
-                    : isRequiredBullpen
-                      ? "불펜 필수"
-                      : "불펜 선택";
+                    ? "마무리 (자동)"
+                    : "불펜 (자동)";
                 const orderSelected = swapOrderSourceIdx === idx;
                 const swapAnimClass = getSwapAnimClass(swapOrderAnimation, idx);
                 return (
@@ -1036,9 +1116,6 @@ export function LineupBuilderScreen() {
                           <span className="lineup-slot-name">{player.name}</span>
                           {hand ? (
                             <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
-                          ) : null}
-                          {(player.seasonGames ?? 0) === 0 ? (
-                            <span className="lineup-no-stats-badge" title="1군 출장 기록 없음 — 리그 평균값으로 시뮬됩니다">기록없음</span>
                           ) : null}
                         </span>
                       ) : (
@@ -1066,6 +1143,11 @@ export function LineupBuilderScreen() {
                 );
               })}
             </ol>
+            {!currentEntry?.isPublished && pitcherFilled > 0 ? (
+              <p className="lineup-slot-foot-hint">
+                삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
+              </p>
+            ) : null}
           </section>
         )}
 
@@ -1084,7 +1166,6 @@ export function LineupBuilderScreen() {
             <ul className="lineup-pool-list">
               {poolPlayers.map((player) => {
                 const hand = formatHandBadge(player);
-                const noStats = (player.seasonGames ?? 0) === 0;
                 return (
                   <li key={player.id}>
                     <button
@@ -1096,9 +1177,6 @@ export function LineupBuilderScreen() {
                       <span className="lineup-pool-row-name">{player.name}</span>
                       {hand ? (
                         <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
-                      ) : null}
-                      {noStats ? (
-                        <span className="lineup-no-stats-badge" title="시즌 기록 없음 — 리그 평균값으로 시뮬됩니다">기록없음</span>
                       ) : null}
                     </button>
                   </li>
@@ -1183,6 +1261,111 @@ export function LineupBuilderScreen() {
         pitcherSlots={pitcherSlots}
         playersById={playersById}
       />
+
+      {/* 팀 최근 라인업 불러오기 — bp_team_recent_lineups의 최근 10경기 표시 */}
+      <RecentLineupPickerModal
+        open={recentPickerOpen}
+        teamId={selectedTeamId}
+        onClose={() => setRecentPickerOpen(false)}
+        onPick={handleRecentLineupPick}
+      />
+
+      {/* 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 공개 */}
+      <ModalShell
+        open={confirmAutoFillOpen}
+        title="마무리·불펜 자동 채움"
+        onClose={() => setConfirmAutoFillOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            마무리·불펜 빈 자리를 <strong>자동으로 채워서 공개</strong>합니다.<br />
+            <br />
+            · 마무리 — 세이브 많은 선수<br />
+            · 불펜 — 평균자책점 좋은 선수<br />
+            <br />
+            직접 짜려면 취소 후 투수 탭에서 선택해주세요.
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setConfirmAutoFillOpen(false)}
+              disabled={publishProcessing}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              disabled={publishProcessing}
+              onClick={async () => {
+                if (!currentEntry) return;
+                // 빈 자리 자동 채움 → state + DB 모두 반영. 이후 공개 토글.
+                const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
+                if (!filled) {
+                  showToast("투수 자동 채움 실패");
+                  return;
+                }
+                setPitcherSlots(filled.slots);
+                setPublishProcessing(true);
+                // pitcherSlots state는 비동기라 sync useEffect가 처리하기 전에 togglePublished가
+                // 실행되면 빈 자리 그대로 DB에 남을 수 있다. 따라서 entry 전체를 직접 upsert.
+                const now = new Date().toISOString();
+                const updated: LineupEntry = {
+                  ...currentEntry,
+                  pitching: filled,
+                  updatedAt: now
+                };
+                syncedUpsert(updated);
+                const res = await togglePublished(currentEntry.entryId, true);
+                setPublishProcessing(false);
+                setConfirmAutoFillOpen(false);
+                if (!res.ok) showToast(res.error ?? "공개 전환 실패");
+                else showToast("공개됐어요");
+              }}
+            >
+              자동 채움 + 공개
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* 기존 슬롯이 채워져 있을 때 덮어쓰기 확인 */}
+      <ModalShell
+        open={pendingRecentLineup !== null}
+        title="현재 라인업 덮어쓰기"
+        onClose={() => setPendingRecentLineup(null)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            지금 짜둔 라인업을 <strong>최근 경기 라인업으로 덮어쓸까요?</strong><br />
+            기존 타순·선발은 사라집니다. (불펜은 유지)
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setPendingRecentLineup(null)}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-destruct"
+              onClick={() => {
+                if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
+                setPendingRecentLineup(null);
+              }}
+            >
+              덮어쓰기
+            </button>
+          </div>
+        </div>
+      </ModalShell>
 
       {/* 공개 → 비공개 전환 확인 모달 (전적 리셋 안내) */}
       <ModalShell
@@ -1283,7 +1466,8 @@ export function LineupBuilderScreen() {
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            이제 <strong>선발, 마무리, 필수 불펜</strong>을 선택하면 라인업을 공개할 수 있어요.
+            이제 <strong>선발 투수</strong>만 선택하면 라인업을 공개할 수 있어요.<br />
+            (마무리·불펜은 공개 시 자동으로 채워집니다)
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -1308,7 +1492,8 @@ export function LineupBuilderScreen() {
         </div>
       </ModalShell>
 
-      {/* 새 슬롯 onboarding step2 — 필수 투수 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개 */}
+      {/* 새 슬롯 onboarding step2 — 선발 투수까지 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개.
+          마무리/불펜이 비어있으면 saves/era 기준으로 자동 채워서 함께 저장. */}
       <ModalShell
         open={guideStep2Open}
         title="라인업 준비 완료!"
@@ -1318,7 +1503,13 @@ export function LineupBuilderScreen() {
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            이제 라인업을 <strong>공개</strong>해서 경기장에서 다른 사람 라인업과 가상경기를 할 수 있어요.
+            이제 라인업을 <strong>공개</strong>해서 경기장에서 다른 사람 라인업과 가상경기를 할 수 있어요.<br />
+            {needsAutoFillNotice ? (
+              <>
+                <br />
+                마무리·불펜 빈 자리는 자동으로 채워집니다.
+              </>
+            ) : null}
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -1336,6 +1527,19 @@ export function LineupBuilderScreen() {
               onClick={async () => {
                 if (!currentEntry) return;
                 setPublishProcessing(true);
+                // 마무리/불펜 빈 자리 있으면 자동 채워서 entry 전체 upsert
+                if (needsAutoFillNotice) {
+                  const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
+                  if (filled) {
+                    setPitcherSlots(filled.slots);
+                    const now = new Date().toISOString();
+                    syncedUpsert({
+                      ...currentEntry,
+                      pitching: filled,
+                      updatedAt: now
+                    });
+                  }
+                }
                 const res = await togglePublished(currentEntry.entryId, true);
                 setPublishProcessing(false);
                 setGuideStep2Open(false);

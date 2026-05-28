@@ -14,7 +14,7 @@ import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
-import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
@@ -64,7 +64,8 @@ export function MyLineupList({ maxItems = 6 }: Props) {
   );
 
   const openLineupPreview = (entry: LineupEntry) => {
-    const pitching = entry.pitching ?? autoFillPitcherLineup(entry.teamId);
+    // partial pitching(선발만 있는 경우 등)도 안전하게 9슬롯으로 보강
+    const pitching = fillMissingPitcherSlots(entry.teamId, entry.pitching?.slots ?? []);
     if (!pitching) return;
     const stats = buildStatsDirectory([entry.teamId]);
     const built = buildSimTeamInput(entry.teamId, entry.batting, pitching, stats, entry.name);
@@ -95,8 +96,8 @@ export function MyLineupList({ maxItems = 6 }: Props) {
     setStarting(true);
     setError(null);
 
-    const myPitching = myEntry.pitching ?? autoFillPitcherLineup(myEntry.teamId);
-    const oppPitching = opponentEntry.pitching ?? autoFillPitcherLineup(opponentEntry.teamId);
+    const myPitching = fillMissingPitcherSlots(myEntry.teamId, myEntry.pitching?.slots ?? []);
+    const oppPitching = fillMissingPitcherSlots(opponentEntry.teamId, opponentEntry.pitching?.slots ?? []);
     if (!myPitching || !oppPitching) {
       setStarting(false);
       setError("투수 라인업 자동 보강에 실패했습니다.");

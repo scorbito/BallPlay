@@ -24,7 +24,7 @@ import { listMyLineups, rowToEntry } from "@/lib/supabase/query-parts/bpLineups"
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
-import { autoFillPitcherLineup } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import type { SimTeamInput } from "@/lib/sim/types";
@@ -268,7 +268,7 @@ export function RecordsScreen() {
     }
     const opponentSide = getOpponentSide(rematchRecord);
     const opponentTeam = rematchRecord.input[opponentSide];
-    const myPitching = selected.entry.pitching ?? autoFillPitcherLineup(selected.entry.teamId);
+    const myPitching = fillMissingPitcherSlots(selected.entry.teamId, selected.entry.pitching?.slots ?? []);
     if (!myPitching) {
       showToast("투수 라인업을 만들 수 없습니다.");
       return;

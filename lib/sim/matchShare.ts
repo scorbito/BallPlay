@@ -12,7 +12,7 @@
 import { SIM_ENGINE_VERSION } from "./version";
 import { getStatsSnapshotDate, buildStatsDirectory } from "./statsLoader";
 import { buildSimTeamInput } from "./lineupAdapter";
-import { autoFillPitcherLineup } from "./autoPitcherLineup";
+import { fillMissingPitcherSlots } from "./autoPitcherLineup";
 import type {
   LineupEntry,
   Position,
@@ -193,7 +193,7 @@ export function buildSharedTeamFromEntry(
     return { ok: false, error: "타순 9명이 모두 채워져 있지 않습니다." };
   }
 
-  const pitching = entry.pitching ?? autoFillPitcherLineup(entry.teamId);
+  const pitching = fillMissingPitcherSlots(entry.teamId, entry.pitching?.slots ?? []);
   if (!pitching) {
     return { ok: false, error: "투수 라인업을 자동 생성하지 못했습니다." };
   }
