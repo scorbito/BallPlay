@@ -26,3 +26,6 @@ coverage/
 data/ground*.png
 data/ground*.jpg
 
+
+.vercel
+.env*.local

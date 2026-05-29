@@ -266,11 +266,30 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   //   - 모두 종료 → 숨김
   const canShowRefresh = isTodaySelected && !allTodayFinished;
 
-  // focus=today 진입 시 오늘 날짜로 설정 + 하단 일정 카드로 스크롤
+  // focus=today 진입 시 — 오늘 경기 결과가 있으면 오늘, 없으면 결과가 있는 가장 최근 날짜로.
+  // 시즌 휴식일/오늘 미시작 경기뿐일 때 "결과 0건" 빈 화면 대신 어제(또는 직전 경기일) 결과 보여줌.
   useEffect(() => {
     if (!focusToday) return;
-    setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
-    setVisibleMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+
+    let targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayKey = toDateKey(targetDate);
+    const todayHasResults = (gamesByDate.get(todayKey) ?? []).some((g) => g.status === "finished");
+
+    if (!todayHasResults) {
+      // 가장 최근 finished 경기가 있는 과거(또는 오늘) 날짜 찾기
+      const pastDatesWithResults = Array.from(gamesByDate.entries())
+        .filter(([, list]) => list.some((g) => g.status === "finished"))
+        .map(([key]) => parseDotDate(key))
+        .filter((d) => d.getTime() <= targetDate.getTime())
+        .sort((a, b) => b.getTime() - a.getTime());
+      if (pastDatesWithResults.length > 0) {
+        targetDate = pastDatesWithResults[0];
+      }
+      // 없으면 시즌 초/데이터 부재 — 오늘 유지
+    }
+
+    setSelectedDate(targetDate);
+    setVisibleMonth(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
     // 다음 tick에서 scroll (DOM 업데이트 후)
     const t = window.setTimeout(() => {
       dayCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
