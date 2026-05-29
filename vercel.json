@@ -7,7 +7,7 @@
     },
     {
       "path": "/api/cron/sync-kbo-games?scope=today",
-      "schedule": "0 23 * * *"
+      "schedule": "30 14 * * *"
     }
   ]
 }
