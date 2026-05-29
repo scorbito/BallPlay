@@ -352,8 +352,8 @@
   align-items: flex-start;
   justify-content: space-between;
   text-align: left;
-  padding: 4px 14px 14px;
-  gap: 2px;
+  padding: 2px 12px 16px;
+  gap: 0;
   height: 100%;
   min-height: 130px;
   box-shadow: 0 6px 18px rgba(232, 74, 138, 0.28);
@@ -364,16 +364,17 @@
 }
 
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
-  width: 100px;
-  height: 100px;
+  width: 138px;
+  height: 138px;
   background: rgba(255, 255, 255, 0.96);
   color: var(--bp-accent, #e84a8a);
   border-radius: 14px;
-}
-
-.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
-  width: 50px;
-  height: 50px;
+  /* 위·아래로 마이너스 margin → 카드 상단에 살짝 걸치고 텍스트 위로도 살짝 오버랩.
+     텍스트는 자기 자리 그대로 유지. */
+  margin-top: -10px;
+  margin-bottom: -14px;
+  position: relative;
+  z-index: 1;
 }
 
 /* iconImage 변형 — 투명 PNG라 흰 배경 박스 제거 → 일러스트가 핑크 카드에 직접 노출.
@@ -381,6 +382,12 @@
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon.play-hub-card-icon-image {
   background: transparent;
   border-radius: 0;
+}
+
+/* svg 폴백용 사이즈 — 새 컨테이너에 맞게 키움 */
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon > svg {
+  width: 76px;
+  height: 76px;
 }
 
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-text {
@@ -424,17 +431,19 @@
     gap: 10px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
-    padding: 10px 18px 18px;
+    padding: 6px 16px 22px;
     min-height: 170px;
-    gap: 8px;
+    gap: 4px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
-    width: 120px;
-    height: 120px;
+    width: 168px;
+    height: 168px;
+    margin-top: -12px;
+    margin-bottom: -18px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
-    width: 60px;
-    height: 60px;
+    width: 84px;
+    height: 84px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
     font-size: 26px;
@@ -510,12 +519,14 @@
     justify-content: space-between;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
-    width: 110px;
-    height: 110px;
+    width: 146px;
+    height: 146px;
+    margin-top: -10px;
+    margin-bottom: -16px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon svg {
-    width: 54px;
-    height: 54px;
+    width: 72px;
+    height: 72px;
   }
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-text {
     align-items: flex-start;
