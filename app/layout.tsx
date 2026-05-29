@@ -48,6 +48,7 @@ import "@/styles/dark-records.css";
 import "@/styles/dark-lineup-detail.css";
 import "@/styles/dark-videos.css";
 import "@/styles/dark-predict.css";
+import "@/styles/dark-ai-predict.css";
 import "@/styles/light-bp-core.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ballnori.com";

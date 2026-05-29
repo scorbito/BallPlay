@@ -141,12 +141,11 @@ const sections: HomeSection[] = [
       },
       {
         id: "ai-predict",
-        href: "#",
+        href: "/predict/ai-winner",
         title: "AI 승리팀 예측",
-        description: "AI 기반 승부 예측",
+        description: "AI 3사 분석 종합",
         icon: Bot,
-        available: false,
-        badge: "준비중"
+        available: true
       }
     ]
   },
@@ -251,7 +250,7 @@ export async function HomeScreen() {
           />
           <span className="play-hub-title-group">
             <span className="play-hub-title">야구놀이터</span>
-            <span className="play-hub-tagline">가볍게 즐기는 야구 놀이 모음</span>
+            <span className="play-hub-tagline">야구의 모든 재미가 있는 곳</span>
           </span>
         </h1>
         <div className="play-hub-header-actions">

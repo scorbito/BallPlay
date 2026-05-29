@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { syncGamesInRange } from "@/lib/server/kbo/syncGames";
+import { scoreAiPredictionsForRange } from "@/lib/server/kbo/scoreAiPredictions";
 
 export const maxDuration = 60;
 
@@ -55,13 +56,23 @@ export async function GET(request: NextRequest) {
       { inserted: 0, updated: 0 }
     );
 
+    // 채점: 위에서 sync 한 범위의 finished 경기에 대해 AI 예측 is_correct 채움.
+    // 실패해도 sync 결과 자체는 살리려고 try/catch 로 격리.
+    let aiScoring: Awaited<ReturnType<typeof scoreAiPredictionsForRange>> | { error: string };
+    try {
+      aiScoring = await scoreAiPredictionsForRange(from, to);
+    } catch (err) {
+      aiScoring = { error: (err as Error).message };
+    }
+
     // ISR 캐시 무효화 — schedule/홈 페이지가 revalidate 24시간이라
     // cron이 새 결과를 sync해도 캐시 만료 전엔 안 보임. 명시적으로 무효화.
     // 변경 없는 fetch면 굳이 무효화 안 해도 되지만, totals 체크 비용보다 무효화 비용이 더 싸므로 항상 호출.
     revalidatePath("/schedule");
     revalidatePath("/");
+    revalidatePath("/predict/ai-winner");
 
-    return NextResponse.json({ ok: true, scope, totals, results });
+    return NextResponse.json({ ok: true, scope, totals, results, aiScoring });
   } catch (err) {
     return NextResponse.json({ ok: false, error: (err as Error).message }, { status: 500 });
   }

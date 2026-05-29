@@ -1,0 +1,704 @@
+/* ============================================================
+   AI 승리팀 예측 — 목록 페이지 + 풀스크린 reveal
+   ============================================================ */
+
+.phone-frame-light .ai-winner-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 14px 24px;
+}
+
+/* ── 시즌 적중률 헤더 카드 ── */
+.phone-frame-light .ai-winner-stats-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 14px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(232, 74, 138, 0.04));
+  border: 1px solid rgba(232, 74, 138, 0.25);
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-winner-stats-overall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-frame-light .ai-winner-stats-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .ai-winner-stats-accuracy {
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--bp-accent);
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+.phone-frame-light .ai-winner-stats-detail {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-winner-stats-providers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(232, 74, 138, 0.25);
+}
+
+.phone-frame-light .ai-winner-provider-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+}
+
+.phone-frame-light .ai-winner-provider-name {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .ai-winner-provider-gemini .ai-winner-provider-name { color: #1E88E5; }
+.phone-frame-light .ai-winner-provider-claude .ai-winner-provider-name { color: #D97757; }
+.phone-frame-light .ai-winner-provider-gpt    .ai-winner-provider-name { color: #10A37F; }
+
+.phone-frame-light .ai-winner-provider-acc {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-winner-provider-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+/* ── 섹션 타이틀 ── */
+.phone-frame-light .ai-winner-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 10px;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .ai-winner-section-title svg {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-winner-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+/* ── 빈 상태 (오늘 경기 없음) ── */
+.phone-frame-light .ai-winner-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  text-align: center;
+  background: var(--bp-card-soft);
+  border: 1px dashed var(--bp-line);
+  border-radius: 14px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-winner-empty svg {
+  color: var(--bp-text-muted);
+  opacity: 0.5;
+}
+
+.phone-frame-light .ai-winner-empty-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .ai-winner-empty-sub {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── 경기 카드 리스트 ── */
+.phone-frame-light .ai-winner-game-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .ai-winner-game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-winner-game-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .ai-winner-game-time {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-winner-game-stadium {
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-winner-game-teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.phone-frame-light .ai-winner-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-frame-light .ai-winner-team-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .ai-winner-vs {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── 카드 상태 (잠금/대기) ── */
+.phone-frame-light .ai-winner-card-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--bp-card-soft);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .ai-winner-state-locked {
+  background: rgba(232, 74, 138, 0.08);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-winner-state-locked strong {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .ai-winner-state-pending {
+  color: var(--bp-text-muted);
+}
+
+/* ── 종합 의견 요약 ── */
+.phone-frame-light .ai-winner-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(232, 74, 138, 0.06);
+  border-radius: 8px;
+}
+
+.phone-frame-light .ai-winner-summary-tag {
+  font-size: 12px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .ai-winner-summary-unanimous { color: #e74c3c; }
+.phone-frame-light .ai-winner-summary-split { color: #9b59b6; }
+.phone-frame-light .ai-winner-summary-majority { color: var(--bp-accent); }
+
+.phone-frame-light .ai-winner-summary-text {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+/* ── AI 별 픽 미리보기 ── */
+.phone-frame-light .ai-winner-picks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.phone-frame-light .ai-winner-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px;
+  background: var(--bp-card-soft);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.phone-frame-light .ai-winner-pick-gemini { border-color: rgba(30, 136, 229, 0.30); }
+.phone-frame-light .ai-winner-pick-claude { border-color: rgba(217, 119, 87, 0.30); }
+.phone-frame-light .ai-winner-pick-gpt    { border-color: rgba(16, 163, 127, 0.30); }
+
+.phone-frame-light .ai-winner-pick-ai {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .ai-winner-pick-gemini .ai-winner-pick-ai { color: #1E88E5; }
+.phone-frame-light .ai-winner-pick-claude .ai-winner-pick-ai { color: #D97757; }
+.phone-frame-light .ai-winner-pick-gpt    .ai-winner-pick-ai { color: #10A37F; }
+
+.phone-frame-light .ai-winner-pick-team {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-winner-pick-result {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-winner-pick.is-correct .ai-winner-pick-result { color: var(--bp-success); }
+.phone-frame-light .ai-winner-pick.is-wrong .ai-winner-pick-result { color: var(--bp-danger); }
+
+/* ── 경기 종료 카드 ── */
+.phone-frame-light .ai-winner-finished {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-winner-final-score {
+  text-align: center;
+  padding: 8px 10px;
+  background: rgba(20, 30, 50, 0.04);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+/* ── 결과 보기 CTA ── */
+.phone-frame-light .ai-winner-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--bp-accent);
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.phone-frame-light .ai-winner-card-cta:hover {
+  background: #d63a7c;
+}
+
+/* ============================================================
+   풀스크린 reveal 페이지
+   ============================================================ */
+
+.phone-frame-light .ai-reveal-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 14px 32px;
+}
+
+/* 헤더 다시보기 버튼 */
+.phone-frame-light .ai-reveal-replay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--bp-line);
+  border-radius: 8px;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-light .ai-reveal-replay-btn:hover {
+  background: var(--bp-card-soft);
+  color: var(--bp-accent);
+}
+
+/* ── 매치업 헤더 ── */
+.phone-frame-light .ai-reveal-matchup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(232, 74, 138, 0.04));
+  border: 1px solid rgba(232, 74, 138, 0.20);
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-reveal-matchup-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-reveal-matchup-teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.phone-frame-light .ai-reveal-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-reveal-team-name {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .ai-reveal-team-score {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.5px;
+}
+
+.phone-frame-light .ai-reveal-vs {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  letter-spacing: 1px;
+}
+
+.phone-frame-light .ai-reveal-actual-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--bp-success);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* ── 빈 상태 ── */
+.phone-frame-light .ai-reveal-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--bp-text-muted);
+  background: var(--bp-card-soft);
+  border-radius: 14px;
+}
+
+/* ── AI 예측 카드 ── */
+.phone-frame-light .ai-reveal-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-frame-light .ai-reveal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+  /* reveal: 초기엔 안 보이고, is-visible 토글 시 페이드인 + 미세한 슬라이드업 */
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.phone-frame-light .ai-reveal-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* AI별 좌측 컬러 보더 (식별성) */
+.phone-frame-light .ai-reveal-card-gemini { border-left: 4px solid #1E88E5; }
+.phone-frame-light .ai-reveal-card-claude { border-left: 4px solid #D97757; }
+.phone-frame-light .ai-reveal-card-gpt    { border-left: 4px solid #10A37F; }
+
+.phone-frame-light .ai-reveal-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-reveal-card-ai {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .ai-reveal-card-gemini .ai-reveal-card-ai { color: #1E88E5; }
+.phone-frame-light .ai-reveal-card-claude .ai-reveal-card-ai { color: #D97757; }
+.phone-frame-light .ai-reveal-card-gpt    .ai-reveal-card-ai { color: #10A37F; }
+
+.phone-frame-light .ai-reveal-card-model {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-reveal-card-result {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bp-card-soft);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .ai-reveal-card-result.is-correct {
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--bp-success);
+}
+
+.phone-frame-light .ai-reveal-card-result.is-wrong {
+  background: rgba(220, 38, 38, 0.14);
+  color: var(--bp-danger);
+}
+
+.phone-frame-light .ai-reveal-card-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-frame-light .ai-reveal-card-team {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-reveal-card-confidence {
+  margin-left: auto;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--bp-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .ai-reveal-card-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--bp-card-soft);
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.phone-frame-light .ai-reveal-card-key-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-reveal-card-key-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-reveal-card-oneliner {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bp-text);
+  line-height: 1.5;
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .ai-reveal-card-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: transparent;
+  border: 0;
+  color: var(--bp-text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.phone-frame-light .ai-reveal-card-toggle:hover {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-reveal-card-detail {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--bp-card-soft);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--bp-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── 종합 결과 ── */
+.phone-frame-light .ai-reveal-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 14px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(232, 74, 138, 0.06));
+  border: 1px solid rgba(232, 74, 138, 0.30);
+  border-radius: 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.phone-frame-light .ai-reveal-summary.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.phone-frame-light .ai-reveal-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-reveal-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phone-frame-light .ai-reveal-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.phone-frame-light .ai-reveal-summary-label {
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-reveal-summary-value {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-reveal-summary-tag-row {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.phone-frame-light .ai-reveal-summary-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-reveal-tag-unanimous {
+  background: rgba(231, 76, 60, 0.16);
+  color: #c0392b;
+}
+
+.phone-frame-light .ai-reveal-tag-majority {
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-reveal-tag-split {
+  background: rgba(155, 89, 182, 0.16);
+  color: #8e44ad;
+}
