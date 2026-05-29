@@ -6,6 +6,7 @@ import {
   listAiPredictionsForDate,
   type BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
+import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,10 @@ export default async function AiWinnerPredictPage({
 }: {
   searchParams: { date?: string };
 }) {
+  // 페이지 진입 시 일일 sync 트리거 (throttle). AI 채점이 가장 중요한 페이지라
+  // 결과 도착 즉시 ✓/✗ 가 보이도록.
+  void triggerDailyDataSync();
+
   const today = kstToday();
   // ?date=YYYY-MM-DD 형식이면 그 날짜, 아니면 오늘로 폴백
   const requested = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : today;
