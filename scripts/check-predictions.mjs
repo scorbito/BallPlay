@@ -17,7 +17,7 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
   auth: { persistSession: false }
 });
 
-const GAME_DATE = "2026-05-29";
+const GAME_DATE = "2026-05-30";
 
 console.log(`Checking predictions for ${GAME_DATE}...`);
 const { data, error } = await sb

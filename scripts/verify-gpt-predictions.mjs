@@ -22,10 +22,12 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 );
 
+const gameDate = process.argv[2] ?? "2026-05-29";
+
 const { data, error } = await supabase
   .from("bp_ai_predictions")
   .select("game_id, ai_provider, predicted_winner_team_id, confidence, published_at")
-  .eq("game_date", "2026-05-29")
+  .eq("game_date", gameDate)
   .eq("ai_provider", "gpt")
   .order("created_at");
 

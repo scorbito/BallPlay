@@ -30,16 +30,16 @@ if (pErr) {
 }
 
 const starters = [
-  { team: "nc", name: "구창모" },
-  { team: "lotte", name: "박세웅" },
-  { team: "hanwha", name: "화이트" },
-  { team: "ssg", name: "최민준" },
-  { team: "kiwoom", name: "배동현" },
-  { team: "kt", name: "사우어" },
-  { team: "samsung", name: "원태인" },
-  { team: "doosan", name: "잭로그" },
-  { team: "lg", name: "웰스" },
-  { team: "kia", name: "이의리" }
+  { team: "samsung", name: "오러클린" },
+  { team: "doosan", name: "최승용" },
+  { team: "lg", name: "송승기" },
+  { team: "kia", name: "올러" },
+  { team: "nc", name: "라일리" },
+  { team: "lotte", name: "이민석" },
+  { team: "hanwha", name: "류현진" },
+  { team: "ssg", name: "김건우" },
+  { team: "kiwoom", name: "박정훈" },
+  { team: "kt", name: "문용익" }
 ];
 
 const starterStats = [];
