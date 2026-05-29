@@ -12,7 +12,10 @@ import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import {
+  applyBlendedStatsToTeam,
+  buildStatsDirectoryWithRecentForm
+} from "@/lib/sim/statsLoaderWithRecent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getLatestLineupForTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
@@ -53,12 +56,13 @@ export function EnterScreen() {
     [myEntries, selectedEntryId]
   );
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!selectedEntry) {
       setError("출전할 라인업을 선택해주세요.");
       return;
     }
 
+    setStarting(true);
     const seed = generateSeed();
 
     // 투수 라인업 없으면 자동 보강
@@ -69,30 +73,42 @@ export function EnterScreen() {
     );
     if (!pitchingToUse) {
       setError("투수 라인업을 자동 생성하지 못했습니다.");
+      setStarting(false);
       return;
     }
 
+    // 양팀 능력치 — 시즌 baseline + 주간 델타 블렌드(최근 폼 반영).
+    // DB fetch 실패 시 baseline JSON으로 graceful fallback.
+    const client = createSupabaseBrowserClient();
+    const enhancedDir = await buildStatsDirectoryWithRecentForm(
+      client,
+      [selectedEntry.teamId, opponentTeamId]
+    );
+
     // 내 팀 변환 (entry.name을 displayName으로 전달)
-    const myStats = buildStatsDirectory([selectedEntry.teamId]);
     const myAdapt = buildSimTeamInput(
       selectedEntry.teamId,
       selectedEntry.batting,
       pitchingToUse,
-      myStats,
+      enhancedDir,
       selectedEntry.name
     );
     if (!myAdapt.ok) {
       const reasons = myAdapt.issues.map((i) => i.kind).join(", ");
       setError(`내 라인업을 변환하지 못했습니다 (${reasons}). 라인업을 다시 확인해주세요.`);
+      setStarting(false);
       return;
     }
 
-    // 상대팀 자동 생성 — 최근 라인업이 있으면 그걸 기준으로(타순·선발투수), 없으면 시즌 stats 랜덤 폴백
-    const opponent = buildFakeOpponentTeam(opponentTeamId, seed, opponentHint);
-    if (!opponent) {
+    // 상대팀 자동 생성 — 최근 라인업이 있으면 그걸 기준으로(타순·선발투수), 없으면 시즌 stats 랜덤 폴백.
+    // 생성 후 블렌드된 디렉터리로 후처리 → 상대팀 선수도 최근 폼 반영.
+    const opponentRaw = buildFakeOpponentTeam(opponentTeamId, seed, opponentHint);
+    if (!opponentRaw) {
       setError("상대팀 데이터를 로드하지 못했습니다.");
+      setStarting(false);
       return;
     }
+    const opponent = applyBlendedStatsToTeam(opponentRaw, enhancedDir);
 
     // 홈/원정 — v1 스캐폴드에선 내가 홈 고정
     const input = {
@@ -109,7 +125,6 @@ export function EnterScreen() {
       startedAt: new Date().toISOString(),
       source: "ai"
     });
-    setStarting(true);
     router.push("/stadium/play");
   };
 
