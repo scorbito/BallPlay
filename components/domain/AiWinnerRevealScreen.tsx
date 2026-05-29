@@ -78,9 +78,10 @@ export function AiWinnerRevealScreen({ gameId, game, predictions }: Props) {
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
 
-  // 안정적 reveal 순서 — ai_provider 알파벳 순 (claude → gemini → gpt)
+  // AI 표시 순서 고정 — GPT → Gemini → Claude (목록·헤더 적중률과 일치)
   const orderedPredictions = useMemo(() => {
-    return [...predictions].sort((a, b) => a.ai_provider.localeCompare(b.ai_provider));
+    const rank: Record<AiProvider, number> = { gpt: 0, gemini: 1, claude: 2 };
+    return [...predictions].sort((a, b) => rank[a.ai_provider] - rank[b.ai_provider]);
   }, [predictions]);
 
   // 단계: 0=매치업만, 1=첫 AI 등장, 2=두 번째, 3=세 번째, 4=종합 결과까지 모두.

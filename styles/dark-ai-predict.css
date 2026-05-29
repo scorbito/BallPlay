@@ -9,12 +9,15 @@
   padding: 12px 14px 24px;
 }
 
-/* ── 시즌 적중률 헤더 카드 ── */
+/* ── 시즌 적중률 헤더 카드 — 한 줄 가로 배치
+   좌측 (강조·메인): AI 종합 적중률 — 가운데 정렬, 폭 더 크게
+   우측: GPT → Gemini → Claude 순 미니 카드 */
 .phone-frame-light .ai-winner-stats-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr;
+  align-items: stretch;
   gap: 12px;
-  padding: 16px 14px;
+  padding: 12px 14px;
   background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(232, 74, 138, 0.04));
   border: 1px solid rgba(232, 74, 138, 0.25);
   border-radius: 14px;
@@ -24,39 +27,43 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 2px;
+  padding-right: 12px;
+  border-right: 1px dashed rgba(232, 74, 138, 0.30);
+  text-align: center;
 }
 
 .phone-frame-light .ai-winner-stats-label {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 800;
   color: var(--bp-text-secondary);
   letter-spacing: -0.1px;
+  white-space: nowrap;
 }
 
 .phone-frame-light .ai-winner-stats-accuracy {
-  font-size: 34px;
+  font-size: 26px;
   font-weight: 900;
   color: var(--bp-accent);
-  line-height: 1.1;
-  letter-spacing: -1px;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
 }
 
 .phone-frame-light .ai-winner-stats-detail {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--bp-text-muted);
+  white-space: nowrap;
 }
 
 .phone-frame-light .ai-winner-stats-providers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(232, 74, 138, 0.25);
+  gap: 4px;
 }
 
 .phone-frame-light .ai-winner-provider-mini {
@@ -64,15 +71,17 @@
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 6px 4px;
+  padding: 4px 2px;
   background: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
+  border-radius: 6px;
+  min-width: 0;
 }
 
 .phone-frame-light .ai-winner-provider-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.2px;
+  white-space: nowrap;
 }
 
 .phone-frame-light .ai-winner-provider-gemini .ai-winner-provider-name { color: #1E88E5; }
@@ -80,15 +89,80 @@
 .phone-frame-light .ai-winner-provider-gpt    .ai-winner-provider-name { color: #10A37F; }
 
 .phone-frame-light .ai-winner-provider-acc {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 900;
   color: var(--bp-text);
+  line-height: 1.1;
 }
 
 .phone-frame-light .ai-winner-provider-count {
   font-size: 10px;
   font-weight: 600;
   color: var(--bp-text-muted);
+  white-space: nowrap;
+}
+
+/* ── 날짜 네비게이션 (이전/다음 + 현재 날짜) ── */
+.phone-frame-light .ai-winner-date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.phone-frame-light .ai-winner-date-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-light .ai-winner-date-nav-btn:hover {
+  background: var(--bp-card);
+  color: var(--bp-accent);
+  border-color: rgba(232, 74, 138, 0.30);
+}
+
+.phone-frame-light .ai-winner-date-nav-btn.is-disabled {
+  opacity: 0.30;
+  pointer-events: none;
+}
+
+.phone-frame-light .ai-winner-date-nav-current {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.phone-frame-light .ai-winner-date-nav-date {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .ai-winner-date-nav-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .ai-winner-back-today {
+  color: var(--bp-accent);
+  font-weight: 800;
+  text-decoration: underline;
 }
 
 /* ── 섹션 타이틀 ── */
@@ -173,13 +247,25 @@
   border-radius: 14px;
 }
 
+/* 헤더(시간·구장) + 팀 vs 팀을 한 줄에 가로 배치.
+   카드 정중앙에 "vs" 가 오도록 grid 3등분 — 좌측(시간·구장) auto 우측(여백 균형).
+   1fr · auto · 1fr 구조라 좌우 fr 이 같아 가운데 팀 블록이 카드 정중앙. */
+.phone-frame-light .ai-winner-game-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
 .phone-frame-light .ai-winner-game-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 12px;
   font-weight: 700;
   color: var(--bp-text-secondary);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .phone-frame-light .ai-winner-game-time {
@@ -191,12 +277,23 @@
   color: var(--bp-text-muted);
 }
 
+/* 팀 블록 내부도 1fr · auto · 1fr 로 — 홈팀은 우측 정렬, vs 가운데, 어웨이팀은 좌측 정렬.
+   팀명 길이가 달라도 vs 는 항상 팀 블록 정중앙. */
 .phone-frame-light .ai-winner-game-teams {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   padding: 4px 0;
+  min-width: 0;
+}
+
+.phone-frame-light .ai-winner-game-teams > .ai-winner-team:first-child {
+  justify-self: end;
+}
+
+.phone-frame-light .ai-winner-game-teams > .ai-winner-team:last-child {
+  justify-self: start;
 }
 
 .phone-frame-light .ai-winner-team {
@@ -210,6 +307,16 @@
   font-weight: 800;
   color: var(--bp-text);
   letter-spacing: -0.3px;
+}
+
+/* 종료된 경기에서 팀명 옆에 인라인으로 표기되는 점수.
+   별도 박스 대신 팀명과 한 줄에 묶여 가독성·공간 효율 ↑. */
+.phone-frame-light .ai-winner-team-score {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .phone-frame-light .ai-winner-vs {
@@ -246,6 +353,28 @@
 
 .phone-frame-light .ai-winner-state-pending {
   color: var(--bp-text-muted);
+}
+
+/* "AI 예측이 도착했어요" 미스터리 톤 — 결과 보기 클릭 전 카드 상태.
+   살짝 반짝이는 그라데이션 + 핑크 액센트로 클릭 동기 부여. */
+.phone-frame-light .ai-winner-state-teaser {
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.14), rgba(232, 74, 138, 0.06));
+  color: var(--bp-accent);
+  font-weight: 800;
+  letter-spacing: -0.1px;
+}
+
+/* 우천취소·일정변경 뱃지 — 점수 자리에 표시. 회색 톤으로 차분하게. */
+.phone-frame-light .ai-winner-canceled-banner {
+  text-align: center;
+  padding: 8px 10px;
+  background: rgba(100, 116, 139, 0.10);
+  border: 1px dashed rgba(100, 116, 139, 0.35);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.1px;
 }
 
 /* ── 종합 의견 요약 ── */
@@ -307,9 +436,20 @@
 .phone-frame-light .ai-winner-pick-gpt    .ai-winner-pick-ai { color: #10A37F; }
 
 .phone-frame-light .ai-winner-pick-team {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 900;
   color: var(--bp-text);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+/* 픽팀 옆 신뢰도 — 같은 줄에 인라인. 살짝 작고 톤다운. */
+.phone-frame-light .ai-winner-pick-conf {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .phone-frame-light .ai-winner-pick-result {
@@ -317,8 +457,28 @@
   font-weight: 900;
 }
 
-.phone-frame-light .ai-winner-pick.is-correct .ai-winner-pick-result { color: var(--bp-success); }
-.phone-frame-light .ai-winner-pick.is-wrong .ai-winner-pick-result { color: var(--bp-danger); }
+/* 적중/실패 카드 — 배경 + 보더 색 강화로 한눈에 결과 인식. */
+.phone-frame-light .ai-winner-pick.is-correct {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.phone-frame-light .ai-winner-pick.is-correct .ai-winner-pick-result {
+  color: var(--bp-success);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-winner-pick.is-wrong {
+  background: rgba(220, 38, 38, 0.10);
+  border-color: rgba(220, 38, 38, 0.40);
+}
+
+.phone-frame-light .ai-winner-pick.is-wrong .ai-winner-pick-result {
+  color: var(--bp-danger);
+  font-size: 11px;
+  font-weight: 900;
+}
 
 /* ── 경기 종료 카드 ── */
 .phone-frame-light .ai-winner-finished {
@@ -336,6 +496,49 @@
   font-weight: 900;
   color: var(--bp-text);
   letter-spacing: -0.3px;
+}
+
+/* 종합 적중 라벨 — N/M 적중 + 만점/전패 뱃지 */
+.phone-frame-light .ai-winner-result-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(20, 30, 50, 0.04);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .ai-winner-result-summary svg {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-winner-result-summary.is-all-correct {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--bp-success);
+}
+
+.phone-frame-light .ai-winner-result-summary.is-all-correct svg {
+  color: var(--bp-success);
+}
+
+.phone-frame-light .ai-winner-result-summary.is-all-wrong {
+  background: rgba(220, 38, 38, 0.10);
+  color: var(--bp-danger);
+}
+
+.phone-frame-light .ai-winner-result-summary.is-all-wrong svg {
+  color: var(--bp-danger);
+}
+
+.phone-frame-light .ai-winner-result-tag {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: -0.1px;
 }
 
 /* ── 결과 보기 CTA ── */
