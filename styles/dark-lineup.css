@@ -439,6 +439,19 @@
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
     font-size: 26px;
   }
+  /* 태블릿+ : 추천 카드(팀 라인업 짜기) 내부를 중앙 정렬로.
+     모바일은 그대로 좌측 정렬 유지. */
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
+    align-items: center;
+    text-align: center;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-text {
+    align-items: center;
+    text-align: center;
+  }
+  .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
+    text-align: center;
+  }
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
     padding: 8px 14px 8px 10px;
     min-height: 80px;

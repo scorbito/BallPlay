@@ -7,6 +7,8 @@ import { PullToRefresh } from "@/components/common/PullToRefresh";
 type AppShellProps = {
   activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
   title?: string;
+  /** 타이틀 좌우 장식. "slashes" = 핑크 사선 두 줄(경기 진행 화면용). */
+  titleDecoration?: "slashes";
   showBeta?: boolean;
   theme?: "default" | "dark" | "light";
   headerAction?: ReactNode;
@@ -25,6 +27,7 @@ type AppShellProps = {
 export function AppShell({
   activeTab = "home",
   title = "야구놀이터",
+  titleDecoration,
   showBeta = false,
   theme = "default",
   headerAction,
@@ -55,8 +58,14 @@ export function AppShell({
                   </Link>
                 ) : null}
               </div>
-              <Link className="brand" href="/" prefetch>
+              <Link className={`brand${titleDecoration ? ` brand-deco-${titleDecoration}` : ""}`} href="/" prefetch>
+                {titleDecoration === "slashes" ? (
+                  <span className="brand-deco-side" aria-hidden="true" />
+                ) : null}
                 <span>{title}</span>
+                {titleDecoration === "slashes" ? (
+                  <span className="brand-deco-side" aria-hidden="true" />
+                ) : null}
                 {showBeta ? <span className="brand-beta">BETA</span> : null}
               </Link>
               <div className="app-header-right">{headerAction}</div>

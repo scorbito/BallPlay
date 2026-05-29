@@ -287,6 +287,8 @@ export function PlayScreen() {
 
   // 현재 이닝의 각 타자별 마지막 결과 — 공수교대 시 자동으로 비워짐 (currentInningEvents가 새 이닝의 것으로 교체됨)
   const inningOutcomes = useMemo(() => {
+    // isHit는 뱃지 색상용(=출루) — 안타뿐 아니라 볼넷·사구도 출루이므로 녹색 표시.
+    // (실제 통계용 "hits" 카운트는 todayStats에서 별도 계산하므로 영향 없음.)
     const map = new Map<string, { label: string; isHit: boolean; isHr: boolean }>();
     for (let i = 0; i < currentInningEvents.length; i++) {
       const ev = currentInningEvents[i];
@@ -298,7 +300,7 @@ export function PlayScreen() {
         (ev.ab.runsScored > 0 ? ` (+${ev.ab.runsScored})` : "");
       map.set(ev.ab.batterId, {
         label,
-        isHit: ["1B", "2B", "3B", "HR"].includes(ev.ab.outcome),
+        isHit: ["1B", "2B", "3B", "HR", "BB", "HBP"].includes(ev.ab.outcome),
         isHr: ev.ab.outcome === "HR"
       });
     }
@@ -780,7 +782,7 @@ export function PlayScreen() {
     : "경기 시작";
 
   return (
-    <AppShell activeTab="stadium" title={headerTitle} backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
+    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>
@@ -793,7 +795,7 @@ export function PlayScreen() {
           <table>
             <thead>
               <tr>
-                <th />
+                <th className="team-head">TEAM</th>
                 {Array.from({ length: linescore.totalInnings }, (_, i) => (
                   <th key={i + 1} className={i + 1 === linescore.currentInning ? "is-current" : ""}>{i + 1}</th>
                 ))}
@@ -805,7 +807,7 @@ export function PlayScreen() {
                 <td className="team-cell"><span>{awayLabel}</span></td>
                 {linescore.away.map((cell, i) => (
                   <td key={`a${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "top" ? "is-current" : ""}>
-                    {cell.runs === null ? "" : cell.runs}
+                    {cell.runs === null ? "-" : cell.runs}
                   </td>
                 ))}
                 <td className="rh"><strong>{totalAway}</strong></td>
@@ -814,7 +816,7 @@ export function PlayScreen() {
                 <td className="team-cell"><span>{homeLabel}</span></td>
                 {linescore.home.map((cell, i) => (
                   <td key={`h${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "bottom" ? "is-current" : ""}>
-                    {cell.runs === null ? "" : cell.runs}
+                    {cell.runs === null ? "-" : cell.runs}
                   </td>
                 ))}
                 <td className="rh"><strong>{totalHome}</strong></td>
@@ -823,21 +825,26 @@ export function PlayScreen() {
           </table>
         </div>
 
-        {/* 2. 스코어보드 + 다이아몬드 + 아웃카운트 */}
+        {/* 2. 스코어보드 + 다이아몬드 + 아웃카운트
+            팀별 레이아웃: [큰 팀 배지] [팀명 + 큰 점수] (반대편은 거울) */}
         <header className="stadium-play-scoreboard">
           <div className="stadium-play-team">
-            <TeamBadge teamId={awayTeam.id} size="md" />
-            <span>{awayLabel}</span>
-            <strong>{totalAway}</strong>
+            <TeamBadge teamId={awayTeam.id} size="lg" />
+            <div className="stadium-play-team-info">
+              <span className="stadium-play-team-name">{awayLabel}</span>
+              <strong className="stadium-play-team-score">{totalAway}</strong>
+            </div>
           </div>
           <div className="stadium-play-state">
             <Diamond base={baseState} />
             <OutDots outs={outs} />
           </div>
           <div className="stadium-play-team stadium-play-team-right">
-            <strong>{totalHome}</strong>
-            <span>{homeLabel}</span>
-            <TeamBadge teamId={homeTeam.id} size="md" />
+            <div className="stadium-play-team-info">
+              <span className="stadium-play-team-name">{homeLabel}</span>
+              <strong className="stadium-play-team-score">{totalHome}</strong>
+            </div>
+            <TeamBadge teamId={homeTeam.id} size="lg" />
           </div>
         </header>
 

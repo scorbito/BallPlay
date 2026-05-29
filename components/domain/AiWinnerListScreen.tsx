@@ -351,23 +351,9 @@ export function AiWinnerListScreen({
                       </div>
                     ) : null}
 
-                    {/* 09시 후 + 본 경기 — 합의·픽 미리보기 노출 */}
+                    {/* 09시 후 + 본 경기 — 픽 → 의견 요약 순으로 표시 (AI 의견을 먼저 보고 종합) */}
                     {showOpenRevealed && summary ? (
                       <>
-                        <div className="ai-winner-summary">
-                          {summary.isUnanimous ? (
-                            <span className="ai-winner-summary-tag ai-winner-summary-unanimous">🔥 만장일치</span>
-                          ) : summary.isSplit ? (
-                            <span className="ai-winner-summary-tag ai-winner-summary-split">⚔ 의견 분분</span>
-                          ) : (
-                            <span className="ai-winner-summary-tag ai-winner-summary-majority">⚡ 우세</span>
-                          )}
-                          <span className="ai-winner-summary-text">
-                            {summary.dominantTeamId
-                              ? `${getTeam(summary.dominantTeamId).shortName} ${summary.homePct >= 50 && summary.dominantTeamId === g.homeTeamId ? summary.homePct : summary.awayPct}%`
-                              : `${home.shortName} ${summary.homePct}% · ${away.shortName} ${summary.awayPct}%`}
-                          </span>
-                        </div>
                         <div className="ai-winner-picks">
                           {orderedPredictions.map((p) => (
                             <span
@@ -381,6 +367,20 @@ export function AiWinnerListScreen({
                               </span>
                             </span>
                           ))}
+                        </div>
+                        <div className="ai-winner-summary">
+                          {summary.isUnanimous ? (
+                            <span className="ai-winner-summary-tag ai-winner-summary-unanimous">🔥 만장일치</span>
+                          ) : summary.isSplit ? (
+                            <span className="ai-winner-summary-tag ai-winner-summary-split">⚔ 의견 분분</span>
+                          ) : (
+                            <span className="ai-winner-summary-tag ai-winner-summary-majority">⚡ 우세</span>
+                          )}
+                          <span className="ai-winner-summary-text">
+                            {summary.dominantTeamId
+                              ? `${getTeam(summary.dominantTeamId).shortName} ${summary.homePct >= 50 && summary.dominantTeamId === g.homeTeamId ? summary.homePct : summary.awayPct}%`
+                              : `${home.shortName} ${summary.homePct}% · ${away.shortName} ${summary.awayPct}%`}
+                          </span>
                         </div>
                       </>
                     ) : null}
