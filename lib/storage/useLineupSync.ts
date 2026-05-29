@@ -53,7 +53,10 @@ type State = {
 };
 
 function mergeByEntryId(local: LineupEntry[], remote: LineupEntry[]): LineupEntry[] {
-  // entryId 기준 merge. 같은 키면 updatedAt 큰 쪽 우선.
+  // entryId 기준 merge. 같은 키면 updatedAt 큰 쪽 우선 + "데이터 적은 쪽으로 회귀 금지" 보호.
+  // 보호: remote가 더 최신이라도 batting/pitching이 local보다 데이터가 "적은" 경우엔 local 신뢰.
+  //   - 모바일 race (race·트리거 차단)로 DB에 stale batting이 남고 updated_at만 갱신된 케이스에서
+  //     local의 정상 데이터가 빈 데이터로 회귀하는 버그 방어용.
   const map = new Map<string, LineupEntry>();
   for (const e of remote) map.set(e.entryId, e);
   for (const e of local) {
@@ -64,7 +67,23 @@ function mergeByEntryId(local: LineupEntry[], remote: LineupEntry[]): LineupEntr
     }
     const localTs = Date.parse(e.updatedAt) || 0;
     const remoteTs = Date.parse(r.updatedAt) || 0;
-    map.set(e.entryId, localTs >= remoteTs ? e : r);
+    const winner = localTs >= remoteTs ? e : r;
+    const loser = winner === e ? r : e;
+    // 회귀 방지 — winner가 remote(=DB)인데 batting/pitching이 local보다 적게 차있으면
+    // local의 데이터 보존(데이터는 local, 메타데이터는 winner의 것 사용).
+    const winnerBat = winner.batting?.slots?.length ?? 0;
+    const loserBat = loser.batting?.slots?.length ?? 0;
+    const winnerPit = winner.pitching?.slots?.filter(Boolean).length ?? 0;
+    const loserPit = loser.pitching?.slots?.filter(Boolean).length ?? 0;
+    if (winnerBat < loserBat || winnerPit < loserPit) {
+      map.set(e.entryId, {
+        ...winner,
+        batting: loserBat > winnerBat ? loser.batting : winner.batting,
+        pitching: loserPit > winnerPit ? loser.pitching : winner.pitching
+      });
+    } else {
+      map.set(e.entryId, winner);
+    }
   }
   // updatedAt 내림차순 (최근 수정 먼저)
   return Array.from(map.values()).sort((a, b) => {
@@ -98,6 +117,9 @@ function writeLastSyncedUserId(userId: string | null): void {
 
 export function useLineupSync() {
   const clientRef = useRef(createSupabaseBrowserClient());
+  // 공개 토글 / 직전 syncedUpsert 진행 중에는 visibilitychange 동기화를 스킵.
+  // (모바일에서 백그라운드 진입 → 복귀 시 race로 DB의 직전 stale 상태가 local을 덮어쓰는 버그 차단)
+  const publishingRef = useRef(false);
   const [state, setState] = useState<State>(() => ({
     entries: loadLineupEntries(),
     status: "loading",
@@ -228,8 +250,12 @@ export function useLineupSync() {
     // 모바일: 백그라운드 → 포그라운드 복귀 시 재동기화.
     // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
     // 여기서 await하면 iOS hang 시 syncOnce가 영원히 실행 안 됨 → 절대 await X.
+    //
+    // ⚠️ publishingRef 진행 중에는 스킵 — togglePublished/syncedUpsert가 끝나기 전에
+    //   동기화하면 DB의 stale 상태(racing UPDATE/UPSERT 사이)가 local을 덮어쓸 수 있다.
     const onVisible = () => {
       if (typeof document === "undefined" || document.visibilityState !== "visible") return;
+      if (publishingRef.current) return;
       void syncOnce();
     };
     if (typeof document !== "undefined") {
@@ -255,13 +281,19 @@ export function useLineupSync() {
       setState((s) => ({ ...s, entries: next }));
       const userId = state.userId;
       if (userId) {
-        void upsertLineup(clientRef.current, entry, userId).then((res) => {
-          if (!res.ok) {
-            setState((s) => ({ ...s, status: "error", errorMessage: res.error }));
-          } else {
-            setState((s) => (s.status === "error" ? s : { ...s, status: "synced" }));
-          }
-        });
+        // DB write 중에는 publishingRef를 잠깐 set → visibilitychange의 동기화가 race 못 들어오게.
+        publishingRef.current = true;
+        void upsertLineup(clientRef.current, entry, userId)
+          .then((res) => {
+            if (!res.ok) {
+              setState((s) => ({ ...s, status: "error", errorMessage: res.error }));
+            } else {
+              setState((s) => (s.status === "error" ? s : { ...s, status: "synced" }));
+            }
+          })
+          .finally(() => {
+            publishingRef.current = false;
+          });
       }
       return next;
     },
@@ -340,8 +372,12 @@ export function useLineupSync() {
       const current = state.entries.find((e) => e.entryId === entryId);
       if (!current) return { ok: false, error: "라인업을 찾을 수 없습니다." };
 
-      // optimistic: localStorage + state 먼저 갱신
-      const optimistic = { ...current, isPublished: nextPublished };
+      publishingRef.current = true;
+      // optimistic: localStorage + state 먼저 갱신.
+      // updatedAt도 함께 새로 찍어 → 이후 sync에서 (혹시 race로) DB updated_at만 newer가 되어도
+      // 차이가 크지 않도록 보호.
+      const now = new Date().toISOString();
+      const optimistic = { ...current, isPublished: nextPublished, updatedAt: now };
       localUpsert(optimistic);
       setState((s) => ({
         ...s,
@@ -358,29 +394,48 @@ export function useLineupSync() {
         }));
       };
 
-      if (nextPublished) {
-        // 공개로 전환: hash 계산 + 중복 사전 체크 + publish
-        const hash = computeLineupHash(current.teamId, current.batting, current.pitching);
-        const dup = await existsOwnerPublishedHash(clientRef.current, userId, hash, entryId);
-        if (dup) {
-          rollback("이미 같은 라인업을 공개했어요");
-          return { ok: false, error: "이미 같은 라인업을 공개했어요" };
+      try {
+        if (nextPublished) {
+          // 공개로 전환: hash 계산 + 중복 사전 체크 + publish (batting/pitching 포함 atomic)
+          const hash = computeLineupHash(current.teamId, current.batting, current.pitching);
+          const dup = await existsOwnerPublishedHash(clientRef.current, userId, hash, entryId);
+          if (dup) {
+            rollback("이미 같은 라인업을 공개했어요");
+            return { ok: false, error: "이미 같은 라인업을 공개했어요" };
+          }
+          // entry 전체(batting/pitching/name)를 함께 atomic 저장.
+          // 직전 syncedUpsert와 race가 나도 DB가 stale batting을 가질 일 없음.
+          const res = await dbPublishLineup(clientRef.current, {
+            entryId,
+            userId,
+            lineupHash: hash,
+            entry: optimistic
+          });
+          if (!res.ok) {
+            const msg = res.code === "duplicate" ? "이미 같은 라인업을 공개했어요" : res.error;
+            rollback(msg);
+            return { ok: false, error: msg };
+          }
+          // DB가 돌려준 최종 row를 localStorage에 반영 (updated_at 등 server-side 값)
+          const finalEntry = rowToEntry(res.row);
+          localUpsert(finalEntry);
+          setState((s) => ({
+            ...s,
+            entries: s.entries.map((e) => (e.entryId === entryId ? finalEntry : e)),
+            status: "synced"
+          }));
+          return { ok: true };
+        } else {
+          // 비공개로 전환: 전적 리셋 + lineup_hash null
+          const res = await dbUnpublishLineup(clientRef.current, { entryId, userId });
+          if (!res.ok) {
+            rollback(res.error);
+            return { ok: false, error: res.error };
+          }
+          return { ok: true };
         }
-        const res = await dbPublishLineup(clientRef.current, { entryId, userId, lineupHash: hash });
-        if (!res.ok) {
-          const msg = res.code === "duplicate" ? "이미 같은 라인업을 공개했어요" : res.error;
-          rollback(msg);
-          return { ok: false, error: msg };
-        }
-        return { ok: true };
-      } else {
-        // 비공개로 전환: 전적 리셋 + lineup_hash null
-        const res = await dbUnpublishLineup(clientRef.current, { entryId, userId });
-        if (!res.ok) {
-          rollback(res.error);
-          return { ok: false, error: res.error };
-        }
-        return { ok: true };
+      } finally {
+        publishingRef.current = false;
       }
     },
     [state.userId, state.entries]

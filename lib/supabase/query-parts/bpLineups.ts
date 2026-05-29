@@ -150,13 +150,22 @@ export async function publishLineup(
     entryId: string;
     userId: string;
     lineupHash: string;
+    /** 공개 시 batting/pitching/name까지 함께 원자적으로 저장.
+     *  이전엔 is_published만 update → 직전 syncedUpsert(fire-and-forget)와 race가 나면
+     *  DB에 stale batting이 남고 sync에서 그게 local을 덮어쓰는 모바일 버그 발생. */
+    entry: LineupEntry;
   }
 ): Promise<{ ok: true; row: BpLineupRow } | { ok: false; error: string; code?: "duplicate" | "unknown" }> {
+  // upsert로 처리 — INSERT 또는 UPDATE 둘 다 자동.
+  // (이전엔 update만 사용해 row가 아직 DB에 없으면 실패했음. 신규 라인업 공개 시 새로 만들어지도록 변경.)
+  const payload = {
+    ...entryToInsert(params.entry, params.userId),
+    is_published: true,
+    lineup_hash: params.lineupHash
+  };
   const { data, error } = await client
     .from(TABLE)
-    .update({ is_published: true, lineup_hash: params.lineupHash })
-    .eq("owner_user_id", params.userId)
-    .eq("entry_id", params.entryId)
+    .upsert(payload, { onConflict: "owner_user_id,entry_id" })
     .select()
     .single();
   if (error || !data) {
