@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { syncGamesInRange } from "@/lib/server/kbo/syncGames";
+import { syncLineupsForDate } from "@/lib/server/kbo/syncLineups";
+import { syncStandings } from "@/lib/server/kbo/syncStandings";
 import { scoreAiPredictionsForRange } from "@/lib/server/kbo/scoreAiPredictions";
 
 export const maxDuration = 60;
@@ -65,14 +67,35 @@ export async function GET(request: NextRequest) {
       aiScoring = { error: (err as Error).message };
     }
 
+    // 라인업 + 순위 통합 sync — scope=week(미래 일정만)에는 스킵.
+    // 각각 try/catch로 격리해서 한 단계 실패해도 다른 단계는 진행.
+    let lineups: Awaited<ReturnType<typeof syncLineupsForDate>> | { error: string } | { skipped: true } = { skipped: true };
+    let standings: Awaited<ReturnType<typeof syncStandings>> | { error: string } | { skipped: true } = { skipped: true };
+    if (scope !== "week") {
+      try {
+        // 어제 종료 경기의 라인업 수집. `from`은 어제(scope=today) 또는 사용자 지정 시작일(scope=range).
+        lineups = await syncLineupsForDate(from);
+      } catch (err) {
+        lineups = { error: (err as Error).message };
+      }
+      try {
+        const season = Number(from.slice(0, 4));
+        standings = await syncStandings(season);
+      } catch (err) {
+        standings = { error: (err as Error).message };
+      }
+    }
+
     // ISR 캐시 무효화 — schedule/홈 페이지가 revalidate 24시간이라
     // cron이 새 결과를 sync해도 캐시 만료 전엔 안 보임. 명시적으로 무효화.
     // 변경 없는 fetch면 굳이 무효화 안 해도 되지만, totals 체크 비용보다 무효화 비용이 더 싸므로 항상 호출.
     revalidatePath("/schedule");
     revalidatePath("/");
     revalidatePath("/predict/ai-winner");
+    revalidatePath("/rankings");
+    revalidatePath("/play/lineup");
 
-    return NextResponse.json({ ok: true, scope, totals, results, aiScoring });
+    return NextResponse.json({ ok: true, scope, totals, results, aiScoring, lineups, standings });
   } catch (err) {
     return NextResponse.json({ ok: false, error: (err as Error).message }, { status: 500 });
   }
