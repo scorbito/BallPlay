@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   getAiOverallStats,
@@ -7,6 +7,7 @@ import {
   type BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
+import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
 
 export const dynamic = "force-dynamic";
@@ -49,10 +50,17 @@ export default async function AiWinnerPredictPage({
 
   const supabase = createSupabaseServerClient();
 
+  // 운영자(admin) 는 09시 공개 전이라도 예측을 미리 볼 수 있어야 함 (컨텐츠 영상 제작용).
+  // RLS 가 published_at <= now() 만 노출하므로 service_role 클라이언트로 우회 fetch.
+  // 일반 유저는 그대로 RLS 적용.
+  const userTier = await getUserTier(supabase);
+  const isAdmin = userTier.tier === "admin";
+  const predictionsClient = isAdmin ? createSupabaseAdminClient() : supabase;
+
   // 선택 날짜의 경기 + 예측 + 시즌 통계 병렬
   const [games, predictionsResult, overallResult, providerResult] = await Promise.all([
     listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
-    listAiPredictionsForDate(supabase, selectedDate),
+    listAiPredictionsForDate(predictionsClient, selectedDate),
     getAiOverallStats(supabase),
     getAiByProviderStats(supabase)
   ]);
@@ -107,6 +115,7 @@ export default async function AiWinnerPredictPage({
       nextGameDate={nextGameDate}
       overallStats={overallResult.ok ? overallResult.stats : { total_count: 0, correct_count: 0, accuracy: null }}
       providerStats={providerResult.ok ? providerResult.rows : []}
+      isAdmin={isAdmin}
     />
   );
 }

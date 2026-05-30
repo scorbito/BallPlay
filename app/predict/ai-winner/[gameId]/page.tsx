@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { listGamesFromDb } from "@/lib/supabase/queries";
+import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { listAiPredictionsForGame } from "@/lib/supabase/query-parts/bpAiPredictions";
+import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 
 export const dynamic = "force-dynamic";
+
+function kstToday(): string {
+  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+}
 
 export default async function AiWinnerRevealPage({ params }: { params: { gameId: string } }) {
   const supabase = createSupabaseServerClient();
@@ -19,9 +24,17 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
 
   if (gameError || !gameRow) notFound();
 
-  // 예측 조회. RLS 에 의해 published_at <= now() 만 노출.
-  const predictionsResult = await listAiPredictionsForGame(supabase, params.gameId);
+  // 운영자(admin) 는 09시 공개 전이라도 예측을 미리 볼 수 있어야 함 (컨텐츠 영상 제작용).
+  // RLS 가 published_at <= now() 만 노출하므로 admin 만 service_role 클라이언트로 우회.
+  const userTier = await getUserTier(supabase);
+  const predictionsClient =
+    userTier.tier === "admin" ? createSupabaseAdminClient() : supabase;
+
+  // 예측 조회. 일반 유저는 RLS 에 의해 published_at <= now() 만 노출.
+  const predictionsResult = await listAiPredictionsForGame(predictionsClient, params.gameId);
   const predictions = predictionsResult.ok ? predictionsResult.rows : [];
+
+  const isToday = gameRow.game_date === kstToday();
 
   return (
     <AiWinnerRevealScreen
@@ -37,6 +50,7 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
         status: gameRow.status
       }}
       predictions={predictions}
+      isToday={isToday}
     />
   );
 }

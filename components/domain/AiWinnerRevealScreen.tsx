@@ -26,6 +26,8 @@ type Props = {
   gameId: string;
   game: GameInfo;
   predictions: BpAiPredictionRow[];
+  /** 오늘 경기인가 — 과거 경기면 연출 없이 즉시 펼친 상태로 노출. */
+  isToday?: boolean;
 };
 
 const AI_LABEL: Record<AiProvider, string> = {
@@ -74,7 +76,7 @@ function summarize(predictions: BpAiPredictionRow[], homeTeamId: string, awayTea
   return { homeVotes, awayVotes, homePct, awayPct: 100 - homePct, majorityTeamId, isUnanimous };
 }
 
-export function AiWinnerRevealScreen({ gameId, game, predictions }: Props) {
+export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true }: Props) {
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
 
@@ -88,10 +90,11 @@ export function AiWinnerRevealScreen({ gameId, game, predictions }: Props) {
   const [visibleStage, setVisibleStage] = useState(0);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
-  // mount 직후 1회 — 이미 본 게임이면 4로 즉시 점프 (SSR-safe: useEffect에서만 localStorage 접근).
+  // mount 직후 1회 — 이미 본 게임이거나 과거 경기면 4로 즉시 점프 (연출 스킵).
+  // (SSR-safe: useEffect에서만 localStorage 접근.)
   useEffect(() => {
-    if (hasSeenBefore(gameId)) setVisibleStage(4);
-  }, [gameId]);
+    if (!isToday || hasSeenBefore(gameId)) setVisibleStage(4);
+  }, [gameId, isToday]);
 
   // 초기 reveal 트리거 — visibleStage가 0이면 800ms 후 1로.
   // Strict mode의 두 번 실행에 안전: cleanup이 timer를 비우고 두 번째 mount가 다시 set.
