@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Play, Pause, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -156,6 +157,140 @@ function HitEffect({ kind }: { kind: "hr" | "hit" }) {
   );
 }
 
+// 안타 발사 이펙트 — fromX,fromY 에서 dx,dy 방향으로 durationMs 동안 날아가는 공.
+// CSS variable 로 좌표 전달, transition end 시 부모가 setFlyingBall(null) 로 제거.
+function FlyingBall({
+  fromX,
+  fromY,
+  dx,
+  dy,
+  durationMs,
+  maxScale,
+  onEnd
+}: {
+  fromX: number;
+  fromY: number;
+  dx: number;
+  dy: number;
+  durationMs: number;
+  maxScale: number;
+  onEnd: () => void;
+}) {
+  // animation 안 도는 케이스 대비 — 명시적 timeout 으로 onEnd 보장.
+  useEffect(() => {
+    const t = window.setTimeout(onEnd, durationMs + 100);
+    console.log("[ball] mount", { fromX, fromY, dx, dy, durationMs, maxScale });
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const style: CSSProperties = {
+    left: `${fromX}px`,
+    top: `${fromY}px`,
+    // CSS variable — keyframes 에서 --ball-dx / --ball-dy / --ball-max-scale 로 읽음.
+    ["--ball-dx" as string]: `${dx}px`,
+    ["--ball-dy" as string]: `${dy}px`,
+    ["--ball-max-scale" as string]: String(maxScale),
+    // longhand 로 명확하게 — shorthand 가 다른 CSS 와 충돌하는 경우 회피.
+    animationName: "stadium-ball-fly",
+    animationDuration: `${durationMs}ms`,
+    // linear — keyframes 의 % 단계가 그대로 시간에 대응. 천천히 시작/가속이 keyframes 로직에 위임.
+    animationTimingFunction: "linear",
+    animationFillMode: "forwards"
+  };
+  return (
+    <div
+      className="stadium-flying-ball"
+      style={style}
+      onAnimationEnd={() => {
+        console.log("[ball] animation end");
+        onEnd();
+      }}
+    >
+      {/* 야구공 SVG — 흰 배경 + 빨간 stitching 두 곡선 (dashed) */}
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="12" cy="12" r="11" fill="#ffffff" stroke="#475569" strokeWidth="0.6" />
+        <path
+          d="M6 5.5 C 7.3 7.5, 8 9.7, 8 12 S 7.3 16.5, 6 18.5"
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+          strokeDasharray="1.6 1.6"
+        />
+        <path
+          d="M18 5.5 C 16.7 7.5, 16 9.7, 16 12 S 16.7 16.5, 18 18.5"
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+          strokeDasharray="1.6 1.6"
+        />
+      </svg>
+    </div>
+  );
+}
+
+// 안타/홈런/타점 이펙트 portal — 타자 row 위치(centerX, centerY) 에 폭죽.
+// HitEffect 자체는 이미 absolute 기준 자식이라 fixed wrapper 안에 배치.
+function HitEffectAtPosition({
+  centerX,
+  centerY,
+  kind,
+  onEnd
+}: {
+  centerX: number;
+  centerY: number;
+  kind: "hit" | "hr";
+  onEnd: () => void;
+}) {
+  // particle animation 이 약 900ms 안에 끝남 — 안전한 fallback timer.
+  useEffect(() => {
+    const t = window.setTimeout(onEnd, 1200);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    // phone-frame-light 클래스 — 기존 .stadium-fx CSS 가 모두 .phone-frame-light prefix 라
+    // portal 로 body 에 띄울 때 부모에 명시해야 스타일 적용됨.
+    <div
+      className="phone-frame-light stadium-fx-portal"
+      style={{ position: "fixed", left: `${centerX}px`, top: `${centerY}px`, pointerEvents: "none", zIndex: 9998 }}
+    >
+      <HitEffect kind={kind} />
+    </div>
+  );
+}
+
+// 삼진 K 효과 — 중계 텍스트(narration) 위치에 큰 빨간 K 가 슬램.
+function StrikeoutEffect({
+  centerX,
+  centerY,
+  durationMs,
+  onEnd
+}: {
+  centerX: number;
+  centerY: number;
+  durationMs: number;
+  onEnd: () => void;
+}) {
+  useEffect(() => {
+    const t = window.setTimeout(onEnd, durationMs + 100);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const style: CSSProperties = {
+    left: `${centerX}px`,
+    top: `${centerY}px`,
+    animationName: "stadium-strikeout-slam",
+    animationDuration: `${durationMs}ms`,
+    animationTimingFunction: "linear",
+    animationFillMode: "forwards"
+  };
+  return (
+    <span className="stadium-strikeout-k" style={style} onAnimationEnd={onEnd}>K</span>
+  );
+}
+
 export function PlayScreen() {
   const router = useRouter();
   const { showToast } = useAppState();
@@ -181,6 +316,35 @@ export function PlayScreen() {
   // 라인업·다이아몬드 상태에서 결과 반영 여부.
   // SITUATION/BATTER phase에선 아직 결과 발표 전이라 라인업에 결과 표시 안 함 (스포 방지).
   const showOutcome = phase !== "BATTER" && phase !== "SITUATION";
+  // 안타 발사 이펙트 — 타자 row 위치 → 위쪽 + 좌우 랜덤 각도로 공이 날아감.
+  // 1B < 2B < 3B < HR(화면 밖). OUTCOME phase 진입 시 trigger.
+  const [flyingBall, setFlyingBall] = useState<{
+    fromX: number;
+    fromY: number;
+    dx: number;
+    dy: number;
+    durationMs: number;
+    maxScale: number;
+    key: number;
+  } | null>(null);
+  // 이벤트별로 한 번만 발사 — phase 변경 시 cursor 가 같으면 중복 발동 방지.
+  const ballFiredForCursorRef = useRef<number>(-1);
+  // 삼진 K 효과 — 중계 텍스트(.stadium-play-narration) 위치에 큰 빨간 K 가 슬램.
+  const [strikeoutEffect, setStrikeoutEffect] = useState<{
+    centerX: number;
+    centerY: number;
+    durationMs: number;
+    key: number;
+  } | null>(null);
+  const strikeoutFiredForCursorRef = useRef<number>(-1);
+  // 안타/홈런/타점 폭죽 이펙트 — 공 출발 위치(타자 row) 에 표시.
+  const [hitFx, setHitFx] = useState<{
+    centerX: number;
+    centerY: number;
+    kind: "hit" | "hr";
+    key: number;
+  } | null>(null);
+  const hitFxFiredForCursorRef = useRef<number>(-1);
 
   // 라이브 매치 모드 — liveStartAt까지 대기 후 진행. 속도/일시정지 컨트롤 잠금.
   const isLive = !!session?.liveMatchId;
@@ -201,9 +365,10 @@ export function PlayScreen() {
     setSession(next);
     setHydrated(true);
 
-    // 라이브 매치(친구 대결) — 일반 모드로 진행 (구버전 liveMode "live"는 무시).
+    // 친구 대결(라이브 매치) — 방장이 선택한 진행 속도(liveMode)로 진행.
+    // 구버전 세션은 liveMode 없을 수 있으므로 기본 'fast'로 폴백.
     if (next.liveMatchId) {
-      setMode("normal");
+      setMode(next.liveMode ?? "fast");
     }
 
     // 카운트다운: startAt이 미래면 그때까지 playing=false
@@ -318,6 +483,19 @@ export function PlayScreen() {
 
     // OUTCOME phase 시간은 타구 결과에 따라 달라짐 — 득점 발생/안타/홈런은 더 길게.
     const currentEvt = cursor > 0 ? events[cursor - 1] : null;
+    // 안타류면 공 날아가는 시간만큼 OUTCOME phase 연장. ballMs 도 modeMul 적용 →
+    // normal 기준의 (1400/1900/2400/2800) 가 fast 에선 절반, superfast 더 짧아짐.
+    const ballMs = (() => {
+      if (!currentEvt || phase !== "OUTCOME") return 0;
+      const o = currentEvt.ab.outcome;
+      if (o === "1B") return 1400;
+      if (o === "2B") return 1900;
+      if (o === "3B") return 2400;
+      if (o === "HR") return 2800;
+      return 0;
+    })();
+    // 삼진 K 효과 시간 — 안타 ball 과 동일하게 modeMul 적용.
+    const strikeoutMs = currentEvt && phase === "OUTCOME" && currentEvt.ab.outcome === "K" ? 1500 : 0;
     const outcomeMs = (() => {
       if (!currentEvt) return 1100;
       const o = currentEvt.ab.outcome;
@@ -336,7 +514,7 @@ export function PlayScreen() {
     > = {
       SITUATION: 1500 * modeMul,
       BATTER: 800 * modeMul,
-      OUTCOME: outcomeMs * modeMul,
+      OUTCOME: (outcomeMs + ballMs + strikeoutMs) * modeMul,
       INNING_END: 1200 * modeMul,
       PITCHER_CHANGE: 1200 * modeMul
     };
@@ -410,6 +588,109 @@ export function PlayScreen() {
 
     return () => window.clearTimeout(handle);
   }, [playing, cursor, events, events.length, mode, hydrated, phase, outcomeStep]);
+
+  // OUTCOME phase 진입 + 안타류일 때 1회 ball 발사 trigger.
+  // 같은 cursor 에서 outcomeStep 변경 등으로 useEffect 가 다시 도는 경우 중복 발사 방지.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "OUTCOME") return;
+    if (ballFiredForCursorRef.current === cursor) return;
+    const evt = cursor > 0 ? events[cursor - 1] : null;
+    if (!evt) {
+      console.log("[ball] no event for cursor", cursor);
+      return;
+    }
+    const o = evt.ab.outcome;
+    if (o !== "1B" && o !== "2B" && o !== "3B" && o !== "HR") {
+      console.log("[ball] not hit:", o);
+      return;
+    }
+
+    // 타자 row DOM 위치 측정
+    const selector = `[data-batter-id="${evt.ab.batterId}"]`;
+    const row = typeof document !== "undefined"
+      ? (document.querySelector(selector) as HTMLElement | null)
+      : null;
+    if (!row) {
+      console.log("[ball] row not found", { batterId: evt.ab.batterId, selector });
+      return;
+    }
+    const rect = row.getBoundingClientRect();
+    const fromX = rect.left + rect.width / 2;
+    const fromY = rect.top + rect.height / 2;
+
+    // 거리: 1B/2B/3B 2배. HR 은 이미 화면 밖이라 그대로. 각도: ±20° 랜덤.
+    const viewportH = typeof window !== "undefined" ? window.innerHeight : 800;
+    const distance = o === "1B" ? 280 : o === "2B" ? 460 : o === "3B" ? 720 : viewportH + 200;
+    // duration 도 진행 모드 따라가도록 modeMul 적용. normal 기준 1400~2800.
+    const ballModeMul =
+      mode === "superfast" ? 0.28 : mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+    const baseDurationMs = o === "1B" ? 1400 : o === "2B" ? 1900 : o === "3B" ? 2400 : 2800;
+    const durationMs = baseDurationMs * ballModeMul;
+    // 정점 scale — 안타 3배, 홈런 4배.
+    const maxScale = o === "HR" ? 4 : 3;
+    const angleDeg = (Math.random() - 0.5) * 40;
+    const rad = (angleDeg * Math.PI) / 180;
+    const dx = Math.sin(rad) * distance;
+    const dy = -Math.cos(rad) * distance;
+
+    console.log("[ball] fire", { outcome: o, fromX, fromY, dx, dy, durationMs, maxScale, mode });
+    ballFiredForCursorRef.current = cursor;
+    setFlyingBall({ fromX, fromY, dx, dy, durationMs, maxScale, key: cursor });
+
+    // 폭죽 이펙트도 같은 위치에 — HR/타점이면 hr 변형, 일반 안타면 hit.
+    if (hitFxFiredForCursorRef.current !== cursor) {
+      hitFxFiredForCursorRef.current = cursor;
+      const fxKind: "hit" | "hr" = o === "HR" || evt.ab.runsScored > 0 ? "hr" : "hit";
+      setHitFx({ centerX: fromX, centerY: fromY, kind: fxKind, key: cursor });
+    }
+  }, [phase, cursor, events, hydrated, mode]);
+
+  // HR / 타점 이펙트가 안타 외 케이스 (땅볼 RBI / SF 등) 에도 발동해야 함.
+  // ball trigger 는 안타류만 발사하니, 그 외 득점 케이스를 별도로 잡음.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "OUTCOME") return;
+    if (hitFxFiredForCursorRef.current === cursor) return;
+    const evt = cursor > 0 ? events[cursor - 1] : null;
+    if (!evt) return;
+    const o = evt.ab.outcome;
+    // 안타류는 위의 useEffect 에서 처리. 여기는 안타 아닌데 득점만 있는 케이스.
+    if (o === "1B" || o === "2B" || o === "3B" || o === "HR") return;
+    if (evt.ab.runsScored <= 0) return;
+
+    // 타자 row 위치
+    const row = typeof document !== "undefined"
+      ? (document.querySelector(`[data-batter-id="${evt.ab.batterId}"]`) as HTMLElement | null)
+      : null;
+    if (!row) return;
+    const rect = row.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    hitFxFiredForCursorRef.current = cursor;
+    setHitFx({ centerX, centerY, kind: "hr", key: cursor });
+  }, [phase, cursor, events, hydrated]);
+
+  // 삼진 K 효과 trigger — OUTCOME 진입 + outcome === "K". 위치는 중계 텍스트(narration) 중심.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "OUTCOME") return;
+    if (strikeoutFiredForCursorRef.current === cursor) return;
+    const evt = cursor > 0 ? events[cursor - 1] : null;
+    if (!evt || evt.ab.outcome !== "K") return;
+    const narrationEl = typeof document !== "undefined"
+      ? (document.querySelector(".stadium-play-narration") as HTMLElement | null)
+      : null;
+    if (!narrationEl) return;
+    const rect = narrationEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const ballModeMul =
+      mode === "superfast" ? 0.28 : mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+    const durationMs = 1500 * ballModeMul;
+    strikeoutFiredForCursorRef.current = cursor;
+    setStrikeoutEffect({ centerX, centerY, durationMs, key: cursor });
+  }, [phase, cursor, events, hydrated, mode]);
 
   // 경기 종료 시 자동 저장 — public/friend 매치만, 정식 계정만, 재생 모드 제외.
   // ResultScreen에 들어가지 않아도(예: 도중 이탈) 결과는 DB에 남음.
@@ -759,6 +1040,7 @@ export function PlayScreen() {
       <li
         key={batter.playerId}
         className={`stadium-play-lineup-row ${isCurrent ? "is-current" : ""}`}
+        data-batter-id={batter.playerId}
       >
         <span className="stadium-play-lineup-order">{idx + 1}</span>
         <span className="stadium-play-lineup-name">
@@ -849,16 +1131,9 @@ export function PlayScreen() {
         </header>
 
         {/* 3. 1줄 상황판 — 타석 진행/공수교대/투수교체/타석 결과 등 모든 진행 알림.
-            타격 이펙트(폭죽)도 이 박스 중앙에서 터짐. */}
+            타격 이펙트(폭죽)는 공 출발 위치(타자 row) 에 portal 로 표시 — 별도 위치. */}
         <div className={`stadium-play-narration is-${narration.variant}`}>
           <span>{narration.text}</span>
-          {phase === "OUTCOME" && latest ? (
-            latest.ab.outcome === "HR" || latest.ab.runsScored > 0 ? (
-              <HitEffect key={`fx-${cursor}-hr`} kind="hr" />
-            ) : latest.ab.outcome === "1B" || latest.ab.outcome === "2B" || latest.ab.outcome === "3B" ? (
-              <HitEffect key={`fx-${cursor}-hit`} kind="hit" />
-            ) : null
-          ) : null}
         </div>
 
         {/* 4. 양 팀 라인업 — 진행 중엔 공격팀이 크게, 종료 시엔 1:1 박스스코어 모드 */}
@@ -963,6 +1238,45 @@ export function PlayScreen() {
         </footer>
       </section>
 
+      {flyingBall && typeof document !== "undefined"
+        ? createPortal(
+            <FlyingBall
+              key={flyingBall.key}
+              fromX={flyingBall.fromX}
+              fromY={flyingBall.fromY}
+              dx={flyingBall.dx}
+              dy={flyingBall.dy}
+              durationMs={flyingBall.durationMs}
+              maxScale={flyingBall.maxScale}
+              onEnd={() => setFlyingBall(null)}
+            />,
+            document.body
+          )
+        : null}
+      {strikeoutEffect && typeof document !== "undefined"
+        ? createPortal(
+            <StrikeoutEffect
+              key={strikeoutEffect.key}
+              centerX={strikeoutEffect.centerX}
+              centerY={strikeoutEffect.centerY}
+              durationMs={strikeoutEffect.durationMs}
+              onEnd={() => setStrikeoutEffect(null)}
+            />,
+            document.body
+          )
+        : null}
+      {hitFx && typeof document !== "undefined"
+        ? createPortal(
+            <HitEffectAtPosition
+              key={hitFx.key}
+              centerX={hitFx.centerX}
+              centerY={hitFx.centerY}
+              kind={hitFx.kind}
+              onEnd={() => setHitFx(null)}
+            />,
+            document.body
+          )
+        : null}
     </AppShell>
   );
 }

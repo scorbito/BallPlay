@@ -20,7 +20,7 @@ export type MatchSession = {
   // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
   liveMatchId?: string;
   liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행
-  liveMode?: "normal" | "live"; // 매치 생성자가 선택한 진행 모드. 양쪽 클라이언트 동일.
+  liveMode?: "fast" | "normal" | "live"; // 매치 생성자가 선택한 진행 모드. 양쪽 클라이언트 동일.
   // 친구 대전이면 사용자 측 (home/away) — 기록 저장 시 user_side로 사용.
   userSide?: "home" | "away";
   // 등록된 라인업(bp_lineups.id status='registered') ID — 매치 종료 시 라인업 전적 집계에 사용.

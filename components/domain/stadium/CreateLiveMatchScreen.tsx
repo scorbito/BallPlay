@@ -13,7 +13,7 @@ import { buildSharedTeamFromEntry } from "@/lib/sim/matchShare";
 import { generateSeed } from "@/lib/sim/matchSession";
 import { getOrCreateGuestId } from "@/lib/sim/guestId";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { createMatch } from "@/lib/supabase/query-parts/bpMatches";
+import { createMatch, type BpMatchMode } from "@/lib/supabase/query-parts/bpMatches";
 
 // "친구와 대결" — 내 라인업으로 매치 생성 → invite_code 발급 → /stadium/live/[code] 이동
 // 호스트는 home 슬롯 고정 (단순화).
@@ -23,6 +23,8 @@ export function CreateLiveMatchScreen() {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  // 진행 속도 — 방장이 선택. 양쪽 클라이언트 동일하게 진행. 기본 fast(빠른).
+  const [mode, setMode] = useState<BpMatchMode>("fast");
 
   useEffect(() => {
     const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
@@ -64,7 +66,7 @@ export function CreateLiveMatchScreen() {
       guestId,
       team: shared.team,
       seed,
-      mode: "normal"
+      mode
     });
 
     if (!result.ok) {
@@ -121,6 +123,29 @@ export function CreateLiveMatchScreen() {
             </Link>
           </div>
         )}
+
+        <div className="stadium-live-speed">
+          <span className="stadium-live-speed-label">진행 속도</span>
+          <div className="stadium-live-speed-row" role="radiogroup" aria-label="진행 속도">
+            {([
+              { value: "live" as const, label: "중계" },
+              { value: "normal" as const, label: "보통" },
+              { value: "fast" as const, label: "빠른" }
+            ]).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={mode === opt.value}
+                className={`stadium-live-speed-item ${mode === opt.value ? "is-active" : ""}`}
+                onClick={() => setMode(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="stadium-live-speed-hint">방장이 선택한 속도로 양쪽 동일하게 진행돼요.</p>
+        </div>
 
         <div className="stadium-live-rules">
           <Users size={14} />

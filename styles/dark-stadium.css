@@ -3,6 +3,7 @@
  * 로비 → 입장 → 시뮬레이션 → 결과
  * ============================================================ */
 
+
 .phone-frame-light .stadium-h1 {
   margin: 0 0 4px;
   font-size: 22px;
@@ -752,6 +753,58 @@
   font-size: 12px;
 }
 
+/* 진행 속도 선택 — 빠른/보통/중계 라디오 그룹 */
+.phone-frame-light .stadium-live-speed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .stadium-live-speed-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .stadium-live-speed-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.phone-frame-light .stadium-live-speed-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bp-text);
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-light .stadium-live-speed-item:hover {
+  background: rgba(232, 74, 138, 0.06);
+}
+
+.phone-frame-light .stadium-live-speed-item.is-active {
+  background: var(--bp-accent);
+  border-color: var(--bp-accent);
+  color: #ffffff;
+}
+
+.phone-frame-light .stadium-live-speed-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.2px;
+}
+
 .phone-frame-light .stadium-live-rules svg {
   color: var(--bp-accent);
   flex-shrink: 0;
@@ -1347,16 +1400,115 @@
   margin-left: -9px;
 }
 .phone-frame-light .stadium-base-3rd {
-  top: 35%;
-  left: 16%;
+  top: 36%;
+  left: 20%;
 }
 .phone-frame-light .stadium-base-1st {
-  top: 35%;
-  right: 16%;
+  top: 36%;
+  right: 19%;
 }
 .phone-frame-light .stadium-base-home {
   /* 홈은 일러스트의 홈플레이트가 이미 표시되므로 표시 안 함 (주자 표시 없음) */
   display: none;
+}
+
+/* ============================================================
+ * 안타 발사 이펙트 — 타자 row 위치에서 위쪽 + 좌우 랜덤 각도로 공이 날아감.
+ * 시작: (left, top) = (fromX, fromY). transform translate(-50%,-50%) 로 마커 중심 맞춤.
+ * 끝: 추가 translate(--ball-dx, --ball-dy) 적용. dx/dy 는 부모 컴포넌트 inline style 로 주입.
+ * ============================================================ */
+.stadium-flying-ball {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 9999;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+  /* animation 은 inline style 의 longhand 로 주입 — duration 이 동적 */
+}
+
+.stadium-flying-ball svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ============================================================
+ * 삼진 K 효과 — 중계 텍스트(narration) 위치에 큰 빨간 K 가 슬램
+ * ============================================================ */
+.stadium-strikeout-k {
+  position: fixed;
+  /* left/top 은 inline style 로 narration 중심 좌표 주입.
+     transform 으로 -50%, -50% 해서 K 의 중심이 그 좌표에 오도록. */
+  font-size: 120px;
+  font-weight: 900;
+  color: #dc2626;
+  text-shadow:
+    0 0 16px rgba(220, 38, 38, 0.55),
+    0 0 36px rgba(220, 38, 38, 0.35),
+    0 4px 14px rgba(0, 0, 0, 0.55);
+  letter-spacing: -6px;
+  -webkit-text-stroke: 1.5px rgba(20, 30, 50, 0.6);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  /* 시스템 기본 두꺼운 sans-serif */
+  font-family: Impact, "Arial Black", sans-serif;
+  z-index: 9999;
+}
+
+@keyframes stadium-strikeout-slam {
+  /* translate(-50%, -50%) 로 K 중심을 inline left/top 좌표에 맞춤. 그 후 scale/rotate. */
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(6) rotate(-25deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.6) rotate(-6deg);
+  }
+  /* SLAM! 살짝 작아졌다가 다시 튕김 (impact bounce) */
+  28% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.85) rotate(3deg);
+  }
+  38% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15) rotate(0deg);
+  }
+  /* 박힌 상태 유지 */
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  /* 페이드아웃 */
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.1) rotate(0deg);
+  }
+}
+
+@keyframes stadium-ball-fly {
+  /* 0%: 시작점 — 원 크기 */
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1) rotate(0deg);
+  }
+  /* 50%: 비행 정점 — 가장 크게 부풀어 "공이 떴다" 느낌 (안타 3배 / 홈런 4배) */
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--ball-dx) * 0.5), calc(var(--ball-dy) * 0.5)) scale(var(--ball-max-scale)) rotate(360deg);
+  }
+  /* 95%: 도착점 직전 — 다시 원 크기로 */
+  95% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--ball-dx) * 0.95), calc(var(--ball-dy) * 0.95)) scale(1) rotate(720deg);
+  }
+  /* 100%: 도착점에서 페이드아웃 */
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--ball-dx), var(--ball-dy)) scale(1) rotate(720deg);
+  }
 }
 
 /* 아웃카운트 점 */

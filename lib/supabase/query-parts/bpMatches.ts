@@ -9,7 +9,7 @@ import type { SharedTeam } from "@/lib/sim/matchShare";
 export type BpMatchStatus = "pending" | "ready" | "playing" | "finished" | "cancelled";
 
 // DB row 1:1 매핑 (snake_case 그대로)
-export type BpMatchMode = "normal" | "live";
+export type BpMatchMode = "fast" | "normal" | "live";
 
 export type BpMatchRow = {
   id: string;
@@ -44,7 +44,7 @@ export type CreateMatchInput = {
   guestId: string;            // localStorage 게스트 ID (auth와 별개)
   team: SharedTeam;           // 생성자 라인업 스냅샷
   seed: number;
-  mode?: BpMatchMode;         // 진행 모드 (디폴트 'live')
+  mode?: BpMatchMode;         // 진행 모드 (디폴트 'fast')
 };
 
 export async function createMatch(
@@ -63,7 +63,7 @@ export async function createMatch(
     seed: input.seed,
     engine_version: SIM_ENGINE_VERSION,
     stats_snapshot_date: getStatsSnapshotDate(),
-    mode: input.mode ?? "live",
+    mode: input.mode ?? "fast",
     away_team_id: input.ownerSide === "away" ? input.team.t : null,
     home_team_id: input.ownerSide === "home" ? input.team.t : null,
     away_lineup_snapshot: input.ownerSide === "away" ? input.team : null,
