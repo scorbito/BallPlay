@@ -173,6 +173,13 @@ export function VideosScreen() {
       return;
     }
     setVideos(res.rows);
+    // 홈 펄스 뱃지용 — 페이지 진입 시점 기준으로 viewed 마킹.
+    // 이후 추가된 영상의 created_at > 이 시각 ⇒ 다시 뱃지 표시.
+    try {
+      window.localStorage.setItem("ballplay:videos:lastViewedAt", new Date().toISOString());
+    } catch {
+      // ignore storage errors
+    }
   }, []);
 
   useEffect(() => {

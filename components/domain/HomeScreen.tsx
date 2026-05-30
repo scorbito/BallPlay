@@ -19,8 +19,10 @@ import {
   Users
 } from "lucide-react";
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
+import { HomeCardPulse } from "@/components/domain/HomeCardPulse";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { getLatestNoticePublishedAt } from "@/lib/supabase/query-parts/notices";
+import { getHomeBadgeServerData } from "@/lib/server/homeBadges";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -252,7 +254,10 @@ export async function HomeScreen() {
   // 정적 카드 그리드만 렌더하는 Server Component. 인터랙티브 영역(공지 빨간점)은
   // NoticeButton client island가 담당 → 홈 진입 시 클라이언트 JS/hydration 최소화.
   // 최신 공지 시각을 서버에서 받아 client 배지 판정에 넘긴다.
-  const latestNoticeAt = await getLatestNoticePublishedAt();
+  const [latestNoticeAt, badgeData] = await Promise.all([
+    getLatestNoticePublishedAt(),
+    getHomeBadgeServerData()
+  ]);
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
       <header className="play-hub-header">
@@ -363,6 +368,9 @@ export async function HomeScreen() {
                 external={card.external}
                 badge={card.badge}
               />
+              {card.available && !card.external ? (
+                <HomeCardPulse cardId={card.id} data={badgeData} />
+              ) : null}
             </div>
           );
         };

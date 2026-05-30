@@ -3,7 +3,7 @@
 // 야구 뉴스 화면 — 날짜·제목 리스트, 클릭 시 기사 링크(새 탭).
 // 팀 필터 칩으로 클라이언트 필터 (서버 재요청 없이 즉시).
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, Newspaper } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TEAM_FILTER_OPTIONS, titleMatchesTeam } from "@/lib/news/teamFilter";
@@ -30,6 +30,16 @@ function formatDate(iso: string | null): string {
 
 export function NewsScreen({ news }: { news: BpNewsRow[] }) {
   const [team, setTeam] = useState<string | null>(null);
+
+  // 홈 펄스 뱃지용 — 페이지 진입 시점 기준으로 viewed 마킹.
+  // 이후 게시된 뉴스의 published_at > 이 시각 ⇒ 다시 뱃지 표시.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("ballplay:news:lastViewedAt", new Date().toISOString());
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
 
   const filtered = useMemo(() => {
     if (!team) return news;

@@ -38,6 +38,8 @@ type Props = {
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
   overallStats: AiOverallStats;
   providerStats: AiProviderStats[];
+  /** 운영자는 09시 공개 전이라도 잠금 해제 (컨텐츠 영상 제작용). */
+  isAdmin?: boolean;
 };
 
 const AI_LABEL: Record<AiProvider, string> = {
@@ -132,12 +134,26 @@ export function AiWinnerListScreen({
   games,
   nextGameDate,
   overallStats,
-  providerStats
+  providerStats,
+  isAdmin = false
 }: Props) {
   const countdown = useCountdown(publishAtISO);
   // 클라이언트 hydration 후 시간 계산 (SSR 미스매치 회피)
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+
+  // 홈 펄스 뱃지용 — 오늘자 AI 예측 페이지 진입 시 viewed 마킹.
+  // 09시 공개 전이거나 예측이 0건이면 마킹 안 함 (그땐 어차피 뱃지 안 떠야 함).
+  useEffect(() => {
+    if (!isToday || !countdown.isPast) return;
+    const hasAny = games.some((g) => g.predictions.length > 0);
+    if (!hasAny) return;
+    try {
+      window.localStorage.setItem("ballplay:ai-predict:lastViewedDate", selectedDate);
+    } catch {
+      // ignore storage errors
+    }
+  }, [isToday, countdown.isPast, games, selectedDate]);
 
   // 한 번이라도 reveal 페이지에서 본 게임 id 집합. hydration 후에만 채움 (SSR 안전).
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
@@ -155,8 +171,9 @@ export function AiWinnerListScreen({
     setSeenIds(next);
   }, [games]);
 
-  // 09:00 도달 전: 모든 경기가 잠금 상태
-  const isBeforePublish = hydrated && !countdown.isPast;
+  // 09:00 도달 전: 모든 경기가 잠금 상태.
+  // 운영자(admin) 는 잠금 해제 — 컨텐츠 영상 사전 제작용으로 예측을 미리 봐야 함.
+  const isBeforePublish = hydrated && !countdown.isPast && !isAdmin;
 
   const providerByName = useMemo(() => {
     const map = new Map<AiProvider, AiProviderStats>();
@@ -264,7 +281,10 @@ export function AiWinnerListScreen({
                 const summary = summarize(g.predictions, g.homeTeamId, g.awayTeamId);
                 // 사용자가 이 게임의 reveal 페이지를 한 번이라도 본 적 있는가
                 // 안 봤으면 합의/픽/적중 미리보기를 숨겨서 클릭 동기 유발.
+                // ⚠️ 미스터리 연출은 "오늘 첫 reveal"에만 의미 있음. 과거 날짜 경기는
+                //    적중 결과 확인이 목적이므로 무조건 펼친 상태로 노출.
                 const hasSeenReveal = seenIds.has(g.id);
+                const effectiveSeen = hasSeenReveal || !isToday;
 
                 // 카드 상태:
                 //   1) 09시 전 + 예측 없음 → 잠금 카운트다운
@@ -274,10 +294,10 @@ export function AiWinnerListScreen({
                 //   3') 경기 종료 + 봤음 → 점수 + 적중 노출
                 //   4) 그 외 (예측 없는데 09시 지남) → "예측 준비 중"
                 const showLocked = isBeforePublish && !hasPredictions;
-                const showOpenTeaser = hasPredictions && !finished && !hasSeenReveal;
-                const showOpenRevealed = hasPredictions && !finished && hasSeenReveal;
-                const showFinishedTeaser = finished && hasPredictions && !hasSeenReveal;
-                const showFinishedRevealed = finished && hasSeenReveal;
+                const showOpenTeaser = hasPredictions && !finished && !effectiveSeen;
+                const showOpenRevealed = hasPredictions && !finished && effectiveSeen;
+                const showFinishedTeaser = finished && hasPredictions && !effectiveSeen;
+                const showFinishedRevealed = finished && effectiveSeen;
                 // "예측 준비 중"은 오늘만 의미 있음. 과거 날짜(우천취소·예측 누락 등)에선
                 // 별도 메시지 없이 카드를 그대로 둔다 — 결과(점수) 만 보이거나 빈 카드.
                 const showPending = isToday

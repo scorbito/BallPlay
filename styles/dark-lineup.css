@@ -837,6 +837,59 @@
   z-index: 2;
 }
 
+/* 펄스 CTA 점 — 좌상단. 사용자에게 메뉴 클릭 유도.
+   - 기본: 그라데이션 점 + 바깥쪽 ring 펄스 애니메이션 (눈에 띔).
+   - .play-hub-card-pulse-soft: stadium 카드용 — 항상 떠있어 더 조용하게(불투명도/주기 둔화). */
+.phone-frame-light .play-hub-card-pulse {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #ff6ea8 0%, #e84a8a 55%, #b9266a 100%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 1px 3px rgba(184, 38, 106, 0.35);
+  z-index: 3;
+  pointer-events: none;
+}
+.phone-frame-light .play-hub-card-pulse::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.45);
+  animation: play-hub-pulse-ring 1.8s ease-out infinite;
+  z-index: -1;
+}
+.phone-frame-light .play-hub-card-pulse-soft {
+  background: radial-gradient(circle at 35% 30%, #7be39a 0%, #2eb86a 55%, #1f8a4f 100%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 1px 3px rgba(31, 138, 79, 0.3);
+  opacity: 0.9;
+}
+.phone-frame-light .play-hub-card-pulse-soft::before {
+  background: rgba(46, 184, 106, 0.35);
+  animation-duration: 2.6s;
+}
+@keyframes play-hub-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-light .play-hub-card-pulse::before {
+    animation: none;
+  }
+}
+
 /* 추천 카드 우상단 코너 행 — ★추천 배지 + !버튼을 가로로 나란히 배치 */
 .phone-frame-light .play-hub-card-corner-row {
   position: absolute;
