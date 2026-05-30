@@ -159,8 +159,13 @@ export function WinnerPredictScreen({
     () => editableGames.filter((g) => !predictions[g.id]).length,
     [editableGames, predictions]
   );
+  const pickedCount = useMemo(
+    () => editableGames.filter((g) => predictions[g.id]).length,
+    [editableGames, predictions]
+  );
   const hasAnyEditable = editableGames.length > 0;
-  const canSubmit = hasAnyEditable && unselectedCount === 0 && !locking;
+  // 1경기라도 픽했으면 완료 가능. 나머지는 picked만 처리됨.
+  const canSubmit = hasAnyEditable && pickedCount > 0 && !locking;
   const allLockedToday = games.length > 0 && games.every((g) => g.status !== "scheduled" || lockedMap[g.id]);
 
   const handlePick = useCallback(
@@ -463,9 +468,9 @@ export function WinnerPredictScreen({
               >
                 {locking
                   ? "잠그는 중..."
-                  : unselectedCount > 0
-                  ? `${unselectedCount}경기 선택 필요`
-                  : `예측 완료 (${editableGames.length}경기)`}
+                  : pickedCount === 0
+                  ? "경기를 1개 이상 선택"
+                  : `예측 완료 (${pickedCount}경기)`}
               </button>
               <p className="predict-submit-hint">완료 후에는 수정할 수 없어요</p>
             </div>

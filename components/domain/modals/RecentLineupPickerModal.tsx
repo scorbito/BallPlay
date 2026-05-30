@@ -42,39 +42,33 @@ export function RecentLineupPickerModal({ open, teamId, onClose, onPick }: Props
     const fetchOnce = () => listRecentLineupsForTeam(client, teamId, 10);
 
     (async () => {
-      // 1) DB 조회
+      // 1) DB 즉시 조회 — 있으면 바로 표시 (progressive).
       const res = await fetchOnce();
       if (cancelled) return;
-      if (!res.ok) {
-        setError(res.error);
-        setLoading(false);
-        return;
-      }
-      if (res.rows.length > 0) {
+      if (res.ok) {
         setRows(res.rows);
-        setLoading(false);
-        return;
+      } else {
+        setError(res.error);
       }
+      setLoading(false);
 
-      // 2) DB 비어있음 — KBO 라인업 sync 1회 시도 (서버 throttle 30분으로 보호).
+      // 2) 항상 백그라운드 sync 시도. 어제 경기 라인업이 DB 에 없을 수 있어서
+      //    초기 표시 데이터가 있어도 최신 sync 시도. 서버 throttle 30분으로 KBO 호출 부담 없음.
       setSyncing(true);
       try {
-        await fetch("/api/lineup/sync-recent", { method: "POST" });
+        const syncRes = await fetch("/api/lineup/sync-recent", { method: "POST" });
+        if (cancelled) return;
+        const syncJson = await syncRes.json().catch(() => null);
+        // sync 가 실제로 실행된 경우(=throttle 미적용)만 재조회. throttle hit 면 갱신 의미 없음.
+        if (syncJson?.result?.ran && !cancelled) {
+          const res2 = await fetchOnce();
+          if (cancelled) return;
+          if (res2.ok) setRows(res2.rows);
+        }
       } catch {
-        // 네트워크 실패 → 그냥 빈 결과로 마무리
+        // 네트워크 실패 — 기존 표시 데이터 유지
       }
-      if (cancelled) return;
-
-      // 3) sync 후 재조회
-      const res2 = await fetchOnce();
-      if (cancelled) return;
-      if (res2.ok) {
-        setRows(res2.rows);
-      } else {
-        setError(res2.error);
-      }
-      setSyncing(false);
-      setLoading(false);
+      if (!cancelled) setSyncing(false);
     })();
 
     return () => {
