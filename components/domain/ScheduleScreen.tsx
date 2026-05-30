@@ -61,9 +61,34 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   const searchParams = useSearchParams();
   const today = new Date();
 
-  const [selectedTeamId, setSelectedTeamId] = useState(profile.mainTeamId);
+  // 일정 페이지의 팀 선택은 localStorage 에 고정. 새로 진입해도 직전 선택이 유지.
+  // 응원팀과 별개라 마이페이지의 mainTeamId 와는 분리.
+  const STORAGE_KEY = "ballplay:schedule:selected-team";
+  const [selectedTeamId, setSelectedTeamIdState] = useState(profile.mainTeamId);
   const [teamMenuOpen, setTeamMenuOpen] = useState(false);
   const teamPickerRef = useRef<HTMLDivElement | null>(null);
+
+  // SSR hydration mismatch 방지 — mount 후 localStorage 값을 한 번 적용.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved && teams.some((t) => t.id === saved)) {
+        setSelectedTeamIdState(saved);
+      }
+    } catch {
+      // localStorage 접근 실패 (시크릿 모드 등) → 무시
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setSelectedTeamId = (id: string) => {
+    setSelectedTeamIdState(id);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, id);
+    } catch {
+      // ignore
+    }
+  };
 
   // "오늘 경기 결과" 메뉴에서 진입 시 자동으로 오늘 날짜 선택 + 하단 일정 카드로 스크롤
   const dayCardRef = useRef<HTMLElement | null>(null);
