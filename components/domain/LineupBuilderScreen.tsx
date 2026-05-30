@@ -276,12 +276,23 @@ export function LineupBuilderScreen() {
     setHydratedEntryId(currentEntry.entryId);
   }, [currentEntry?.entryId]);
 
-  // 타자 라인업 변경 → 현재 entry의 batting 업데이트 + 저장. 복원 완료 전엔 skip.
+  // 타자/투수 라인업 변경 → 현재 entry 업데이트 + 저장. 복원 완료 전엔 skip.
   // 공개 상태면 DB trigger가 변경을 막으므로 저장 시도 자체 skip.
+  //
+  // ⚠️ batter/pitcher를 하나의 effect로 묶음 (이전엔 2개로 분리).
+  //    applyRecentLineup처럼 setSlots + setPitcherSlots를 동시에 부르면
+  //    두 effect가 같은 render에 실행되면서 둘 다 stale closure currentEntry를
+  //    spread해서 두 번째 write가 첫 번째 write의 필드를 덮어쓰는 race가 발생함.
+  //    (구체적으로: batter effect가 batting=9를 쓴 직후, pitcher effect가
+  //     batting=stale-empty를 다시 써서 batting이 비어버림 → 그 상태에서 공개되면
+  //     DB에도 빈 batting 저장됨.)
+  //    하나의 effect로 합쳐 batter+pitcher 양쪽 모두 live state에서 동시에 읽고
+  //    한 번에 write → 어떤 setter 조합이든 race 차단.
   useEffect(() => {
     if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
     if (currentEntry.isPublished) return;
     const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
+    const hasAnyPitcher = pitcherSlots.some(Boolean);
     const now = new Date().toISOString();
     const updated: LineupEntry = {
       ...currentEntry,
@@ -291,6 +302,9 @@ export function LineupBuilderScreen() {
         useDH,
         updatedAt: now
       },
+      pitching: hasAnyPitcher
+        ? { teamId: currentEntry.teamId, slots: pitcherSlots, updatedAt: now }
+        : null,
       updatedAt: now
     };
     // 타선 9명 완성됐을 때만 DB 동기화. 미완성은 localStorage만 (호출 빈도 감소).
@@ -300,32 +314,8 @@ export function LineupBuilderScreen() {
     } else {
       localUpsertEntry(updated);
     }
-  }, [slots, useDH, hydratedEntryId]); // currentEntry/syncedUpsert는 의도적으로 deps 제외 (id로 추적)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-
-  // 투수 라인업 변경 → 현재 entry의 pitching 업데이트 + 저장.
-  // 타선이 9명일 때만 DB sync. 타선 미완성이면 localStorage만.
-  // 공개 상태면 변경 차단.
-  useEffect(() => {
-    if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
-    if (currentEntry.isPublished) return;
-    const hasAny = pitcherSlots.some(Boolean);
-    const now = new Date().toISOString();
-    const updated: LineupEntry = {
-      ...currentEntry,
-      pitching: hasAny
-        ? { teamId: currentEntry.teamId, slots: pitcherSlots, updatedAt: now }
-        : null,
-      updatedAt: now
-    };
-    const batterFilled = (currentEntry.batting?.slots?.length ?? 0) === 9;
-    if (batterFilled) {
-      syncedUpsert(updated);
-    } else {
-      localUpsertEntry(updated);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pitcherSlots, hydratedEntryId]);
+  }, [slots, pitcherSlots, useDH, hydratedEntryId]);
 
   // 모드별 배치된 선수 ID 집합 — 중복 방지에 사용
   const placedPlayerIds = useMemo(() => {
