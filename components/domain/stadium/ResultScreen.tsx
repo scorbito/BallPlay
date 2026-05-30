@@ -193,15 +193,26 @@ export function ResultScreen() {
 
   const handleRematch = () => {
     const newSeed = generateSeed();
-    saveMatchSession({
+    // 공개 매치(public)는 재대결 시에도 source/userSide/lineup ids/opponentNickname 유지
+    // → 새 record 가 정상 저장되어 라인업 전적 누적.
+    // friend(실시간 친구 대전)는 1회성이라 재대결 시 AI 로 폴백.
+    // savedRecordId 는 의도적으로 미복사 — 새 매치이므로 새 record id 받아야 함.
+    const isPublic = session.source === "public";
+    const next: MatchSession = {
       myTeamId: session.myTeamId,
       opponentTeamId: session.opponentTeamId,
       seed: newSeed,
       input: session.input,
       startedAt: new Date().toISOString(),
-      // 재대결은 항상 AI 처리 (친구/공개 매칭 재대결은 별도 흐름 필요)
-      source: "ai"
-    });
+      source: isPublic ? "public" : "ai"
+    };
+    if (isPublic) {
+      next.userSide = session.userSide;
+      next.myLineupId = session.myLineupId;
+      next.opponentLineupId = session.opponentLineupId;
+      next.opponentNickname = session.opponentNickname;
+    }
+    saveMatchSession(next);
     router.push("/stadium/play");
   };
 
