@@ -71,13 +71,24 @@ export async function listVideos(
   client: SupabaseClient,
   limit: number = 50
 ): Promise<{ ok: true; rows: BpVideoWithOwnerRow[] } | { ok: false; error: string }> {
+  // 1차로 created_at 기준으로 limit*1.5만큼 가져오고 (큐레이션·유저 업로드 둘 다 포함),
+  // 클라에서 effective_time = published_at ?? created_at 기준으로 재정렬해 상위 limit개 사용.
+  // 큐레이션 영상은 published_at(YouTube 발행 시각) 기준으로 정렬되어 최신 발행이 위로 오고,
+  // 유저 업로드(published_at null)는 created_at 기준으로 자연히 함께 뒤섞임.
+  const fetchSize = Math.max(limit, Math.ceil(limit * 1.5));
   const { data, error } = await client
     .from(TABLE)
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(fetchSize);
   if (error) return { ok: false, error: error.message };
-  const rows = (data ?? []) as BpVideoRow[];
+  const allRows = (data ?? []) as BpVideoRow[];
+  const sorted = [...allRows].sort((a, b) => {
+    const ta = new Date(a.published_at ?? a.created_at).getTime();
+    const tb = new Date(b.published_at ?? b.created_at).getTime();
+    return tb - ta;
+  });
+  const rows = sorted.slice(0, limit);
 
   // 닉네임 별도 fetch — profiles join은 FK 이슈 가능성으로 분리
   const ownerIds = Array.from(new Set(rows.map((r) => r.owner_user_id)));

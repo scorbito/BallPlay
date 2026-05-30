@@ -22,7 +22,7 @@ const MIN_VIEW_COUNT = 10_000;
 const MAX_AGE_DAYS = 60;
 const MIN_DURATION_SEC = 10;
 const MAX_DURATION_SEC = 1800;
-const MAX_VERTICAL_PER_RUN = 12;
+const MAX_VERTICAL_PER_RUN = 30;
 const MAX_HORIZONTAL_PER_RUN = 3;
 const DB_LOOKUP_CHUNK_SIZE = 100;
 
@@ -187,9 +187,15 @@ async function listExistingVideoKeys(rows) {
 }
 
 function pickRows(rows, orientation, limit) {
+  // 검색 풀은 조회수 기준(품질 필터 역할)으로 가져왔고, 최종 선정은 최신 발행순.
+  // published_at 없는 행은 맨 뒤로.
   return rows
     .filter((row) => row.orientation === orientation)
-    .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
+    .sort((a, b) => {
+      const ta = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const tb = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return tb - ta;
+    })
     .slice(0, limit);
 }
 
