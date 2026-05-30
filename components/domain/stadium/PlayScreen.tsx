@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Play, Pause, Trophy } from "lucide-react";
+import { Play, Pause, Trophy, Volume2, VolumeX } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import { simulateGame } from "@/lib/sim/engine";
@@ -25,6 +26,7 @@ import {
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 import { useAppState } from "@/lib/state/AppState";
+import { getMatchSoundMuted, playMatchSound, setMatchSoundMuted } from "@/lib/sound/matchSounds";
 
 const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
   K: "삼진",
@@ -298,12 +300,26 @@ export function PlayScreen() {
   const [hydrated, setHydrated] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
+  // 효과음 음소거 — localStorage 동기. 초기엔 false(들림)로 SSR/CSR 안전, mount 시 보정.
+  const [muted, setMuted] = useState(false);
+  useEffect(() => {
+    setMuted(getMatchSoundMuted());
+  }, []);
+  const toggleMuted = () => {
+    setMuted((m) => {
+      const next = !m;
+      setMatchSoundMuted(next);
+      return next;
+    });
+  };
   // 경기 종료 시 자동 저장 — 한 번만 실행하도록 추적.
   // useState는 비동기 업데이트라 두 번째 effect 실행에서 stale 값이 보일 수 있음 →
   // useRef로 동기 가드. StrictMode/의존성 변경으로 effect가 두 번 실행돼도 INSERT 1회만.
   const recordSaveAttemptedRef = useRef(false);
   const [recordSaving, setRecordSaving] = useState(false);
   const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
+  // 6회 전에 건너뛰기 시도 시 안내 모달. 5회까지 진행해야 전적 누적되는 정식경기 인정.
+  const [skipBlockedOpen, setSkipBlockedOpen] = useState(false);
   // 진행 모드 — fast(기본) / normal / superfast / live(실시간 중계, SITUATION phase + 단계 narration)
   const [mode, setMode] = useState<"normal" | "fast" | "superfast" | "live">("fast");
   // 진행 단계 — live에선 SITUATION → BATTER → OUTCOME → … / normal·fast는 SITUATION 스킵
@@ -637,6 +653,7 @@ export function PlayScreen() {
     console.log("[ball] fire", { outcome: o, fromX, fromY, dx, dy, durationMs, maxScale, mode });
     ballFiredForCursorRef.current = cursor;
     setFlyingBall({ fromX, fromY, dx, dy, durationMs, maxScale, key: cursor });
+    playMatchSound(o === "HR" ? "homerun" : "hit");
 
     // 폭죽 이펙트도 같은 위치에 — HR/타점이면 hr 변형, 일반 안타면 hit.
     if (hitFxFiredForCursorRef.current !== cursor) {
@@ -671,6 +688,19 @@ export function PlayScreen() {
     setHitFx({ centerX, centerY, kind: "hr", key: cursor });
   }, [phase, cursor, events, hydrated]);
 
+  // 득점 효과음 trigger — OUTCOME 진입 + runsScored > 0. 안타/홈런 사운드와 별개로 1회 추가 재생.
+  // 다득점(1타석 2점+) 이어도 1회만 — 환호성이라 중첩 안 어울림.
+  const scoreFiredForCursorRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "OUTCOME") return;
+    if (scoreFiredForCursorRef.current === cursor) return;
+    const evt = cursor > 0 ? events[cursor - 1] : null;
+    if (!evt || evt.ab.runsScored <= 0) return;
+    scoreFiredForCursorRef.current = cursor;
+    playMatchSound("score");
+  }, [phase, cursor, events, hydrated]);
+
   // 삼진 K 효과 trigger — OUTCOME 진입 + outcome === "K". 위치는 중계 텍스트(narration) 중심.
   useEffect(() => {
     if (!hydrated) return;
@@ -690,6 +720,7 @@ export function PlayScreen() {
     const durationMs = 1500 * ballModeMul;
     strikeoutFiredForCursorRef.current = cursor;
     setStrikeoutEffect({ centerX, centerY, durationMs, key: cursor });
+    playMatchSound("strikeout");
   }, [phase, cursor, events, hydrated, mode]);
 
   // 경기 종료 시 자동 저장 — public/friend 매치만, 정식 계정만, 재생 모드 제외.
@@ -760,18 +791,14 @@ export function PlayScreen() {
           mvpName: mvpEntity?.name ?? null,
           isWalkoff: isWalkOff,
           totalInnings,
-          // 라인업 전적 집계용 — 공개 매치만 양쪽 lineup_id 기록 (view가 user_side로 본인측 집계).
-          // friend는 친선이라 lineup_id 무관(view에서 source='public'만 집계).
-          homeLineupId: session.source === "public"
-            ? (session.userSide === "home"
-                ? (session.myLineupId ?? null)
-                : (session.opponentLineupId ?? null))
-            : null,
-          awayLineupId: session.source === "public"
-            ? (session.userSide === "home"
-                ? (session.opponentLineupId ?? null)
-                : (session.myLineupId ?? null))
-            : null,
+          // 라인업 전적 집계용 — source 무관, 양쪽 lineup_id 둘 다 NOT NULL 이면 정식 매치로 view 집계.
+          // 친구 대전이라도 양쪽 공개 라인업이면 정식 매치. 한쪽이라도 비등록이면 연습 매치.
+          homeLineupId: session.userSide === "home"
+            ? (session.myLineupId ?? null)
+            : (session.opponentLineupId ?? null),
+          awayLineupId: session.userSide === "home"
+            ? (session.opponentLineupId ?? null)
+            : (session.myLineupId ?? null),
           opponentNickname: session.opponentNickname ?? null
         });
 
@@ -1216,12 +1243,32 @@ export function PlayScreen() {
                     빠른×2
                   </button>
                 </div>
+                {/* 건너뛰기 — 6회 진입 이후만 동작 (5회 = KBO 정식경기 성립 기준).
+                    매치 시작 직후 무한 스킵으로 전적 어뷰징하는 것 방지.
+                    6회 전엔 disabled 대신 클릭 받아 안내 모달 노출 (사유 설명). */}
                 <button
                   type="button"
                   className="stadium-play-btn stadium-play-btn-skip"
-                  onClick={() => setCursor(events.length)}
+                  onClick={() => {
+                    if (linescore.currentInning < 6) {
+                      setSkipBlockedOpen(true);
+                      return;
+                    }
+                    setCursor(events.length);
+                  }}
+                  title="끝까지 건너뛰기"
                 >
                   건너뛰기
+                </button>
+                <button
+                  type="button"
+                  className="stadium-play-btn stadium-play-btn-mute"
+                  onClick={toggleMuted}
+                  aria-label={muted ? "효과음 켜기" : "효과음 끄기"}
+                  aria-pressed={muted}
+                  title={muted ? "효과음 켜기" : "효과음 끄기"}
+                >
+                  {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
               </>
             )
@@ -1277,6 +1324,31 @@ export function PlayScreen() {
             document.body
           )
         : null}
+
+      {/* 6회 전 건너뛰기 시도 시 안내 모달. 5회까지 = KBO 정식경기 성립 기준. */}
+      <ModalShell
+        open={skipBlockedOpen}
+        title="건너뛰기 안내"
+        onClose={() => setSkipBlockedOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            전적이 누적되는 경기라 <strong>5회까지 진행한 뒤</strong> 건너뛰기가 가능해요.<br />
+            (KBO 정식경기 성립 기준)
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-primary"
+              onClick={() => setSkipBlockedOpen(false)}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </ModalShell>
     </AppShell>
   );
 }
