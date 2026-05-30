@@ -75,7 +75,7 @@ export function LobbyScreen() {
             <ChevronRight size={14} />
           </Link>
         </header>
-        <RegisteredLineupList maxItems={6} sortBy="winrate" showHeader={false} />
+        <RegisteredLineupList maxItems={5} sortBy="winrate" showHeader={false} />
       </section>
 
       {/* 3. 내 라인업 — 본인만 보임. 두 개 이상이면 내 라인업끼리 대결 가능 */}

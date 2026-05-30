@@ -20,7 +20,7 @@ import {
   canReplay,
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
-import { listMyLineups, rowToEntry } from "@/lib/supabase/query-parts/bpLineups";
+import { fetchLineupStatsBulk, listMyLineups, rowToEntry, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
@@ -68,6 +68,8 @@ export function RecordsScreen() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   // 내 라인업 목록 — 필터 chip 노출용. 본인의 bp_lineups row id ↔ 이름 매핑.
   const [myLineups, setMyLineups] = useState<LineupOption[]>([]);
+  // 재대전 picker 표시용 — entry_id → 전적.
+  const [myStatsByEntryId, setMyStatsByEntryId] = useState<Record<string, LineupStats>>({});
   const [filterLineupId, setFilterLineupId] = useState<string | null>(null);
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
   const [rematchRecord, setRematchRecord] = useState<BpRecordRow | null>(null);
@@ -115,20 +117,31 @@ export function RecordsScreen() {
     // 라인업 필터용 매핑 — 실패해도 기록 표시엔 영향 없음 (필터 chip만 안 뜸).
     const linRes = await listMyLineups(client, user.id);
     if (linRes.ok) {
-      setMyLineups(
-        linRes.rows
-          .map((r) => {
-            const entry = rowToEntry(r);
-            return {
-              id: r.id,
-              entryId: entry.entryId,
-              name: r.name?.trim() || getTeam(r.team_id).shortName,
-              teamId: r.team_id,
-              entry
-            };
-          })
-          .filter((lineup) => lineup.entry.batting.slots.length === 9)
-      );
+      const options = linRes.rows
+        .map((r) => {
+          const entry = rowToEntry(r);
+          return {
+            id: r.id,
+            entryId: entry.entryId,
+            name: r.name?.trim() || getTeam(r.team_id).shortName,
+            teamId: r.team_id,
+            entry
+          };
+        })
+        .filter((lineup) => lineup.entry.batting.slots.length === 9);
+      setMyLineups(options);
+
+      // 재대전 picker 라벨용 전적 fetch — 실패하면 라벨에 전적 미표시 (UI 영향 X)
+      const ids = options.map((o) => o.id);
+      if (ids.length > 0) {
+        const statsByLineupId = await fetchLineupStatsBulk(client, ids);
+        const byEntry: Record<string, LineupStats> = {};
+        for (const o of options) {
+          const s = statsByLineupId[o.id];
+          if (s) byEntry[o.entryId] = s;
+        }
+        setMyStatsByEntryId(byEntry);
+      }
     }
   }, []);
 
@@ -415,7 +428,7 @@ export function RecordsScreen() {
               >
                 <span className="records-filter-chip-text">
                   <span className="records-filter-chip-name">전체</span>
-                  <span className="records-filter-chip-stats">{total.wins}·{total.losses}·{total.draws}</span>
+                  <span className="records-filter-chip-stats">{total.wins}승 {total.losses}패</span>
                 </span>
               </button>
             );
@@ -434,7 +447,7 @@ export function RecordsScreen() {
                 <TeamBadge teamId={lineup.teamId} size="sm" />
                 <span className="records-filter-chip-text">
                   <span className="records-filter-chip-name">{lineup.name}</span>
-                  <span className="records-filter-chip-stats">{s.wins}·{s.losses}·{s.draws}</span>
+                  <span className="records-filter-chip-stats">{s.wins}승 {s.losses}패</span>
                 </span>
               </button>
             );
@@ -481,6 +494,7 @@ export function RecordsScreen() {
         lineups={publicLineups}
         selectedEntryId={rematchEntryId}
         starting={startingRematch}
+        statsByEntryId={myStatsByEntryId}
         onSelectEntry={setRematchEntryId}
         onStart={startRematch}
         onClose={() => {

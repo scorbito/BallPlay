@@ -6,6 +6,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import type { LineupEntry } from "@/lib/types/lineup";
+import type { LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 
 export type RematchLineupOption = {
   id: string;
@@ -24,7 +25,14 @@ type Props = {
   onSelectEntry: (entryId: string) => void;
   onStart: () => void;
   onClose: () => void;
+  /** entry_id → 전적. picker 라벨 옆에 (승-패) 표시. 없으면 라벨만. */
+  statsByEntryId?: Record<string, LineupStats>;
 };
+
+function formatRecord(stats: LineupStats | undefined): string {
+  if (!stats || stats.matches === 0) return "";
+  return `(${stats.wins}승 ${stats.losses}패)`;
+}
 
 export function RematchLineupModal({
   open,
@@ -34,7 +42,8 @@ export function RematchLineupModal({
   starting,
   onSelectEntry,
   onStart,
-  onClose
+  onClose,
+  statsByEntryId
 }: Props) {
   const selectedLineup = lineups.find((lineup) => lineup.entryId === selectedEntryId) ?? lineups[0] ?? null;
 
@@ -73,18 +82,21 @@ export function RematchLineupModal({
       <div className="stadium-discover-my-picker" role="radiogroup" aria-label="내 공개 라인업 선택">
         <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
         <div className="stadium-discover-my-picker-list records-rematch-picker-list">
-          {lineups.map((lineup) => (
-            <button
-              key={lineup.entryId}
-              type="button"
-              className={`stadium-discover-my-pick ${selectedEntryId === lineup.entryId ? "is-active" : ""}`}
-              onClick={() => onSelectEntry(lineup.entryId)}
-              aria-pressed={selectedEntryId === lineup.entryId}
-            >
-              <TeamBadge teamId={lineup.teamId} size="sm" />
-              <span>{lineup.name}</span>
-            </button>
-          ))}
+          {lineups.map((lineup) => {
+            const recordTxt = formatRecord(statsByEntryId?.[lineup.entryId]);
+            return (
+              <button
+                key={lineup.entryId}
+                type="button"
+                className={`stadium-discover-my-pick ${selectedEntryId === lineup.entryId ? "is-active" : ""}`}
+                onClick={() => onSelectEntry(lineup.entryId)}
+                aria-pressed={selectedEntryId === lineup.entryId}
+              >
+                <TeamBadge teamId={lineup.teamId} size="sm" />
+                <span>{recordTxt ? `${lineup.name}${recordTxt}` : lineup.name}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

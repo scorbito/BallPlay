@@ -18,7 +18,9 @@ import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
+  fetchLineupStatsBulk,
   fetchPublishedLineupsByIds,
+  listMyLineups,
   listPublishedByRecent,
   listPublishedByWinrate,
   type LineupStats,
@@ -37,8 +39,7 @@ function formatOwnerLabel(row: PublishedLineupRow): string {
 
 function formatRecord(stats: LineupStats | undefined): string {
   if (!stats || stats.matches === 0) return "전적 없음";
-  const drawTxt = stats.draws > 0 ? ` ${stats.draws}무` : "";
-  return `${stats.wins}승 ${stats.losses}패${drawTxt}`;
+  return `${stats.wins}승 ${stats.losses}패`;
 }
 
 type Props = {
@@ -64,6 +65,8 @@ export function RegisteredLineupList({
   const [userId, setUserId] = useState<string | null>(null);
   const [ownerIdForExclude, setOwnerIdForExclude] = useState<string | null>(null);
   const [myPublishedEntries, setMyPublishedEntries] = useState<LineupEntry[]>([]);
+  // 도전 picker — 본인 공개 라인업의 entry_id → 전적. 표시용.
+  const [myStatsByEntryId, setMyStatsByEntryId] = useState<Record<string, LineupStats>>({});
 
   const [selectedOpponent, setSelectedOpponent] = useState<PublishedLineupRow | null>(null);
   const [myEntryId, setMyEntryId] = useState<string | null>(null);
@@ -79,7 +82,10 @@ export function RegisteredLineupList({
       setError(null);
       const filterUid = includeMine ? null : excludeUid;
       if (sortBy === "winrate") {
-        const sorted = await listPublishedByWinrate(client, maxItems);
+        // 본인 카드가 winrate top 안에 들어있으면 사후 필터로 결과가 줄어드는 버그 방지.
+        // 유저당 공개 라인업 최대 10개라 +12 over-fetch 후 본인 제외 → maxItems slice.
+        const overfetch = filterUid ? maxItems + 12 : maxItems;
+        const sorted = await listPublishedByWinrate(client, overfetch);
         if (!sorted.ok) {
           setLoading(false);
           setError(sorted.error);
@@ -91,9 +97,10 @@ export function RegisteredLineupList({
           setError(fetched.error);
           return;
         }
-        const filtered = filterUid
+        const filtered = (filterUid
           ? fetched.rows.filter((r) => r.owner_user_id !== filterUid)
-          : fetched.rows;
+          : fetched.rows
+        ).slice(0, maxItems);
         setRows(filtered);
         setStatsByLineupId(sorted.statsByLineupId);
       } else {
@@ -127,6 +134,27 @@ export function RegisteredLineupList({
       );
       setMyPublishedEntries(myPublished);
       if (myPublished.length > 0) setMyEntryId(myPublished[0].entryId);
+
+      // 본인 공개 라인업 전적 — picker 라벨에 표시. entry_id → bp_lineups.id 매핑 후 stats fetch.
+      if (anyUid && myPublished.length > 0) {
+        const myLineupsRes = await listMyLineups(client, anyUid);
+        if (myLineupsRes.ok) {
+          const idByEntry: Record<string, string> = {};
+          for (const row of myLineupsRes.rows) {
+            if (row.is_published) idByEntry[row.entry_id] = row.id;
+          }
+          const ids = Object.values(idByEntry);
+          if (ids.length > 0) {
+            const statsByLineupId = await fetchLineupStatsBulk(client, ids);
+            const statsByEntry: Record<string, LineupStats> = {};
+            for (const [entryId, lineupId] of Object.entries(idByEntry)) {
+              const s = statsByLineupId[lineupId];
+              if (s) statsByEntry[entryId] = s;
+            }
+            setMyStatsByEntryId(statsByEntry);
+          }
+        }
+      }
 
       await loadList(anyUid);
     })();
@@ -357,17 +385,23 @@ export function RegisteredLineupList({
                 <div className="stadium-discover-my-picker">
                   <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
                   <div className="stadium-discover-my-picker-list">
-                    {myPublishedEntries.map((entry) => (
-                      <button
-                        key={entry.entryId}
-                        type="button"
-                        className={`stadium-discover-my-pick ${entry.entryId === myEntryId ? "is-active" : ""}`}
-                        onClick={() => setMyEntryId(entry.entryId)}
-                      >
-                        <TeamBadge teamId={entry.teamId} size="sm" />
-                        <span>{entry.name}</span>
-                      </button>
-                    ))}
+                    {myPublishedEntries.map((entry) => {
+                      const s = myStatsByEntryId[entry.entryId];
+                      const recordTxt = s && s.matches > 0
+                        ? ` (${s.wins}승 ${s.losses}패)`
+                        : "";
+                      return (
+                        <button
+                          key={entry.entryId}
+                          type="button"
+                          className={`stadium-discover-my-pick ${entry.entryId === myEntryId ? "is-active" : ""}`}
+                          onClick={() => setMyEntryId(entry.entryId)}
+                        >
+                          <TeamBadge teamId={entry.teamId} size="sm" />
+                          <span>{entry.name}{recordTxt}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : null}

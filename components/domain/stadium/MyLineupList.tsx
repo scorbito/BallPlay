@@ -18,6 +18,8 @@ import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 
 function formatRelativeDate(iso: string): string {
   const t = Date.parse(iso);
@@ -47,6 +49,29 @@ export function MyLineupList({ maxItems = 10 }: Props) {
   const [opponentEntryId, setOpponentEntryId] = useState<string | null>(null);
   // 라인업이 1개뿐일 때 도전 누르면 안내 모달
   const [needSecondLineupOpen, setNeedSecondLineupOpen] = useState(false);
+  // picker 라벨 옆 전적 표시 — 공개 라인업만 stats 존재 (비공개는 bp_lineups row 없음)
+  const [statsByEntryId, setStatsByEntryId] = useState<Record<string, LineupStats>>({});
+
+  useEffect(() => {
+    void (async () => {
+      const client = createSupabaseBrowserClient();
+      const { data } = await client.auth.getUser();
+      const userId = data.user?.id;
+      if (!userId) return;
+      const linRes = await listMyLineups(client, userId);
+      if (!linRes.ok) return;
+      const published = linRes.rows.filter((r) => r.is_published);
+      if (published.length === 0) return;
+      const ids = published.map((r) => r.id);
+      const statsByLineupId = await fetchLineupStatsBulk(client, ids);
+      const byEntry: Record<string, LineupStats> = {};
+      for (const r of published) {
+        const s = statsByLineupId[r.id];
+        if (s) byEntry[r.entry_id] = s;
+      }
+      setStatsByEntryId(byEntry);
+    })();
+  }, []);
 
   // 마운트 시 1회 + 라인업 변경 이벤트/페이지 가시화/포커스 시 재로드.
   //   - LINEUP_ENTRIES_CHANGED_EVENT (커스텀): 같은 탭 내 빌더에서 publish 직후 발화 →
@@ -269,17 +294,23 @@ export function MyLineupList({ maxItems = 10 }: Props) {
                 <div className="stadium-discover-my-picker">
                   <span className="stadium-discover-my-picker-label">상대 선택</span>
                   <div className="stadium-discover-my-picker-list">
-                    {opponentCandidates.map((entry) => (
-                      <button
-                        key={entry.entryId}
-                        type="button"
-                        className={`stadium-discover-my-pick ${entry.entryId === opponentEntryId ? "is-active" : ""}`}
-                        onClick={() => setOpponentEntryId(entry.entryId)}
-                      >
-                        <TeamBadge teamId={entry.teamId} size="sm" />
-                        <span>{entry.name}</span>
-                      </button>
-                    ))}
+                    {opponentCandidates.map((entry) => {
+                      const s = statsByEntryId[entry.entryId];
+                      const recordTxt = s && s.matches > 0
+                        ? ` (${s.wins}승 ${s.losses}패)`
+                        : "";
+                      return (
+                        <button
+                          key={entry.entryId}
+                          type="button"
+                          className={`stadium-discover-my-pick ${entry.entryId === opponentEntryId ? "is-active" : ""}`}
+                          onClick={() => setOpponentEntryId(entry.entryId)}
+                        >
+                          <TeamBadge teamId={entry.teamId} size="sm" />
+                          <span>{entry.name}{recordTxt}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : null}

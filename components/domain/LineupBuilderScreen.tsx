@@ -745,9 +745,6 @@ export function LineupBuilderScreen() {
               {entries.map((entry) => {
                 const active = entry.entryId === selectedEntryId;
                 const stats = statsByEntryId[entry.entryId];
-                const winPct = stats && stats.matches > 0
-                  ? Math.round((stats.wins / stats.matches) * 100)
-                  : null;
                 return (
                   <li key={entry.entryId} className="lineup-slot-menu-item-wrap">
                     <button
@@ -764,8 +761,8 @@ export function LineupBuilderScreen() {
                       <span className="lineup-slot-menu-name">{entry.name}</span>
                       <span className="lineup-slot-menu-record">
                         {stats && stats.matches > 0
-                          ? `${stats.wins}-${stats.losses}${winPct !== null ? ` (${winPct}%)` : ""}`
-                          : "0-0"}
+                          ? `${stats.wins}승 ${stats.losses}패`
+                          : "0승 0패"}
                       </span>
                       {entry.isPublished ? (
                         <span className="lineup-slot-menu-badge is-public" title="공개 중">공개</span>
@@ -868,12 +865,9 @@ export function LineupBuilderScreen() {
             const stats = statsByEntryId[currentEntry.entryId];
             const wins = stats?.wins ?? 0;
             const losses = stats?.losses ?? 0;
-            const draws = stats?.draws ?? 0;
-            const matches = stats?.matches ?? 0;
-            const winPct = matches > 0 ? Math.round((wins / matches) * 100) : 0;
             return (
               <p className="lineup-action-hint lineup-action-hint-published">
-                🔒 공개 라인업 · {wins}승 {losses}패 {draws}무 ({winPct}%)
+                🔒 공개 라인업 · {wins}승 {losses}패
               </p>
             );
           })() : currentEntry ? (
