@@ -37,9 +37,8 @@ function formatOwnerLabel(row: PublishedLineupRow): string {
 
 function formatRecord(stats: LineupStats | undefined): string {
   if (!stats || stats.matches === 0) return "전적 없음";
-  const winPct = stats.matches > 0 ? Math.round((stats.wins / stats.matches) * 100) : 0;
-  const drawTxt = stats.draws > 0 ? `-${stats.draws}D` : "";
-  return `${stats.wins}승 ${stats.losses}패${drawTxt} (${winPct}%)`;
+  const drawTxt = stats.draws > 0 ? ` ${stats.draws}무` : "";
+  return `${stats.wins}승 ${stats.losses}패${drawTxt}`;
 }
 
 type Props = {
