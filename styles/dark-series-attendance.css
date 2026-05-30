@@ -211,9 +211,9 @@
 }
 
 .phone-frame-light .sched-series-result-ongoing {
-  background: rgba(20, 30, 50, 0.04);
-  border-color: rgba(20, 30, 50, 0.10);
-  color: rgba(247, 250, 255, 0.55);
+  background: rgba(20, 30, 50, 0.06);
+  border-color: rgba(20, 30, 50, 0.22);
+  color: var(--bp-text);
 }
 
 /* Segmented filter */

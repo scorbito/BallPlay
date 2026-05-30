@@ -14,7 +14,7 @@ type Props = {
 
 export function RankingScreen({ currentUserId, initialRanking }: Props) {
   return (
-    <AppShell activeTab="home" title="적중률 랭킹" theme="light" backHref="/">
+    <AppShell activeTab="home" title="적중률 랭킹" theme="light" backHref="/" wide>
       <PredictionRanking
         initialRows={initialRanking}
         currentUserId={currentUserId}

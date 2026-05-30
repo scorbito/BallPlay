@@ -142,6 +142,9 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
       draws: number;
       totalGames: number;
       finishedGames: number;
+      // 우천취소 등 처리된 비결과 경기. ended 판정에서 finishedGames 와 함께
+      // "처리 완료" 로 간주 (그래야 3경기 중 1경기 취소 + 2경기 finished 일 때 시리즈 종료로 판정).
+      canceledGames: number;
     };
     const myGames = games
       .filter((g) => g.homeTeamId === selectedTeamId || g.awayTeamId === selectedTeamId)
@@ -150,7 +153,8 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
         isHome: g.homeTeamId === selectedTeamId,
         opponentTeamId: g.homeTeamId === selectedTeamId ? g.awayTeamId : g.homeTeamId,
         result: getTeamResult(g, selectedTeamId),
-        finished: g.status === "finished" && g.homeScore != null && g.awayScore != null
+        finished: g.status === "finished" && g.homeScore != null && g.awayScore != null,
+        canceled: g.status === "canceled"
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
 
@@ -171,7 +175,8 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
           myLosses: 0,
           draws: 0,
           totalGames: 0,
-          finishedGames: 0
+          finishedGames: 0,
+          canceledGames: 0
         };
         series.push(newSeries);
         return newSeries;
@@ -183,16 +188,23 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
         if (g.result === "win") target.myWins += 1;
         else if (g.result === "lose") target.myLosses += 1;
         else if (g.result === "draw") target.draws += 1;
+      } else if (g.canceled) {
+        target.canceledGames += 1;
       }
     }
     return series;
   }, [games, selectedTeamId]);
 
-  const getSeriesResult = (s: { myWins: number; myLosses: number; draws: number; totalGames: number; finishedGames: number }) => {
-    const ended = s.totalGames > 0 && s.finishedGames === s.totalGames;
+  const getSeriesResult = (s: { myWins: number; myLosses: number; draws: number; totalGames: number; finishedGames: number; canceledGames: number }) => {
+    // 결과가 정해진 경기 = finished + canceled. 시리즈 종료 판정에 함께 포함.
+    const decidedGames = s.finishedGames + s.canceledGames;
+    const ended = s.totalGames > 0 && decidedGames === s.totalGames;
     if (!ended) {
       if (s.finishedGames === 0) return null;
-      return { kind: "ongoing" as const, label: `${s.myWins}:${s.myLosses}` };
+      // 시리즈 진행 중 — 승/패는 항상, 무는 있을 때만 표시 (예: "2승 1패", "1승 1패 1무").
+      const parts: string[] = [`${s.myWins}승`, `${s.myLosses}패`];
+      if (s.draws > 0) parts.push(`${s.draws}무`);
+      return { kind: "ongoing" as const, label: parts.join(" ") };
     }
     if (s.myWins === s.totalGames && s.myLosses === 0) {
       return { kind: "sweep_w" as const, label: `${s.myWins}:0 스윕` };
@@ -290,11 +302,24 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
 
     setSelectedDate(targetDate);
     setVisibleMonth(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
-    // 다음 tick에서 scroll (DOM 업데이트 후)
-    const t = window.setTimeout(() => {
-      dayCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-    return () => window.clearTimeout(t);
+    // setSelectedDate + setVisibleMonth → 캘린더 리렌더 → 페이지 높이 변동 →
+    // 100ms 타임아웃 안에 layout 완료 보장 안 됨 (특히 모바일).
+    // requestAnimationFrame 2번(레이아웃 + paint) 후 + 여유 timeout 으로 안정화.
+    let raf1 = 0;
+    let raf2 = 0;
+    let t = 0;
+    raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => {
+        t = window.setTimeout(() => {
+          dayCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 50);
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+      window.clearTimeout(t);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusToday]);
 
@@ -436,20 +461,31 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
 
       <section className="sched-card sched-day-card" ref={dayCardRef}>
         <div className="sched-day-head">
+          <button
+            type="button"
+            className="sched-day-back"
+            onClick={() => router.back()}
+            aria-label="뒤로가기"
+            title="뒤로가기"
+          >
+            <ArrowLeft size={18} />
+          </button>
           <strong className="sched-day-title">{selectedTitle}</strong>
-          {canShowRefresh ? (
-            <button
-              type="button"
-              className="sched-day-refresh"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              aria-label="경기 결과 갱신"
-              title="경기 결과 갱신"
-            >
-              <RefreshCw size={14} className={refreshing ? "sched-day-refresh-spin" : ""} />
-              <span>{refreshing ? "갱신 중..." : "갱신"}</span>
-            </button>
-          ) : null}
+          <div className="sched-day-head-right">
+            {canShowRefresh ? (
+              <button
+                type="button"
+                className="sched-day-refresh"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                aria-label="경기 결과 갱신"
+                title="경기 결과 갱신"
+              >
+                <RefreshCw size={14} className={refreshing ? "sched-day-refresh-spin" : ""} />
+                <span>{refreshing ? "갱신 중..." : "갱신"}</span>
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="sched-game-list">

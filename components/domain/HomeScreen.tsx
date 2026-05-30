@@ -167,21 +167,21 @@ const sections: HomeSection[] = [
     gridCols: 3,
     cards: [
       {
-        id: "today-results",
-        href: "/schedule?focus=today",
-        title: "오늘 경기 결과",
-        description: "오늘 경기 스코어",
-        icon: ClipboardCheck,
-        iconImage: "/icons/menu/today-results.png",
-        available: true
-      },
-      {
         id: "schedule",
         href: "/schedule",
         title: "경기 일정",
         description: "이번 주 KBO 일정",
         icon: CalendarDays,
         iconImage: "/icons/menu/schedule.png",
+        available: true
+      },
+      {
+        id: "today-results",
+        href: "/schedule?focus=today",
+        title: "오늘 경기 결과",
+        description: "오늘 경기 스코어",
+        icon: ClipboardCheck,
+        iconImage: "/icons/menu/today-results.png",
         available: true
       },
       {

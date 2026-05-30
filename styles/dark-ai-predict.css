@@ -377,31 +377,19 @@
   letter-spacing: -0.1px;
 }
 
-/* ── 종합 의견 요약 ── */
-.phone-frame-light .ai-winner-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: rgba(232, 74, 138, 0.06);
-  border-radius: 8px;
-}
-
-.phone-frame-light .ai-winner-summary-tag {
-  font-size: 12px;
-  font-weight: 900;
-  flex-shrink: 0;
-}
-
-.phone-frame-light .ai-winner-summary-unanimous { color: #e74c3c; }
-.phone-frame-light .ai-winner-summary-split { color: #9b59b6; }
-.phone-frame-light .ai-winner-summary-majority { color: var(--bp-accent); }
-
-.phone-frame-light .ai-winner-summary-text {
+/* ── 종합 의견 요약 (game-row 우측 inline) ──
+   game-row 의 grid 1fr · auto · 1fr 중 3번째 1fr 자리에 들어가 우측 정렬. */
+.phone-frame-light .ai-winner-game-summary {
+  justify-self: end;
   font-size: 13px;
-  font-weight: 800;
-  color: var(--bp-text);
+  font-weight: 900;
+  white-space: nowrap;
+  letter-spacing: -0.1px;
 }
+
+.phone-frame-light .ai-winner-game-summary-unanimous { color: #e74c3c; }
+.phone-frame-light .ai-winner-game-summary-split { color: #9b59b6; }
+.phone-frame-light .ai-winner-game-summary-majority { color: var(--bp-accent); }
 
 /* ── AI 별 픽 미리보기 ── */
 .phone-frame-light .ai-winner-picks {
@@ -436,20 +424,16 @@
 .phone-frame-light .ai-winner-pick-gpt    .ai-winner-pick-ai { color: #10A37F; }
 
 .phone-frame-light .ai-winner-pick-team {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   font-size: 15px;
   font-weight: 900;
   color: var(--bp-text);
   white-space: nowrap;
   text-align: center;
   letter-spacing: -0.3px;
-}
-
-/* 픽팀 옆 신뢰도 — 같은 줄에 인라인. 살짝 작고 톤다운. */
-.phone-frame-light .ai-winner-pick-conf {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--bp-text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .phone-frame-light .ai-winner-pick-result {

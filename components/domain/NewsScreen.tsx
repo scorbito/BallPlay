@@ -37,7 +37,7 @@ export function NewsScreen({ news }: { news: BpNewsRow[] }) {
   }, [news, team]);
 
   return (
-    <AppShell activeTab="home" title="야구 뉴스" backHref="/" theme="light">
+    <AppShell activeTab="home" title="야구 뉴스" backHref="/" theme="light" wide>
       {/* 팀 필터 칩 */}
       <div className="news-filter" role="tablist" aria-label="팀 필터">
         <button

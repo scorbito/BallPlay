@@ -229,7 +229,7 @@ export function WinnerPredictScreen({
   }, [selectedDateISO]);
 
   return (
-    <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/">
+    <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/" wide>
       {/* 상단 적중률 — 한 줄 컴팩트. 좌측은 선택 날짜 기준이라 어제로 가면 어제 통계.
           애니메이션 트리거(hasAnyJudgedPick) 시 카드 등장 끝난 후 페이드인 + 숫자 카운트업. */}
       <section className="predict-stats" aria-label="적중률">

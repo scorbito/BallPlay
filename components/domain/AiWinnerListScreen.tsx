@@ -165,7 +165,7 @@ export function AiWinnerListScreen({
   }, [providerStats]);
 
   return (
-    <AppShell activeTab="home" title="AI 승리팀 예측" theme="light" backHref="/">
+    <AppShell activeTab="home" title="AI 승리팀 예측" theme="light" backHref="/" wide>
       <section className="ai-winner-screen">
         {/* ── 시즌 적중률 헤더 카드 ── */}
         <header className="ai-winner-stats-card">
@@ -320,6 +320,23 @@ export function AiWinnerListScreen({
                           <TeamBadge teamId={g.awayTeamId} size="sm" />
                         </div>
                       </div>
+
+                      {/* 의견 요약 — 시간/팀 라인의 우측에 inline 으로. 아이콘 + 우세팀 + 예측률.
+                          showOpenRevealed 일 때만 노출 (잠금/teaser/finished 상태에선 숨김). */}
+                      {showOpenRevealed && summary ? (
+                        <span
+                          className={`ai-winner-game-summary ai-winner-game-summary-${
+                            summary.isUnanimous ? "unanimous" : summary.isSplit ? "split" : "majority"
+                          }`}
+                        >
+                          {summary.isUnanimous ? "🔥" : summary.isSplit ? "⚔" : "⚡"}{" "}
+                          {summary.dominantTeamId
+                            ? `${getTeam(summary.dominantTeamId).shortName} ${
+                                summary.dominantTeamId === g.homeTeamId ? summary.homePct : summary.awayPct
+                              }%`
+                            : `${home.shortName} ${summary.homePct}%`}
+                        </span>
+                      ) : null}
                     </div>
 
                     {/* 우천취소·일정변경 등으로 경기 자체가 없어진 경우 — 적중 판정 불가.
@@ -351,38 +368,22 @@ export function AiWinnerListScreen({
                       </div>
                     ) : null}
 
-                    {/* 09시 후 + 본 경기 — 픽 → 의견 요약 순으로 표시 (AI 의견을 먼저 보고 종합) */}
+                    {/* 09시 후 + 본 경기 — AI별 픽만 표시. 종합 요약은 game-row 우측 inline 으로 이동. */}
                     {showOpenRevealed && summary ? (
-                      <>
-                        <div className="ai-winner-picks">
-                          {orderedPredictions.map((p) => (
-                            <span
-                              key={p.id}
-                              className={`ai-winner-pick ai-winner-pick-${p.ai_provider}`}
-                            >
-                              <span className="ai-winner-pick-ai">{AI_LABEL[p.ai_provider]}</span>
-                              <span className="ai-winner-pick-team">
-                                {getTeam(p.predicted_winner_team_id).shortName}
-                                <span className="ai-winner-pick-conf"> ({Math.round(p.confidence * 100)}%)</span>
-                              </span>
+                      <div className="ai-winner-picks">
+                        {orderedPredictions.map((p) => (
+                          <span
+                            key={p.id}
+                            className={`ai-winner-pick ai-winner-pick-${p.ai_provider}`}
+                          >
+                            <span className="ai-winner-pick-ai">{AI_LABEL[p.ai_provider]}</span>
+                            <span className="ai-winner-pick-team">
+                              <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
+                              <span className="ai-winner-pick-team-name">{getTeam(p.predicted_winner_team_id).shortName}</span>
                             </span>
-                          ))}
-                        </div>
-                        <div className="ai-winner-summary">
-                          {summary.isUnanimous ? (
-                            <span className="ai-winner-summary-tag ai-winner-summary-unanimous">🔥 만장일치</span>
-                          ) : summary.isSplit ? (
-                            <span className="ai-winner-summary-tag ai-winner-summary-split">⚔ 의견 분분</span>
-                          ) : (
-                            <span className="ai-winner-summary-tag ai-winner-summary-majority">⚡ 우세</span>
-                          )}
-                          <span className="ai-winner-summary-text">
-                            {summary.dominantTeamId
-                              ? `${getTeam(summary.dominantTeamId).shortName} ${summary.homePct >= 50 && summary.dominantTeamId === g.homeTeamId ? summary.homePct : summary.awayPct}%`
-                              : `${home.shortName} ${summary.homePct}% · ${away.shortName} ${summary.awayPct}%`}
                           </span>
-                        </div>
-                      </>
+                        ))}
+                      </div>
                     ) : null}
 
                     {/* 경기 종료 + 안 본 경기 — 점수도 비공개 + 결과 보기 미스터리 톤 */}
@@ -403,8 +404,8 @@ export function AiWinnerListScreen({
                           >
                             <span className="ai-winner-pick-ai">{AI_LABEL[p.ai_provider]}</span>
                             <span className="ai-winner-pick-team">
-                              {getTeam(p.predicted_winner_team_id).shortName}
-                              <span className="ai-winner-pick-conf"> ({Math.round(p.confidence * 100)}%)</span>
+                              <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
+                              <span className="ai-winner-pick-team-name">{getTeam(p.predicted_winner_team_id).shortName}</span>
                             </span>
                             <span className="ai-winner-pick-result">
                               {p.is_correct === true ? "✓ 적중" : p.is_correct === false ? "✗ 실패" : "—"}
