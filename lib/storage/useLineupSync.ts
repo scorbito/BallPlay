@@ -301,22 +301,63 @@ export function useLineupSync() {
   );
 
   const syncedDelete = useCallback(
-    (entryId: string): LineupEntry[] => {
+    (
+      entryId: string,
+      opts?: { onSyncResult?: (res: { ok: boolean; error?: string }) => void }
+    ): LineupEntry[] => {
       const next = localDelete(entryId);
       setState((s) => ({ ...s, entries: next }));
-      const userId = state.userId;
-      if (userId) {
-        void deleteLineupByEntryId(clientRef.current, entryId, userId).then((res) => {
+
+      // state.userId 는 callback 생성 시점의 closure 값이라 stale 일 수 있다.
+      // 호출 시점에 supabase 의 최신 세션을 직접 조회해서 정확한 userId 확보.
+      // getSession 은 캐시된 값을 반환하므로 네트워크 호출 없음 (빠름).
+      void (async () => {
+        let resolved = false;
+        const timeoutMs = 10000;
+        const timer = (typeof window !== "undefined" ? window : globalThis).setTimeout(() => {
+          if (resolved) return;
+          resolved = true;
+          const msg = "응답이 늦어요. 네트워크 상태를 확인해 주세요.";
+          setState((s) => ({ ...s, status: "error", errorMessage: msg }));
+          opts?.onSyncResult?.({ ok: false, error: msg });
+        }, timeoutMs);
+
+        try {
+          const { data: { session } } = await clientRef.current.auth.getSession();
+          const liveUserId = session?.user?.id ?? null;
+
+          if (!liveUserId) {
+            // 정말로 세션 없음 — 비로그인 상태. opts 콜백으로 명시.
+            clearTimeout(timer);
+            resolved = true;
+            opts?.onSyncResult?.({ ok: false, error: "offline" });
+            return;
+          }
+
+          const res = await deleteLineupByEntryId(clientRef.current, entryId, liveUserId);
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timer);
           if (!res.ok) {
             setState((s) => ({ ...s, status: "error", errorMessage: res.error }));
           } else {
             setState((s) => (s.status === "error" ? s : { ...s, status: "synced" }));
           }
-        });
-      }
+          opts?.onSyncResult?.(res);
+        } catch (err) {
+          // 네트워크 끊김, getSession 실패 등 — promise reject 모두 잡음.
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timer);
+          const msg = (err as Error)?.message ?? "네트워크 연결을 확인해 주세요.";
+          setState((s) => ({ ...s, status: "error", errorMessage: msg }));
+          opts?.onSyncResult?.({ ok: false, error: msg });
+        }
+      })();
+
       return next;
     },
-    [state.userId]
+    []  // clientRef 는 ref 라 안 바뀜. state.userId 의존 제거 → stale closure 없음.
   );
 
   const syncedRename = useCallback(

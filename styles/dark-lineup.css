@@ -2264,6 +2264,52 @@
   color: var(--bp-text);
 }
 
+/* 라인업 삭제 진행/결과 모달 */
+.lineup-delete-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 20px;
+  min-height: 120px;
+}
+
+.lineup-delete-status-spinner {
+  color: var(--bp-text-secondary);
+  animation: lineup-delete-spin 1s linear infinite;
+}
+
+@keyframes lineup-delete-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.lineup-delete-status-check {
+  color: var(--bp-success, #1f9a55);
+}
+
+.lineup-delete-status-error-icon {
+  color: var(--bp-danger);
+}
+
+.lineup-delete-status-msg {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+  margin: 0;
+}
+
+.lineup-delete-status-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  text-align: center;
+  margin: 0;
+  max-width: 240px;
+  word-break: keep-all;
+}
+
 .lineup-confirm-modal-panel .modal-header strong {
   color: var(--bp-text);
   font-size: 15px;

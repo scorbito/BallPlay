@@ -127,6 +127,8 @@ export function LineupBuilderScreen() {
   const [renamingEntryId, setRenamingEntryId] = useState<string | null>(null);
   const [renameInput, setRenameInput] = useState("");
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<string | null>(null);
+  // 삭제 진행/결과 모달 — DB sync 완료까지 진행 상태 보여줌.
+  const [deleteStatus, setDeleteStatus] = useState<{ phase: "idle" | "deleting" | "success" | "error"; error?: string }>({ phase: "idle" });
 
   const [mode, setMode] = useState<LineupMode>("batter");
   const [slots, setSlots] = useState<SlotState[]>(EMPTY_SLOTS);
@@ -1691,16 +1693,77 @@ export function LineupBuilderScreen() {
               className="lineup-confirm-destruct"
               onClick={() => {
                 if (!confirmDeleteEntryId) return;
-                const next = syncedDelete(confirmDeleteEntryId);
-                if (selectedEntryId === confirmDeleteEntryId) {
+                const entryToDelete = confirmDeleteEntryId;
+                setConfirmDeleteEntryId(null);
+                setDeleteStatus({ phase: "deleting" });
+                const next = syncedDelete(entryToDelete, {
+                  onSyncResult: (res) => {
+                    if (res.ok) {
+                      setDeleteStatus({ phase: "success" });
+                      // 1.5초 후 자동 닫기
+                      setTimeout(() => setDeleteStatus({ phase: "idle" }), 1500);
+                    } else {
+                      setDeleteStatus({ phase: "error", error: res.error });
+                    }
+                  }
+                });
+                if (selectedEntryId === entryToDelete) {
                   setSelectedEntryId(next[0]?.entryId ?? null);
                 }
-                setConfirmDeleteEntryId(null);
               }}
             >
               삭제
             </button>
           </div>
+        </div>
+      </ModalShell>
+
+      {/* 삭제 진행/결과 모달 — 사용자가 DB sync 완료 여부 알 수 있게.
+          deleting: 스피너 + "삭제 중...". success: ✓ + "삭제 완료" (1.5초 자동 닫기).
+          error: ⚠ 메시지 + 확인 버튼. */}
+      <ModalShell
+        open={deleteStatus.phase !== "idle"}
+        title="라인업 삭제"
+        onClose={() => {
+          // 진행 중에는 닫을 수 없음. 성공/실패만 닫기 허용.
+          if (deleteStatus.phase !== "deleting") setDeleteStatus({ phase: "idle" });
+        }}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop={deleteStatus.phase !== "deleting"}
+      >
+        <div className="lineup-delete-status">
+          {deleteStatus.phase === "deleting" ? (
+            <>
+              <Loader2 size={28} className="lineup-delete-status-spinner" />
+              <p className="lineup-delete-status-msg">삭제 중...</p>
+            </>
+          ) : deleteStatus.phase === "success" ? (
+            <>
+              <Check size={28} strokeWidth={3} className="lineup-delete-status-check" />
+              <p className="lineup-delete-status-msg">삭제 완료</p>
+            </>
+          ) : deleteStatus.phase === "error" ? (
+            <>
+              <X size={28} strokeWidth={3} className="lineup-delete-status-error-icon" />
+              <p className="lineup-delete-status-msg">
+                {deleteStatus.error === "offline"
+                  ? "동기화가 멈춰있어요"
+                  : "삭제 실패"}
+              </p>
+              <p className="lineup-delete-status-error">
+                {deleteStatus.error === "offline"
+                  ? "로그인 상태를 확인 중이에요. 잠시 후 다시 시도해 주세요. (로컬에서는 삭제됨)"
+                  : deleteStatus.error}
+              </p>
+              <button
+                type="button"
+                className="lineup-confirm-cancel"
+                onClick={() => setDeleteStatus({ phase: "idle" })}
+              >
+                확인
+              </button>
+            </>
+          ) : null}
         </div>
       </ModalShell>
     </AppShell>
