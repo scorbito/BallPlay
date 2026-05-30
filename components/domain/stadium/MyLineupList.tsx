@@ -48,9 +48,37 @@ export function MyLineupList({ maxItems = 6 }: Props) {
   // 라인업이 1개뿐일 때 도전 누르면 안내 모달
   const [needSecondLineupOpen, setNeedSecondLineupOpen] = useState(false);
 
+  // 마운트 시 1회 + 페이지 가시화/포커스/localStorage 변경 시 재로드.
+  //   - 빈 deps만 두면 모바일 탭 전환(BFCache·세그먼트 캐시) 복귀 시 builder에서 방금 만든
+  //     라인업이 안 보이는 케이스 발생. visibility/focus/storage 셋 다 듣고 다시 읽어
+  //     "라인업 갔다 다시 와야 보임" 증상 차단.
   useEffect(() => {
-    const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
-    setEntries(ready);
+    const load = () => {
+      const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
+      setEntries(ready);
+    };
+    load();
+    const onVisible = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") load();
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisible);
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("focus", load);
+      window.addEventListener("pageshow", load);
+      window.addEventListener("storage", load);
+    }
+    return () => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisible);
+      }
+      if (typeof window !== "undefined") {
+        window.removeEventListener("focus", load);
+        window.removeEventListener("pageshow", load);
+        window.removeEventListener("storage", load);
+      }
+    };
   }, []);
 
   const opponentCandidates = useMemo(() => {
