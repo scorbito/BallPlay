@@ -40,11 +40,17 @@ export function getLineupEntry(entryId: string): LineupEntry | null {
 // Write
 // ============================================================
 
+// 같은 탭/윈도우 내 다른 컴포넌트가 라인업 변경을 즉시 알 수 있게 발사하는 이벤트.
+// (storage 이벤트는 다른 탭에서만 발화 → 같은 탭 내 빌더 publish → 경기장 mount 케이스에선
+//  무력. 이 커스텀 이벤트로 같은 탭에서도 reactive하게 재로드 가능.)
+export const LINEUP_ENTRIES_CHANGED_EVENT = "ballplay:lineup-entries-changed";
+
 export function saveLineupEntries(entries: LineupEntry[]): void {
   if (typeof window === "undefined") return;
   try {
     const trimmed = entries.slice(0, MAX_LINEUP_ENTRIES);
     window.localStorage.setItem(MY_LINEUPS_STORAGE_KEY, JSON.stringify(trimmed));
+    window.dispatchEvent(new Event(LINEUP_ENTRIES_CHANGED_EVENT));
   } catch {
     // ignore quota
   }

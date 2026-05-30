@@ -12,7 +12,7 @@ import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
-import { loadLineupEntries } from "@/lib/storage/lineupEntries";
+import { LINEUP_ENTRIES_CHANGED_EVENT, loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
@@ -48,10 +48,13 @@ export function MyLineupList({ maxItems = 6 }: Props) {
   // 라인업이 1개뿐일 때 도전 누르면 안내 모달
   const [needSecondLineupOpen, setNeedSecondLineupOpen] = useState(false);
 
-  // 마운트 시 1회 + 페이지 가시화/포커스/localStorage 변경 시 재로드.
-  //   - 빈 deps만 두면 모바일 탭 전환(BFCache·세그먼트 캐시) 복귀 시 builder에서 방금 만든
-  //     라인업이 안 보이는 케이스 발생. visibility/focus/storage 셋 다 듣고 다시 읽어
-  //     "라인업 갔다 다시 와야 보임" 증상 차단.
+  // 마운트 시 1회 + 라인업 변경 이벤트/페이지 가시화/포커스 시 재로드.
+  //   - LINEUP_ENTRIES_CHANGED_EVENT (커스텀): 같은 탭 내 빌더에서 publish 직후 발화 →
+  //     SPA 내부 탭 전환에서도 즉시 반영. visibility/focus만으론 SPA 내 nav를 못 잡아
+  //     "라인업 갔다 다시 와야 보임" 증상이 남았던 게 이 이벤트로 해결.
+  //   - pageshow: 모바일 BFCache 복원
+  //   - visibilitychange/focus: 백그라운드↔포그라운드, 윈도우 포커스
+  //   - storage: 다른 탭의 변경 동기화
   useEffect(() => {
     const load = () => {
       const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
@@ -65,6 +68,7 @@ export function MyLineupList({ maxItems = 6 }: Props) {
       document.addEventListener("visibilitychange", onVisible);
     }
     if (typeof window !== "undefined") {
+      window.addEventListener(LINEUP_ENTRIES_CHANGED_EVENT, load);
       window.addEventListener("focus", load);
       window.addEventListener("pageshow", load);
       window.addEventListener("storage", load);
@@ -74,6 +78,7 @@ export function MyLineupList({ maxItems = 6 }: Props) {
         document.removeEventListener("visibilitychange", onVisible);
       }
       if (typeof window !== "undefined") {
+        window.removeEventListener(LINEUP_ENTRIES_CHANGED_EVENT, load);
         window.removeEventListener("focus", load);
         window.removeEventListener("pageshow", load);
         window.removeEventListener("storage", load);
