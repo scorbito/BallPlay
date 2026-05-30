@@ -29,22 +29,54 @@ export function RecentLineupPickerModal({ open, teamId, onClose, onPick }: Props
   const [rows, setRows] = useState<RecentLineupRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setLoading(true);
+    setSyncing(false);
     setError(null);
     const client = createSupabaseBrowserClient();
-    void listRecentLineupsForTeam(client, teamId, 10).then((res) => {
+
+    const fetchOnce = () => listRecentLineupsForTeam(client, teamId, 10);
+
+    (async () => {
+      // 1) DB 조회
+      const res = await fetchOnce();
       if (cancelled) return;
-      if (res.ok) {
-        setRows(res.rows);
-      } else {
+      if (!res.ok) {
         setError(res.error);
+        setLoading(false);
+        return;
       }
+      if (res.rows.length > 0) {
+        setRows(res.rows);
+        setLoading(false);
+        return;
+      }
+
+      // 2) DB 비어있음 — KBO 라인업 sync 1회 시도 (서버 throttle 30분으로 보호).
+      setSyncing(true);
+      try {
+        await fetch("/api/lineup/sync-recent", { method: "POST" });
+      } catch {
+        // 네트워크 실패 → 그냥 빈 결과로 마무리
+      }
+      if (cancelled) return;
+
+      // 3) sync 후 재조회
+      const res2 = await fetchOnce();
+      if (cancelled) return;
+      if (res2.ok) {
+        setRows(res2.rows);
+      } else {
+        setError(res2.error);
+      }
+      setSyncing(false);
       setLoading(false);
-    });
+    })();
+
     return () => {
       cancelled = true;
     };
@@ -64,7 +96,7 @@ export function RecentLineupPickerModal({ open, teamId, onClose, onPick }: Props
         {loading ? (
           <div className="recent-lineup-state">
             <Loader2 size={18} className="recent-lineup-spinner" />
-            <span>불러오는 중...</span>
+            <span>{syncing ? "KBO에서 최신 라인업 가져오는 중..." : "불러오는 중..."}</span>
           </div>
         ) : error ? (
           <div className="recent-lineup-state recent-lineup-state-error">

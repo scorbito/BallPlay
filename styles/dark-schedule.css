@@ -56,8 +56,45 @@
   padding: 8px 0;
 }
 
-.phone-frame-light .sched-weeknames span:first-child { color: var(--bp-danger); }
-.phone-frame-light .sched-weeknames span:last-child { color: var(--bp-info); }
+.phone-frame-light .sched-weeknames span.sched-weekname-sun { color: var(--bp-danger); }
+.phone-frame-light .sched-weeknames span.sched-weekname-sat { color: var(--bp-info); }
+
+/* 상단 바 우측 끝 — 주 시작 요일 토글 (캘린더 아이콘 + "시작 요일 일/월" 라벨) */
+.phone-frame-light .sched-week-start-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  background: rgba(20, 30, 50, 0.06);
+  border: 1px solid rgba(20, 30, 50, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  /* 클릭 시 위치 흔들림 방지 — :active 도 동일 transform 유지, 탭 하이라이트/사용자 선택 제거 */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.phone-frame-light .sched-week-start-toggle:hover {
+  background: rgba(20, 30, 50, 0.10);
+}
+.phone-frame-light .sched-week-start-toggle:active,
+.phone-frame-light .sched-week-start-toggle:focus {
+  transform: translateY(-50%);
+  outline: none;
+}
+.phone-frame-light .sched-week-start-toggle-label {
+  letter-spacing: -0.2px;
+}
 
 .phone-frame-light .sched-grid {
   display: grid;
@@ -146,11 +183,13 @@
 .phone-frame-light .sched-mark-draw { background: #b98a2c; }
 .phone-frame-light .sched-mark-canceled { background: #7b8493; }
 
-/* Day panel */
+/* Day panel — 3-column grid: 좌(뒤로가기) · 가운데(날짜 타이틀) · 우(갱신 버튼).
+   좌·우 동일 폭이라 날짜가 정확히 가운데로. */
 .phone-frame-light .sched-day-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 6px 4px 12px;
 }
 
@@ -159,6 +198,37 @@
   font-weight: 800;
   color: var(--bp-text);
   letter-spacing: -0.2px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 좌측 뒤로가기 버튼 — AppShell 헤더의 back과 같은 모양 */
+.phone-frame-light .sched-day-back {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--bp-line);
+  border-radius: 8px;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  justify-self: start;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-light .sched-day-back:hover {
+  background: var(--bp-bg-soft, #f5f6f8);
+  color: var(--bp-text);
+}
+
+/* 우측 슬롯 — 갱신 버튼 자리. 빈 상태에서도 좌측 폭과 균형 유지 */
+.phone-frame-light .sched-day-head-right {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
 }
 
 /* 오늘 경기 결과 갱신 버튼 — 미완료 경기 있을 때만 노출 */

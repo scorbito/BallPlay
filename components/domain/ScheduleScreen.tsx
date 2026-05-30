@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam, teams } from "@/lib/constants/teams";
@@ -12,6 +12,8 @@ import { refreshTodayGamesAction } from "@/lib/actions/refreshTodayGames";
 import type { Game } from "@/lib/types/domain";
 
 const WEEKDAYS_SUN = ["일", "월", "화", "수", "목", "금", "토"];
+const WEEKDAYS_MON = ["월", "화", "수", "목", "금", "토", "일"];
+type WeekStart = 0 | 1;  // 0=일요일 시작, 1=월요일 시작
 
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
@@ -26,14 +28,19 @@ const parseDotDate = (date: string) => {
 
 type CalendarDate = { date: Date; inMonth: boolean };
 
-const getMonthDates = (visibleMonth: Date): CalendarDate[] => {
+const getMonthDates = (visibleMonth: Date, weekStart: WeekStart): CalendarDate[] => {
   const year = visibleMonth.getFullYear();
   const month = visibleMonth.getMonth();
   const firstDay = new Date(year, month, 1);
-  const start = new Date(year, month, 1 - firstDay.getDay());
+  // weekStart=0: 일요일 시작 → 첫 요일만큼 뒤로
+  // weekStart=1: 월요일 시작 → 일=6, 월=0, 화=1, ... 토=5만큼 뒤로
+  const offsetBefore = weekStart === 0 ? firstDay.getDay() : (firstDay.getDay() + 6) % 7;
+  const start = new Date(year, month, 1 - offsetBefore);
   const lastDay = new Date(year, month + 1, 0);
   const end = new Date(lastDay);
-  end.setDate(end.getDate() + (6 - lastDay.getDay()));
+  // 마지막 행 끝까지: 일요일 시작이면 토요일에서 끝, 월요일 시작이면 일요일에서 끝
+  const offsetAfter = weekStart === 0 ? (6 - lastDay.getDay()) : (7 - lastDay.getDay()) % 7;
+  end.setDate(end.getDate() + offsetAfter);
   const totalCells = Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
   return Array.from({ length: totalCells }, (_, index) => {
     const date = new Date(start);
@@ -41,6 +48,12 @@ const getMonthDates = (visibleMonth: Date): CalendarDate[] => {
     return { date, inMonth: date.getMonth() === month };
   });
 };
+
+// JS getDay() (0=일, 1=월, ..., 6=토) → 캘린더 grid-column (1~7)
+// 일요일 시작: 일=1, 월=2, ..., 토=7
+// 월요일 시작: 월=1, 화=2, ..., 일=7
+const dayToGridColumn = (day: number, weekStart: WeekStart): number =>
+  weekStart === 0 ? day + 1 : ((day + 6) % 7) + 1;
 
 const getTeamResult = (game: Game, teamId: string): "win" | "lose" | "draw" | null => {
   if (game.status !== "finished" || game.homeScore == null || game.awayScore == null) return null;
@@ -64,9 +77,11 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   // 일정 페이지의 팀 선택은 localStorage 에 고정. 새로 진입해도 직전 선택이 유지.
   // 응원팀과 별개라 마이페이지의 mainTeamId 와는 분리.
   const STORAGE_KEY = "ballplay:schedule:selected-team";
+  const WEEK_START_KEY = "ballplay:schedule:week-start";
   const [selectedTeamId, setSelectedTeamIdState] = useState(profile.mainTeamId);
   const [teamMenuOpen, setTeamMenuOpen] = useState(false);
   const teamPickerRef = useRef<HTMLDivElement | null>(null);
+  const [weekStart, setWeekStartState] = useState<WeekStart>(0);
 
   // SSR hydration mismatch 방지 — mount 후 localStorage 값을 한 번 적용.
   useEffect(() => {
@@ -74,6 +89,10 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved && teams.some((t) => t.id === saved)) {
         setSelectedTeamIdState(saved);
+      }
+      const savedWeekStart = window.localStorage.getItem(WEEK_START_KEY);
+      if (savedWeekStart === "0" || savedWeekStart === "1") {
+        setWeekStartState(Number(savedWeekStart) as WeekStart);
       }
     } catch {
       // localStorage 접근 실패 (시크릿 모드 등) → 무시
@@ -85,6 +104,16 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
     setSelectedTeamIdState(id);
     try {
       window.localStorage.setItem(STORAGE_KEY, id);
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleWeekStart = () => {
+    const next: WeekStart = weekStart === 0 ? 1 : 0;
+    setWeekStartState(next);
+    try {
+      window.localStorage.setItem(WEEK_START_KEY, String(next));
     } catch {
       // ignore
     }
@@ -150,7 +179,7 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
     return map;
   }, [games]);
 
-  const calendarDates = useMemo(() => getMonthDates(visibleMonth), [visibleMonth]);
+  const calendarDates = useMemo(() => getMonthDates(visibleMonth, weekStart), [visibleMonth, weekStart]);
   const calendarWeeks = useMemo(
     () => Array.from({ length: Math.ceil(calendarDates.length / 7) }, (_, i) => calendarDates.slice(i * 7, i * 7 + 7)),
     [calendarDates]
@@ -243,22 +272,22 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   };
 
   const getSeriesSegmentsForWeek = (week: CalendarDate[]) => {
-    const weekStart = week[0].date.getTime();
-    const weekEnd = week[6].date.getTime();
+    const weekStartTs = week[0].date.getTime();
+    const weekEndTs = week[6].date.getTime();
     return teamSeries
       .map((s) => {
-        const segStart = Math.max(s.startDate.getTime(), weekStart);
-        const segEnd = Math.min(s.endDate.getTime(), weekEnd);
+        const segStart = Math.max(s.startDate.getTime(), weekStartTs);
+        const segEnd = Math.min(s.endDate.getTime(), weekEndTs);
         if (segStart > segEnd) return null;
-        const startDay = new Date(segStart).getDay() + 1;
+        const startDay = dayToGridColumn(new Date(segStart).getDay(), weekStart);
         const span = Math.round((segEnd - segStart) / 86400000) + 1;
         return {
           opponentTeamId: s.opponentTeamId,
           venue: s.venue,
           startDay,
           span,
-          continuesFromPreviousWeek: s.startDate.getTime() < weekStart,
-          continuesToNextWeek: s.endDate.getTime() > weekEnd,
+          continuesFromPreviousWeek: s.startDate.getTime() < weekStartTs,
+          continuesToNextWeek: s.endDate.getTime() > weekEndTs,
           result: getSeriesResult(s)
         };
       })
@@ -414,6 +443,16 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
           ) : null}
         </div>
 
+        <button
+          type="button"
+          className="sched-week-start-toggle"
+          onClick={toggleWeekStart}
+          aria-label={weekStart === 0 ? "월요일 시작으로 변경" : "일요일 시작으로 변경"}
+          title={weekStart === 0 ? "월요일 시작으로 변경" : "일요일 시작으로 변경"}
+        >
+          <CalendarDays size={14} aria-hidden="true" />
+          <span className="sched-week-start-toggle-label">시작 요일 변경</span>
+        </button>
       </div>
 
       <section className="sched-card">
@@ -430,9 +469,18 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
         </div>
 
         <div className="sched-weeknames">
-          {WEEKDAYS_SUN.map((day) => (
-            <span key={day}>{day}</span>
-          ))}
+          {(weekStart === 0 ? WEEKDAYS_SUN : WEEKDAYS_MON).map((day, idx) => {
+            // 일요일=0, 토요일=6 (JS getDay 기준).
+            // weekStart=0: idx 그대로 (0=일, 6=토)
+            // weekStart=1: 0=월(=1), 1=화(=2), ..., 5=토(=6), 6=일(=0)
+            const dayOfWeek = weekStart === 0 ? idx : (idx + 1) % 7;
+            const cls = dayOfWeek === 0 ? "sched-weekname-sun" : dayOfWeek === 6 ? "sched-weekname-sat" : "";
+            return (
+              <span key={day} className={cls}>
+                {day}
+              </span>
+            );
+          })}
         </div>
 
         <div className="sched-series-grid">
