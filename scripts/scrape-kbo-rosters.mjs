@@ -342,12 +342,14 @@ async function scrapeTeam(team) {
 
   // 3.5) 이전 파일 로드해서 id 안정성 보장 (name → 후보 배열, 동명이인 대응)
   const prevByName = new Map();
+  const prevPlayers = [];
   try {
     const prevPath = join(OUT_DIR, `${team.id}.json`);
     const prev = JSON.parse(await readFile(prevPath, "utf-8"));
     for (const p of prev.players ?? []) {
       if (!prevByName.has(p.name)) prevByName.set(p.name, []);
       prevByName.get(p.name).push(p);
+      prevPlayers.push(p);
     }
   } catch {
     // 첫 스크랩이거나 파일 없음 — 무시
@@ -385,7 +387,39 @@ async function scrapeTeam(team) {
   const posStr = Object.entries(posSummary)
     .map(([k, v]) => `${k}${v}`)
     .join(" ");
-  console.log(`${allPlayers.length}명  (${posStr})`);
+
+  // 5) 수동 추가 선수 보존 — `_manual: true` 마킹된 이전 entry 중
+  //   이번 스크랩에 없는(KBO Search 누락) 선수는 그대로 살림. detail/position summary 이후에 추가해서
+  //   재fetch·정렬·통계 노이즈 없게.
+  //   사용처: KBO Player Search 인덱스에서 누락되지만 실제 1군 활약 중인 선수
+  //   (예: 황성빈 2026-05-30 케이스). 사이트 정상화되면 새 entry가 같은 name으로 들어와 이 분기 자연 통과.
+  //
+  //   `_playerId` 가 채워져 있으면 그 KBO 상세 페이지로 detail 재fetch → 투/타/seasonGames 자동 갱신.
+  //   (수동 추가지만 데이터는 최신 유지 — 사용자가 한 번만 ID 알려주면 됨.)
+  const newNames = new Set(allPlayers.map((p) => p.name));
+  const preserved = prevPlayers.filter((p) => p._manual === true && !newNames.has(p.name));
+  let refreshed = 0;
+  for (const p of preserved) {
+    if (!p._playerId) continue;
+    const d = await fetchPlayerDetail(p, cookie);
+    if (d) {
+      if (d.throwingHand) p.throwingHand = d.throwingHand;
+      if (d.battingHand) p.battingHand = d.battingHand;
+      p.seasonGames = d.seasonGames;
+      refreshed += 1;
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  if (preserved.length > 0) {
+    allPlayers.push(...preserved);
+    // 보존 후 다시 등번호 정렬
+    allPlayers.sort((a, b) => a.jerseyNumber - b.jerseyNumber);
+  }
+
+  const preserveStr = preserved.length > 0
+    ? ` +수동보존 ${preserved.length}(${preserved.map((p) => p.name).join(",")}) [detail갱신 ${refreshed}]`
+    : "";
+  console.log(`${allPlayers.length}명  (${posStr})${preserveStr}`);
 
   return {
     teamId: team.id,
@@ -393,7 +427,7 @@ async function scrapeTeam(team) {
     _scrapedAt: new Date().toISOString(),
     _source: BASE_URL,
     _note:
-      "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능.",
+      "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
     players: allPlayers
   };
 }

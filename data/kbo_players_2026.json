@@ -16975,6 +16975,29 @@
           "bbRate": 0.063,
           "kRate": 0.313,
           "contactScore": 0.688
+        },
+        {
+          "playerId": "lotte-0",
+          "name": "황성빈",
+          "battingHand": "L",
+          "pa": 119,
+          "ab": 111,
+          "hits": 31,
+          "doubles": 1,
+          "triples": 4,
+          "homers": 0,
+          "walks": 5,
+          "hbp": 0,
+          "strikeouts": 20,
+          "avg": 0.279,
+          "obp": 0.308,
+          "slg": 0.36,
+          "iso": 0.081,
+          "babip": 0.341,
+          "bbRate": 0.042,
+          "kRate": 0.168,
+          "contactScore": 0.832,
+          "_manual": true
         }
       ],
       "pitchers": [
