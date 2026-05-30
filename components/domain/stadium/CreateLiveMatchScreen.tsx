@@ -14,6 +14,7 @@ import { generateSeed } from "@/lib/sim/matchSession";
 import { getOrCreateGuestId } from "@/lib/sim/guestId";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createMatch, type BpMatchMode } from "@/lib/supabase/query-parts/bpMatches";
+import { listMyLineups } from "@/lib/supabase/query-parts/bpLineups";
 
 // "친구와 대결" — 내 라인업으로 매치 생성 → invite_code 발급 → /stadium/live/[code] 이동
 // 호스트는 home 슬롯 고정 (단순화).
@@ -25,11 +26,28 @@ export function CreateLiveMatchScreen() {
   const [creating, setCreating] = useState(false);
   // 진행 속도 — 방장이 선택. 양쪽 클라이언트 동일하게 진행. 기본 fast(빠른).
   const [mode, setMode] = useState<BpMatchMode>("fast");
+  // entry_id → bp_lineups.id 매핑 (공개 등록된 라인업만). 정식 매치 판정·전적 집계에 사용.
+  const [publishedLineupIdByEntry, setPublishedLineupIdByEntry] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
     setEntries(ready);
     if (ready.length > 0) setSelectedEntryId(ready[0].entryId);
+
+    // 공개 라인업 ID 미리 로드 — 매치 생성 시 lineup_id 즉시 첨부 가능.
+    void (async () => {
+      const client = createSupabaseBrowserClient();
+      const { data } = await client.auth.getUser();
+      const userId = data.user?.id;
+      if (!userId) return;
+      const res = await listMyLineups(client, userId);
+      if (!res.ok) return;
+      const map: Record<string, string> = {};
+      for (const row of res.rows) {
+        if (row.is_published) map[row.entry_id] = row.id;
+      }
+      setPublishedLineupIdByEntry(map);
+    })();
   }, []);
 
   const selectedEntry = useMemo(
@@ -60,13 +78,15 @@ export function CreateLiveMatchScreen() {
     const seed = generateSeed();
     const guestId = getOrCreateGuestId();
 
+    const lineupId = publishedLineupIdByEntry[selectedEntry.entryId] ?? null;
     const result = await createMatch(client, {
       ownerSide: "home",
       ownerId: user?.id ?? null,
       guestId,
       team: shared.team,
       seed,
-      mode
+      mode,
+      lineupId
     });
 
     if (!result.ok) {
@@ -96,6 +116,7 @@ export function CreateLiveMatchScreen() {
                 const team = getTeam(entry.teamId);
                 const active = entry.entryId === selectedEntryId;
                 const pitcherAuto = entry.pitching === null;
+                const isPublished = entry.entryId in publishedLineupIdByEntry;
                 return (
                   <button
                     key={entry.entryId}
@@ -106,6 +127,9 @@ export function CreateLiveMatchScreen() {
                     <TeamBadge teamId={entry.teamId} size="sm" />
                     <span className="stadium-enter-picker-name">{entry.name}</span>
                     <span className="stadium-enter-picker-team">{team.shortName}</span>
+                    {isPublished ? (
+                      <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">공개 등록</span>
+                    ) : null}
                     {pitcherAuto ? (
                       <span className="stadium-enter-picker-tag">투수 자동</span>
                     ) : null}
@@ -113,6 +137,14 @@ export function CreateLiveMatchScreen() {
                 );
               })}
             </div>
+            <p className="stadium-enter-picker-hint">
+              양쪽 모두 <strong>공개 등록</strong> 라인업이면 <strong>정식 매치</strong>로 기록돼요. 한쪽이라도 비등록이면 <strong>연습 매치</strong>.
+            </p>
+            {Object.keys(publishedLineupIdByEntry).length === 0 ? (
+              <Link href="/play/lineup" className="stadium-enter-picker-cta" prefetch>
+                라인업 공개 등록하고 정식 매치로 진행 →
+              </Link>
+            ) : null}
           </div>
         ) : (
           <div className="stadium-enter-empty-box">

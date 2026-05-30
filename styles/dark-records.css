@@ -251,6 +251,23 @@
   color: var(--bp-text-secondary);
 }
 
+/* 정식/연습 매치 뱃지 — source 뱃지 옆. 정식=accent, 연습=중성 톤. */
+.phone-frame-light .records-card-tier {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+.phone-frame-light .records-card-tier.is-official {
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
+}
+.phone-frame-light .records-card-tier.is-practice {
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
+}
+
 .phone-frame-light .records-card-outcome {
   margin-left: auto;
   padding: 2px 10px;

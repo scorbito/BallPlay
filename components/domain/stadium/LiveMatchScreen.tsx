@@ -22,6 +22,7 @@ import {
   subscribeToMatch,
   type BpMatchRow
 } from "@/lib/supabase/query-parts/bpMatches";
+import { listMyLineups } from "@/lib/supabase/query-parts/bpLineups";
 
 // 초대 링크 진입점.
 //   - 매치 row 조회 (invite_code)
@@ -71,6 +72,8 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   const [entries, setEntries] = useState<LineupEntry[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
+  // entry_id → bp_lineups.id (공개 등록 카드만). 정식 매치 판정용.
+  const [publishedLineupIdByEntry, setPublishedLineupIdByEntry] = useState<Record<string, string>>({});
 
   // 초대 URL 복사
   const [copied, setCopied] = useState(false);
@@ -92,6 +95,18 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
       } = await client.auth.getUser();
       if (cancelled) return;
       setUid(user?.id ?? null);
+
+      // 공개 라인업 매핑 (entry_id → bp_lineups.id) 로드
+      if (user?.id) {
+        const lineupRes = await listMyLineups(client, user.id);
+        if (!cancelled && lineupRes.ok) {
+          const map: Record<string, string> = {};
+          for (const r of lineupRes.rows) {
+            if (r.is_published) map[r.entry_id] = r.id;
+          }
+          setPublishedLineupIdByEntry(map);
+        }
+      }
 
       const data = await getMatchByInviteCode(client, inviteCode);
       if (cancelled) return;
@@ -173,6 +188,11 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
         if (oppGuestId) opponentNickname = "게스트";
       }
 
+      // 공개 라인업 ID — 본인/상대 측을 row 에서 직접 가져옴.
+      // bp_matches.home_lineup_id / away_lineup_id 는 createMatch/joinMatch 시 세팅된 값.
+      const myLineupId = isHome ? row.home_lineup_id : row.away_lineup_id;
+      const opponentLineupId = isHome ? row.away_lineup_id : row.home_lineup_id;
+
       saveMatchSession({
         myTeamId: isHome ? home.team.teamId : away.team.teamId,
         opponentTeamId: isHome ? away.team.teamId : home.team.teamId,
@@ -184,6 +204,8 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
         liveMatchId: row.id,
         liveStartAt: row.start_at!,
         liveMode: row.mode ?? "live",
+        myLineupId: myLineupId ?? undefined,
+        opponentLineupId: opponentLineupId ?? undefined,
         opponentNickname
       });
       router.replace("/stadium/play");
@@ -231,11 +253,13 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
       return;
     }
 
+    const joinerLineupId = publishedLineupIdByEntry[selectedEntry.entryId] ?? null;
     const result = await joinMatch(client, {
       matchId: row.id,
       ownerId: uid,
       guestId,
-      team: shared.team
+      team: shared.team,
+      lineupId: joinerLineupId
     });
     if (!result.ok) {
       setError(result.error);
@@ -392,6 +416,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                     const team = getTeam(entry.teamId);
                     const active = entry.entryId === selectedEntryId;
                     const pitcherAuto = entry.pitching === null;
+                    const isPublished = entry.entryId in publishedLineupIdByEntry;
                     return (
                       <button
                         key={entry.entryId}
@@ -402,6 +427,9 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                         <TeamBadge teamId={entry.teamId} size="sm" />
                         <span className="stadium-enter-picker-name">{entry.name}</span>
                         <span className="stadium-enter-picker-team">{team.shortName}</span>
+                        {isPublished ? (
+                          <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">공개 등록</span>
+                        ) : null}
                         {pitcherAuto ? (
                           <span className="stadium-enter-picker-tag">투수 자동</span>
                         ) : null}
@@ -409,6 +437,14 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                     );
                   })}
                 </div>
+                <p className="stadium-enter-picker-hint">
+                  양쪽 모두 <strong>공개 등록</strong> 라인업이면 <strong>정식 매치</strong>로 기록돼요.
+                </p>
+                {Object.keys(publishedLineupIdByEntry).length === 0 ? (
+                  <Link href="/play/lineup" className="stadium-enter-picker-cta" prefetch>
+                    라인업 공개 등록하고 정식 매치로 진행 →
+                  </Link>
+                ) : null}
               </div>
             ) : (
               <div className="stadium-enter-empty-box">

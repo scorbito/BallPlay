@@ -23,6 +23,9 @@ export type BpMatchRow = {
   home_owner_id: string | null;
   away_guest_id: string | null;
   home_guest_id: string | null;
+  // 공개 라인업 ID — 비공개/임시 라인업이면 null. 양쪽 NOT NULL 이면 매치 종료 시 정식 매치로 집계.
+  home_lineup_id: string | null;
+  away_lineup_id: string | null;
   seed: number;
   engine_version: string;
   stats_snapshot_date: string;
@@ -45,6 +48,8 @@ export type CreateMatchInput = {
   team: SharedTeam;           // 생성자 라인업 스냅샷
   seed: number;
   mode?: BpMatchMode;         // 진행 모드 (디폴트 'fast')
+  /** 공개 라인업 ID (bp_lineups.id). 비공개/임시 라인업이면 null/undefined. */
+  lineupId?: string | null;
 };
 
 export async function createMatch(
@@ -71,7 +76,9 @@ export async function createMatch(
     away_owner_id: input.ownerSide === "away" ? input.ownerId : null,
     home_owner_id: input.ownerSide === "home" ? input.ownerId : null,
     away_guest_id: input.ownerSide === "away" ? input.guestId : null,
-    home_guest_id: input.ownerSide === "home" ? input.guestId : null
+    home_guest_id: input.ownerSide === "home" ? input.guestId : null,
+    away_lineup_id: input.ownerSide === "away" ? (input.lineupId ?? null) : null,
+    home_lineup_id: input.ownerSide === "home" ? (input.lineupId ?? null) : null
   };
 
   const { data, error } = await client
@@ -122,6 +129,8 @@ export type JoinMatchInput = {
   ownerId: string | null;
   guestId: string;
   team: SharedTeam;
+  /** 공개 라인업 ID (bp_lineups.id). 비공개/임시 라인업이면 null/undefined. */
+  lineupId?: string | null;
 };
 
 export async function joinMatch(
@@ -151,7 +160,8 @@ export async function joinMatch(
     [`${emptySide}_team_id` as keyof BpMatchRow]: input.team.t,
     [`${emptySide}_lineup_snapshot` as keyof BpMatchRow]: input.team,
     [`${emptySide}_owner_id` as keyof BpMatchRow]: input.ownerId,
-    [`${emptySide}_guest_id` as keyof BpMatchRow]: input.guestId
+    [`${emptySide}_guest_id` as keyof BpMatchRow]: input.guestId,
+    [`${emptySide}_lineup_id` as keyof BpMatchRow]: input.lineupId ?? null
   } as Partial<BpMatchRow>;
 
   const { data, error } = await client

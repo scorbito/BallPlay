@@ -62,6 +62,9 @@ export function RecordCard({
   const replayButtonText = replay.ok ? "재생" : getReplayUnavailableButtonText(replay.reason);
   const canUseSnapshot = row.input !== null;
   const showRematch = row.source === "public";
+  // 양쪽 다 공개 라인업이면 정식 매치(전적 집계 대상). 하나라도 비등록이면 연습 매치.
+  const isOfficial = row.home_lineup_id !== null && row.home_lineup_id !== undefined
+    && row.away_lineup_id !== null && row.away_lineup_id !== undefined;
   const isWinner =
     (row.user_side === "home" && row.final_score.home > row.final_score.away) ||
     (row.user_side === "away" && row.final_score.away > row.final_score.home);
@@ -75,6 +78,12 @@ export function RecordCard({
           {row.opponent_nickname ? (
             <span className="records-card-opponent"> · vs {row.opponent_nickname}</span>
           ) : null}
+        </span>
+        <span
+          className={`records-card-tier ${isOfficial ? "is-official" : "is-practice"}`}
+          title={isOfficial ? "양쪽 모두 공개 라인업 — 전적에 집계" : "한쪽 이상 비등록 라인업 — 전적 미집계"}
+        >
+          {isOfficial ? "정식 매치" : "연습 매치"}
         </span>
         <span
           className={`records-card-outcome ${
