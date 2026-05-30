@@ -1,12 +1,12 @@
 "use client";
 
-// 홈 카드 우상단 코너 — featured(★추천) / external(↗) / badge(준비중) 표시.
-// ! 정보 아이콘 + 설명 툴팁은 제거됨 (2026-05-27).
-//   - 이유: 메뉴명이 자명해 카드별 ! 가 시각 노이즈 + "설명 필요한 앱" 인상.
-//   - 메뉴 설명은 각 페이지 내부 제목 아래로 이동 예정.
-//   - description prop은 호출부 호환 위해 유지 (현재 미사용).
+// 홈 카드 우상단 코너 — external(↗) / badge(준비중) 표시.
+// 변경 이력:
+//   - 2026-05-27: ! 정보 아이콘 + 설명 툴팁 제거 (메뉴명이 자명).
+//   - 2026-05-30: ★추천 뱃지 제거 (featured 카드 자체가 핑크 강조라 뱃지 중복).
+//   - featured prop은 호출부 호환 위해 유지 (현재 사용 X).
 
-import { ExternalLink, Star } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 type Props = {
   cardId: string;
@@ -18,15 +18,7 @@ type Props = {
   badge?: string;
 };
 
-export function HomeCardCorner({ available, featured, external, badge }: Props) {
-  if (featured) {
-    return (
-      <span className="play-hub-card-featured">
-        <Star size={10} fill="currentColor" strokeWidth={0} />
-        추천
-      </span>
-    );
-  }
+export function HomeCardCorner({ available, external, badge }: Props) {
   if (external) {
     return (
       <span className="play-hub-card-external-mark" aria-hidden="true">
