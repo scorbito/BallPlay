@@ -35,7 +35,7 @@ type Props = {
   maxItems?: number;
 };
 
-export function MyLineupList({ maxItems = 6 }: Props) {
+export function MyLineupList({ maxItems = 10 }: Props) {
   const router = useRouter();
   const [entries, setEntries] = useState<LineupEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -180,7 +180,14 @@ export function MyLineupList({ maxItems = 6 }: Props) {
     );
   }
 
-  const list = entries.slice(0, maxItems);
+  // updatedAt 내림차순 정렬 후 slice — 새로 만든/수정한 라인업이 항상 상단에 보이도록.
+  //   - loadLineupEntries()는 무정렬, upsertLineupEntry()는 새 entry를 배열 끝에 append.
+  //     그래서 기존 entry가 maxItems만큼 차있으면 새 entry가 slice에서 잘려 안 보이는 버그가 있었음.
+  //     (도전 모달의 picker는 slice 없이 전부 노출 → 거기엔 보임. 같은 localStorage라도
+  //     list slice 위치가 달라서 두 곳에서 다르게 보였음.)
+  const list = [...entries]
+    .sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0))
+    .slice(0, maxItems);
 
   return (
     <>

@@ -87,7 +87,8 @@ export function LobbyScreen() {
           </h2>
           <span className="stadium-lobby-section-sub">나만 볼 수 있어요</span>
         </header>
-        <MyLineupList maxItems={6} />
+        {/* 일반 유저(pro) 최대 슬롯 = 10. 10까지 모두 노출 (admin은 50까지 가능하나 테스트용 한도라 무관). */}
+        <MyLineupList maxItems={10} />
       </section>
 
       {/* 4. AI와 대결 — 하단 그리드 */}
