@@ -26,7 +26,7 @@ import {
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 import { useAppState } from "@/lib/state/AppState";
-import { getMatchSoundMuted, playMatchSound, setMatchSoundMuted } from "@/lib/sound/matchSounds";
+import { getMatchSoundMuted, playMatchSound, preloadMatchSounds, setMatchSoundMuted } from "@/lib/sound/matchSounds";
 
 const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
   K: "삼진",
@@ -304,6 +304,9 @@ export function PlayScreen() {
   const [muted, setMuted] = useState(false);
   useEffect(() => {
     setMuted(getMatchSoundMuted());
+    // 4종 사운드 사전 decode → 첫 안타/홈런/삼진/득점부터 지연 없이 즉시 재생.
+    // (이전엔 매 호출마다 new Audio() 라 모바일에서 1초가량 늦게 들리는 문제 있었음.)
+    void preloadMatchSounds();
   }, []);
   const toggleMuted = () => {
     setMuted((m) => {
