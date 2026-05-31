@@ -26,18 +26,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   color: var(--bp-text-secondary);
-  background: rgba(20, 30, 50, 0.04);
-  transition: background 120ms ease, color 120ms ease;
+  /* 3D 일러스트 아이콘 사용 — 배경/색 hover 없음, 살짝 떠오르는 인터랙션만. */
+  transition: transform 120ms ease, filter 120ms ease;
 }
-
 .phone-frame-light .play-hub-settings:hover,
 .phone-frame-light .play-hub-settings:focus-visible {
-  background: rgba(20, 30, 50, 0.08);
-  color: var(--bp-text);
+  transform: translateY(-1px);
+  filter: drop-shadow(0 2px 4px rgba(232, 74, 138, 0.2));
+}
+
+/* 헤더 3D 일러스트 아이콘 — Image 컴포넌트의 intrinsic 크기 무시하고 컨테이너에 맞춤 */
+.phone-frame-light .play-hub-header-icon {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
 }
 
 /* 공지 아이콘 — 신규 공지 빨간점 배지 */

@@ -6,8 +6,8 @@
 //   - 비교는 ISO 문자열 사전순(=시간순)으로 안전하게 동작.
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Megaphone } from "lucide-react";
 
 const LAST_SEEN_KEY = "bp:notices-last-seen";
 
@@ -46,7 +46,13 @@ export function NoticeButton({ latestPublishedAt }: { latestPublishedAt: string 
       aria-label={unread ? "공지사항 (새 공지 있음)" : "공지사항"}
       onClick={markSeen}
     >
-      <Megaphone size={20} />
+      <Image
+        src="/icons/header/notice.png"
+        alt=""
+        width={36}
+        height={36}
+        className="play-hub-header-icon"
+      />
       {unread ? <span className="play-hub-notice-dot" aria-hidden /> : null}
     </Link>
   );

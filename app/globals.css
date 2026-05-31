@@ -346,10 +346,51 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 0;
   color: #767b85;
   font-size: 11px;
   font-weight: 700;
+}
+
+/* 텍스트만 살짝 위로 — 아이콘 받침과 자연스럽게 만나는 느낌 */
+.tab-item > span:not(.tab-item-icon):not(.tab-item-badge) {
+  margin-top: -2px;
+}
+
+/* 3D 일러스트 아이콘 래퍼 — 실제 크기는 여기서 결정 (next/image width/height는 intrinsic 힌트일 뿐). */
+.tab-item-icon {
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+.tab-item-icon img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 비활성 — 채도/명도 다운 + 살짝 투명. 컬러풀 일러스트가 차분해짐. */
+.tab-item:not(.tab-item-active) .tab-item-icon {
+  filter: grayscale(0.55) brightness(0.95);
+  opacity: 0.7;
+}
+
+/* 활성 — 풀 컬러 + 살짝 떠오름 (lift up) + 핑크 글로우 그림자. */
+.tab-item-active .tab-item-icon {
+  transform: translateY(-3px) scale(1.06);
+  filter: drop-shadow(0 4px 6px rgba(232, 74, 138, 0.25));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-item-icon {
+    transition: none;
+  }
+  .tab-item-active .tab-item-icon {
+    transform: none;
+  }
 }
 
 .tab-item-active {

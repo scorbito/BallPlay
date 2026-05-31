@@ -1,6 +1,6 @@
 "use client";
 
-import { History, Home, ListChecks, Swords } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -14,17 +14,17 @@ type BottomTabsProps = {
 type TabDef = {
   id: TabId;
   label: string;
-  icon: typeof Home;
+  iconSrc: string;
   href: string;
   disabled?: boolean;
   badge?: string;
 };
 
 const tabs: readonly TabDef[] = [
-  { id: "home", label: "홈", icon: Home, href: "/" },
-  { id: "play", label: "라인업 짜기", icon: ListChecks, href: "/play/lineup" },
-  { id: "stadium", label: "경기장", icon: Swords, href: "/stadium/lobby" },
-  { id: "records", label: "내 기록", icon: History, href: "/records" }
+  { id: "home", label: "홈", iconSrc: "/icons/tabs/home.png", href: "/" },
+  { id: "play", label: "라인업 짜기", iconSrc: "/icons/tabs/play.png", href: "/play/lineup" },
+  { id: "stadium", label: "경기장", iconSrc: "/icons/tabs/stadium.png", href: "/stadium/lobby" },
+  { id: "records", label: "내 기록", iconSrc: "/icons/tabs/records.png", href: "/records" }
 ] as const;
 
 export function BottomTabs({ activeTab }: BottomTabsProps) {
@@ -63,7 +63,6 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
     <>
       <nav className="bottom-tab" aria-label="하단 메뉴">
         {tabs.map((tab) => {
-          const Icon = tab.icon;
           const isActive = activeTab === tab.id;
 
           if (tab.disabled) {
@@ -74,7 +73,9 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
                 aria-disabled="true"
                 role="link"
               >
-                <Icon size={19} strokeWidth={2} />
+                <span className="tab-item-icon">
+                  <Image src={tab.iconSrc} alt="" width={32} height={32} />
+                </span>
                 <span>{tab.label}</span>
                 {tab.badge ? <span className="tab-item-badge">{tab.badge}</span> : null}
               </div>
@@ -105,7 +106,9 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
               onTouchStart={warmRoute}
               prefetch
             >
-              <Icon size={19} strokeWidth={isActive ? 2.8 : 2} />
+              <span className="tab-item-icon">
+                <Image src={tab.iconSrc} alt="" width={32} height={32} priority={isActive} />
+              </span>
               <span>{tab.label}</span>
             </Link>
           );

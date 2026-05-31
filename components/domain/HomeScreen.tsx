@@ -12,7 +12,6 @@ import {
   ListChecks,
   Play,
   PlaySquare,
-  Settings,
   Swords,
   Target,
   Trophy,
@@ -278,7 +277,13 @@ export async function HomeScreen() {
         <div className="play-hub-header-actions">
           <NoticeButton latestPublishedAt={latestNoticeAt} />
           <Link href="/my/settings" className="play-hub-settings" prefetch aria-label="설정">
-            <Settings size={20} />
+            <Image
+              src="/icons/header/settings.png"
+              alt=""
+              width={36}
+              height={36}
+              className="play-hub-header-icon"
+            />
           </Link>
         </div>
       </header>
