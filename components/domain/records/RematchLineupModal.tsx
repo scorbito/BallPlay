@@ -31,7 +31,7 @@ type Props = {
 
 function formatRecord(stats: LineupStats | undefined): string {
   if (!stats || stats.matches === 0) return "";
-  return `(${stats.wins}승 ${stats.losses}패)`;
+  return ` (${stats.wins}승 ${stats.losses}패)`;
 }
 
 export function RematchLineupModal({
@@ -56,24 +56,22 @@ export function RematchLineupModal({
       closeOnBackdrop
     >
       {opponentTeam ? (
-        <div className="stadium-discover-vs records-rematch-vs" aria-label="재대전 상대">
-          <span className="stadium-discover-vs-label stadium-discover-vs-label-left">상대</span>
-          <span className="stadium-discover-vs-label stadium-discover-vs-label-right">내 라인업</span>
-          <div className="stadium-play-team stadium-discover-vs-side-left">
-            <TeamBadge teamId={opponentTeam.teamId} size="md" />
-            <span className="stadium-discover-vs-lineup">
-              {opponentTeam.displayName ?? getTeam(opponentTeam.teamId).shortName}
-            </span>
+        <div className="stadium-enter-vs" aria-label="재대전 상대">
+          <div className="stadium-enter-team">
+            <span className="stadium-enter-team-label">상대</span>
+            <TeamBadge teamId={opponentTeam.teamId} size="lg" />
+            <strong>{opponentTeam.displayName ?? getTeam(opponentTeam.teamId).shortName}</strong>
           </div>
-          <span className="stadium-discover-vs-divider">VS</span>
-          <div className="stadium-play-team stadium-discover-vs-side-right">
+          <span className="stadium-enter-vs-label">VS</span>
+          <div className="stadium-enter-team">
+            <span className="stadium-enter-team-label">내 라인업</span>
             {selectedLineup ? (
               <>
-                <span className="stadium-discover-vs-lineup">{selectedLineup.name}</span>
-                <TeamBadge teamId={selectedLineup.teamId} size="md" />
+                <TeamBadge teamId={selectedLineup.teamId} size="lg" />
+                <strong>{selectedLineup.name}</strong>
               </>
             ) : (
-              <strong>선택 필요</strong>
+              <span className="stadium-enter-empty">선택 필요</span>
             )}
           </div>
         </div>
@@ -93,7 +91,7 @@ export function RematchLineupModal({
                 aria-pressed={selectedEntryId === lineup.entryId}
               >
                 <TeamBadge teamId={lineup.teamId} size="sm" />
-                <span>{recordTxt ? `${lineup.name}${recordTxt}` : lineup.name}</span>
+                <span>{lineup.name}{recordTxt}</span>
               </button>
             );
           })}

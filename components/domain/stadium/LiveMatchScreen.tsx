@@ -413,9 +413,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                 <span className="stadium-enter-picker-label">출전 라인업 선택</span>
                 <div className="stadium-enter-picker-row">
                   {entries.map((entry) => {
-                    const team = getTeam(entry.teamId);
                     const active = entry.entryId === selectedEntryId;
-                    const pitcherAuto = entry.pitching === null;
                     const isPublished = entry.entryId in publishedLineupIdByEntry;
                     return (
                       <button
@@ -429,9 +427,6 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                         <span className="stadium-enter-picker-name">{entry.name}</span>
                         {isPublished ? (
                           <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">공개 등록</span>
-                        ) : null}
-                        {pitcherAuto ? (
-                          <span className="stadium-enter-picker-tag">투수 자동</span>
                         ) : null}
                       </button>
                     );

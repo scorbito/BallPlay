@@ -359,31 +359,19 @@ export function RegisteredLineupList({
         <div className="lineup-confirm-body">
           {selectedOpponent ? (
             <>
-              <div className="stadium-discover-vs">
-                <span className="stadium-discover-vs-label stadium-discover-vs-label-left">
-                  상대({formatOwnerLabel(selectedOpponent)})
-                </span>
-                <span className="stadium-discover-vs-label stadium-discover-vs-label-right">내 팀</span>
-                <div className="stadium-play-team stadium-discover-vs-side-left">
-                  <TeamBadge teamId={selectedOpponent.team_id} size="md" />
-                  <div className="stadium-discover-vs-textcol">
-                    <span className="stadium-discover-vs-teamname">{getTeam(selectedOpponent.team_id).shortName}</span>
-                    {selectedOpponent.name !== getTeam(selectedOpponent.team_id).name ? (
-                      <span className="stadium-discover-vs-lineup">{selectedOpponent.name}</span>
-                    ) : null}
-                  </div>
+              <div className="stadium-enter-vs">
+                <div className="stadium-enter-team">
+                  <span className="stadium-enter-team-label">{formatOwnerLabel(selectedOpponent)}</span>
+                  <TeamBadge teamId={selectedOpponent.team_id} size="lg" />
+                  <strong>{selectedOpponent.name}</strong>
                 </div>
-                <span className="stadium-discover-vs-divider">VS</span>
-                <div className="stadium-play-team stadium-discover-vs-side-right">
+                <span className="stadium-enter-vs-label">VS</span>
+                <div className="stadium-enter-team">
+                  <span className="stadium-enter-team-label">내 팀</span>
                   {myEntry ? (
                     <>
-                      <div className="stadium-discover-vs-textcol stadium-discover-vs-textcol-right">
-                        <span className="stadium-discover-vs-teamname">{getTeam(myEntry.teamId).shortName}</span>
-                        {myEntry.name !== getTeam(myEntry.teamId).name ? (
-                          <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
-                        ) : null}
-                      </div>
-                      <TeamBadge teamId={myEntry.teamId} size="md" />
+                      <TeamBadge teamId={myEntry.teamId} size="lg" />
+                      <strong>{myEntry.name}</strong>
                     </>
                   ) : (
                     <span className="stadium-enter-empty">공개 라인업이 없음</span>

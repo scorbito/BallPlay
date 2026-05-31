@@ -157,10 +157,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
           {selectedEntry ? (
             <>
               <TeamBadge teamId={selectedEntry.teamId} size="lg" />
-              <strong>{getTeam(selectedEntry.teamId).name}</strong>
-              {selectedEntry.name !== getTeam(selectedEntry.teamId).name ? (
-                <span className="stadium-enter-team-sub">{selectedEntry.name}</span>
-              ) : null}
+              <strong>{selectedEntry.name}</strong>
             </>
           ) : (
             <span className="stadium-enter-empty">라인업 필요</span>

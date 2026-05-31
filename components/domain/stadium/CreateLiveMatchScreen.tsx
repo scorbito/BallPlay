@@ -113,7 +113,6 @@ export function CreateLiveMatchScreen() {
             <span className="stadium-enter-picker-label">내 라인업 선택</span>
             <div className="stadium-enter-picker-row">
               {entries.map((entry) => {
-                const team = getTeam(entry.teamId);
                 const active = entry.entryId === selectedEntryId;
                 const pitcherAuto = entry.pitching === null;
                 const isPublished = entry.entryId in publishedLineupIdByEntry;
