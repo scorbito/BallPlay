@@ -43,7 +43,6 @@ export type Notice = {
   id: string;
   title: string;
   body: string;
-  isPinned: boolean;
   publishedAt: string;
 };
 

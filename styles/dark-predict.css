@@ -595,7 +595,7 @@
 
 .phone-frame-light .predict-rank-row {
   display: grid;
-  grid-template-columns: 28px 24px 1fr auto;
+  grid-template-columns: 28px 1fr auto;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;

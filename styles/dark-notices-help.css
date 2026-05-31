@@ -47,6 +47,22 @@
   letter-spacing: -0.2px;
 }
 
+/* 신규 공지(게시 후 7일 이내) 뱃지 — 진한 빨강 필 + 흰 글자로 강한 시인성. */
+.phone-frame-light .notice-new {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.35);
+}
+
 .phone-frame-light .notice-date {
   font-size: 11.5px;
   color: var(--bp-text-secondary);

@@ -9,8 +9,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/news" }
 };
 
+// 초기 50건 SSR — 추가 50건씩 클라이언트 "더 보기"로 fetch.
+const INITIAL_PAGE_SIZE = 50;
+
 export default async function NewsPage() {
   noStore();
-  const news = await listBpNews(100);
-  return <NewsScreen news={news} />;
+  const news = await listBpNews(INITIAL_PAGE_SIZE);
+  return <NewsScreen initialNews={news} pageSize={INITIAL_PAGE_SIZE} />;
 }

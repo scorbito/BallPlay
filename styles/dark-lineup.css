@@ -3110,6 +3110,53 @@
   color: var(--bp-text-muted);
 }
 
+/* "더 보기" 버튼 + 종료 안내 */
+.phone-frame-light .news-more {
+  margin: 16px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.phone-frame-light .news-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  border-radius: 999px;
+  color: var(--bp-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.phone-frame-light .news-more-btn:hover:not(:disabled) {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+.phone-frame-light .news-more-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.phone-frame-light .news-more-spin {
+  animation: news-spin 0.9s linear infinite;
+}
+@keyframes news-spin {
+  to { transform: rotate(360deg); }
+}
+.phone-frame-light .news-more-error {
+  font-size: 12px;
+  color: var(--bp-danger, #d9534f);
+  margin: 0;
+}
+.phone-frame-light .news-more-end {
+  margin: 20px 0 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bp-text-muted);
+}
+
 /* ── 최근 라인업 불러오기 ───────────────────────────────────────
    액션 행의 힌트 텍스트 자리를 대체하는 버튼 + 모달 안 리스트 스타일 */
 .phone-frame-light .lineup-recent-load-btn {

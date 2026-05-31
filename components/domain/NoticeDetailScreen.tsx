@@ -1,4 +1,3 @@
-import { Pin } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import type { Notice } from "@/lib/types/domain";
 
@@ -21,9 +20,6 @@ export function NoticeDetailScreen({ notice }: Props) {
     <AppShell activeTab="my" title="공지사항" theme="light" backHref="/my/notices">
       <article className="notice-detail">
         <header>
-          {notice.isPinned ? (
-            <span className="notice-pin" aria-label="고정 공지"><Pin size={11} strokeWidth={2.4} />고정</span>
-          ) : null}
           <h1>{notice.title}</h1>
           <time>{formatDateTime(notice.publishedAt)}</time>
         </header>

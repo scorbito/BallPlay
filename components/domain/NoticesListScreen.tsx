@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Pin, Megaphone } from "lucide-react";
+import { Megaphone } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import type { Notice } from "@/lib/types/domain";
 
@@ -47,11 +47,11 @@ export function NoticesListScreen({ notices }: Props) {
         </div>
       ) : (
         <section className="notice-list">
-          {notices.map((notice) => (
+          {notices.map((notice, idx) => (
             <Link key={notice.id} className="notice-card" href={`/my/notices/${notice.id}`} prefetch>
               <div className="notice-card-head">
-                {notice.isPinned ? (
-                  <span className="notice-pin" aria-label="고정 공지"><Pin size={11} strokeWidth={2.4} />고정</span>
+                {idx === 0 ? (
+                  <span className="notice-new" aria-label="최신 공지">NEW</span>
                 ) : null}
                 <span className="notice-date">{formatDate(notice.publishedAt)}</span>
               </div>

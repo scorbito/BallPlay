@@ -132,6 +132,15 @@ const sections: HomeSection[] = [
     gridCols: 3,
     cards: [
       {
+        id: "ai-predict",
+        href: "/predict/ai-winner",
+        title: "AI 승리팀 예측",
+        description: "AI 3사 분석 종합",
+        icon: Bot,
+        iconImage: "/icons/menu/ai-prediction.png",
+        available: true
+      },
+      {
         id: "winner-predict",
         href: "/predict/winner",
         title: "승리팀 예측하기",
@@ -147,15 +156,6 @@ const sections: HomeSection[] = [
         description: "예측 적중률 순위",
         icon: BarChart3,
         iconImage: "/icons/menu/predict-ranking.png",
-        available: true
-      },
-      {
-        id: "ai-predict",
-        href: "/predict/ai-winner",
-        title: "AI 승리팀 예측",
-        description: "AI 3사 분석 종합",
-        icon: Bot,
-        iconImage: "/icons/menu/ai-prediction.png",
         available: true
       }
     ]

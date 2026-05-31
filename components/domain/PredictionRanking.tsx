@@ -3,7 +3,6 @@
 // 적중률 랭킹은 초기 운영 단계에서 시즌 랭킹만 노출합니다.
 
 import { Trophy } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
 import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredictions";
 
 type Props = {
@@ -42,9 +41,6 @@ export function PredictionRanking({ initialRows, currentUserId }: Props) {
                 className={`predict-rank-row ${isMe ? "is-me" : ""}`}
               >
                 <span className={`predict-rank-num ${rankBadgeClass}`}>{row.rank}</span>
-                <span className="predict-rank-team">
-                  {row.main_team_id ? <TeamBadge teamId={row.main_team_id} size="sm" /> : null}
-                </span>
                 <span className="predict-rank-nick">
                   {row.nickname ?? "익명"}
                   {isMe ? <span className="predict-rank-me-tag">나</span> : null}
