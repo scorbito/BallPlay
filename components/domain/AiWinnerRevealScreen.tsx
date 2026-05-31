@@ -36,8 +36,8 @@ const AI_LABEL: Record<AiProvider, string> = {
   gpt: "GPT"
 };
 
-const REVEAL_DELAY_MS = 1500;     // 각 AI 카드 등장 간격
-const SUMMARY_DELAY_MS = 1000;    // 마지막 AI 후 종합 결과 등장까지 추가 지연
+const REVEAL_DELAY_MS = 700;      // 각 AI 카드 등장 간격
+const SUMMARY_DELAY_MS = 500;     // 마지막 AI 후 종합 결과 등장까지 추가 지연
 
 const SEEN_STORAGE_PREFIX = "ballplay:ai-predict-seen:";
 

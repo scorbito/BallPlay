@@ -23,7 +23,7 @@ const MAX_AGE_DAYS = 60;
 const MIN_DURATION_SEC = 10;
 const MAX_DURATION_SEC = 1800;
 const MAX_VERTICAL_PER_RUN = 30;
-const MAX_HORIZONTAL_PER_RUN = 3;
+const MAX_HORIZONTAL_PER_RUN = 0;
 const DB_LOOKUP_CHUNK_SIZE = 100;
 
 function loadEnv() {
