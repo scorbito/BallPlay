@@ -30,7 +30,7 @@ const VOLUME: Record<MatchSoundKey, number> = {
 const MUTED_KEY = "ballplay:sound:muted";
 const BGM_MUTED_KEY = "ballplay:bgm:muted";
 const BGM_SRC = "/sounds/bgm.mp3";
-const BGM_VOLUME = 0.35;
+const BGM_VOLUME = 0.08;
 
 export function getMatchSoundMuted(): boolean {
   if (typeof window === "undefined") return true;
@@ -162,6 +162,23 @@ export function playMatchSound(key: MatchSoundKey): void {
 // ============================================================
 
 let bgmEl: HTMLAudioElement | null = null;
+
+/** BGM Audio 인스턴스 생성 + load() 호출로 fetch 시작.
+ *  PlayScreen mount 시 호출 → 사용자가 토글 켜는 시점엔 이미 캐시돼 즉시 재생.
+ *  muted 여부와 무관 (재생은 안 함, fetch만 warmup). idempotent. */
+export function preloadBgm(): void {
+  if (typeof window === "undefined") return;
+  if (bgmEl) return;
+  try {
+    bgmEl = new Audio(BGM_SRC);
+    bgmEl.loop = true;
+    bgmEl.volume = BGM_VOLUME;
+    bgmEl.preload = "auto";
+    bgmEl.load();
+  } catch {
+    // ignore
+  }
+}
 
 export function getBgmMuted(): boolean {
   if (typeof window === "undefined") return true;
