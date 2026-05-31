@@ -15,6 +15,7 @@ import {
 export const AI_PREDICT_VIEWED_KEY = "ballplay:ai-predict:lastViewedDate";
 export const VIDEOS_VIEWED_KEY = "ballplay:videos:lastViewedAt";
 export const NEWS_VIEWED_KEY = "ballplay:news:lastViewedAt";
+export const TODAY_RESULTS_VIEWED_KEY = "ballplay:today-results:lastViewedDate";
 
 type Props = {
   cardId: string;
@@ -40,7 +41,11 @@ export function HomeCardPulse({ cardId, data }: Props) {
         if (entries.length === 0) return true;
         return entries.some((e) => e.batting.slots.length < 9);
       }
-      if (cardId === "today-results") return data.todayGamesFinished > 0;
+      if (cardId === "today-results") {
+        if (data.todayGamesFinished === 0) return false;
+        const lastViewed = window.localStorage.getItem(TODAY_RESULTS_VIEWED_KEY);
+        return lastViewed !== data.todayDate;
+      }
       if (cardId === "videos") {
         if (!data.latestVideoAt) return false;
         const lastViewed = window.localStorage.getItem(VIDEOS_VIEWED_KEY);

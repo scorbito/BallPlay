@@ -123,6 +123,18 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   const dayCardRef = useRef<HTMLElement | null>(null);
   const focusToday = searchParams.get("focus") === "today";
 
+  // 홈 카드 펄스 — focus=today 진입 시 viewed 마킹 (오늘 경기 결과 확인 신호).
+  useEffect(() => {
+    if (!focusToday) return;
+    try {
+      const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+      const todayDate = `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+      window.localStorage.setItem("ballplay:today-results:lastViewedDate", todayDate);
+    } catch {
+      // ignore storage errors
+    }
+  }, [focusToday]);
+
   // 갱신 — KBO API 호출해서 오늘 경기 결과 DB 동기화 → router.refresh()로 페이지 재페치
   const [refreshing, startRefresh] = useTransition();
   const handleRefresh = useCallback(() => {
