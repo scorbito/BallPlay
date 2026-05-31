@@ -1112,7 +1112,10 @@
 }
 
 .phone-frame-light .stadium-enter-picker-item {
-  flex: 1 1 100%;
+  /* 한 줄에 2열로 압축 — 라인업 슬롯이 10개까지 늘어나도 picker + hint + 진행속도 +
+     매치 만들기 버튼이 한 화면에 들어오도록. 이름은 truncate 처리됨. */
+  flex: 1 1 calc(50% - 3px);
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
