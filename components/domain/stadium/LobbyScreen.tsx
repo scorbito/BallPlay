@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Bot, ChevronRight, KeyRound, List, Lock, Swords, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -10,6 +9,7 @@ import { teams } from "@/lib/constants/teams";
 import { RegisteredLineupList } from "./RegisteredLineupList";
 import { MyLineupList } from "./MyLineupList";
 import { LineupDetailModal } from "./LineupDetailModal";
+import { AiChallengeModal } from "./AiChallengeModal";
 import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { listLatestLineupsByTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
@@ -24,8 +24,10 @@ import type { SimTeamInput } from "@/lib/sim/types";
 const PREVIEW_SEED = 0;
 
 export function LobbyScreen() {
-  const router = useRouter();
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
+  // AI 대결 모달 — null 이면 닫힘, teamId 면 그 팀 매치 미리보기.
+  // 기존엔 /stadium/enter 별도 페이지였는데 다른 도전(공개·내 라인업)들과 톤 통일.
+  const [aiOpponentTeamId, setAiOpponentTeamId] = useState<string | null>(null);
   // 팀별 최근 라인업 prefetch — AI 대결 카드 클릭 시 즉시 사용. 로드 전엔 폴백(시즌 랜덤).
   const [recentByTeam, setRecentByTeam] = useState<Record<string, RecentLineupRow>>({});
 
@@ -126,7 +128,7 @@ export function LobbyScreen() {
                 <button
                   type="button"
                   className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
-                  onClick={() => router.push(`/stadium/enter?opponent=${team.id}`)}
+                  onClick={() => setAiOpponentTeamId(team.id)}
                   aria-label={`${team.name}과 대결`}
                 >
                   <Swords size={14} />
@@ -142,6 +144,11 @@ export function LobbyScreen() {
         open={previewTeam !== null}
         team={previewTeam}
         onClose={() => setPreviewTeam(null)}
+      />
+
+      <AiChallengeModal
+        opponentTeamId={aiOpponentTeamId}
+        onClose={() => setAiOpponentTeamId(null)}
       />
     </AppShell>
   );

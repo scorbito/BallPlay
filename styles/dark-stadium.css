@@ -655,6 +655,27 @@
   line-height: 1.2;
 }
 
+/* AI 대전 모달 — 매치 미리보기 + picker(최대 10개) + 시작 버튼 다 들어가야 해서
+   기본 lineup-confirm-modal-panel(340px) 보다 약간 크게. 세로는 뷰포트 88% + 스크롤. */
+.phone-frame-light .modal-panel.ai-challenge-modal-panel {
+  max-width: 380px;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+/* 모달 헤더에 이미 "AI와 대결" 표시되므로 본문 안 페이지 제목 숨김 */
+.phone-frame-light .ai-challenge-modal-panel .stadium-enter-head {
+  display: none;
+}
+
+/* 모달 안 본문 패딩·간격 — AppShell wide 가 아닌 모달 컨텍스트 보정 */
+.phone-frame-light .ai-challenge-modal-panel .stadium-enter {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .phone-frame-light .stadium-discover-vs-lineup {
   min-width: 0;
   font-size: 13px;
@@ -1326,6 +1347,8 @@
 .phone-frame-light .stadium-linescore td {
   padding: 9px 4px;
   text-align: center;
+  /* 자릿수 폭 동일화 — 두 줄(원정/홈)의 숫자가 컬럼 중앙에 시각적으로 정렬되도록. */
+  font-variant-numeric: tabular-nums;
   min-width: 24px;
   color: var(--bp-text);
 }
@@ -1384,8 +1407,9 @@
 
 /* R 컬럼 — 굵은 숫자, 좌측에 가는 분할선 */
 .phone-frame-light .stadium-linescore .rh {
-  padding-left: 10px;
-  padding-right: 4px;
+  /* 좌우 padding 대칭으로 — 이전엔 left 10/right 4였어 R 셀 "0"이 우측 치우침. */
+  padding-left: 6px;
+  padding-right: 6px;
   font-weight: 900;
   color: var(--bp-text);
   font-size: 15px;
