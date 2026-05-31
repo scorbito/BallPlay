@@ -948,7 +948,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 10px;
   background: rgba(232, 74, 138, 0.12);
   border: 1px solid rgba(232, 74, 138, 0.4);
@@ -956,6 +957,26 @@
   color: var(--bp-text);
   font-size: 12px;
   font-weight: 700;
+}
+
+/* 친구 매치 상단 헤더 — 정식/연습 매치 뱃지. AppShell headerAction 슬롯에 노출. */
+.phone-frame-light .stadium-play-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.phone-frame-light .stadium-play-tier-badge.is-official {
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
+}
+.phone-frame-light .stadium-play-tier-badge.is-practice {
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
 }
 
 .phone-frame-light .stadium-live-dot {
@@ -1979,6 +2000,26 @@
 
 .phone-frame-light .stadium-play-team-right {
   justify-content: flex-end;
+}
+
+/* 팀뱃지 위 닉네임 — 친구/공개 매치에서 양쪽 사람 식별용. */
+.phone-frame-light .stadium-play-team-badge-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.phone-frame-light .stadium-play-team-nickname {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
 }
 
 /* 팀명+점수 그룹 — 배지 옆에 세로 스택, 작은 팀명 위 큰 점수 아래. */

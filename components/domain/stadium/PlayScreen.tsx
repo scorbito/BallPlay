@@ -296,7 +296,7 @@ function StrikeoutEffect({
 
 export function PlayScreen() {
   const router = useRouter();
-  const { showToast } = useAppState();
+  const { showToast, profile } = useAppState();
   const [session, setSession] = useState<MatchSession | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [cursor, setCursor] = useState(0);
@@ -863,6 +863,17 @@ export function PlayScreen() {
   // 사용자 지정 팀명(라인업 이름) 우선, 없으면 KBO 정식 팀명 폴백
   const homeLabel = input.home.displayName?.trim() || homeTeam.shortName;
   const awayLabel = input.away.displayName?.trim() || awayTeam.shortName;
+  // 닉네임 표시 — 친구/공개 매치에서 양쪽 사람 닉네임을 팀뱃지 위에 노출.
+  // AI/self 매치는 닉네임 자체가 의미 없어 표시 안 함.
+  const showNicknames = session.source === "friend" || session.source === "public";
+  const myNickname = profile?.nickname?.trim() || "나";
+  const oppNickname = session.opponentNickname?.trim() || "상대";
+  const homeNickname = showNicknames
+    ? (session.userSide === "home" ? myNickname : oppNickname)
+    : null;
+  const awayNickname = showNicknames
+    ? (session.userSide === "away" ? myNickname : oppNickname)
+    : null;
   const linescore = buildLinescore(session.result.innings, cursor, events);
   const latest = events[Math.max(0, cursor - 1)];
   const isDone = phase === "GAME_END";
@@ -1108,8 +1119,17 @@ export function PlayScreen() {
     ? `${latest.inning}회 ${latest.half === "top" ? "초" : "말"}`
     : "경기 시작";
 
+  // 매치 종류 뱃지 — 친구 대전에서만 표시. 양쪽 다 공개 라인업이면 정식, 아니면 연습.
+  const isFriend = session?.source === "friend";
+  const isOfficial = !!session?.myLineupId && !!session?.opponentLineupId;
+  const matchTierBadge = isFriend ? (
+    <span className={`stadium-play-tier-badge ${isOfficial ? "is-official" : "is-practice"}`}>
+      {isOfficial ? "정식 매치" : "연습 매치"}
+    </span>
+  ) : null;
+
   return (
-    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
+    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref="/stadium/lobby" theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>
@@ -1156,7 +1176,12 @@ export function PlayScreen() {
             팀별 레이아웃: [큰 팀 배지] [팀명 + 큰 점수] (반대편은 거울) */}
         <header className="stadium-play-scoreboard">
           <div className="stadium-play-team">
-            <TeamBadge teamId={awayTeam.id} size="lg" />
+            <div className="stadium-play-team-badge-col">
+              {awayNickname ? (
+                <span className="stadium-play-team-nickname" title={awayNickname}>{awayNickname}</span>
+              ) : null}
+              <TeamBadge teamId={awayTeam.id} size="lg" />
+            </div>
             <div className="stadium-play-team-info">
               <span className="stadium-play-team-name">{awayLabel}</span>
               <strong className="stadium-play-team-score">{totalAway}</strong>
@@ -1171,7 +1196,12 @@ export function PlayScreen() {
               <span className="stadium-play-team-name">{homeLabel}</span>
               <strong className="stadium-play-team-score">{totalHome}</strong>
             </div>
-            <TeamBadge teamId={homeTeam.id} size="lg" />
+            <div className="stadium-play-team-badge-col">
+              {homeNickname ? (
+                <span className="stadium-play-team-nickname" title={homeNickname}>{homeNickname}</span>
+              ) : null}
+              <TeamBadge teamId={homeTeam.id} size="lg" />
+            </div>
           </div>
         </header>
 
@@ -1218,9 +1248,21 @@ export function PlayScreen() {
         <footer className="stadium-play-controls">
           {!isDone ? (
             isLive ? (
-              <div className="stadium-play-live-badge">
-                <span className="stadium-live-dot" /> 실시간 매치 진행 중 — 컨트롤 잠금
-              </div>
+              <>
+                <div className="stadium-play-live-badge">
+                  <span className="stadium-live-dot" /> 실시간 매치 진행 중 — 컨트롤 잠금
+                </div>
+                <button
+                  type="button"
+                  className="stadium-play-btn stadium-play-btn-mute"
+                  onClick={toggleMuted}
+                  aria-label={muted ? "효과음 켜기" : "효과음 끄기"}
+                  aria-pressed={muted}
+                  title={muted ? "효과음 켜기" : "효과음 끄기"}
+                >
+                  {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                </button>
+              </>
             ) : (
               <>
                 <button
