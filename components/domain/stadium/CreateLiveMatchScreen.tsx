@@ -123,10 +123,10 @@ export function CreateLiveMatchScreen() {
                     type="button"
                     className={`stadium-enter-picker-item ${active ? "is-active" : ""}`}
                     onClick={() => setSelectedEntryId(entry.entryId)}
+                    title={entry.name}
                   >
                     <TeamBadge teamId={entry.teamId} size="sm" />
                     <span className="stadium-enter-picker-name">{entry.name}</span>
-                    <span className="stadium-enter-picker-team">{team.shortName}</span>
                     {isPublished ? (
                       <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">공개 등록</span>
                     ) : null}
