@@ -24,6 +24,7 @@ import {
   getScoreText
 } from "@/lib/sim/narration";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getServerTimeOffsetMs, serverNow } from "@/lib/sim/serverClock";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 import { useAppState } from "@/lib/state/AppState";
 import { getMatchSoundMuted, playMatchSound, preloadMatchSounds, setMatchSoundMuted } from "@/lib/sound/matchSounds";
@@ -390,35 +391,49 @@ export function PlayScreen() {
       setMode(next.liveMode ?? "fast");
     }
 
-    // 카운트다운: startAt이 미래면 그때까지 playing=false
+    // 카운트다운: startAt이 미래면 그때까지 playing=false.
+    // 비교는 server-equivalent time 기준(serverNow) — 양쪽 클라이언트 wall-clock 이 어긋나도
+    // 같은 server time 에 동시에 시작되도록.
     if (next.liveMatchId && next.liveStartAt) {
+      // 친구 매치면 server time offset 미리 fetch (countdown effect 가 사용).
+      void getServerTimeOffsetMs(createSupabaseBrowserClient());
       const startMs = new Date(next.liveStartAt).getTime();
-      const now = Date.now();
-      if (now < startMs) {
+      if (serverNow() < startMs) {
         setPlaying(false);
       }
     }
   }, [router]);
 
-  // 라이브 카운트다운 — startAt 도달 시 자동 play
+  // 라이브 카운트다운 — startAt 도달 시 자동 play.
+  // server-equivalent time 기준 비교(serverNow) → 클라 wall-clock drift 무관하게 양쪽 동시 시작.
   useEffect(() => {
     if (!isLive || !session?.liveStartAt) return;
     const startMs = new Date(session.liveStartAt).getTime();
-    const tick = () => {
-      const remain = Math.max(0, Math.ceil((startMs - Date.now()) / 1000));
-      setLiveCountdown(remain);
-      if (remain <= 0) {
-        setPlaying(true);
-        setLiveCountdown(null);
-        return false;
-      }
-      return true;
+    const client = createSupabaseBrowserClient();
+    // offset 아직 미캐시면 한 번 fetch 후 tick 시작. 캐시 있으면 즉시.
+    let cancelled = false;
+    let intervalId = 0;
+    void getServerTimeOffsetMs(client).then(() => {
+      if (cancelled) return;
+      const tick = () => {
+        const remain = Math.max(0, Math.ceil((startMs - serverNow()) / 1000));
+        setLiveCountdown(remain);
+        if (remain <= 0) {
+          setPlaying(true);
+          setLiveCountdown(null);
+          return false;
+        }
+        return true;
+      };
+      if (!tick()) return;
+      intervalId = window.setInterval(() => {
+        if (!tick()) window.clearInterval(intervalId);
+      }, 200);
+    });
+    return () => {
+      cancelled = true;
+      if (intervalId) window.clearInterval(intervalId);
     };
-    if (!tick()) return;
-    const id = window.setInterval(() => {
-      if (!tick()) window.clearInterval(id);
-    }, 200);
-    return () => window.clearInterval(id);
   }, [isLive, session?.liveStartAt]);
 
   const events = useMemo(() => {
