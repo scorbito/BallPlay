@@ -1992,14 +1992,18 @@
   border-radius: 14px;
 }
 
+/* 양쪽 팀 카드 — 닉네임 / 팀뱃지 / 팀명 / 점수 를 세로 스택으로 중앙정렬.
+   기존 가로 배치(뱃지 | 팀명+점수)에서 세로 중앙으로 변경 (사용자 요청). */
 .phone-frame-light .stadium-play-team {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
 }
 
+/* 오른쪽 팀 카드도 동일하게 중앙 — 별도 오버라이드 불필요 (legacy 클래스 호환용 셀렉터만 유지). */
 .phone-frame-light .stadium-play-team-right {
-  justify-content: flex-end;
+  align-items: center;
 }
 
 /* 팀뱃지 위 닉네임 — 친구/공개 매치에서 양쪽 사람 식별용. */
@@ -2015,24 +2019,24 @@
   font-size: 11px;
   font-weight: 700;
   color: var(--bp-text-secondary);
-  max-width: 88px;
+  max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   letter-spacing: -0.2px;
 }
 
-/* 팀명+점수 그룹 — 배지 옆에 세로 스택, 작은 팀명 위 큰 점수 아래. */
+/* 팀명+점수 그룹 — 뱃지 아래 세로 스택, 모두 중앙 정렬. */
 .phone-frame-light .stadium-play-team-info {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 2px;
   line-height: 1;
 }
 
 .phone-frame-light .stadium-play-team-right .stadium-play-team-info {
-  align-items: flex-end;
+  align-items: center;
 }
 
 .phone-frame-light .stadium-play-team-name {
