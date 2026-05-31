@@ -2092,11 +2092,13 @@
 }
 
 .phone-frame-light .stadium-play-team-score {
-  font-size: 30px;
+  font-size: 42px;
   font-weight: 900;
   color: var(--bp-text);
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
+  /* 팀명은 좌/우 가장자리에 붙이되 점수는 컬럼 가운데로. column flex의 align-self는 cross-axis(수평). */
+  align-self: center;
 }
 
 /* (구) 기존 stadium-play-team 직속 자식 스타일 — 위 *-name/*-score로 대체. */

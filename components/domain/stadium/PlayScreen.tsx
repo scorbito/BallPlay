@@ -465,6 +465,8 @@ export function PlayScreen() {
 
   // 이번 경기 누적 타격 (cursor까지) — 타자별 AB / Hits.
   // 진행 중인 마지막 타석은 결과 발표 페이즈일 때만 합산 (스포 방지).
+  // 이번 경기 타자별 누적 (AB, hits) — "(안타수/타수)" 형식 표시.
+  // 진행 중 타석은 showOutcome일 때만 포함 (스포 방지).
   const todayStats = useMemo(() => {
     const m = new Map<string, { ab: number; hits: number }>();
     const visible = events.slice(0, cursor);
@@ -487,7 +489,6 @@ export function PlayScreen() {
   // 현재 이닝의 각 타자별 마지막 결과 — 공수교대 시 자동으로 비워짐 (currentInningEvents가 새 이닝의 것으로 교체됨)
   const inningOutcomes = useMemo(() => {
     // isHit는 뱃지 색상용(=출루) — 안타뿐 아니라 볼넷·사구도 출루이므로 녹색 표시.
-    // (실제 통계용 "hits" 카운트는 todayStats에서 별도 계산하므로 영향 없음.)
     const map = new Map<string, { label: string; isHit: boolean; isHr: boolean }>();
     for (let i = 0; i < currentInningEvents.length; i++) {
       const ev = currentInningEvents[i];
@@ -1089,7 +1090,7 @@ export function PlayScreen() {
       );
     }
 
-    // 이번 경기 누적 — "타수-안타" 형식 (KBO 중계 관행). AB 0이면 표시 안 함.
+    // 이번 경기 누적 — "(안타수/타수)" 형식. AB 0이면 표시 안 함.
     const today = todayStats.get(batter.playerId);
 
     return (
@@ -1119,10 +1120,12 @@ export function PlayScreen() {
     ? `${latest.inning}회 ${latest.half === "top" ? "초" : "말"}`
     : "경기 시작";
 
-  // 매치 종류 뱃지 — 친구 대전에서만 표시. 양쪽 다 공개 라인업이면 정식, 아니면 연습.
-  const isFriend = session?.source === "friend";
+  // 매치 종류 뱃지 — 모든 경기에서 표시. 양쪽 lineup_id 있으면 정식(전적 집계), 아니면 연습.
+  // public: 항상 양쪽 lineup_id 있음 → 정식
+  // friend: 양쪽 공개 라인업이면 정식, 아니면 연습
+  // ai/self: lineup_id 없음 → 연습
   const isOfficial = !!session?.myLineupId && !!session?.opponentLineupId;
-  const matchTierBadge = isFriend ? (
+  const matchTierBadge = session ? (
     <span className={`stadium-play-tier-badge ${isOfficial ? "is-official" : "is-practice"}`}>
       {isOfficial ? "정식 매치" : "연습 매치"}
     </span>
