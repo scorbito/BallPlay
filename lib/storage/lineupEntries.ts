@@ -92,14 +92,15 @@ export function newEntryId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createEmptyEntry(teamId: string, nameSuggestion?: string): LineupEntry {
+export function createEmptyEntry(teamId: string, nameSuggestion?: string, nicknameForDefault?: string): LineupEntry {
   const team = getTeam(teamId);
   const now = new Date().toISOString();
   const sameTeamCount = loadLineupEntries().filter((e) => e.teamId === teamId).length;
-  // 기본 팀명: KBO 정식 팀명. 동일 팀 여러 슬롯이면 #2, #3 식으로 분기.
-  const defaultName = sameTeamCount > 0
-    ? `${team.name} #${sameTeamCount + 1}`
-    : team.name;
+  // 기본 라인업명: "{닉네임}의 {팀 약칭}" (예: "야구노리의 두산").
+  // 닉네임 없으면 KBO 정식 팀명으로 폴백. 동일 팀 중복은 #2, #3 식으로 분기.
+  const trimmedNick = nicknameForDefault?.trim();
+  const base = trimmedNick ? `${trimmedNick}의 ${team.shortName}` : team.name;
+  const defaultName = sameTeamCount > 0 ? `${base} #${sameTeamCount + 1}` : base;
   return {
     entryId: newEntryId(),
     name: nameSuggestion?.trim() || defaultName,

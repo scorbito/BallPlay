@@ -1576,11 +1576,15 @@ export function LineupBuilderScreen() {
             className="lineup-rename-input"
             value={newSlotName}
             onChange={(e) => setNewSlotName(e.target.value)}
-            placeholder={`예) ${getTeam(newSlotTeamId).name}`}
+            placeholder={`예) ${profile.nickname?.trim() ? `${profile.nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}` : getTeam(newSlotTeamId).name}`}
             maxLength={20}
           />
           <p className="lineup-newslot-name-hint">
-            비워두면 KBO 정식 팀명({getTeam(newSlotTeamId).name})으로 저장됩니다. 경기 화면에도 표시되는 이름입니다.
+            비워두면 &lsquo;
+            {profile.nickname?.trim()
+              ? `${profile.nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}`
+              : getTeam(newSlotTeamId).name}
+            &rsquo;으로 저장됩니다. 경기 화면에도 표시되는 이름입니다.
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -1595,7 +1599,11 @@ export function LineupBuilderScreen() {
               className="lineup-confirm-primary"
               onClick={() => {
                 // 새 슬롯은 빈 라인업이므로 localStorage만 — 9명 채울 때 DB로 첫 commit.
-                const newEntry = createEmptyEntry(newSlotTeamId, newSlotName.trim() || undefined);
+                const newEntry = createEmptyEntry(
+                  newSlotTeamId,
+                  newSlotName.trim() || undefined,
+                  profile.nickname
+                );
                 localUpsertEntry(newEntry);
                 setSelectedEntryId(newEntry.entryId);
                 setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
