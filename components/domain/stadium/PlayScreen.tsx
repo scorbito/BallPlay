@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Play, Pause, Trophy, Volume2, VolumeX } from "lucide-react";
+import { Music, Music2, Play, Pause, Trophy, Volume2, VolumeX } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -27,7 +27,16 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getServerTimeOffsetMs, serverNow } from "@/lib/sim/serverClock";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 import { useAppState } from "@/lib/state/AppState";
-import { getMatchSoundMuted, playMatchSound, preloadMatchSounds, setMatchSoundMuted } from "@/lib/sound/matchSounds";
+import {
+  getBgmMuted,
+  getMatchSoundMuted,
+  playBgm,
+  playMatchSound,
+  preloadMatchSounds,
+  setBgmMuted,
+  setMatchSoundMuted,
+  stopBgm
+} from "@/lib/sound/matchSounds";
 
 const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
   K: "삼진",
@@ -303,16 +312,32 @@ export function PlayScreen() {
   const [playing, setPlaying] = useState(true);
   // 효과음 음소거 — localStorage 동기. 초기엔 false(들림)로 SSR/CSR 안전, mount 시 보정.
   const [muted, setMuted] = useState(false);
+  // 배경음악 음소거 — 효과음과 별도 토글.
+  const [bgmMuted, setBgmMutedState] = useState(false);
   useEffect(() => {
     setMuted(getMatchSoundMuted());
+    setBgmMutedState(getBgmMuted());
     // 4종 사운드 사전 decode → 첫 안타/홈런/삼진/득점부터 지연 없이 즉시 재생.
     // (이전엔 매 호출마다 new Audio() 라 모바일에서 1초가량 늦게 들리는 문제 있었음.)
     void preloadMatchSounds();
+    // BGM 시작 — bgmMuted=false 이면 자동 재생 (자동재생 차단 시 silent fail).
+    playBgm();
+    // 언마운트 시 정지
+    return () => {
+      stopBgm();
+    };
   }, []);
   const toggleMuted = () => {
     setMuted((m) => {
       const next = !m;
       setMatchSoundMuted(next);
+      return next;
+    });
+  };
+  const toggleBgmMuted = () => {
+    setBgmMutedState((m) => {
+      const next = !m;
+      setBgmMuted(next); // 함수 내부에서 즉시 play/stop 처리
       return next;
     });
   };
@@ -741,6 +766,25 @@ export function PlayScreen() {
     setStrikeoutEffect({ centerX, centerY, durationMs, key: cursor });
     playMatchSound("strikeout");
   }, [phase, cursor, events, hydrated, mode]);
+
+  // 볼넷/사구 → walk, 병살 → double_play, 나머지 아웃류(GO/FO/PO/LO/SF) → out.
+  // 안타/홈런/삼진은 위 useEffect들에서 별도 처리. 실책(E)은 사운드 X.
+  const auxSoundFiredForCursorRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "OUTCOME") return;
+    if (auxSoundFiredForCursorRef.current === cursor) return;
+    const evt = cursor > 0 ? events[cursor - 1] : null;
+    if (!evt) return;
+    const o = evt.ab.outcome;
+    let key: "walk" | "out" | "double_play" | null = null;
+    if (o === "BB" || o === "HBP") key = "walk";
+    else if (o === "DP") key = "double_play";
+    else if (o === "GO" || o === "FO" || o === "PO" || o === "LO" || o === "SF") key = "out";
+    if (!key) return;
+    auxSoundFiredForCursorRef.current = cursor;
+    playMatchSound(key);
+  }, [phase, cursor, events, hydrated]);
 
   // 경기 종료 시 자동 저장 — public/friend 매치만, 정식 계정만, 재생 모드 제외.
   // ResultScreen에 들어가지 않아도(예: 도중 이탈) 결과는 DB에 남음.
@@ -1258,6 +1302,16 @@ export function PlayScreen() {
                 <button
                   type="button"
                   className="stadium-play-btn stadium-play-btn-mute"
+                  onClick={toggleBgmMuted}
+                  aria-label={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
+                  aria-pressed={bgmMuted}
+                  title={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
+                >
+                  {bgmMuted ? <Music2 size={16} /> : <Music size={16} />}
+                </button>
+                <button
+                  type="button"
+                  className="stadium-play-btn stadium-play-btn-mute"
                   onClick={toggleMuted}
                   aria-label={muted ? "효과음 켜기" : "효과음 끄기"}
                   aria-pressed={muted}
@@ -1322,6 +1376,16 @@ export function PlayScreen() {
                   title="끝까지 건너뛰기"
                 >
                   건너뛰기
+                </button>
+                <button
+                  type="button"
+                  className="stadium-play-btn stadium-play-btn-mute"
+                  onClick={toggleBgmMuted}
+                  aria-label={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
+                  aria-pressed={bgmMuted}
+                  title={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
+                >
+                  {bgmMuted ? <Music2 size={16} /> : <Music size={16} />}
                 </button>
                 <button
                   type="button"

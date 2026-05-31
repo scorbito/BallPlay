@@ -5,23 +5,32 @@
 //
 // localStorage "ballplay:sound:muted" === "1" 이면 무음.
 
-export type MatchSoundKey = "hit" | "homerun" | "strikeout" | "score";
+export type MatchSoundKey = "hit" | "homerun" | "strikeout" | "score" | "walk" | "out" | "double_play";
 
 const SRC: Record<MatchSoundKey, string> = {
   hit: "/sounds/hit.mp3",
   homerun: "/sounds/homerun.mp3",
   strikeout: "/sounds/strikeout.mp3",
-  score: "/sounds/score.mp3"
+  score: "/sounds/score.mp3",
+  walk: "/sounds/walk.mp3",
+  out: "/sounds/out.mp3",
+  double_play: "/sounds/double_play.mp3"
 };
 
 const VOLUME: Record<MatchSoundKey, number> = {
   hit: 0.7,
   homerun: 0.85,
   strikeout: 0.7,
-  score: 0.8
+  score: 0.8,
+  walk: 0.7,
+  out: 0.7,
+  double_play: 0.8
 };
 
 const MUTED_KEY = "ballplay:sound:muted";
+const BGM_MUTED_KEY = "ballplay:bgm:muted";
+const BGM_SRC = "/sounds/bgm.mp3";
+const BGM_VOLUME = 0.35;
 
 export function getMatchSoundMuted(): boolean {
   if (typeof window === "undefined") return true;
@@ -142,6 +151,66 @@ export function playMatchSound(key: MatchSoundKey): void {
     const audio = new Audio(SRC[key]);
     audio.volume = VOLUME[key];
     void audio.play().catch(() => {});
+  } catch {
+    // ignore
+  }
+}
+
+// ============================================================
+// 배경음악 (BGM) — 효과음과 분리된 음소거 토글.
+// 단일 HTMLAudioElement 인스턴스 + loop. PlayScreen mount/unmount 따라 start/stop.
+// ============================================================
+
+let bgmEl: HTMLAudioElement | null = null;
+
+export function getBgmMuted(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.localStorage.getItem(BGM_MUTED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setBgmMuted(muted: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(BGM_MUTED_KEY, muted ? "1" : "0");
+  } catch {
+    // ignore
+  }
+  // 토글 즉시 반영 — 켜면 재생, 끄면 정지.
+  if (muted) {
+    stopBgm();
+  } else {
+    void playBgm();
+  }
+}
+
+export function playBgm(): void {
+  if (typeof window === "undefined") return;
+  if (getBgmMuted()) return;
+  try {
+    if (!bgmEl) {
+      bgmEl = new Audio(BGM_SRC);
+      bgmEl.loop = true;
+      bgmEl.volume = BGM_VOLUME;
+    }
+    if (bgmEl.paused) {
+      void bgmEl.play().catch(() => {
+        // 자동재생 정책 위반 — 사용자 제스처 후 다시 시도되도록 무시.
+      });
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function stopBgm(): void {
+  if (!bgmEl) return;
+  try {
+    bgmEl.pause();
+    bgmEl.currentTime = 0;
   } catch {
     // ignore
   }

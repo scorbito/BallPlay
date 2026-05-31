@@ -2223,6 +2223,10 @@
   min-width: 44px;
   color: var(--bp-text-secondary);
 }
+/* 연속한 음소거 버튼(배경음악 + 효과음)은 붙어 있도록 — 첫 버튼만 auto 마진. */
+.phone-frame-light .stadium-play-btn-mute + .stadium-play-btn-mute {
+  margin-left: 4px;
+}
 .phone-frame-light .stadium-play-btn-mute[aria-pressed="true"] {
   color: var(--bp-text-muted);
   background: rgba(20, 30, 50, 0.04);
