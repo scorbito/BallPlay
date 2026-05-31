@@ -366,14 +366,24 @@ export function RegisteredLineupList({
                 <span className="stadium-discover-vs-label stadium-discover-vs-label-right">내 팀</span>
                 <div className="stadium-play-team stadium-discover-vs-side-left">
                   <TeamBadge teamId={selectedOpponent.team_id} size="md" />
-                  <span className="stadium-discover-vs-lineup">{selectedOpponent.name}</span>
+                  <div className="stadium-discover-vs-textcol">
+                    <span className="stadium-discover-vs-teamname">{getTeam(selectedOpponent.team_id).shortName}</span>
+                    {selectedOpponent.name !== getTeam(selectedOpponent.team_id).name ? (
+                      <span className="stadium-discover-vs-lineup">{selectedOpponent.name}</span>
+                    ) : null}
+                  </div>
                 </div>
                 <span className="stadium-discover-vs-divider">VS</span>
                 <div className="stadium-play-team stadium-discover-vs-side-right">
                   {myEntry ? (
                     <>
+                      <div className="stadium-discover-vs-textcol stadium-discover-vs-textcol-right">
+                        <span className="stadium-discover-vs-teamname">{getTeam(myEntry.teamId).shortName}</span>
+                        {myEntry.name !== getTeam(myEntry.teamId).name ? (
+                          <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
+                        ) : null}
+                      </div>
                       <TeamBadge teamId={myEntry.teamId} size="md" />
-                      <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
                     </>
                   ) : (
                     <span className="stadium-enter-empty">공개 라인업이 없음</span>
