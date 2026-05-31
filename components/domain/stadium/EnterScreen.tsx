@@ -18,6 +18,7 @@ import {
 } from "@/lib/sim/statsLoaderWithRecent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getLatestLineupForTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
+import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import {
   generateSeed,
   saveMatchSession
@@ -36,12 +37,35 @@ export function EnterScreen() {
   // 상대팀 최근 라인업 prefetch — buildFakeOpponentTeam에 hint로 전달.
   // 못 받아오면 null로 폴백(시즌 stats 랜덤).
   const [opponentHint, setOpponentHint] = useState<RecentLineupRow | null>(null);
+  // 공개 라인업 전적 — picker 라벨 옆 표시용. 비공개 entry는 stats 없음.
+  const [statsByEntryId, setStatsByEntryId] = useState<Record<string, LineupStats>>({});
 
   useEffect(() => {
     // 9명 batting이 다 채워진 entry만 출전 가능
     const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
     setMyEntries(ready);
     if (ready.length > 0) setSelectedEntryId(ready[0].entryId);
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      const client = createSupabaseBrowserClient();
+      const { data } = await client.auth.getUser();
+      const userId = data.user?.id;
+      if (!userId) return;
+      const linRes = await listMyLineups(client, userId);
+      if (!linRes.ok) return;
+      const published = linRes.rows.filter((r) => r.is_published);
+      if (published.length === 0) return;
+      const ids = published.map((r) => r.id);
+      const statsByLineupId = await fetchLineupStatsBulk(client, ids);
+      const byEntry: Record<string, LineupStats> = {};
+      for (const r of published) {
+        const s = statsByLineupId[r.id];
+        if (s) byEntry[r.entry_id] = s;
+      }
+      setStatsByEntryId(byEntry);
+    })();
   }, []);
 
   useEffect(() => {
@@ -143,7 +167,10 @@ export function EnterScreen() {
               <>
                 <TeamBadge teamId={selectedEntry.teamId} size="lg" />
                 <strong>{getTeam(selectedEntry.teamId).name}</strong>
-                <span className="stadium-enter-team-sub">{selectedEntry.name}</span>
+                {/* 라인업명이 팀 정식명과 같으면 중복이라 sub 라인 숨김 */}
+                {selectedEntry.name !== getTeam(selectedEntry.teamId).name ? (
+                  <span className="stadium-enter-team-sub">{selectedEntry.name}</span>
+                ) : null}
               </>
             ) : (
               <span className="stadium-enter-empty">라인업 필요</span>
@@ -158,23 +185,25 @@ export function EnterScreen() {
         </div>
 
         {myEntries.length > 0 ? (
-          <div className="stadium-enter-picker">
-            <span className="stadium-enter-picker-label">출전 라인업 선택</span>
-            <div className="stadium-enter-picker-row">
+          <div className="stadium-discover-my-picker">
+            <span className="stadium-discover-my-picker-label">출전 라인업 선택</span>
+            <div className="stadium-discover-my-picker-list">
               {myEntries.map((entry) => {
-                const team = getTeam(entry.teamId);
                 const active = entry.entryId === selectedEntryId;
                 const pitcherAuto = entry.pitching === null;
+                const s = statsByEntryId[entry.entryId];
+                const recordTxt = s && s.matches > 0
+                  ? ` (${s.wins}승 ${s.losses}패)`
+                  : "";
                 return (
                   <button
                     key={entry.entryId}
                     type="button"
-                    className={`stadium-enter-picker-item ${active ? "is-active" : ""}`}
+                    className={`stadium-discover-my-pick ${active ? "is-active" : ""}`}
                     onClick={() => setSelectedEntryId(entry.entryId)}
                   >
                     <TeamBadge teamId={entry.teamId} size="sm" />
-                    <span className="stadium-enter-picker-name">{entry.name}</span>
-                    <span className="stadium-enter-picker-team">{team.shortName}</span>
+                    <span>{entry.name}{recordTxt}</span>
                     {pitcherAuto ? (
                       <span className="stadium-enter-picker-tag">투수 자동</span>
                     ) : null}

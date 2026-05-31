@@ -372,8 +372,8 @@ export function RegisteredLineupList({
                 <div className="stadium-play-team stadium-discover-vs-side-right">
                   {myEntry ? (
                     <>
-                      <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
                       <TeamBadge teamId={myEntry.teamId} size="md" />
+                      <span className="stadium-discover-vs-lineup">{myEntry.name}</span>
                     </>
                   ) : (
                     <span className="stadium-enter-empty">공개 라인업이 없음</span>

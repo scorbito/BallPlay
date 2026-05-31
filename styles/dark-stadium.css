@@ -593,7 +593,8 @@
 .phone-frame-light .stadium-discover-vs-label-right {
   grid-column: 3;
   grid-row: 1;
-  justify-self: end;
+  /* 카드와 같은 좌측 정렬 — 양쪽 카드 모두 [뱃지 → 라인업명] 동일 순서 통일 */
+  justify-self: start;
 }
 
 .phone-frame-light .stadium-discover-vs-side-left {
@@ -630,7 +631,9 @@
 }
 
 .phone-frame-light .stadium-discover-vs-side-right.stadium-play-team {
-  justify-content: flex-end;
+  /* 양쪽 카드 동일 정렬 — flex-end 제거하고 left-align 통일.
+     (이전 거울 대칭 디자인 → 사용자 요청으로 [뱃지 → 라인업명] 동일 순서.) */
+  justify-content: flex-start;
 }
 
 .phone-frame-light .stadium-discover-vs-lineup {
@@ -1992,21 +1995,20 @@
   border-radius: 14px;
 }
 
-/* 양쪽 팀 카드 — 닉네임 / 팀뱃지 / 팀명 / 점수 를 세로 스택으로 중앙정렬.
-   기존 가로 배치(뱃지 | 팀명+점수)에서 세로 중앙으로 변경 (사용자 요청). */
+/* 양쪽 팀 카드 — 가로 배치: [닉네임/뱃지 칼럼] | [라인업명/점수 칼럼].
+   왼쪽 카드는 [뱃지 | 정보], 오른쪽 카드는 [정보 | 뱃지] 거울 대칭. */
 .phone-frame-light .stadium-play-team {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
 }
 
-/* 오른쪽 팀 카드도 동일하게 중앙 — 별도 오버라이드 불필요 (legacy 클래스 호환용 셀렉터만 유지). */
 .phone-frame-light .stadium-play-team-right {
-  align-items: center;
+  justify-content: flex-end;
 }
 
-/* 팀뱃지 위 닉네임 — 친구/공개 매치에서 양쪽 사람 식별용. */
+/* 팀뱃지 위 닉네임 — 친구/공개 매치에서 양쪽 사람 식별용.
+   뱃지와 같은 칼럼이라 라인업명/점수 라인은 영향 없음. */
 .phone-frame-light .stadium-play-team-badge-col {
   display: flex;
   flex-direction: column;
@@ -2026,17 +2028,17 @@
   letter-spacing: -0.2px;
 }
 
-/* 팀명+점수 그룹 — 뱃지 아래 세로 스택, 모두 중앙 정렬. */
+/* 팀명+점수 그룹 — 뱃지 옆에 세로 스택, 왼쪽 카드는 left-align, 오른쪽 카드는 right-align. */
 .phone-frame-light .stadium-play-team-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 2px;
   line-height: 1;
 }
 
 .phone-frame-light .stadium-play-team-right .stadium-play-team-info {
-  align-items: center;
+  align-items: flex-end;
 }
 
 .phone-frame-light .stadium-play-team-name {
