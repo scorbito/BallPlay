@@ -74,7 +74,7 @@ export function NewSlotModal({
           type="text"
           className="lineup-rename-input"
           value={newSlotName}
-          onChange={(e) => setNewSlotName(e.target.value)}
+          onChange={(e) => setNewSlotName(e.target.value.slice(0, MAX_NAME_LEN))}
           placeholder={`예) ${nickname?.trim() ? `${nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}` : getTeam(newSlotTeamId).name}`}
           maxLength={MAX_NAME_LEN}
         />

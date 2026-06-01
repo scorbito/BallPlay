@@ -42,7 +42,7 @@ export function RenameSlotModal({
           type="text"
           className="lineup-rename-input"
           value={renameInput}
-          onChange={(e) => setRenameInput(e.target.value)}
+          onChange={(e) => setRenameInput(e.target.value.slice(0, MAX_NAME_LEN))}
           placeholder="팀명"
           maxLength={MAX_NAME_LEN}
           autoFocus
