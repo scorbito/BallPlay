@@ -2317,6 +2317,11 @@
   box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
 }
 
+/* 타이틀 ↔ 본문 간격 압축. modal-body 기본 16px 인데 라인업 confirm 류는 위만 8px 로. */
+.modal-panel.lineup-confirm-modal-panel .modal-body {
+  padding-top: 8px;
+}
+
 .lineup-confirm-modal-panel .modal-header {
   background: var(--bp-card);
   border-bottom: 1px solid var(--bp-line-soft);
@@ -2389,7 +2394,7 @@
 .lineup-confirm-body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .lineup-confirm-msg {

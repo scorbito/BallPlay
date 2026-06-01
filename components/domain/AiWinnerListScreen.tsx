@@ -31,8 +31,10 @@ type Props = {
   selectedDate: string;           // 현재 보고 있는 날짜
   isToday: boolean;
   isFuture: boolean;              // 오늘보다 미래 (예측 없을 가능성)
-  prevDate: string;
-  nextDate: string;
+  /** 이전 경기일 (없으면 null — 화살표 비활성) */
+  prevDate: string | null;
+  /** 다음 경기일 (없으면 null — 화살표 비활성). 미래 경기일도 허용 (AI 예측 도착 전 카운트다운 표시). */
+  nextDate: string | null;
   publishAtISO: string;           // 선택 날짜의 09:00 KST ISO
   games: AiWinnerGame[];
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
@@ -62,12 +64,27 @@ function useCountdown(targetISO: string) {
   }, []);
   const target = new Date(targetISO).getTime();
   const diff = Math.max(0, target - now);
-  const h = Math.floor(diff / 3_600_000);
-  const m = Math.floor((diff % 3_600_000) / 60_000);
-  const s = Math.floor((diff % 60_000) / 1000);
+  // 시간 스케일에 따라 라벨 형식 분기 — "17:00:00" 같은 시각 오인 방지.
+  //   >= 24h: "약 X일 Y시간"
+  //   1h ~ 24h: "약 H시간 M분"
+  //   < 1h: "MM:SS"
+  let label: string;
+  if (diff >= 86_400_000) {
+    const days = Math.floor(diff / 86_400_000);
+    const hours = Math.floor((diff % 86_400_000) / 3_600_000);
+    label = hours > 0 ? `약 ${days}일 ${hours}시간` : `약 ${days}일`;
+  } else if (diff >= 3_600_000) {
+    const hours = Math.floor(diff / 3_600_000);
+    const mins = Math.floor((diff % 3_600_000) / 60_000);
+    label = mins > 0 ? `약 ${hours}시간 ${mins}분` : `약 ${hours}시간`;
+  } else {
+    const mins = Math.floor(diff / 60_000);
+    const secs = Math.floor((diff % 60_000) / 1000);
+    label = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  }
   return {
     isPast: diff === 0,
-    label: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+    label
   };
 }
 
@@ -173,7 +190,9 @@ export function AiWinnerListScreen({
 
   // 09:00 도달 전: 모든 경기가 잠금 상태.
   // 운영자(admin) 는 잠금 해제 — 컨텐츠 영상 사전 제작용으로 예측을 미리 봐야 함.
-  const isBeforePublish = hydrated && !countdown.isPast && !isAdmin;
+  // 공개 시각 전 — admin도 카드에 예측이 없으면 카운트다운 표시 (데이터 미생성 안내용).
+  // 단 예측이 이미 존재하면 showLocked가 hasPredictions로 자연히 false가 돼서 admin은 미리 reveal됨.
+  const isBeforePublish = hydrated && !countdown.isPast;
 
   const providerByName = useMemo(() => {
     const map = new Map<AiProvider, AiProviderStats>();
@@ -215,27 +234,34 @@ export function AiWinnerListScreen({
           </div>
         </header>
 
-        {/* ── 날짜 네비게이션 — 오늘 / 과거로 이동 가능. 미래는 비활성 ── */}
+        {/* ── 날짜 네비게이션 — 경기 없는 날 자동 스킵.
+            미래로도 이동 가능 (AI 예측 도착 전엔 카운트다운 카드로 표시). ── */}
         <nav className="ai-winner-date-nav" aria-label="날짜 선택">
-          <Link
-            href={`/predict/ai-winner?date=${prevDate}`}
-            className="ai-winner-date-nav-btn"
-            aria-label="이전 날짜"
-            prefetch={false}
-          >
-            <ChevronLeft size={16} strokeWidth={2.5} />
-          </Link>
+          {prevDate ? (
+            <Link
+              href={`/predict/ai-winner?date=${prevDate}`}
+              className="ai-winner-date-nav-btn"
+              aria-label="이전 경기일"
+              prefetch={false}
+            >
+              <ChevronLeft size={16} strokeWidth={2.5} />
+            </Link>
+          ) : (
+            <span className="ai-winner-date-nav-btn is-disabled" aria-hidden="true">
+              <ChevronLeft size={16} strokeWidth={2.5} />
+            </span>
+          )}
           <div className="ai-winner-date-nav-current">
             <span className="ai-winner-date-nav-date">{formatDateLabel(selectedDate)}</span>
             <span className="ai-winner-date-nav-badge">
               {isToday ? "오늘" : isFuture ? "미래" : "지난 예측"}
             </span>
           </div>
-          {nextDate <= today ? (
+          {nextDate ? (
             <Link
               href={`/predict/ai-winner?date=${nextDate}`}
               className="ai-winner-date-nav-btn"
-              aria-label="다음 날짜"
+              aria-label="다음 경기일"
               prefetch={false}
             >
               <ChevronRight size={16} strokeWidth={2.5} />

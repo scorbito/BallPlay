@@ -7,7 +7,7 @@ import {
   listMyPredictionResultsForDate,
   type BpPredictionResultRow
 } from "@/lib/supabase/query-parts/bpPredictions";
-import { refreshTodayStartersIfStale } from "@/lib/server/kbo/refreshStarters";
+import { refreshStartersIfStale } from "@/lib/server/kbo/refreshStarters";
 
 export const dynamic = "force-dynamic";
 
@@ -41,24 +41,63 @@ export default async function WinnerPredictPage({
   }
 
   const today = kstToday();
-  // URL ?date=YYYY-MM-DD 파싱 — 형식 안 맞으면 오늘로 폴백.
-  const requested = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : today;
-  const selectedDate = requested;
-  const isToday = selectedDate === today;
-  const isFuture = selectedDate > today;
-  const prevDate = addDays(selectedDate, -1);
-  const nextDate = addDays(selectedDate, 1);
+  // URL ?date=YYYY-MM-DD 파싱 — 형식 안 맞으면 null 처리.
+  const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
 
-  // 오늘 날짜 진입 시에만 선발 투수 on-demand refresh (throttle 10분, 모두 채워지면 skip).
-  // listGamesFromDb 호출 BEFORE 실행해야 갱신된 값이 fetch에 반영됨.
-  if (isToday) {
-    await refreshTodayStartersIfStale();
+  let selectedDate = explicitDate ?? today;
+  let gamesResult = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);
+
+  // 오늘 진입인데 경기 자체가 없음 → 14일 lookahead 중 가장 이른 경기일로 자동 이동.
+  // (승리팀 예측이 목적이라 오늘 경기 없는 날에 빈 화면 대신 미리 다음 경기 예측 화면 노출.)
+  if (!explicitDate && gamesResult.length === 0) {
+    const lookahead = await listGamesFromDb({
+      from: addDays(today, 1),
+      to: addDays(today, 14)
+    }).catch(() => []);
+    if (lookahead.length > 0) {
+      selectedDate = lookahead[0].date;
+      gamesResult = lookahead.filter((g) => g.date === selectedDate);
+    }
   }
 
-  // 해당 날짜의 경기 + 본인 예측 + 통계 — 병렬 fetch.
+  // 인접 경기일 탐색 — prev/next 화살표가 경기 없는 날을 자동으로 스킵.
+  // (예: 5/31 → 6/2 점프, 월요일 휴식일은 노출 안 함.)
+  // ±14일 윈도우. 시즌 휴식기 등 더 긴 공백은 화살표 숨김 처리.
+  const [prevLookback, nextLookahead] = await Promise.all([
+    listGamesFromDb({ from: addDays(selectedDate, -14), to: addDays(selectedDate, -1) }).catch(() => []),
+    listGamesFromDb({ from: addDays(selectedDate, 1), to: addDays(selectedDate, 14) }).catch(() => [])
+  ]);
+  // listGamesFromDb는 ascending 정렬 — prev는 마지막 row(가장 가까운 과거), next는 첫 row(가장 가까운 미래).
+  const prevDate = prevLookback.length > 0 ? prevLookback[prevLookback.length - 1].date : null;
+  const nextDate = nextLookahead.length > 0 ? nextLookahead[0].date : null;
+
+  // 오늘 또는 미래 날짜면 선발 투수 on-demand refresh (throttle 10분, all-filled시 skip).
+  // 과거 경기는 갱신 의미 없으므로 skip.
+  if (selectedDate >= today) {
+    const refreshed = await refreshStartersIfStale(selectedDate);
+    if (refreshed.refreshed) {
+      gamesResult = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => gamesResult);
+    }
+  }
+
+  // 다음 경기일 selectedDate 이후 미래에 있고, 현재 selectedDate(=보통 오늘)의 경기가
+  // 모두 끝났으면 — 사용자가 → 누르면 즉시 보여줄 수 있도록 백그라운드 prefetch.
+  // refreshStartersIfStale 내부의 all-filled / throttle 가드로 비용 없음.
+  if (nextDate && nextDate > today && selectedDate === today) {
+    const todayAllDone =
+      gamesResult.length > 0 &&
+      gamesResult.every((g) => g.status === "finished" || g.status === "canceled");
+    if (todayAllDone) {
+      void refreshStartersIfStale(nextDate);
+    }
+  }
+
+  const isToday = selectedDate === today;
+  const isFuture = selectedDate > today;
+
+  // 본인 예측 + 통계 — 병렬 fetch.
   // dateStats는 화면에 표시 중인 selectedDate 기준 (어제로 가면 어제 적중률).
-  const [gamesResult, predictionsResult, dateStatsResult, allTimeStatsResult] = await Promise.all([
-    listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
+  const [predictionsResult, dateStatsResult, allTimeStatsResult] = await Promise.all([
     listMyPredictionResultsForDate(supabase, user.id, selectedDate),
     getMyPredictionStats(supabase, user.id, { dateISO: selectedDate }),
     getMyPredictionStats(supabase, user.id)

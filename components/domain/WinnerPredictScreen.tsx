@@ -49,8 +49,10 @@ type Props = {
   isToday: boolean;
   /** 선택된 날짜가 오늘보다 미래인지 — true면 read-only로만 표시 */
   isFuture: boolean;
-  prevDateISO: string;
-  nextDateISO: string;
+  /** 이전 경기일 (없으면 null — 화살표 숨김) */
+  prevDateISO: string | null;
+  /** 다음 경기일 (없으면 null — 화살표 숨김) */
+  nextDateISO: string | null;
   games: WinnerPredictGame[];
   /** 선택된 날짜 기준 적중률 (어제로 가면 어제 통계) */
   dateStats: Stats;
@@ -102,10 +104,12 @@ export function WinnerPredictScreen({
   const [locking, setLocking] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
 
-  // 편집 가능 조건: 오늘 + scheduled + 미잠금. 과거 날짜는 무조건 read-only.
+  // 편집 가능 조건: 오늘 또는 미래 + scheduled + 미잠금. 과거 날짜는 무조건 read-only.
+  // (오늘 경기 다 끝나도 오늘 결과는 보여주고, 내일 일정 탭으로 이동하면 미리 예측 가능.)
+  const canEditOnThisDate = isToday || isFuture;
   const editableGames = useMemo(
-    () => (isToday ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id]) : []),
-    [games, lockedMap, isToday]
+    () => (canEditOnThisDate ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id]) : []),
+    [games, lockedMap, canEditOnThisDate]
   );
   // 애니메이션 트리거 조건: 픽한 경기 + 그 경기 결과(isJudged)가 하나라도 있을 때.
   //   - 오늘 픽 직후(결과 없음) → 정적
@@ -170,8 +174,8 @@ export function WinnerPredictScreen({
 
   const handlePick = useCallback(
     (game: WinnerPredictGame, teamId: string) => {
-      // 오늘이 아니면 절대 저장 안 함 (버튼이 disabled지만 안전 가드)
-      if (!isToday || game.status !== "scheduled" || lockedMap[game.id]) return;
+      // 오늘/미래만 저장 허용 (과거는 read-only). 버튼이 disabled지만 안전 가드.
+      if (!canEditOnThisDate || game.status !== "scheduled" || lockedMap[game.id]) return;
       setPredictions((prev) => ({ ...prev, [game.id]: teamId }));
 
       startSaving(async () => {
@@ -193,7 +197,7 @@ export function WinnerPredictScreen({
         }
       });
     },
-    [isToday, lockedMap, showToast, selectedDateISO]
+    [canEditOnThisDate, lockedMap, showToast, selectedDateISO]
   );
 
   const handleSubmit = useCallback(() => {
@@ -263,16 +267,21 @@ export function WinnerPredictScreen({
         </div>
       </section>
 
-      {/* 날짜 헤더 — 좌우 화살표로 이전/다음 날 이동 (미래도 read-only로 볼 수 있음) */}
+      {/* 날짜 헤더 — 좌우 화살표로 이전/다음 경기일 이동. 경기 없는 날은 자동 스킵.
+          (예: 5/31 → 6/2 점프, 6/1 월요일은 KBO 휴식일이라 노출 안 함) */}
       <header className="predict-day-header">
-        <Link
-          href={`/predict/winner?date=${prevDateISO}`}
-          className="predict-day-nav"
-          aria-label="이전 날짜"
-          prefetch
-        >
-          <ChevronLeft size={18} />
-        </Link>
+        {prevDateISO ? (
+          <Link
+            href={`/predict/winner?date=${prevDateISO}`}
+            className="predict-day-nav"
+            aria-label="이전 경기일"
+            prefetch
+          >
+            <ChevronLeft size={18} />
+          </Link>
+        ) : (
+          <span className="predict-day-nav predict-day-nav-disabled" aria-hidden />
+        )}
         {isToday ? (
           <div className="predict-day-center">
             <strong>{dateLabel}</strong>
@@ -293,18 +302,22 @@ export function WinnerPredictScreen({
           >
             <strong>{dateLabel}</strong>
             <span className="predict-day-hint">
-              {isFuture ? "다가올 경기 · 탭하면 오늘로" : "지난 예측 · 탭하면 오늘로"}
+              {isFuture ? "미리 예측 가능 · 탭하면 오늘로" : "지난 예측 · 탭하면 오늘로"}
             </span>
           </Link>
         )}
-        <Link
-          href={`/predict/winner?date=${nextDateISO}`}
-          className="predict-day-nav"
-          aria-label="다음 날짜"
-          prefetch
-        >
-          <ChevronRight size={18} />
-        </Link>
+        {nextDateISO ? (
+          <Link
+            href={`/predict/winner?date=${nextDateISO}`}
+            className="predict-day-nav"
+            aria-label="다음 경기일"
+            prefetch
+          >
+            <ChevronRight size={18} />
+          </Link>
+        ) : (
+          <span className="predict-day-nav predict-day-nav-disabled" aria-hidden />
+        )}
       </header>
 
       {games.length === 0 ? (

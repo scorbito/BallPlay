@@ -4,10 +4,10 @@
  * UUID 앞자리만 쓰면 무미건조한 "야구팬7a2f8" 같은 이름이 되니까,
  * 야구 관련 단어 풀에서 무작위 형용사·명사를 골라 더 다채롭게 만든다.
  *
- * 단어 풀이 작으면 중복 위험이 있으므로 UUID 6자리를 뒤에 덧붙여
- * 사실상 충돌을 0으로 만든다. (16^6 ≈ 1670만 조합)
+ * 단어 풀이 작으면 중복 위험이 있으므로 UUID 3자리를 뒤에 덧붙여
+ * 충돌 가능성을 거의 0으로 만든다. (단어 조합 540 × 16^3 ≈ 220만)
  *
- * 예: "홈런타자8f3a2c", "응원단장4b21de", "직관러d92f01"
+ * 예: "홈런타자8f3", "응원단장4b2", "직관러d92"
  */
 
 const NICKNAME_NOUNS = [
@@ -32,14 +32,14 @@ const NICKNAME_ADJECTIVES = [
 /**
  * 야구 단어 풀 + UUID 6자리 조합으로 디폴트 닉네임 생성.
  * @param uuid - Supabase auth.user.id (또는 임의의 문자열)
- * @returns 예: "불꽃홈런왕7a2f8c"
+ * @returns 예: "불꽃홈런왕7a2"
  */
 export function generateDefaultNickname(uuid: string): string {
   // UUID에서 일관된 시드 추출 — 같은 UUID는 항상 같은 닉네임 (재로그인 시 동일)
   const sanitized = uuid.replace(/-/g, "");
   const seed1 = parseInt(sanitized.slice(0, 4), 16) || 0;
   const seed2 = parseInt(sanitized.slice(4, 8), 16) || 0;
-  const suffix = sanitized.slice(0, 6);
+  const suffix = sanitized.slice(0, 3);
 
   const adj = NICKNAME_ADJECTIVES[seed1 % NICKNAME_ADJECTIVES.length];
   const noun = NICKNAME_NOUNS[seed2 % NICKNAME_NOUNS.length];

@@ -40,13 +40,35 @@ export default async function AiWinnerPredictPage({
   void triggerDailyDataSync();
 
   const today = kstToday();
-  // ?date=YYYY-MM-DD 형식이면 그 날짜, 아니면 오늘로 폴백
-  const requested = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : today;
-  const selectedDate = requested;
+  // ?date=YYYY-MM-DD 형식이면 그 날짜. 없으면 일단 오늘로 시도 후 경기 없으면 다음 경기일로 점프.
+  const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
+
+  let selectedDate = explicitDate ?? today;
+  let gamesForDate = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);
+
+  // 오늘 진입인데 경기 자체가 없음 → 14일 lookahead 중 가장 이른 경기일로 자동 이동.
+  // (AI 예측이 목적이라 경기 없는 날엔 미리 다음 경기일 + 카운트다운 노출.)
+  if (!explicitDate && gamesForDate.length === 0) {
+    const lookahead = await listGamesFromDb({
+      from: addDays(today, 1),
+      to: addDays(today, 14)
+    }).catch(() => []);
+    if (lookahead.length > 0) {
+      selectedDate = lookahead[0].date;
+      gamesForDate = lookahead.filter((g) => g.date === selectedDate);
+    }
+  }
+
   const isToday = selectedDate === today;
   const isFuture = selectedDate > today;
-  const prevDate = addDays(selectedDate, -1);
-  const nextDate = addDays(selectedDate, 1);
+
+  // 인접 경기일 탐색 — prev/next 화살표가 경기 없는 날을 자동 스킵. ±14일 윈도우.
+  const [prevLookback, nextLookahead] = await Promise.all([
+    listGamesFromDb({ from: addDays(selectedDate, -14), to: addDays(selectedDate, -1) }).catch(() => []),
+    listGamesFromDb({ from: addDays(selectedDate, 1), to: addDays(selectedDate, 14) }).catch(() => [])
+  ]);
+  const prevDate = prevLookback.length > 0 ? prevLookback[prevLookback.length - 1].date : null;
+  const nextDate = nextLookahead.length > 0 ? nextLookahead[0].date : null;
 
   const supabase = createSupabaseServerClient();
 
@@ -57,9 +79,8 @@ export default async function AiWinnerPredictPage({
   const isAdmin = userTier.tier === "admin";
   const predictionsClient = isAdmin ? createSupabaseAdminClient() : supabase;
 
-  // 선택 날짜의 경기 + 예측 + 시즌 통계 병렬
-  const [games, predictionsResult, overallResult, providerResult] = await Promise.all([
-    listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
+  // 예측 + 시즌 통계 병렬 (게임 데이터는 위에서 이미 확보)
+  const [predictionsResult, overallResult, providerResult] = await Promise.all([
     listAiPredictionsForDate(predictionsClient, selectedDate),
     getAiOverallStats(supabase),
     getAiByProviderStats(supabase)
@@ -75,7 +96,7 @@ export default async function AiWinnerPredictPage({
     }
   }
 
-  const gameCards: AiWinnerGame[] = games.map((g) => ({
+  const gameCards: AiWinnerGame[] = gamesForDate.map((g) => ({
     id: g.id,
     gameTime: g.time ?? null,
     stadium: g.stadium,
@@ -87,18 +108,8 @@ export default async function AiWinnerPredictPage({
     predictions: predictionsByGameId.get(g.id) ?? []
   }));
 
-  // 경기 없는 날 — 다음 경기 날짜 찾기 (다음 7일 내 첫 경기일). 과거 날짜에선 미사용.
-  let nextGameDate: string | null = null;
-  if (gameCards.length === 0 && isToday) {
-    for (let i = 1; i <= 7; i += 1) {
-      const d = addDays(today, i);
-      const rows = await listGamesFromDb({ from: d, to: d }).catch(() => []);
-      if (rows.length > 0) {
-        nextGameDate = d;
-        break;
-      }
-    }
-  }
+  // 다음 경기일 hint (auto-jump 했어도 경기 없는 날짜에 ?date= 명시 진입한 경우 표시용)
+  const nextGameDate = nextDate;
 
   return (
     <AiWinnerListScreen

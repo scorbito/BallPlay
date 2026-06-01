@@ -143,7 +143,7 @@ const sections: HomeSection[] = [
         id: "winner-predict",
         href: "/predict/winner",
         title: "승리팀 예측하기",
-        description: "오늘 승리팀 예측",
+        description: "다음 경기 승리팀",
         icon: Target,
         iconImage: "/icons/menu/predict-winner.png",
         available: true

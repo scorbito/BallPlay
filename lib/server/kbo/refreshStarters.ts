@@ -2,7 +2,7 @@
 // 트리거: /predict/winner 페이지가 SSR될 때.
 //
 // 동작:
-//   1. 오늘 경기 fetch (KST 기준)
+//   1. 대상 날짜 경기 fetch (기본은 오늘 KST, 다음 경기일로 점프한 경우엔 해당 날짜)
 //   2. 선발이 비어있는 경기가 하나라도 있는지 확인
 //   3. 모두 채워져 있으면 → skip (불필요 API call 방지)
 //   4. throttle 체크: 마지막 starter_fetched_at가 N분 이내면 skip
@@ -22,17 +22,17 @@ function kstTodayISO(): string {
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
-export async function refreshTodayStartersIfStale(): Promise<{
+export async function refreshStartersIfStale(targetDate?: string): Promise<{
   refreshed: boolean;
   reason: string;
 }> {
-  const today = kstTodayISO();
+  const date = targetDate ?? kstTodayISO();
   try {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("games")
       .select("home_starter, away_starter, starter_fetched_at, status")
-      .eq("game_date", today);
+      .eq("game_date", date);
 
     if (error) {
       // 42703 = undefined column → add-games-starters.sql 미적용. graceful skip.
@@ -51,7 +51,7 @@ export async function refreshTodayStartersIfStale(): Promise<{
     }>;
 
     if (games.length === 0) {
-      return { refreshed: false, reason: "no-games-today" };
+      return { refreshed: false, reason: "no-games-on-date" };
     }
 
     // 종료된 경기는 무시. scheduled / in_progress 중에서 null 선발 있나 확인.
@@ -72,7 +72,7 @@ export async function refreshTodayStartersIfStale(): Promise<{
     }
 
     // 실제 fetch + UPSERT (syncGamesForDate가 starter_fetched_at도 갱신)
-    const result = await syncGamesForDate(today);
+    const result = await syncGamesForDate(date);
     return {
       refreshed: true,
       reason: `synced from ${result.source}: inserted ${result.inserted}, updated ${result.updated}`
