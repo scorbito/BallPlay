@@ -5,38 +5,14 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { getTeam } from "@/lib/constants/teams";
-import { simulateGame } from "@/lib/sim/engine";
-import {
-  loadMatchSession,
-  saveMatchSession,
-  type MatchSession
-} from "@/lib/sim/matchSession";
+import { loadMatchSession, saveMatchSession } from "@/lib/sim/matchSession";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
-import type { BaseState, SimPitcher } from "@/lib/sim/types";
-import {
-  getSituationText,
-  getBatterText,
-  getOutcomeText,
-  getHomerunText,
-  getScoreText
-} from "@/lib/sim/narration";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getServerTimeOffsetMs, serverNow } from "@/lib/sim/serverClock";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 import { useAppState } from "@/lib/state/AppState";
-import {
-  getBgmMuted,
-  getMatchSoundMuted,
-  playBgm,
-  playMatchSound,
-  preloadBgm,
-  preloadMatchSounds,
-  setBgmMuted,
-  setMatchSoundMuted,
-  stopBgm
-} from "@/lib/sound/matchSounds";
-import { EMPTY_BASE, OUTCOME_LABEL } from "./play/types";
-import { buildLinescore, flatten } from "./play/eventHelpers";
+import { playMatchSound } from "@/lib/sound/matchSounds";
+import { OUTCOME_LABEL } from "./play/types";
+import { buildLinescore } from "./play/eventHelpers";
 import { FlyingBall } from "./play/effects/FlyingBall";
 import { HitEffectAtPosition } from "./play/effects/HitEffect";
 import { StrikeoutEffect } from "./play/effects/StrikeoutEffect";
@@ -45,47 +21,27 @@ import { Scoreboard } from "./play/Scoreboard";
 import { LineupCard } from "./play/LineupCard";
 import { PlayControls } from "./play/PlayControls";
 import { SkipBlockedModal } from "./play/SkipBlockedModal";
+import { buildNarration } from "./play/narration";
+import {
+  deriveBaseState,
+  deriveCurrentBatterIdx,
+  deriveCurrentPitcher,
+  deriveHeaderTitle,
+  deriveIsOfficial,
+  deriveTeamLabel,
+  formatNickname
+} from "./play/derived";
+import { useMatchSounds } from "./play/hooks/useMatchSounds";
+import { useLiveCountdown } from "./play/hooks/useLiveCountdown";
+import { useMatchSession } from "./play/hooks/useMatchSession";
+import type { SimPitcher } from "@/lib/sim/types";
 
 export function PlayScreen() {
   const router = useRouter();
   const { showToast, profile } = useAppState();
-  const [session, setSession] = useState<MatchSession | null>(null);
-  const [hydrated, setHydrated] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
-  // 효과음 음소거 — localStorage 동기. 초기엔 false(들림)로 SSR/CSR 안전, mount 시 보정.
-  const [muted, setMuted] = useState(false);
-  // 배경음악 음소거 — 효과음과 별도 토글.
-  const [bgmMuted, setBgmMutedState] = useState(false);
-  useEffect(() => {
-    setMuted(getMatchSoundMuted());
-    setBgmMutedState(getBgmMuted());
-    // 4종 사운드 사전 decode → 첫 안타/홈런/삼진/득점부터 지연 없이 즉시 재생.
-    // (이전엔 매 호출마다 new Audio() 라 모바일에서 1초가량 늦게 들리는 문제 있었음.)
-    void preloadMatchSounds();
-    // BGM Audio 인스턴스 + fetch 사전 시작 — 토글 켜는 시점에 이미 준비돼 즉시 재생.
-    preloadBgm();
-    // BGM 시작 — bgmMuted=false 이면 자동 재생 (자동재생 차단 시 silent fail).
-    playBgm();
-    // 언마운트 시 정지
-    return () => {
-      stopBgm();
-    };
-  }, []);
-  const toggleMuted = () => {
-    setMuted((m) => {
-      const next = !m;
-      setMatchSoundMuted(next);
-      return next;
-    });
-  };
-  const toggleBgmMuted = () => {
-    setBgmMutedState((m) => {
-      const next = !m;
-      setBgmMuted(next); // 함수 내부에서 즉시 play/stop 처리
-      return next;
-    });
-  };
+  const { muted, bgmMuted, toggleMuted, toggleBgmMuted } = useMatchSounds();
   // 경기 종료 시 자동 저장 — 한 번만 실행하도록 추적.
   // useState는 비동기 업데이트라 두 번째 effect 실행에서 stale 값이 보일 수 있음 →
   // useRef로 동기 가드. StrictMode/의존성 변경으로 effect가 두 번 실행돼도 INSERT 1회만.
@@ -136,80 +92,19 @@ export function PlayScreen() {
   } | null>(null);
   const hitFxFiredForCursorRef = useRef<number>(-1);
 
-  // 라이브 매치 모드 — liveStartAt까지 대기 후 진행. 속도/일시정지 컨트롤 잠금.
-  const isLive = !!session?.liveMatchId;
-  const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
-
-  useEffect(() => {
-    const s = loadMatchSession();
-    if (!s || !s.input) {
-      router.replace("/stadium/lobby");
-      return;
-    }
-    let next = s;
-    if (!s.result) {
-      const result = simulateGame(s.input, s.seed);
-      next = { ...s, result };
-      saveMatchSession(next);
-    }
-    setSession(next);
-    setHydrated(true);
-
-    // 친구 대결(라이브 매치) — 방장이 선택한 진행 속도(liveMode)로 진행.
-    // 구버전 세션은 liveMode 없을 수 있으므로 기본 'fast'로 폴백.
-    if (next.liveMatchId) {
-      setMode(next.liveMode ?? "fast");
-    }
-
-    // 카운트다운: startAt이 미래면 그때까지 playing=false.
-    // 비교는 server-equivalent time 기준(serverNow) — 양쪽 클라이언트 wall-clock 이 어긋나도
-    // 같은 server time 에 동시에 시작되도록.
-    if (next.liveMatchId && next.liveStartAt) {
-      // 친구 매치면 server time offset 미리 fetch (countdown effect 가 사용).
-      void getServerTimeOffsetMs(createSupabaseBrowserClient());
-      const startMs = new Date(next.liveStartAt).getTime();
-      if (serverNow() < startMs) {
-        setPlaying(false);
-      }
-    }
-  }, [router]);
+  // 세션 hydrate + events 도출 (라이브 매치면 mode/playing도 세팅)
+  const { session, events, hydrated, isLive, liveStartAt } = useMatchSession({
+    router,
+    setMode,
+    setPlaying
+  });
 
   // 라이브 카운트다운 — startAt 도달 시 자동 play.
-  // server-equivalent time 기준 비교(serverNow) → 클라 wall-clock drift 무관하게 양쪽 동시 시작.
-  useEffect(() => {
-    if (!isLive || !session?.liveStartAt) return;
-    const startMs = new Date(session.liveStartAt).getTime();
-    const client = createSupabaseBrowserClient();
-    // offset 아직 미캐시면 한 번 fetch 후 tick 시작. 캐시 있으면 즉시.
-    let cancelled = false;
-    let intervalId = 0;
-    void getServerTimeOffsetMs(client).then(() => {
-      if (cancelled) return;
-      const tick = () => {
-        const remain = Math.max(0, Math.ceil((startMs - serverNow()) / 1000));
-        setLiveCountdown(remain);
-        if (remain <= 0) {
-          setPlaying(true);
-          setLiveCountdown(null);
-          return false;
-        }
-        return true;
-      };
-      if (!tick()) return;
-      intervalId = window.setInterval(() => {
-        if (!tick()) window.clearInterval(intervalId);
-      }, 200);
-    });
-    return () => {
-      cancelled = true;
-      if (intervalId) window.clearInterval(intervalId);
-    };
-  }, [isLive, session?.liveStartAt]);
-
-  const events = useMemo(() => {
-    if (!session?.result) return [];
-    return flatten(session.result.innings);
-  }, [session]);
+  const { countdownMs: liveCountdown } = useLiveCountdown({
+    isLive,
+    liveStartAt,
+    setPlaying
+  });
 
   const currentInningEvents = useMemo(() => {
     if (cursor === 0) return [];
@@ -650,20 +545,12 @@ export function PlayScreen() {
   const input = session.input!;
   const homeTeam = getTeam(input.home.teamId);
   const awayTeam = getTeam(input.away.teamId);
-  // 사용자 지정 팀명(라인업 이름) 우선, 없으면 KBO 정식 팀명 폴백
-  const homeLabel = input.home.displayName?.trim() || homeTeam.shortName;
-  const awayLabel = input.away.displayName?.trim() || awayTeam.shortName;
-  // 닉네임 표시 — 친구/공개 매치에서 양쪽 사람 닉네임을 팀뱃지 위에 노출.
-  // AI/self 매치는 닉네임 자체가 의미 없어 표시 안 함.
-  const showNicknames = session.source === "friend" || session.source === "public";
+  const homeLabel = deriveTeamLabel(input.home.displayName, homeTeam.shortName);
+  const awayLabel = deriveTeamLabel(input.away.displayName, awayTeam.shortName);
   const myNickname = profile?.nickname?.trim() || "나";
   const oppNickname = session.opponentNickname?.trim() || "상대";
-  const homeNickname = showNicknames
-    ? (session.userSide === "home" ? myNickname : oppNickname)
-    : null;
-  const awayNickname = showNicknames
-    ? (session.userSide === "away" ? myNickname : oppNickname)
-    : null;
+  const homeNickname = formatNickname("home", session, myNickname, oppNickname);
+  const awayNickname = formatNickname("away", session, myNickname, oppNickname);
   const linescore = buildLinescore(session.result.innings, cursor, events);
   const latest = events[Math.max(0, cursor - 1)];
   const isDone = phase === "GAME_END";
@@ -673,201 +560,31 @@ export function PlayScreen() {
 
   const battingSide: "home" | "away" = latest?.half === "bottom" ? "home" : "away";
 
-  const visible = events.slice(0, cursor);
-  const lastAwayBatterId = [...visible].reverse().find((ev) => ev.half === "top")?.ab.batterId ?? null;
-  const lastHomeBatterId = [...visible].reverse().find((ev) => ev.half === "bottom")?.ab.batterId ?? null;
-  const awayCurrentIdx = lastAwayBatterId ? input.away.batters.findIndex((b) => b.playerId === lastAwayBatterId) : -1;
-  const homeCurrentIdx = lastHomeBatterId ? input.home.batters.findIndex((b) => b.playerId === lastHomeBatterId) : -1;
+  const awayCurrentIdx = deriveCurrentBatterIdx(events, cursor, "top", input.away.batters);
+  const homeCurrentIdx = deriveCurrentBatterIdx(events, cursor, "bottom", input.home.batters);
 
-  // 현재 등판 투수 — 그 팀이 수비할 때(상대 공격) 가장 최근 던진 투수.
-  // away팀 수비 = home 공격 = bottom half / home팀 수비 = away 공격 = top half
-  const lastAwayPitcherId =
-    [...visible].reverse().find((ev) => ev.half === "bottom")?.ab.pitcherId ?? null;
-  const lastHomePitcherId =
-    [...visible].reverse().find((ev) => ev.half === "top")?.ab.pitcherId ?? null;
-  const awayCurrentPitcher = lastAwayPitcherId
-    ? pitcherById.get(lastAwayPitcherId) ?? input.away.starter
-    : input.away.starter;
-  const homeCurrentPitcher = lastHomePitcherId
-    ? pitcherById.get(lastHomePitcherId) ?? input.home.starter
-    : input.home.starter;
+  const awayCurrentPitcher = deriveCurrentPitcher(events, cursor, "bottom", pitcherById, input.away.starter);
+  const homeCurrentPitcher = deriveCurrentPitcher(events, cursor, "top", pitcherById, input.home.starter);
 
-  // 다이아몬드/아웃카운트 — 현재 이닝의 visible 마지막 타석에서 가져옴. 비었으면 0 outs/empty.
-  const lastInInning = currentInningEvents[currentInningEvents.length - 1];
-  // showOutcome이 false면 "타석 진행 중" 상태 — 이전 타석의 baseStateAfter 사용 (이 타석 결과는 아직 미반영)
-  const stateRefAb =
-    !showOutcome && currentInningEvents.length >= 2
-      ? currentInningEvents[currentInningEvents.length - 2].ab
-      : lastInInning?.ab;
-  const baseState: BaseState =
-    !showOutcome && currentInningEvents.length === 1
-      ? EMPTY_BASE
-      : stateRefAb?.baseStateAfter ?? EMPTY_BASE;
-  const outsValue =
-    !showOutcome && currentInningEvents.length === 1
-      ? 0
-      : stateRefAb?.outsAfter ?? 0;
-  const outs = Math.min(3, outsValue) as 0 | 1 | 2 | 3;
+  const { baseState, outs } = deriveBaseState(currentInningEvents, showOutcome);
 
   // 1줄 상황판 텍스트 + variant 결정
-  const narration: { text: string; variant: "default" | "inning" | "pitcher" | "walkoff" } = (() => {
-    if (cursor === 0) return { text: "플레이볼!", variant: "default" };
-    const current = events[cursor - 1];
-    const battingTeamBatters = current.half === "top" ? input.away.batters : input.home.batters;
-    const orderIdx = battingTeamBatters.findIndex((b) => b.playerId === current.ab.batterId);
-    const orderPrefix = orderIdx >= 0 ? `${orderIdx + 1}번 타자 ` : "";
-    const batter = battingTeamBatters.find((b) => b.playerId === current.ab.batterId);
-    const batterName = batter?.name ?? "타자";
-    const outcomeLabel =
-      OUTCOME_LABEL[current.ab.outcome] +
-      (current.ab.runsScored > 0 ? ` (+${current.ab.runsScored})` : "");
-
-    // ───────── SITUATION: 풍부한 멘트 풀 (live 모드만) ─────────
-    if (phase === "SITUATION") {
-      return {
-        text: getSituationText({
-          cursor,
-          inning: current.inning,
-          half: current.half,
-          outsBefore: current.ab.outsBefore,
-          baseStateBefore: current.ab.baseStateBefore,
-          scoreBefore: current.scoreSnapshot,
-          totalInnings: linescore.totalInnings
-        }),
-        variant: "default"
-      };
-    }
-
-    // ───────── BATTER: 타순·이름 (+ live면 스탯) ─────────
-    if (phase === "BATTER") {
-      return {
-        text: getBatterText({
-          cursor,
-          orderIdx,
-          batter: batter ?? null,
-          withStats: mode === "live"
-        }),
-        variant: "default"
-      };
-    }
-
-    // ───────── OUTCOME: 결과 / live 단계 narration ─────────
-    if (phase === "OUTCOME") {
-      // live 모드 + 점수 들어옴 → outcomeStep에 따라 단계 narration
-      if (mode === "live" && current.ab.runsScored > 0) {
-        if (outcomeStep === 0) {
-          return {
-            text: `${orderPrefix}${batterName} — ${getOutcomeText(current.ab.outcome, cursor)}`,
-            variant: "default"
-          };
-        }
-        if (outcomeStep === 1) {
-          // 홈인 주자 식별
-          const homedRunners: string[] = [];
-          const before = current.ab.baseStateBefore;
-          const after = current.ab.baseStateAfter;
-          const isHR = current.ab.outcome === "HR";
-          if (isHR) {
-            if (before.third) homedRunners.push(playerNameById(before.third) ?? "3루주자");
-            if (before.second) homedRunners.push(playerNameById(before.second) ?? "2루주자");
-            if (before.first) homedRunners.push(playerNameById(before.first) ?? "1루주자");
-            homedRunners.push(batterName);
-          } else {
-            if (before.third && before.third !== after.first && before.third !== after.second && before.third !== after.third) {
-              homedRunners.push(playerNameById(before.third) ?? "3루주자");
-            }
-            if (before.second && before.second !== after.first && before.second !== after.second && before.second !== after.third) {
-              homedRunners.push(playerNameById(before.second) ?? "2루주자");
-            }
-            if (before.first && before.first !== after.first && before.first !== after.second && before.first !== after.third) {
-              homedRunners.push(playerNameById(before.first) ?? "1루주자");
-            }
-          }
-          const isBasesLoadedHR =
-            isHR && !!before.first && !!before.second && !!before.third;
-          return {
-            text: getHomerunText({
-              cursor,
-              outcome: current.ab.outcome,
-              runners: homedRunners,
-              runsScored: current.ab.runsScored,
-              isBasesLoadedHR
-            }),
-            variant: "default"
-          };
-        }
-        if (outcomeStep === 2) {
-          const after = {
-            home: current.scoreSnapshot.home + (current.half === "bottom" ? current.ab.runsScored : 0),
-            away: current.scoreSnapshot.away + (current.half === "top" ? current.ab.runsScored : 0)
-          };
-          return {
-            text: getScoreText({ cursor, scoreBefore: current.scoreSnapshot, scoreAfter: after }),
-            variant: "default"
-          };
-        }
-      }
-      // 일반/빠른 모드 또는 점수 없는 결과 — 풍부한 결과 멘트 + 점수 정보 + 주자 진루
-      const outcomeNarr = getOutcomeText(current.ab.outcome, cursor);
-      // 주자 진루 — before/after 비교로 같은 playerId가 어느 베이스로 이동했는지 추적.
-      // 홈인은 +N으로 이미 표시되므로 진루(2루/3루)만 모음.
-      const before = current.ab.baseStateBefore;
-      const after = current.ab.baseStateAfter;
-      const movements: string[] = [];
-      if (before.first) {
-        if (after.second === before.first) movements.push("1루주자 2루로");
-        else if (after.third === before.first) movements.push("1루주자 3루까지");
-      }
-      if (before.second) {
-        if (after.third === before.second) movements.push("2루주자 3루로");
-      }
-      const movementText = movements.length > 0 ? ` · ${movements.join(", ")}` : "";
-      const runsText = current.ab.runsScored > 0 ? ` (+${current.ab.runsScored})` : "";
-      return {
-        text: `${orderPrefix}${batterName} — ${outcomeNarr}${runsText}${movementText}`,
-        variant: "default"
-      };
-    }
-
-    if (phase === "INNING_END") {
-      return { text: "쓰리아웃 · 공수교대", variant: "inning" };
-    }
-    if (phase === "GAME_END") {
-      const isWalkOff =
-        current.inning >= 9 &&
-        current.half === "bottom" &&
-        current.ab.outsAfter < 3;
-      if (isWalkOff) return { text: "🏆 끝내기!", variant: "walkoff" };
-      return { text: "경기 종료", variant: "walkoff" };
-    }
-    if (phase === "PITCHER_CHANGE") {
-      const next = events[cursor];
-      const prevName =
-        pitcherById.get(current.ab.pitcherId)?.name ?? "투수";
-      const nextName = next ? pitcherById.get(next.ab.pitcherId)?.name ?? "투수" : "투수";
-      return { text: `투수 교체: ${prevName} → ${nextName}`, variant: "pitcher" };
-    }
-    return { text: "", variant: "default" };
-  })();
-
-  // playerId → 이름 lookup (홈인 주자 텍스트용)
-  function playerNameById(playerId: string): string | null {
-    const allBatters = [...input.home.batters, ...input.away.batters];
-    return allBatters.find((b) => b.playerId === playerId)?.name ?? null;
-  }
+  const narration = buildNarration({
+    phase,
+    cursor,
+    events,
+    mode,
+    outcomeStep,
+    input,
+    pitcherById,
+    linescore
+  });
 
   // 상단 헤더 타이틀 — 진행 중엔 이닝 정보, 종료 시엔 "경기 종료"
-  const headerTitle = isDone
-    ? "경기 종료"
-    : latest
-    ? `${latest.inning}회 ${latest.half === "top" ? "초" : "말"}`
-    : "경기 시작";
+  const headerTitle = deriveHeaderTitle(isDone, latest);
 
-  // 매치 종류 뱃지 — 모든 경기에서 표시. 양쪽 lineup_id 있으면 정식(전적 집계), 아니면 연습.
-  // public: 항상 양쪽 lineup_id 있음 → 정식
-  // friend: 양쪽 공개 라인업이면 정식, 아니면 연습
-  // ai/self: lineup_id 없음 → 연습
-  const isOfficial = !!session?.myLineupId && !!session?.opponentLineupId;
+  // 매치 종류 뱃지
+  const isOfficial = deriveIsOfficial(session);
   const matchTierBadge = session ? (
     <span className={`stadium-play-tier-badge ${isOfficial ? "is-official" : "is-practice"}`}>
       {isOfficial ? "정식 매치" : "연습 매치"}

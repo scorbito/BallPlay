@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Cloud, CloudOff, Eye, EyeOff, HardDrive, History, Loader2, Pencil, Plus, RotateCcw, Share2, Trash2, X } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
-import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { ShareLineupModal } from "@/components/domain/modals/ShareLineupModal";
 import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
-import { getTeam, teams } from "@/lib/constants/teams";
+import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { getRoster, getSeededTeamIds } from "@/lib/rosters";
 import {
@@ -17,36 +15,28 @@ import {
   PITCHER_REQUIRED_BULLPEN_INDEX,
   PITCHER_SLOTS_COUNT,
   PITCHER_STARTER_INDEX,
-  formatHandBadge,
-  getPoolGroupLabel,
   normalizeKboPosition,
   type LineupEntry,
   type LineupMode,
   type LineupOrder,
   type LineupSlot,
   type Player,
-  type Position,
-  type SavedLineup,
-  type SavedPitcherLineup
+  type Position
 } from "@/lib/types/lineup";
 import { createEmptyEntry } from "@/lib/storage/lineupEntries";
 import { hasSeenGuide, markGuideSeen } from "@/lib/storage/lineupGuides";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
-import { TIER_LABEL } from "@/lib/auth/userTier";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { fetchLineupStatsBulk } from "@/lib/supabase/query-parts/bpLineups";
 import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import {
-  ORDERS,
   EMPTY_SLOTS,
   EMPTY_PITCHER_SLOTS,
-  getSwapAnimClass,
   getFallbackOrder,
   type SlotState
 } from "@/lib/lineup/swapHelpers";
+import { useEntryStats } from "@/lib/lineup/useEntryStats";
 import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
 import { ConfirmOverwriteRecentModal } from "@/components/domain/lineup/modals/ConfirmOverwriteRecentModal";
@@ -61,6 +51,17 @@ import {
   DeleteSlotStatusModal,
   type DeleteStatus
 } from "@/components/domain/lineup/modals/DeleteSlotModals";
+import { AutoFillPublishModal } from "@/components/domain/lineup/modals/AutoFillPublishModal";
+import {
+  GuideStep1Modal,
+  GuideStep2Modal
+} from "@/components/domain/lineup/modals/LineupGuideModals";
+import { LineupSyncBadge } from "@/components/domain/lineup/LineupSyncBadge";
+import { LineupSlotPicker } from "@/components/domain/lineup/LineupSlotPicker";
+import { LineupActionRow } from "@/components/domain/lineup/LineupActionRow";
+import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
+import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
+import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
 
 export function LineupBuilderScreen() {
   const { profile, showToast } = useAppState();
@@ -90,7 +91,6 @@ export function LineupBuilderScreen() {
   const selectedTeamId = currentEntry?.teamId ?? initialTeamId;
 
   const [slotMenuOpen, setSlotMenuOpen] = useState(false);
-  const slotPickerRef = useRef<HTMLDivElement | null>(null);
   const [newSlotOpen, setNewSlotOpen] = useState(false);
   const [renamingEntryId, setRenamingEntryId] = useState<string | null>(null);
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<string | null>(null);
@@ -122,41 +122,7 @@ export function LineupBuilderScreen() {
   // 공개 시 마무리/불펜 빈 자리 자동 채움 안내 모달
   const [confirmAutoFillOpen, setConfirmAutoFillOpen] = useState(false);
   // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
-  const [statsByEntryId, setStatsByEntryId] = useState<Record<string, { matches: number; wins: number; losses: number; draws: number }>>({});
-
-  // 본인 라인업 stats 일괄 fetch — 빌더 마운트 시 + 공개 토글 후 자동 갱신.
-  // entries의 entryId + isPublished 시그니처를 기준으로 변경 감지.
-  const publishedSignature = useMemo(
-    () => entries.map((e) => `${e.entryId}:${e.isPublished ? 1 : 0}`).join(","),
-    [entries]
-  );
-
-  useEffect(() => {
-    if (syncStatus !== "synced") return;
-    let cancelled = false;
-    void (async () => {
-      const client = createSupabaseBrowserClient();
-      const { data: { user } } = await client.auth.getUser();
-      if (!user) return;
-      // 본인 라인업 row 모두 fetch (id ↔ entry_id 매핑 필요) — 익명도 DB sync되므로 포함
-      const { data: rows } = await client
-        .from("bp_lineups")
-        .select("id, entry_id")
-        .eq("owner_user_id", user.id);
-      if (cancelled || !rows) return;
-      const ids = (rows as Array<{ id: string; entry_id: string }>).map((r) => r.id);
-      const stats = await fetchLineupStatsBulk(client, ids);
-      if (cancelled) return;
-      const byEntryId: Record<string, { matches: number; wins: number; losses: number; draws: number }> = {};
-      for (const r of rows as Array<{ id: string; entry_id: string }>) {
-        if (stats[r.id]) byEntryId[r.entry_id] = stats[r.id];
-      }
-      setStatsByEntryId(byEntryId);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [syncStatus, publishedSignature]);
+  const statsByEntryId = useEntryStats(entries, syncStatus);
   /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
   const [hydratedEntryId, setHydratedEntryId] = useState<string | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
@@ -166,19 +132,6 @@ export function LineupBuilderScreen() {
   /** 직전에 swap된 두 인덱스 — 잠시 애니메이션 클래스를 부여하기 위함 */
   const [swapOrderAnimation, setSwapOrderAnimation] = useState<{ a: number; b: number } | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
-
-  // 외부 클릭 시 슬롯 드롭다운 닫기
-  useEffect(() => {
-    if (!slotMenuOpen) return;
-    const handler = (event: MouseEvent) => {
-      const target = event.target as Node | null;
-      if (target && slotPickerRef.current && !slotPickerRef.current.contains(target)) {
-        setSlotMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [slotMenuOpen]);
 
   // entries가 로드되면 첫 entry 자동 선택 (이미 선택된 게 있으면 유지)
   useEffect(() => {
@@ -666,128 +619,95 @@ export function LineupBuilderScreen() {
     return combined;
   }, [slots, pitcherSlots]);
 
+  // 공개 요청 핸들러 — LineupActionRow가 호출. 마무리/불펜 빈 자리 있으면 자동 채움 모달로 분기.
+  const handlePublishRequest = async () => {
+    if (!currentEntry) return;
+    if (!canPublish) {
+      showToast(publishRequirementMessage ?? "공개 조건을 확인해주세요.");
+      return;
+    }
+    if (needsAutoFillNotice) {
+      setConfirmAutoFillOpen(true);
+      return;
+    }
+    setPublishProcessing(true);
+    const res = await togglePublished(currentEntry.entryId, true);
+    setPublishProcessing(false);
+    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
+    else showToast("공개됐어요");
+  };
+
+  // 자동 채움 모달의 "자동 채움 + 공개" 클릭 — 빈 자리 채움 + entry 직접 upsert + 공개 토글.
+  const handleAutoFillAndPublish = async () => {
+    if (!currentEntry) return;
+    const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
+    if (!filled) {
+      showToast("투수 자동 채움 실패");
+      return;
+    }
+    setPitcherSlots(filled.slots);
+    setPublishProcessing(true);
+    // pitcherSlots state는 비동기라 sync useEffect가 처리하기 전에 togglePublished가
+    // 실행되면 빈 자리 그대로 DB에 남을 수 있다. 따라서 entry 전체를 직접 upsert.
+    const now = new Date().toISOString();
+    const updated: LineupEntry = {
+      ...currentEntry,
+      pitching: filled,
+      updatedAt: now
+    };
+    syncedUpsert(updated);
+    const res = await togglePublished(currentEntry.entryId, true);
+    setPublishProcessing(false);
+    setConfirmAutoFillOpen(false);
+    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
+    else showToast("공개됐어요");
+  };
+
+  // 가이드 step2의 "확인" — 자동 채움(필요 시) + 공개.
+  const handleGuideStep2Confirm = async () => {
+    if (!currentEntry) return;
+    setPublishProcessing(true);
+    if (needsAutoFillNotice) {
+      const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
+      if (filled) {
+        setPitcherSlots(filled.slots);
+        const now = new Date().toISOString();
+        syncedUpsert({
+          ...currentEntry,
+          pitching: filled,
+          updatedAt: now
+        });
+      }
+    }
+    const res = await togglePublished(currentEntry.entryId, true);
+    setPublishProcessing(false);
+    setGuideStep2Open(false);
+    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
+    else showToast("공개됐어요");
+  };
+
+  const isLocked = !!currentEntry?.isPublished;
+
   return (
     <AppShell activeTab="play" title="라인업 짜기" theme="light" backHref="/" wide>
       <header className="lineup-header lineup-header-no-back">
         {/* 헤더 좌측: 동기화 상태 배지 (이전 공개 토글 자리. 공개/비공개 개념은 "경기장 등록"으로 대체됨) */}
-        <div className={`lineup-sync-badge is-${syncStatus}`} title={
-          syncStatus === "local-only" ? "이 기기에만 저장 — 로그인하면 다른 기기에서도 사용 가능" :
-          syncStatus === "synced" ? "DB와 동기화됨 — 다른 기기에서도 사용 가능" :
-          syncStatus === "loading" ? "동기화 중..." :
-          "동기화 실패 (이 기기 저장은 정상)"
-        }>
-          {syncStatus === "loading" ? <Loader2 size={12} className="lineup-sync-spin" /> :
-           syncStatus === "synced" ? <Cloud size={12} /> :
-           syncStatus === "local-only" ? <HardDrive size={12} /> :
-           <CloudOff size={12} />}
-          <span>{
-            syncStatus === "loading" ? "동기화 중" :
-            syncStatus === "synced" ? "동기화됨" :
-            syncStatus === "local-only" ? "이 기기만" :
-            "동기화 실패"
-          }</span>
-        </div>
+        <LineupSyncBadge syncStatus={syncStatus} />
 
         {/* 슬롯 picker — 현재 슬롯 + 드롭다운으로 다른 슬롯 / 새 슬롯 / 이름 편집 / 삭제 */}
-        <div className="lineup-slot-picker" ref={slotPickerRef}>
-          <button
-            type="button"
-            className="lineup-slot-trigger"
-            aria-haspopup="listbox"
-            aria-expanded={slotMenuOpen}
-            onClick={() => setSlotMenuOpen((open) => !open)}
-          >
-            {currentEntry ? (
-              <>
-                <TeamBadge teamId={currentEntry.teamId} size="sm" />
-                <strong className="lineup-slot-trigger-name">{currentEntry.name}</strong>
-              </>
-            ) : (
-              <strong className="lineup-slot-trigger-empty">슬롯을 만드세요</strong>
-            )}
-            <ChevronDown size={16} className={slotMenuOpen ? "lineup-slot-chevron-open" : ""} />
-          </button>
-          {slotMenuOpen ? (
-            <ul className="lineup-slot-menu" role="listbox" aria-label="라인업 슬롯">
-              {entries.map((entry) => {
-                const active = entry.entryId === selectedEntryId;
-                const stats = statsByEntryId[entry.entryId];
-                return (
-                  <li key={entry.entryId} className="lineup-slot-menu-item-wrap">
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={active}
-                      className={`lineup-slot-menu-item ${active ? "is-active" : ""}`}
-                      onClick={() => {
-                        setSelectedEntryId(entry.entryId);
-                        setSlotMenuOpen(false);
-                      }}
-                    >
-                      <TeamBadge teamId={entry.teamId} size="sm" />
-                      <span className="lineup-slot-menu-name">{entry.name}</span>
-                      <span className="lineup-slot-menu-record">
-                        {stats && stats.matches > 0
-                          ? `${stats.wins}승 ${stats.losses}패`
-                          : "0승 0패"}
-                      </span>
-                      {entry.isPublished ? (
-                        <span className="lineup-slot-menu-badge is-public" title="공개 중">공개</span>
-                      ) : (
-                        <span className="lineup-slot-menu-badge" title="비공개">비공개</span>
-                      )}
-                    </button>
-                    <div className="lineup-slot-menu-actions">
-                      <button
-                        type="button"
-                        className="lineup-slot-action-btn"
-                        aria-label="이름 변경"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRenamingEntryId(entry.entryId);
-                          setSlotMenuOpen(false);
-                        }}
-                      >
-                        <Pencil size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        className="lineup-slot-action-btn lineup-slot-action-btn-danger"
-                        aria-label="삭제"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDeleteEntryId(entry.entryId);
-                          setSlotMenuOpen(false);
-                        }}
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-              {entries.length < lineupLimit ? (
-                <li>
-                  <button
-                    type="button"
-                    className="lineup-slot-menu-item lineup-slot-menu-add"
-                    onClick={() => {
-                      setNewSlotOpen(true);
-                      setSlotMenuOpen(false);
-                    }}
-                  >
-                    <Plus size={14} />
-                    <span>새 라인업 슬롯</span>
-                  </button>
-                </li>
-              ) : (
-                <li className="lineup-slot-menu-cap">
-                  {TIER_LABEL[tier]} 등급은 최대 {lineupLimit}개까지 저장
-                </li>
-              )}
-            </ul>
-          ) : null}
-        </div>
+        <LineupSlotPicker
+          entries={entries}
+          selectedEntryId={selectedEntryId}
+          statsByEntryId={statsByEntryId}
+          lineupLimit={lineupLimit}
+          tier={tier}
+          open={slotMenuOpen}
+          setOpen={setSlotMenuOpen}
+          onSelect={(entryId) => setSelectedEntryId(entryId)}
+          onAddNew={() => setNewSlotOpen(true)}
+          onRename={(entryId) => setRenamingEntryId(entryId)}
+          onDelete={(entryId) => setConfirmDeleteEntryId(entryId)}
+        />
         {/* 헤더 우측: 공유 버튼 (이전 동기화 배지 자리) */}
         <button
           type="button"
@@ -799,12 +719,12 @@ export function LineupBuilderScreen() {
         </button>
       </header>
 
-      <div className={`lineup-layout ${currentEntry?.isPublished ? "is-locked" : ""}`}>
+      <div className={`lineup-layout ${isLocked ? "is-locked" : ""}`}>
         {/* 야구장 다이아몬드 — 타자 모드: 9수비, 투수 모드: 선발만 P 표시 */}
         <section
           className="lineup-diamond-card"
           aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}
-          onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}
+          onClick={isLocked ? () => setLockInfoOpen(true) : undefined}
         >
           <LineupDiamond
             slots={diamondSlots}
@@ -824,317 +744,63 @@ export function LineupBuilderScreen() {
           ) : null}
         </section>
 
-        <div className="lineup-action-row">
-          {currentEntry?.isPublished ? (() => {
-            const stats = statsByEntryId[currentEntry.entryId];
-            const wins = stats?.wins ?? 0;
-            const losses = stats?.losses ?? 0;
-            return (
-              <p className="lineup-action-hint lineup-action-hint-published">
-                🔒 공개 라인업 · {wins}승 {losses}패
-              </p>
-            );
-          })() : currentEntry ? (
-            <button
-              type="button"
-              className="lineup-recent-load-btn"
-              onClick={() => setRecentPickerOpen(true)}
-              title={`${selectedTeam.shortName}이(가) 최근 경기에서 실제로 쓴 선발 라인업으로 자동 세팅`}
-            >
-              <History size={12} />
-              <span>실제 경기 라인업 불러오기</span>
-            </button>
-          ) : null}
-          <div className="lineup-action-buttons">
-            {/* 타자/투수 토글 — 공유 옆에 배치 */}
-            <div className="lineup-mode-toggle lineup-mode-toggle-inline" role="tablist" aria-label="라인업 종류">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "batter"}
-                className={mode === "batter" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
-                onClick={() => {
-                  setMode("batter");
-                  setSwapSource(null);
-                }}
-              >
-                타자
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "pitcher"}
-                className={mode === "pitcher" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
-                onClick={() => {
-                  setMode("pitcher");
-                  setSwapSource(null);
-                }}
-              >
-                투수
-              </button>
-            </div>
-            {/* 공개/비공개 토글 */}
-            {(() => {
-              if (!currentEntry) return null;
-              const isOn = !!currentEntry.isPublished;
-              // 익명도 DB sync되므로 syncStatus가 "synced"면 통과. "local-only"는 sync 실패 fallback.
-              const canSync = syncStatus !== "local-only";
-              // 공개 조건 미충족은 클릭 시 안내한다. 이미 공개 중이면 세션을 재확인해 비공개 전환을 시도한다.
-              const disabled = publishProcessing || (!isOn && !canSync);
-              const tip = !canSync
-                ? "잠시 후 다시 시도해주세요"
-                : isOn
-                  ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로 (전적 리셋)"
-                  : publishRequirementMessage ?? "공개로 바꾸면 다른 사람이 도전할 수 있어요";
-              return (
-                <button
-                  type="button"
-                  className={`lineup-action-btn ${isOn ? "lineup-action-btn-published" : "lineup-action-btn-primary"}`}
-                  disabled={disabled}
-                  title={tip}
-                  onClick={async () => {
-                    if (!currentEntry) return;
-                    // 비공개로 가는 경우 확인 모달 (전적 리셋 안내)
-                    if (isOn) {
-                      setConfirmUnpublishOpen(true);
-                      return;
-                    }
-                    if (!canPublish) {
-                      showToast(publishRequirementMessage ?? "공개 조건을 확인해주세요.");
-                      return;
-                    }
-                    // 마무리/불펜 중 빈 자리가 있으면 자동 채움 안내 모달부터.
-                    if (needsAutoFillNotice) {
-                      setConfirmAutoFillOpen(true);
-                      return;
-                    }
-                    // 모두 채워져 있으면 즉시 공개
-                    setPublishProcessing(true);
-                    const res = await togglePublished(currentEntry.entryId, true);
-                    setPublishProcessing(false);
-                    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
-                    else showToast("공개됐어요");
-                  }}
-                >
-                  {isOn ? <Eye size={12} /> : <EyeOff size={12} />}
-                  {isOn ? "공개 중" : "공개하기"}
-                </button>
-              );
-            })()}
-          </div>
-          {/* PC 와이드 모드에서만 노출 — 대기 선수 카드 헤더 자리 절약. 모바일은 풀 카드 자체에 헤더 유지. */}
-          <div className="lineup-action-pool-badge" aria-hidden="true">
-            <strong>대기</strong>
-            <span className="lineup-section-count">{poolPlayers.length}</span>
-          </div>
-        </div>
+        <LineupActionRow
+          mode={mode}
+          currentEntry={currentEntry}
+          syncStatus={syncStatus}
+          publishRequirementMessage={publishRequirementMessage}
+          canPublish={canPublish}
+          needsAutoFillNotice={needsAutoFillNotice}
+          publishProcessing={publishProcessing}
+          poolCount={poolPlayers.length}
+          filledCount={filledCount}
+          pitcherFilled={pitcherFilled}
+          currentEntryStats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
+          selectedTeamShortName={selectedTeam.shortName}
+          onModeChange={(nextMode) => {
+            setMode(nextMode);
+            setSwapSource(null);
+          }}
+          onRecentOpen={() => setRecentPickerOpen(true)}
+          onPublishRequest={handlePublishRequest}
+          onUnpublishRequest={() => setConfirmUnpublishOpen(true)}
+        />
 
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 마무리 + 불펜 1~7 */}
         {mode === "batter" ? (
-          <section className="lineup-slots-card" aria-label="타순" onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}>
-            <div className="lineup-section-head">
-              <strong>타순</strong>
-              <span className="lineup-section-count">{filledCount} / 9</span>
-              {filledCount > 0 ? (
-                <button
-                  type="button"
-                  className="lineup-clear-btn"
-                  onClick={handleReset}
-                  aria-label="라인업 비우기"
-                >
-                  <RotateCcw size={12} />
-                  비우기
-                </button>
-              ) : null}
-            </div>
-            <ol className="lineup-slots">
-              {ORDERS.map((order) => {
-                const slot = slots[order - 1];
-                const player = slot ? playersById.get(slot.playerId) : undefined;
-                const hand = player ? formatHandBadge(player) : null;
-                const idx = order - 1;
-                const orderSelected = swapOrderSourceIdx === idx;
-                const swapAnimClass = getSwapAnimClass(swapOrderAnimation, idx);
-                return (
-                  <li
-                    key={order}
-                    className={`lineup-slot ${slot ? "lineup-slot-filled" : "lineup-slot-empty lineup-slot-required"} ${orderSelected ? "lineup-slot-selected" : ""} ${swapAnimClass}`}
-                  >
-                    <button
-                      type="button"
-                      className="lineup-slot-main"
-                      onClick={() => handleOrderClick(idx)}
-                      aria-label={`${order}번 타순 ${orderSelected ? "선택 취소" : "선택"}`}
-                      aria-pressed={orderSelected}
-                    >
-                      <span className={`lineup-slot-order ${orderSelected ? "lineup-slot-order-selected" : ""}`}>{order}</span>
-                      {slot && player ? (
-                        <span className="lineup-slot-player">
-                          <span className="lineup-slot-name">{player.name}</span>
-                          {hand ? (
-                            <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
-                          ) : null}
-                        </span>
-                      ) : (
-                        <span className="lineup-slot-placeholder">타자 필수</span>
-                      )}
-                    </button>
-                    {slot && player ? (
-                      <>
-                        <button
-                          type="button"
-                          className="lineup-slot-pos"
-                          onClick={() => setPositionPickerForOrder(order)}
-                          aria-label="포지션 변경"
-                        >
-                          {POSITION_SHORT[slot.position]}
-                        </button>
-                        {orderSelected ? (
-                          <button
-                            type="button"
-                            className="lineup-slot-remove"
-                            onClick={() => handleRemoveSlot(order)}
-                            aria-label={`${player.name} 라인업에서 빼기`}
-                          >
-                            <X size={14} />
-                          </button>
-                        ) : null}
-                      </>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ol>
-            {!currentEntry?.isPublished && filledCount > 0 ? (
-              <p className="lineup-slot-foot-hint">
-                삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
-              </p>
-            ) : null}
-          </section>
+          <BatterSlotList
+            slots={slots}
+            filledCount={filledCount}
+            playersById={playersById}
+            swapOrderSourceIdx={swapOrderSourceIdx}
+            swapOrderAnimation={swapOrderAnimation}
+            isLocked={isLocked}
+            onOrderClick={handleOrderClick}
+            onPositionPickerOpen={(order) => setPositionPickerForOrder(order)}
+            onRemove={handleRemoveSlot}
+            onReset={handleReset}
+            onLockedClick={() => setLockInfoOpen(true)}
+          />
         ) : (
-          <section className="lineup-slots-card" aria-label="투수 라인업">
-            <div className="lineup-section-head">
-              <strong>투수</strong>
-              <span className="lineup-section-count">{pitcherFilled} / {PITCHER_SLOTS_COUNT}</span>
-              {pitcherFilled > 0 ? (
-                <button
-                  type="button"
-                  className="lineup-clear-btn"
-                  onClick={handleReset}
-                  aria-label="투수 라인업 비우기"
-                >
-                  <RotateCcw size={12} />
-                  비우기
-                </button>
-              ) : null}
-            </div>
-            <ol className="lineup-slots">
-              {pitcherSlots.map((playerId, idx) => {
-                const player = playerId ? playersById.get(playerId) : undefined;
-                const hand = player ? formatHandBadge(player) : null;
-                const isStarter = idx === PITCHER_STARTER_INDEX;
-                const isCloser = idx === PITCHER_CLOSER_INDEX;
-                const isRequiredBullpen = idx === PITCHER_REQUIRED_BULLPEN_INDEX;
-                const roleLabel = isStarter ? "선발" : isCloser ? "마무리" : "불펜";
-                const slotBadge = isStarter ? "선" : isCloser ? "마" : String(idx - 1);
-                // 선발만 공개 필수. 나머지 자리는 자동 채움 가능.
-                const isRequiredSlot = isStarter;
-                const placeholder = isStarter
-                  ? "선발 필수"
-                  : isCloser
-                    ? "마무리 (자동)"
-                    : "불펜 (자동)";
-                const orderSelected = swapOrderSourceIdx === idx;
-                const swapAnimClass = getSwapAnimClass(swapOrderAnimation, idx);
-                return (
-                  <li
-                    key={`p-${idx}`}
-                    className={`lineup-slot ${player ? "lineup-slot-filled" : `lineup-slot-empty ${isRequiredSlot ? "lineup-slot-required" : ""}`} ${orderSelected ? "lineup-slot-selected" : ""} ${swapAnimClass}`}
-                  >
-                    <button
-                      type="button"
-                      className="lineup-slot-main"
-                      onClick={() => handleOrderClick(idx)}
-                      aria-label={`${roleLabel} ${orderSelected ? "선택 취소" : "선택"}`}
-                      aria-pressed={orderSelected}
-                    >
-                      <span className={`lineup-slot-order ${isStarter || isCloser ? "lineup-slot-order-starter" : ""} ${orderSelected ? "lineup-slot-order-selected" : ""}`}>
-                        {slotBadge}
-                      </span>
-                      {player ? (
-                        <span className="lineup-slot-player">
-                          <span className="lineup-slot-name">{player.name}</span>
-                          {hand ? (
-                            <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
-                          ) : null}
-                        </span>
-                      ) : (
-                        <span className="lineup-slot-placeholder">{placeholder}</span>
-                      )}
-                    </button>
-                    {player ? (
-                      <>
-                        <span className={`lineup-slot-pos lineup-slot-pos-static ${isStarter ? "lineup-slot-pos-starter" : ""}`}>
-                          {roleLabel}
-                        </span>
-                        {orderSelected ? (
-                          <button
-                            type="button"
-                            className="lineup-slot-remove"
-                            onClick={() => handleRemovePitcher(idx)}
-                            aria-label={`${player.name} ${roleLabel}에서 빼기`}
-                          >
-                            <X size={14} />
-                          </button>
-                        ) : null}
-                      </>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ol>
-            {!currentEntry?.isPublished && pitcherFilled > 0 ? (
-              <p className="lineup-slot-foot-hint">
-                삭제나 순서를 변경하려면 <strong>슬롯을 선택</strong>
-              </p>
-            ) : null}
-          </section>
+          <PitcherSlotList
+            pitcherSlots={pitcherSlots}
+            pitcherFilled={pitcherFilled}
+            playersById={playersById}
+            swapOrderSourceIdx={swapOrderSourceIdx}
+            swapOrderAnimation={swapOrderAnimation}
+            isLocked={isLocked}
+            onOrderClick={handleOrderClick}
+            onRemove={handleRemovePitcher}
+            onReset={handleReset}
+          />
         )}
 
-        <section
-          className="lineup-pool-card lineup-pool-card-side"
-          aria-label="대기 선수"
-          onClick={currentEntry?.isPublished ? () => setLockInfoOpen(true) : undefined}
-        >
-          <div className="lineup-section-head">
-            <strong>대기</strong>
-            <span className="lineup-section-count">{poolPlayers.length}</span>
-          </div>
-          {poolPlayers.length === 0 ? (
-            <p className="lineup-pool-empty">전원 출장 중</p>
-          ) : (
-            <ul className="lineup-pool-list">
-              {poolPlayers.map((player) => {
-                const hand = formatHandBadge(player);
-                return (
-                  <li key={player.id}>
-                    <button
-                      type="button"
-                      className="lineup-pool-row"
-                      onClick={() => handleAddPlayer(player)}
-                    >
-                      <span className="lineup-pool-pos">{getPoolGroupLabel(player.primaryPosition)}</span>
-                      <span className="lineup-pool-row-name">{player.name}</span>
-                      {hand ? (
-                        <span className={`lineup-hand-badge lineup-hand-${hand.tone}`}>{hand.label}</span>
-                      ) : null}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+        <LineupPoolCard
+          poolPlayers={poolPlayers}
+          isLocked={isLocked}
+          onAddPlayer={handleAddPlayer}
+          onLockedClick={() => setLockInfoOpen(true)}
+        />
       </div>
 
       <ConfirmResetModal
@@ -1169,66 +835,12 @@ export function LineupBuilderScreen() {
       />
 
       {/* 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 공개 */}
-      <ModalShell
+      <AutoFillPublishModal
         open={confirmAutoFillOpen}
-        title="마무리·불펜 자동 채움"
+        publishProcessing={publishProcessing}
         onClose={() => setConfirmAutoFillOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            마무리·불펜 빈 자리를 <strong>자동으로 채워서 공개</strong>합니다.<br />
-            <br />
-            · 마무리 — 세이브 많은 선수<br />
-            · 불펜 — 평균자책점 좋은 선수<br />
-            <br />
-            직접 짜려면 취소 후 투수 탭에서 선택해주세요.
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setConfirmAutoFillOpen(false)}
-              disabled={publishProcessing}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-primary"
-              disabled={publishProcessing}
-              onClick={async () => {
-                if (!currentEntry) return;
-                // 빈 자리 자동 채움 → state + DB 모두 반영. 이후 공개 토글.
-                const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
-                if (!filled) {
-                  showToast("투수 자동 채움 실패");
-                  return;
-                }
-                setPitcherSlots(filled.slots);
-                setPublishProcessing(true);
-                // pitcherSlots state는 비동기라 sync useEffect가 처리하기 전에 togglePublished가
-                // 실행되면 빈 자리 그대로 DB에 남을 수 있다. 따라서 entry 전체를 직접 upsert.
-                const now = new Date().toISOString();
-                const updated: LineupEntry = {
-                  ...currentEntry,
-                  pitching: filled,
-                  updatedAt: now
-                };
-                syncedUpsert(updated);
-                const res = await togglePublished(currentEntry.entryId, true);
-                setPublishProcessing(false);
-                setConfirmAutoFillOpen(false);
-                if (!res.ok) showToast(res.error ?? "공개 전환 실패");
-                else showToast("공개됐어요");
-              }}
-            >
-              자동 채움 + 공개
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        onConfirm={handleAutoFillAndPublish}
+      />
 
       <ConfirmOverwriteRecentModal
         open={pendingRecentLineup !== null}
@@ -1266,101 +878,25 @@ export function LineupBuilderScreen() {
       />
 
       {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 필수 투수" 안내 */}
-      <ModalShell
+      <GuideStep1Modal
         open={guideStep1Open}
-        title="타순 9명을 다 채웠습니다"
         onClose={() => setGuideStep1Open(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            이제 <strong>선발 투수</strong>만 선택하면 라인업을 공개할 수 있어요.<br />
-            (마무리·불펜은 공개 시 자동으로 채워집니다)
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setGuideStep1Open(false)}
-            >
-              닫기
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-primary"
-              onClick={() => {
-                setGuideStep1Open(false);
-                setMode("pitcher");
-                setSwapSource(null);
-              }}
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        onStartPicking={() => {
+          setGuideStep1Open(false);
+          setMode("pitcher");
+          setSwapSource(null);
+        }}
+      />
 
       {/* 새 슬롯 onboarding step2 — 선발 투수까지 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개.
           마무리/불펜이 비어있으면 saves/era 기준으로 자동 채워서 함께 저장. */}
-      <ModalShell
+      <GuideStep2Modal
         open={guideStep2Open}
-        title="라인업 준비 완료!"
+        needsAutoFillNotice={needsAutoFillNotice}
+        publishProcessing={publishProcessing}
         onClose={() => setGuideStep2Open(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            이제 라인업을 <strong>공개</strong>해서 경기장에서 다른 사람 라인업과 가상경기를 할 수 있어요.<br />
-            {needsAutoFillNotice ? (
-              <>
-                <br />
-                마무리·불펜 빈 자리는 자동으로 채워집니다.
-              </>
-            ) : null}
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setGuideStep2Open(false)}
-              disabled={publishProcessing}
-            >
-              닫기
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-primary"
-              disabled={publishProcessing}
-              onClick={async () => {
-                if (!currentEntry) return;
-                setPublishProcessing(true);
-                // 마무리/불펜 빈 자리 있으면 자동 채워서 entry 전체 upsert
-                if (needsAutoFillNotice) {
-                  const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
-                  if (filled) {
-                    setPitcherSlots(filled.slots);
-                    const now = new Date().toISOString();
-                    syncedUpsert({
-                      ...currentEntry,
-                      pitching: filled,
-                      updatedAt: now
-                    });
-                  }
-                }
-                const res = await togglePublished(currentEntry.entryId, true);
-                setPublishProcessing(false);
-                setGuideStep2Open(false);
-                if (!res.ok) showToast(res.error ?? "공개 전환 실패");
-                else showToast("공개됐어요");
-              }}
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        onAutoFillAndPublish={handleGuideStep2Confirm}
+      />
 
       <NewSlotModal
         open={newSlotOpen}
