@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { WinnerPredictScreen, type WinnerPredictGame } from "@/components/domain/WinnerPredictScreen";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listGamesFromDb } from "@/lib/supabase/queries";
@@ -32,13 +31,8 @@ export default async function WinnerPredictPage({
   const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 비로그인이면 익명 세션 자동 생성. 부트스트랩이 next로 다시 돌려보냄.
-  if (!user) {
-    const next = searchParams.date
-      ? `/predict/winner?date=${encodeURIComponent(searchParams.date)}`
-      : "/predict/winner";
-    redirect(`/api/anon-bootstrap?next=${encodeURIComponent(next)}`);
-  }
+  // 비로그인도 예측 화면을 열람할 수 있다(보기 무료). 본인 예측/통계만 없을 뿐이며,
+  // 실제 "예측 선택/제출" 시점에 WinnerPredictScreen이 익명 계정을 lazy 생성한다.
 
   const today = kstToday();
   // URL ?date=YYYY-MM-DD 파싱 — 형식 안 맞으면 null 처리.
@@ -95,19 +89,26 @@ export default async function WinnerPredictPage({
   const isToday = selectedDate === today;
   const isFuture = selectedDate > today;
 
-  // 본인 예측 + 통계 — 병렬 fetch.
+  // 본인 예측 + 통계 — 로그인(또는 익명 세션) 있을 때만 fetch. 비로그인은 빈 값.
   // dateStats는 화면에 표시 중인 selectedDate 기준 (어제로 가면 어제 적중률).
-  const [predictionsResult, dateStatsResult, allTimeStatsResult] = await Promise.all([
-    listMyPredictionResultsForDate(supabase, user.id, selectedDate),
-    getMyPredictionStats(supabase, user.id, { dateISO: selectedDate }),
-    getMyPredictionStats(supabase, user.id)
-  ]);
-
+  const emptyStats = { total: 0, correct: 0, pending: 0 };
   const predictionByGameId = new Map<string, BpPredictionResultRow>();
-  if (predictionsResult.ok) {
-    for (const row of predictionsResult.rows) {
-      predictionByGameId.set(row.game_id, row);
+  let dateStats = emptyStats;
+  let allTimeStats = emptyStats;
+
+  if (user) {
+    const [predictionsResult, dateStatsResult, allTimeStatsResult] = await Promise.all([
+      listMyPredictionResultsForDate(supabase, user.id, selectedDate),
+      getMyPredictionStats(supabase, user.id, { dateISO: selectedDate }),
+      getMyPredictionStats(supabase, user.id)
+    ]);
+    if (predictionsResult.ok) {
+      for (const row of predictionsResult.rows) {
+        predictionByGameId.set(row.game_id, row);
+      }
     }
+    if (dateStatsResult.ok) dateStats = dateStatsResult.stats;
+    if (allTimeStatsResult.ok) allTimeStats = allTimeStatsResult.stats;
   }
 
   const games: WinnerPredictGame[] = gamesResult.map((g) => {
@@ -142,8 +143,8 @@ export default async function WinnerPredictPage({
       prevDateISO={prevDate}
       nextDateISO={nextDate}
       games={games}
-      dateStats={dateStatsResult.ok ? dateStatsResult.stats : { total: 0, correct: 0, pending: 0 }}
-      allTimeStats={allTimeStatsResult.ok ? allTimeStatsResult.stats : { total: 0, correct: 0, pending: 0 }}
+      dateStats={dateStats}
+      allTimeStats={allTimeStats}
     />
   );
 }

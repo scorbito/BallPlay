@@ -8,7 +8,8 @@ import { PredictionRanking } from "@/components/domain/PredictionRanking";
 import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredictions";
 
 type Props = {
-  currentUserId: string;
+  // 비로그인이면 null — 랭킹은 누구나 열람, 본인 행 하이라이트만 생략.
+  currentUserId: string | null;
   initialRanking: PredictionRankingRow[];
 };
 

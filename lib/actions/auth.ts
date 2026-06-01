@@ -2,9 +2,9 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { generateDefaultNickname } from "@/lib/constants/nicknames";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ensureProfile } from "@/lib/actions/ensureProfile";
+import { ensureAnonymousSession } from "@/lib/actions/ensureAnonymousSession";
 
 type AuthMode = "sign-in" | "sign-up";
 type OAuthProvider = "google" | "kakao";
@@ -86,30 +86,11 @@ export async function signOutAction() {
  * 온보딩 스킵 — 바로 홈으로.
  */
 export async function signInAnonymouslyAction() {
-  const supabase = createSupabaseServerClient();
-
-  // 이미 세션이 있으면 그대로 홈으로 (중복 익명 user 방지)
-  const { data: existing } = await supabase.auth.getUser();
-  if (existing?.user) {
-    await ensureProfile(existing.user.id).catch(() => {});
-    redirect("/");
+  // 세션 보장 + 기본 프로필 생성은 ensureAnonymousSession에 위임 (lazy 생성과 동일 경로).
+  const result = await ensureAnonymousSession();
+  if (!result) {
+    redirect(`/login?error=${encodeURIComponent("체험하기 시작에 실패했습니다.")}`);
   }
-
-  const { data, error } = await supabase.auth.signInAnonymously();
-  if (error || !data?.user) {
-    redirect(`/login?error=${encodeURIComponent(error?.message ?? "체험하기 시작에 실패했습니다.")}`);
-  }
-
-  // profiles 행 자동 생성 (admin client로 RLS 우회)
-  const admin = createSupabaseAdminClient();
-  await admin.from("profiles").upsert({
-    id: data!.user!.id,
-    nickname: generateDefaultNickname(data!.user!.id),
-    main_team_id: "doosan",
-    interest_team_ids: [],
-    notifications_enabled: true,
-    default_public_scope: "public"
-  }, { onConflict: "id" });
 
   redirect("/");
 }

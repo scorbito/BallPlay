@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { RankingScreen } from "@/components/domain/RankingScreen";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -12,10 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function PredictionRankingPage() {
   const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/api/anon-bootstrap?next=/predict/ranking");
-  }
+  // 적중률 랭킹은 누구나 열람 가능(보기 무료). 비로그인은 본인 행 하이라이트만 없음.
 
   // 시즌 탭 prefetch — 다른 탭은 클릭 시 클라이언트 fetch
   const rankingResult = await getPredictionRanking(supabase, {
@@ -27,7 +23,7 @@ export default async function PredictionRankingPage() {
 
   return (
     <RankingScreen
-      currentUserId={user.id}
+      currentUserId={user?.id ?? null}
       initialRanking={rankingResult.ok ? rankingResult.rows : []}
     />
   );

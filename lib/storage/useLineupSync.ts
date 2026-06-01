@@ -19,6 +19,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import {
   loadLineupEntries,
   saveLineupEntries,
@@ -453,14 +454,21 @@ export function useLineupSync() {
     async (entryId: string, nextPublished: boolean): Promise<{ ok: boolean; error?: string }> => {
       let userId = state.userId;
       if (!userId) {
-        const { data: authData } = await clientRef.current.auth.getUser();
-        userId = authData.user?.id ?? null;
+        // 공개(등록)는 서버 신원이 필요한 "행동" → 세션 없으면 이 시점에 익명 계정 lazy 생성.
+        // 비공개 전환은 공개된 적 있어야 가능 → 세션 없으면 만들 것도 없으니 조회만.
+        userId = nextPublished
+          ? await ensureAnonymousClient(clientRef.current)
+          : (await clientRef.current.auth.getUser()).data.user?.id ?? null;
         if (userId) {
           setState((s) => ({ ...s, userId, status: s.status === "local-only" ? "synced" : s.status }));
           writeLastSyncedUserId(userId);
         }
       }
-      if (!userId) return { ok: false, error: "로그인이 필요합니다." };
+      if (!userId) {
+        return nextPublished
+          ? { ok: false, error: "공개 처리에 실패했어요. 잠시 후 다시 시도해 주세요." }
+          : { ok: true };
+      }
       const current = state.entries.find((e) => e.entryId === entryId);
       if (!current) return { ok: false, error: "라인업을 찾을 수 없습니다." };
 

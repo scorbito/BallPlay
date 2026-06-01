@@ -17,6 +17,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import {
   lockPredictionsForDate,
   upsertPrediction
@@ -180,13 +181,15 @@ export function WinnerPredictScreen({
 
       startSaving(async () => {
         const client = createSupabaseBrowserClient();
-        const { data: { user } } = await client.auth.getUser();
-        if (!user) {
-          showToast("세션이 만료됐어요. 새로고침해 주세요.");
+        // 예측 저장은 "행동" → 세션 없으면 이 시점에 익명 계정 lazy 생성.
+        const userId = await ensureAnonymousClient(client);
+        if (!userId) {
+          showToast("저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
+          setPredictions((prev) => ({ ...prev, [game.id]: game.predictedWinnerTeamId }));
           return;
         }
         const result = await upsertPrediction(client, {
-          userId: user.id,
+          userId,
           gameId: game.id,
           gameDate: selectedDateISO,
           predictedWinnerTeamId: teamId
@@ -209,13 +212,13 @@ export function WinnerPredictScreen({
     setSubmitConfirmOpen(false);
     setLocking(true);
     const client = createSupabaseBrowserClient();
-    const { data: { user } } = await client.auth.getUser();
-    if (!user) {
+    const userId = await ensureAnonymousClient(client);
+    if (!userId) {
       setLocking(false);
-      showToast("세션이 만료됐어요. 새로고침해 주세요.");
+      showToast("저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
       return;
     }
-    const result = await lockPredictionsForDate(client, user.id, selectedDateISO);
+    const result = await lockPredictionsForDate(client, userId, selectedDateISO);
     setLocking(false);
     if (!result.ok) {
       showToast(`잠금 실패: ${result.error}`);
