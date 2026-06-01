@@ -74,7 +74,7 @@ export function NewSlotModal({
           value={newSlotName}
           onChange={(e) => setNewSlotName(e.target.value)}
           placeholder={`예) ${nickname?.trim() ? `${nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}` : getTeam(newSlotTeamId).name}`}
-          maxLength={20}
+          maxLength={12}
         />
         <p className="lineup-newslot-name-hint">
           비워두면 &lsquo;

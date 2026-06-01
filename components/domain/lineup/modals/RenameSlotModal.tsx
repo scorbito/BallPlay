@@ -41,7 +41,7 @@ export function RenameSlotModal({
           value={renameInput}
           onChange={(e) => setRenameInput(e.target.value)}
           placeholder="팀명"
-          maxLength={20}
+          maxLength={12}
           autoFocus
         />
         <div className="lineup-confirm-actions">
