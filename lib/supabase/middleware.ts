@@ -26,9 +26,18 @@ function shouldBootstrapAnonymous(pathname: string): boolean {
   });
 }
 
-function isSearchCrawler(userAgent: string | null) {
-  if (!userAgent) return false;
-  return /googlebot|google-inspectiontool|bingbot|naverbot|yeti|daumoa|duckduckbot|slurp/i.test(userAgent);
+// 익명 세션을 발급하면 안 되는 자동화 클라이언트 판별.
+// 봇은 쿠키를 저장하지 않아 매 요청마다 새 익명 계정을 만들어 DB를 부풀린다.
+// 세 부류를 모두 차단한다:
+//   1) 검색 크롤러 (Googlebot, naverbot 등)
+//   2) SNS 링크 미리보기 봇 (카톡/페북/X/슬랙 등) — 링크 공유 시 동시 다발 호출
+//   3) 그 외 일반 봇/스크래퍼 (bot/crawler/spider/scraper 키워드 폴백)
+// UA가 비어있는 요청도 정상 브라우저가 아니므로 봇으로 간주한다.
+function isBot(userAgent: string | null) {
+  if (!userAgent) return true;
+  return /googlebot|google-inspectiontool|bingbot|naverbot|yeti|daumoa|duckduckbot|slurp|applebot|petalbot|ahrefsbot|semrushbot|mj12bot|dotbot|bytespider|gptbot|claudebot|kakaotalk-scrap|facebookexternalhit|facebot|twitterbot|slackbot|discordbot|telegrambot|whatsapp|linkedinbot|pinterest|redditbot|skypeuripreview|embedly|bot\b|crawler|spider|scraper|crawl/i.test(
+    userAgent
+  );
 }
 
 export async function updateSupabaseSession(request: NextRequest) {
@@ -71,7 +80,7 @@ export async function updateSupabaseSession(request: NextRequest) {
   if (
     !data?.user &&
     shouldBootstrapAnonymous(request.nextUrl.pathname) &&
-    !isSearchCrawler(request.headers.get("user-agent"))
+    !isBot(request.headers.get("user-agent"))
   ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/api/anon-bootstrap";

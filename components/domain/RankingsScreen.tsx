@@ -14,7 +14,7 @@ type RankingsScreenProps = {
 };
 
 export function RankingsScreen({ standings = [] }: RankingsScreenProps) {
-  const { profile, showToast } = useAppState();
+  const { showToast } = useAppState();
   const [currentStandings, setCurrentStandings] = useState(standings);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownTick, setCooldownTick] = useState(0);
@@ -79,9 +79,8 @@ export function RankingsScreen({ standings = [] }: RankingsScreenProps) {
           <ol className="ranking-table-body">
             {currentStandings.map((standing) => {
               const team = getTeam(standing.teamId);
-              const isMine = standing.teamId === profile.mainTeamId;
               return (
-                <li className={isMine ? "ranking-row ranking-row-highlighted" : "ranking-row"} key={standing.teamId}>
+                <li className="ranking-row" key={standing.teamId}>
                   <span className="ranking-rank">{standing.rank}</span>
                   <span className="ranking-team">
                     <TeamBadge teamId={standing.teamId} size="sm" />
