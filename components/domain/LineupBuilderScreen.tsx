@@ -12,8 +12,6 @@ import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { getRoster, getSeededTeamIds } from "@/lib/rosters";
 import {
-  POSITIONS,
-  POSITION_LABEL,
   POSITION_SHORT,
   PITCHER_CLOSER_INDEX,
   PITCHER_REQUIRED_BULLPEN_INDEX,
@@ -41,56 +39,28 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchLineupStatsBulk } from "@/lib/supabase/query-parts/bpLineups";
 import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
-
-const ORDERS: LineupOrder[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-type SlotState = LineupSlot | null;
-const EMPTY_SLOTS: SlotState[] = Array.from({ length: 9 }, () => null);
-const EMPTY_PITCHER_SLOTS: (string | null)[] = Array.from({ length: PITCHER_SLOTS_COUNT }, () => null);
-
-/** 두 슬롯이 swap된 직후 적용할 방향성 애니메이션 클래스.
- *  - a→b swap: 위쪽 슬롯은 "아래에서 위로" 들어오는 듯한 효과
- *               아래쪽 슬롯은 "위에서 아래로" 들어오는 듯한 효과 */
-function getSwapAnimClass(
-  swap: { a: number; b: number } | null,
-  idx: number
-): string {
-  if (!swap) return "";
-  if (idx !== swap.a && idx !== swap.b) return "";
-  const upperIdx = Math.min(swap.a, swap.b);
-  const lowerIdx = Math.max(swap.a, swap.b);
-  // 위쪽 슬롯은 아래쪽에 있던 내용을 받음 → from-down
-  if (idx === upperIdx) return "lineup-slot-swap-from-down";
-  // 아래쪽 슬롯은 위쪽에 있던 내용을 받음 → from-up
-  if (idx === lowerIdx) return "lineup-slot-swap-from-up";
-  return "";
-}
-
-/** 선수 타입에 맞춰 자동 배치 fallback 순서를 결정.
- *  KBO 명단이 "내야수/외야수"로만 묶여 있어, primaryPosition이 3B(내야 기본)
- *  또는 CF(외야 기본)로 통일되는 한계를 우회 — 같은 그룹 안에서 빈 자리를
- *  먼저 채워 자연스러운 분배가 되도록 한다. */
-function getFallbackOrder(primaryPos: Position): Position[] {
-  const INFIELD: Position[] = ["1B", "2B", "3B", "SS"];
-  const OUTFIELD: Position[] = ["LF", "CF", "RF"];
-  switch (primaryPos) {
-    case "3B": // 내야수 기본값
-    case "1B":
-    case "2B":
-    case "SS":
-      return [...INFIELD, "DH", ...OUTFIELD, "C"];
-    case "CF": // 외야수 기본값
-    case "LF":
-    case "RF":
-      return [...OUTFIELD, "DH", ...INFIELD, "C"];
-    case "C":
-      return ["C", "DH", ...INFIELD, ...OUTFIELD];
-    case "DH":
-      return ["DH", ...INFIELD, ...OUTFIELD, "C"];
-    default:
-      return [...INFIELD, ...OUTFIELD, "C", "DH"];
-  }
-}
+import {
+  ORDERS,
+  EMPTY_SLOTS,
+  EMPTY_PITCHER_SLOTS,
+  getSwapAnimClass,
+  getFallbackOrder,
+  type SlotState
+} from "@/lib/lineup/swapHelpers";
+import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
+import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
+import { ConfirmOverwriteRecentModal } from "@/components/domain/lineup/modals/ConfirmOverwriteRecentModal";
+import {
+  ConfirmUnpublishModal,
+  LockInfoModal
+} from "@/components/domain/lineup/modals/ConfirmUnpublishModal";
+import { NewSlotModal } from "@/components/domain/lineup/modals/NewSlotModal";
+import { RenameSlotModal } from "@/components/domain/lineup/modals/RenameSlotModal";
+import {
+  ConfirmDeleteSlotModal,
+  DeleteSlotStatusModal,
+  type DeleteStatus
+} from "@/components/domain/lineup/modals/DeleteSlotModals";
 
 export function LineupBuilderScreen() {
   const { profile, showToast } = useAppState();
@@ -122,13 +92,10 @@ export function LineupBuilderScreen() {
   const [slotMenuOpen, setSlotMenuOpen] = useState(false);
   const slotPickerRef = useRef<HTMLDivElement | null>(null);
   const [newSlotOpen, setNewSlotOpen] = useState(false);
-  const [newSlotTeamId, setNewSlotTeamId] = useState<string>(initialTeamId);
-  const [newSlotName, setNewSlotName] = useState<string>("");
   const [renamingEntryId, setRenamingEntryId] = useState<string | null>(null);
-  const [renameInput, setRenameInput] = useState("");
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<string | null>(null);
   // 삭제 진행/결과 모달 — DB sync 완료까지 진행 상태 보여줌.
-  const [deleteStatus, setDeleteStatus] = useState<{ phase: "idle" | "deleting" | "success" | "error"; error?: string }>({ phase: "idle" });
+  const [deleteStatus, setDeleteStatus] = useState<DeleteStatus>({ phase: "idle" });
 
   const [mode, setMode] = useState<LineupMode>("batter");
   const [slots, setSlots] = useState<SlotState[]>(EMPTY_SLOTS);
@@ -778,7 +745,6 @@ export function LineupBuilderScreen() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setRenamingEntryId(entry.entryId);
-                          setRenameInput(entry.name);
                           setSlotMenuOpen(false);
                         }}
                       >
@@ -806,8 +772,6 @@ export function LineupBuilderScreen() {
                     type="button"
                     className="lineup-slot-menu-item lineup-slot-menu-add"
                     onClick={() => {
-                      setNewSlotTeamId(initialTeamId);
-                      setNewSlotName("");
                       setNewSlotOpen(true);
                       setSlotMenuOpen(false);
                     }}
@@ -1173,70 +1137,18 @@ export function LineupBuilderScreen() {
         </section>
       </div>
 
-      {/* 라인업 비우기 확인 모달 */}
-      <ModalShell
+      <ConfirmResetModal
         open={confirmResetOpen}
-        title="라인업 비우기"
-        onClose={() => setConfirmResetOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            지금 짜둔 라인업을 모두 비우시겠어요?<br />
-            저장된 데이터도 함께 사라집니다.
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setConfirmResetOpen(false)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              onClick={confirmReset}
-            >
-              비우기
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        onCancel={() => setConfirmResetOpen(false)}
+        onConfirm={confirmReset}
+      />
 
-      {/* 포지션 변경 모달 */}
-      <ModalShell
-        open={positionPickerForOrder !== null}
-        title="포지션 변경"
+      <PositionPickerModal
+        order={positionPickerForOrder}
+        slots={slots}
         onClose={() => setPositionPickerForOrder(null)}
-        panelClassName="lineup-pos-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-pos-grid">
-          {/* 타자 모드 전용 — P(투수)는 별도 모드에서 관리하므로 제외 */}
-          {POSITIONS.filter((pos) => pos !== "P").map((pos) => {
-            const active = positionPickerForOrder !== null
-              && slots[positionPickerForOrder - 1]?.position === pos;
-            return (
-              <button
-                key={pos}
-                type="button"
-                className={`lineup-pos-choice ${active ? "lineup-pos-choice-active" : ""}`}
-                onClick={() => {
-                  if (positionPickerForOrder !== null) {
-                    handleChangePosition(positionPickerForOrder, pos);
-                  }
-                }}
-              >
-                <strong>{POSITION_SHORT[pos]}</strong>
-                <span>{POSITION_LABEL[pos]}</span>
-                {active ? <Check size={12} strokeWidth={3} className="lineup-pos-check" /> : null}
-              </button>
-            );
-          })}
-        </div>
-      </ModalShell>
+        onPick={handleChangePosition}
+      />
 
       <ShareLineupModal
         open={shareOpen}
@@ -1318,129 +1230,40 @@ export function LineupBuilderScreen() {
         </div>
       </ModalShell>
 
-      {/* 기존 슬롯이 채워져 있을 때 덮어쓰기 확인 */}
-      <ModalShell
+      <ConfirmOverwriteRecentModal
         open={pendingRecentLineup !== null}
-        title="현재 라인업 덮어쓰기"
-        onClose={() => setPendingRecentLineup(null)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            지금 짜둔 라인업을 <strong>최근 경기 라인업으로 덮어쓸까요?</strong><br />
-            기존 타순·선발은 사라집니다. (불펜은 유지)
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setPendingRecentLineup(null)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              onClick={() => {
-                if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
-                setPendingRecentLineup(null);
-              }}
-            >
-              덮어쓰기
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        onCancel={() => setPendingRecentLineup(null)}
+        onConfirm={() => {
+          if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
+          setPendingRecentLineup(null);
+        }}
+      />
 
-      {/* 공개 → 비공개 전환 확인 모달 (전적 리셋 안내) */}
-      <ModalShell
+      <ConfirmUnpublishModal
         open={confirmUnpublishOpen}
-        title="비공개로 전환"
-        onClose={() => setConfirmUnpublishOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            {(() => {
-              const stats = currentEntry ? statsByEntryId[currentEntry.entryId] : undefined;
-              const wins = stats?.wins ?? 0;
-              const losses = stats?.losses ?? 0;
-              const draws = stats?.draws ?? 0;
-              return (
-                <>
-                  비공개로 전환하면 이 라인업의 <strong>현재 전적({wins}승 {losses}패 {draws}무)이 모두 리셋</strong>됩니다.<br />
-                  그래도 비공개로 바꿀까요?
-                </>
-              );
-            })()}
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setConfirmUnpublishOpen(false)}
-              disabled={publishProcessing}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              disabled={publishProcessing}
-              onClick={async () => {
-                if (!currentEntry) return;
-                setPublishProcessing(true);
-                const res = await togglePublished(currentEntry.entryId, false);
-                setPublishProcessing(false);
-                setConfirmUnpublishOpen(false);
-                if (!res.ok) showToast(res.error ?? "비공개 전환 실패");
-                else showToast("비공개로 바꿨어요 (전적 리셋)");
-              }}
-            >
-              비공개로
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        stats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
+        processing={publishProcessing}
+        onCancel={() => setConfirmUnpublishOpen(false)}
+        onConfirm={async () => {
+          if (!currentEntry) return;
+          setPublishProcessing(true);
+          const res = await togglePublished(currentEntry.entryId, false);
+          setPublishProcessing(false);
+          setConfirmUnpublishOpen(false);
+          if (!res.ok) showToast(res.error ?? "비공개 전환 실패");
+          else showToast("비공개로 바꿨어요 (전적 리셋)");
+        }}
+      />
 
-      {/* 공개 라인업 잠금 안내 모달 — 슬롯/풀/다이아몬드 클릭 시 */}
-      <ModalShell
+      <LockInfoModal
         open={lockInfoOpen}
-        title="공개 라인업은 수정할 수 없어요"
         onClose={() => setLockInfoOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            이 라인업은 <strong>공개 상태</strong>예요.<br />
-            수정하려면 먼저 <strong>비공개로 전환</strong>해야 하고,<br />
-            전환하면 누적된 전적은 <strong>리셋</strong>됩니다.
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setLockInfoOpen(false)}
-            >
-              닫기
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              onClick={() => {
-                // 전적 리셋이 중요하므로 한 번 더 확인 모달 띄움
-                setLockInfoOpen(false);
-                setConfirmUnpublishOpen(true);
-              }}
-            >
-              비공개로 전환
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+        onUnpublish={() => {
+          // 전적 리셋이 중요하므로 한 번 더 확인 모달 띄움
+          setLockInfoOpen(false);
+          setConfirmUnpublishOpen(true);
+        }}
+      />
 
       {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 필수 투수" 안내 */}
       <ModalShell
@@ -1539,225 +1362,70 @@ export function LineupBuilderScreen() {
         </div>
       </ModalShell>
 
-      {/* 새 슬롯 만들기 모달 */}
-      <ModalShell
+      <NewSlotModal
         open={newSlotOpen}
-        title="새 라인업 슬롯"
+        initialTeamId={initialTeamId}
+        seededTeamIds={seededTeamIds}
+        nickname={profile.nickname}
         onClose={() => setNewSlotOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">선수 풀로 사용할 팀과 우리 팀명을 정해주세요.</p>
-          <div className="lineup-slot-team-grid">
-            {teams.map((team) => {
-              const seeded = seededTeamIds.has(team.id);
-              const active = team.id === newSlotTeamId;
-              return (
-                <button
-                  key={team.id}
-                  type="button"
-                  className={`lineup-slot-team-choice ${active ? "is-active" : ""} ${!seeded ? "is-disabled" : ""}`}
-                  disabled={!seeded}
-                  onClick={() => setNewSlotTeamId(team.id)}
-                >
-                  <TeamBadge teamId={team.id} size="sm" />
-                  <span>{team.shortName}</span>
-                </button>
-              );
-            })}
-          </div>
-          <label className="lineup-newslot-name-label" htmlFor="newslot-team-name">
-            팀명 (선택)
-          </label>
-          <input
-            id="newslot-team-name"
-            type="text"
-            className="lineup-rename-input"
-            value={newSlotName}
-            onChange={(e) => setNewSlotName(e.target.value)}
-            placeholder={`예) ${profile.nickname?.trim() ? `${profile.nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}` : getTeam(newSlotTeamId).name}`}
-            maxLength={20}
-          />
-          <p className="lineup-newslot-name-hint">
-            비워두면 &lsquo;
-            {profile.nickname?.trim()
-              ? `${profile.nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}`
-              : getTeam(newSlotTeamId).name}
-            &rsquo;으로 저장됩니다. 경기 화면에도 표시되는 이름입니다.
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setNewSlotOpen(false)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-primary"
-              onClick={() => {
-                // 새 슬롯은 빈 라인업이므로 localStorage만 — 9명 채울 때 DB로 첫 commit.
-                const newEntry = createEmptyEntry(
-                  newSlotTeamId,
-                  newSlotName.trim() || undefined,
-                  profile.nickname
-                );
-                localUpsertEntry(newEntry);
-                setSelectedEntryId(newEntry.entryId);
-                setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
-                setNewSlotOpen(false);
-              }}
-            >
-              만들기
-            </button>
-          </div>
-        </div>
-      </ModalShell>
-
-      {/* 슬롯 이름 변경 모달 */}
-      <ModalShell
-        open={renamingEntryId !== null}
-        title="팀명 변경"
-        onClose={() => setRenamingEntryId(null)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">경기 화면에 표시될 우리 팀명을 입력하세요.</p>
-          <input
-            type="text"
-            className="lineup-rename-input"
-            value={renameInput}
-            onChange={(e) => setRenameInput(e.target.value)}
-            placeholder="팀명"
-            maxLength={20}
-            autoFocus
-          />
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setRenamingEntryId(null)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-primary"
-              onClick={() => {
-                if (renamingEntryId && renameInput.trim()) {
-                  syncedRename(renamingEntryId, renameInput.trim());
-                }
-                setRenamingEntryId(null);
-              }}
-            >
-              저장
-            </button>
-          </div>
-        </div>
-      </ModalShell>
-
-      {/* 슬롯 삭제 확인 모달 */}
-      <ModalShell
-        open={confirmDeleteEntryId !== null}
-        title="라인업 삭제"
-        onClose={() => setConfirmDeleteEntryId(null)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            이 라인업을 삭제할까요?<br />
-            저장된 타순과 투수 라인업이 함께 사라집니다.
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setConfirmDeleteEntryId(null)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              onClick={() => {
-                if (!confirmDeleteEntryId) return;
-                const entryToDelete = confirmDeleteEntryId;
-                setConfirmDeleteEntryId(null);
-                setDeleteStatus({ phase: "deleting" });
-                const next = syncedDelete(entryToDelete, {
-                  onSyncResult: (res) => {
-                    if (res.ok) {
-                      setDeleteStatus({ phase: "success" });
-                      // 1.5초 후 자동 닫기
-                      setTimeout(() => setDeleteStatus({ phase: "idle" }), 1500);
-                    } else {
-                      setDeleteStatus({ phase: "error", error: res.error });
-                    }
-                  }
-                });
-                if (selectedEntryId === entryToDelete) {
-                  setSelectedEntryId(next[0]?.entryId ?? null);
-                }
-              }}
-            >
-              삭제
-            </button>
-          </div>
-        </div>
-      </ModalShell>
-
-      {/* 삭제 진행/결과 모달 — 사용자가 DB sync 완료 여부 알 수 있게.
-          deleting: 스피너 + "삭제 중...". success: ✓ + "삭제 완료" (1.5초 자동 닫기).
-          error: ⚠ 메시지 + 확인 버튼. */}
-      <ModalShell
-        open={deleteStatus.phase !== "idle"}
-        title="라인업 삭제"
-        onClose={() => {
-          // 진행 중에는 닫을 수 없음. 성공/실패만 닫기 허용.
-          if (deleteStatus.phase !== "deleting") setDeleteStatus({ phase: "idle" });
+        onCreate={(teamId, name) => {
+          // 새 슬롯은 빈 라인업이므로 localStorage만 — 9명 채울 때 DB로 첫 commit.
+          const newEntry = createEmptyEntry(
+            teamId,
+            name || undefined,
+            profile.nickname
+          );
+          localUpsertEntry(newEntry);
+          setSelectedEntryId(newEntry.entryId);
+          setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
+          setNewSlotOpen(false);
         }}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop={deleteStatus.phase !== "deleting"}
-      >
-        <div className="lineup-delete-status">
-          {deleteStatus.phase === "deleting" ? (
-            <>
-              <Loader2 size={28} className="lineup-delete-status-spinner" />
-              <p className="lineup-delete-status-msg">삭제 중...</p>
-            </>
-          ) : deleteStatus.phase === "success" ? (
-            <>
-              <Check size={28} strokeWidth={3} className="lineup-delete-status-check" />
-              <p className="lineup-delete-status-msg">삭제 완료</p>
-            </>
-          ) : deleteStatus.phase === "error" ? (
-            <>
-              <X size={28} strokeWidth={3} className="lineup-delete-status-error-icon" />
-              <p className="lineup-delete-status-msg">
-                {deleteStatus.error === "offline"
-                  ? "동기화가 멈춰있어요"
-                  : "삭제 실패"}
-              </p>
-              <p className="lineup-delete-status-error">
-                {deleteStatus.error === "offline"
-                  ? "로그인 상태를 확인 중이에요. 잠시 후 다시 시도해 주세요. (로컬에서는 삭제됨)"
-                  : deleteStatus.error}
-              </p>
-              <button
-                type="button"
-                className="lineup-confirm-cancel"
-                onClick={() => setDeleteStatus({ phase: "idle" })}
-              >
-                확인
-              </button>
-            </>
-          ) : null}
-        </div>
-      </ModalShell>
+      />
+
+      <RenameSlotModal
+        open={renamingEntryId !== null}
+        initialName={
+          renamingEntryId
+            ? entries.find((e) => e.entryId === renamingEntryId)?.name ?? ""
+            : ""
+        }
+        onClose={() => setRenamingEntryId(null)}
+        onSubmit={(name) => {
+          if (renamingEntryId) {
+            syncedRename(renamingEntryId, name);
+          }
+        }}
+      />
+
+      <ConfirmDeleteSlotModal
+        open={confirmDeleteEntryId !== null}
+        onCancel={() => setConfirmDeleteEntryId(null)}
+        onConfirm={() => {
+          if (!confirmDeleteEntryId) return;
+          const entryToDelete = confirmDeleteEntryId;
+          setConfirmDeleteEntryId(null);
+          setDeleteStatus({ phase: "deleting" });
+          const next = syncedDelete(entryToDelete, {
+            onSyncResult: (res) => {
+              if (res.ok) {
+                setDeleteStatus({ phase: "success" });
+                // 1.5초 후 자동 닫기
+                setTimeout(() => setDeleteStatus({ phase: "idle" }), 1500);
+              } else {
+                setDeleteStatus({ phase: "error", error: res.error });
+              }
+            }
+          });
+          if (selectedEntryId === entryToDelete) {
+            setSelectedEntryId(next[0]?.entryId ?? null);
+          }
+        }}
+      />
+
+      <DeleteSlotStatusModal
+        status={deleteStatus}
+        onClose={() => setDeleteStatus({ phase: "idle" })}
+      />
     </AppShell>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Music, Music2, Play, Pause, Trophy, Volume2, VolumeX } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { ModalShell } from "@/components/common/ModalShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import { simulateGame } from "@/lib/sim/engine";
 import {
@@ -15,7 +12,7 @@ import {
   type MatchSession
 } from "@/lib/sim/matchSession";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
-import type { AtBatLog, AtBatOutcome, BaseState, InningLog, SimPitcher } from "@/lib/sim/types";
+import type { BaseState, SimPitcher } from "@/lib/sim/types";
 import {
   getSituationText,
   getBatterText,
@@ -38,271 +35,16 @@ import {
   setMatchSoundMuted,
   stopBgm
 } from "@/lib/sound/matchSounds";
-
-const OUTCOME_LABEL: Record<AtBatOutcome, string> = {
-  K: "삼진",
-  GO: "땅볼아웃",
-  FO: "외야플라이",
-  PO: "내야플라이",
-  LO: "직선타",
-  SF: "희생플라이",
-  DP: "병살타",
-  BB: "볼넷",
-  HBP: "사구",
-  "1B": "안타",
-  "2B": "2루타",
-  "3B": "3루타",
-  HR: "홈런!",
-  E: "실책 출루"
-};
-
-const EMPTY_BASE: BaseState = { first: null, second: null, third: null };
-
-type FlatEvent = {
-  inning: number;
-  half: "top" | "bottom";
-  index: number;
-  ab: AtBatLog;
-  scoreSnapshot: { home: number; away: number };
-};
-
-function flatten(innings: InningLog[]): FlatEvent[] {
-  const out: FlatEvent[] = [];
-  let home = 0;
-  let away = 0;
-  for (const ing of innings) {
-    let halfIdx = 0;
-    for (const ab of ing.top.atBats) {
-      away += ab.runsScored;
-      out.push({ inning: ing.inning, half: "top", index: halfIdx++, ab, scoreSnapshot: { home, away } });
-    }
-    if (ing.bottom) {
-      halfIdx = 0;
-      for (const ab of ing.bottom.atBats) {
-        home += ab.runsScored;
-        out.push({ inning: ing.inning, half: "bottom", index: halfIdx++, ab, scoreSnapshot: { home, away } });
-      }
-    }
-  }
-  return out;
-}
-
-function buildLinescore(innings: InningLog[], visibleCount: number, events: FlatEvent[]) {
-  const visibleEvents = events.slice(0, visibleCount);
-  const seenInning = new Map<string, number>();
-
-  for (const ev of visibleEvents) {
-    const key = `${ev.inning}|${ev.half}`;
-    seenInning.set(key, (seenInning.get(key) ?? 0) + ev.ab.runsScored);
-  }
-
-  const totalInnings = Math.max(9, ...innings.map((i) => i.inning));
-
-  const lastEvent = visibleEvents[visibleEvents.length - 1];
-  const currentInning = lastEvent?.inning ?? 1;
-  const currentHalf = lastEvent?.half ?? "top";
-
-  type Cell = { runs: number | null };
-  const away: Cell[] = [];
-  const home: Cell[] = [];
-
-  for (let i = 1; i <= totalInnings; i++) {
-    const topKey = `${i}|top`;
-    const botKey = `${i}|bottom`;
-
-    away.push({ runs: seenInning.has(topKey) ? seenInning.get(topKey)! : null });
-
-    const inningData = innings.find((x) => x.inning === i);
-    if (inningData && inningData.bottom === null) {
-      home.push({ runs: null });
-    } else if (seenInning.has(botKey)) {
-      home.push({ runs: seenInning.get(botKey)! });
-    } else {
-      home.push({ runs: null });
-    }
-  }
-
-  return { away, home, currentInning, currentHalf, totalInnings };
-}
-
-// 다이아몬드 컴포넌트 — 1·2·3루 점등 + 홈베이스
-function Diamond({ base }: { base: BaseState }) {
-  return (
-    <div className="stadium-diamond" aria-label="베이스 상황">
-      <div className={`stadium-base stadium-base-2nd ${base.second ? "is-on" : ""}`} />
-      <div className={`stadium-base stadium-base-3rd ${base.third ? "is-on" : ""}`} />
-      <div className={`stadium-base stadium-base-1st ${base.first ? "is-on" : ""}`} />
-      <div className="stadium-base stadium-base-home" />
-    </div>
-  );
-}
-
-function OutDots({ outs }: { outs: 0 | 1 | 2 | 3 }) {
-  return (
-    <div className="stadium-outs" aria-label={`아웃 ${outs}`}>
-      {[0, 1, 2].map((i) => (
-        <span key={i} className={i < outs ? "is-out" : ""} />
-      ))}
-    </div>
-  );
-}
-
-// 안타/홈런 시 화면 위로 폭죽·반짝이 이펙트. key prop으로 매 타석마다 재실행.
-function HitEffect({ kind }: { kind: "hr" | "hit" }) {
-  const particles = kind === "hr" ? 24 : 12;
-  return (
-    <div className={`stadium-fx stadium-fx-${kind}`} aria-hidden>
-      {kind === "hr" ? <div className="stadium-fx-burst" /> : null}
-      {Array.from({ length: particles }).map((_, i) => (
-        <span
-          key={i}
-          className="stadium-fx-particle"
-          style={{
-            // 균등 분포 + 약간의 랜덤 — i 기반이라 결정적
-            ["--angle" as string]: `${(360 / particles) * i + (i % 3) * 7}deg`,
-            ["--delay" as string]: `${(i % 6) * 30}ms`,
-            ["--dist" as string]: `${kind === "hr" ? 160 + (i % 5) * 20 : 90 + (i % 4) * 15}px`,
-            ["--hue" as string]: `${(i * 47) % 360}`
-          } as CSSProperties}
-        />
-      ))}
-    </div>
-  );
-}
-
-// 안타 발사 이펙트 — fromX,fromY 에서 dx,dy 방향으로 durationMs 동안 날아가는 공.
-// CSS variable 로 좌표 전달, transition end 시 부모가 setFlyingBall(null) 로 제거.
-function FlyingBall({
-  fromX,
-  fromY,
-  dx,
-  dy,
-  durationMs,
-  maxScale,
-  onEnd
-}: {
-  fromX: number;
-  fromY: number;
-  dx: number;
-  dy: number;
-  durationMs: number;
-  maxScale: number;
-  onEnd: () => void;
-}) {
-  // animation 안 도는 케이스 대비 — 명시적 timeout 으로 onEnd 보장.
-  useEffect(() => {
-    const t = window.setTimeout(onEnd, durationMs + 100);
-    console.log("[ball] mount", { fromX, fromY, dx, dy, durationMs, maxScale });
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const style: CSSProperties = {
-    left: `${fromX}px`,
-    top: `${fromY}px`,
-    // CSS variable — keyframes 에서 --ball-dx / --ball-dy / --ball-max-scale 로 읽음.
-    ["--ball-dx" as string]: `${dx}px`,
-    ["--ball-dy" as string]: `${dy}px`,
-    ["--ball-max-scale" as string]: String(maxScale),
-    // longhand 로 명확하게 — shorthand 가 다른 CSS 와 충돌하는 경우 회피.
-    animationName: "stadium-ball-fly",
-    animationDuration: `${durationMs}ms`,
-    // linear — keyframes 의 % 단계가 그대로 시간에 대응. 천천히 시작/가속이 keyframes 로직에 위임.
-    animationTimingFunction: "linear",
-    animationFillMode: "forwards"
-  };
-  return (
-    <div
-      className="stadium-flying-ball"
-      style={style}
-      onAnimationEnd={() => {
-        console.log("[ball] animation end");
-        onEnd();
-      }}
-    >
-      {/* 야구공 SVG — 흰 배경 + 빨간 stitching 두 곡선 (dashed) */}
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="12" cy="12" r="11" fill="#ffffff" stroke="#475569" strokeWidth="0.6" />
-        <path
-          d="M6 5.5 C 7.3 7.5, 8 9.7, 8 12 S 7.3 16.5, 6 18.5"
-          fill="none"
-          stroke="#dc2626"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-          strokeDasharray="1.6 1.6"
-        />
-        <path
-          d="M18 5.5 C 16.7 7.5, 16 9.7, 16 12 S 16.7 16.5, 18 18.5"
-          fill="none"
-          stroke="#dc2626"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-          strokeDasharray="1.6 1.6"
-        />
-      </svg>
-    </div>
-  );
-}
-
-// 안타/홈런/타점 이펙트 portal — 타자 row 위치(centerX, centerY) 에 폭죽.
-// HitEffect 자체는 이미 absolute 기준 자식이라 fixed wrapper 안에 배치.
-function HitEffectAtPosition({
-  centerX,
-  centerY,
-  kind,
-  onEnd
-}: {
-  centerX: number;
-  centerY: number;
-  kind: "hit" | "hr";
-  onEnd: () => void;
-}) {
-  // particle animation 이 약 900ms 안에 끝남 — 안전한 fallback timer.
-  useEffect(() => {
-    const t = window.setTimeout(onEnd, 1200);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return (
-    // phone-frame-light 클래스 — 기존 .stadium-fx CSS 가 모두 .phone-frame-light prefix 라
-    // portal 로 body 에 띄울 때 부모에 명시해야 스타일 적용됨.
-    <div
-      className="phone-frame-light stadium-fx-portal"
-      style={{ position: "fixed", left: `${centerX}px`, top: `${centerY}px`, pointerEvents: "none", zIndex: 9998 }}
-    >
-      <HitEffect kind={kind} />
-    </div>
-  );
-}
-
-// 삼진 K 효과 — 중계 텍스트(narration) 위치에 큰 빨간 K 가 슬램.
-function StrikeoutEffect({
-  centerX,
-  centerY,
-  durationMs,
-  onEnd
-}: {
-  centerX: number;
-  centerY: number;
-  durationMs: number;
-  onEnd: () => void;
-}) {
-  useEffect(() => {
-    const t = window.setTimeout(onEnd, durationMs + 100);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const style: CSSProperties = {
-    left: `${centerX}px`,
-    top: `${centerY}px`,
-    animationName: "stadium-strikeout-slam",
-    animationDuration: `${durationMs}ms`,
-    animationTimingFunction: "linear",
-    animationFillMode: "forwards"
-  };
-  return (
-    <span className="stadium-strikeout-k" style={style} onAnimationEnd={onEnd}>K</span>
-  );
-}
+import { EMPTY_BASE, OUTCOME_LABEL } from "./play/types";
+import { buildLinescore, flatten } from "./play/eventHelpers";
+import { FlyingBall } from "./play/effects/FlyingBall";
+import { HitEffectAtPosition } from "./play/effects/HitEffect";
+import { StrikeoutEffect } from "./play/effects/StrikeoutEffect";
+import { Linescore } from "./play/Linescore";
+import { Scoreboard } from "./play/Scoreboard";
+import { LineupCard } from "./play/LineupCard";
+import { PlayControls } from "./play/PlayControls";
+import { SkipBlockedModal } from "./play/SkipBlockedModal";
 
 export function PlayScreen() {
   const router = useRouter();
@@ -1114,52 +856,6 @@ export function PlayScreen() {
     return allBatters.find((b) => b.playerId === playerId)?.name ?? null;
   }
 
-  const renderLineupRow = (
-    side: "home" | "away",
-    batter: { playerId: string; name: string },
-    idx: number,
-    currentIdx: number
-  ) => {
-    const isCurrent = battingSide === side && idx === currentIdx;
-    const stored = inningOutcomes.get(batter.playerId);
-
-    let outcomeNode: ReactNode = null;
-    if (isCurrent && !showOutcome) {
-      // 진행 중인 현재 타석 — 이전 결과가 있어도 새 타석이므로 ··· 표시
-      outcomeNode = <span className="stadium-play-lineup-outcome is-pending">···</span>;
-    } else if (stored) {
-      outcomeNode = (
-        <span
-          className={`stadium-play-lineup-outcome ${stored.isHr ? "is-hr" : ""} ${stored.isHit ? "is-hit" : ""}`}
-        >
-          {stored.label}
-        </span>
-      );
-    }
-
-    // 이번 경기 누적 — "(안타수/타수)" 형식. AB 0이면 표시 안 함.
-    const today = todayStats.get(batter.playerId);
-
-    return (
-      <li
-        key={batter.playerId}
-        className={`stadium-play-lineup-row ${isCurrent ? "is-current" : ""}`}
-        data-batter-id={batter.playerId}
-      >
-        <span className="stadium-play-lineup-order">{idx + 1}</span>
-        <span className="stadium-play-lineup-name">
-          {batter.name}
-          {today && today.ab > 0 ? (
-            <em className="stadium-play-lineup-today">
-              ({today.hits}/{today.ab})
-            </em>
-          ) : null}
-        </span>
-        {outcomeNode}
-      </li>
-    );
-  };
-
   // 상단 헤더 타이틀 — 진행 중엔 이닝 정보, 종료 시엔 "경기 종료"
   const headerTitle = isDone
     ? "경기 종료"
@@ -1188,72 +884,28 @@ export function PlayScreen() {
       ) : null}
       <section className="stadium-play-v2">
         {/* 1. 라인스코어 */}
-        <div className="stadium-linescore">
-          <table>
-            <thead>
-              <tr>
-                <th className="team-head">TEAM</th>
-                {Array.from({ length: linescore.totalInnings }, (_, i) => (
-                  <th key={i + 1} className={i + 1 === linescore.currentInning ? "is-current" : ""}>{i + 1}</th>
-                ))}
-                <th className="rh">R</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="team-cell"><span>{awayLabel}</span></td>
-                {linescore.away.map((cell, i) => (
-                  <td key={`a${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "top" ? "is-current" : ""}>
-                    {cell.runs === null ? "-" : cell.runs}
-                  </td>
-                ))}
-                <td className="rh"><strong>{totalAway}</strong></td>
-              </tr>
-              <tr>
-                <td className="team-cell"><span>{homeLabel}</span></td>
-                {linescore.home.map((cell, i) => (
-                  <td key={`h${i}`} className={i + 1 === linescore.currentInning && linescore.currentHalf === "bottom" ? "is-current" : ""}>
-                    {cell.runs === null ? "-" : cell.runs}
-                  </td>
-                ))}
-                <td className="rh"><strong>{totalHome}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Linescore
+          linescore={linescore}
+          awayLabel={awayLabel}
+          homeLabel={homeLabel}
+          totalAway={totalAway}
+          totalHome={totalHome}
+        />
 
         {/* 2. 스코어보드 + 다이아몬드 + 아웃카운트
             팀별 레이아웃: [큰 팀 배지] [팀명 + 큰 점수] (반대편은 거울) */}
-        <header className="stadium-play-scoreboard">
-          <div className="stadium-play-team">
-            <div className="stadium-play-team-badge-col">
-              {awayNickname ? (
-                <span className="stadium-play-team-nickname" title={awayNickname}>{awayNickname}</span>
-              ) : null}
-              <TeamBadge teamId={awayTeam.id} size="lg" />
-            </div>
-            <div className="stadium-play-team-info">
-              <span className="stadium-play-team-name">{awayLabel}</span>
-              <strong className="stadium-play-team-score">{totalAway}</strong>
-            </div>
-          </div>
-          <div className="stadium-play-state">
-            <Diamond base={baseState} />
-            <OutDots outs={outs} />
-          </div>
-          <div className="stadium-play-team stadium-play-team-right">
-            <div className="stadium-play-team-info">
-              <span className="stadium-play-team-name">{homeLabel}</span>
-              <strong className="stadium-play-team-score">{totalHome}</strong>
-            </div>
-            <div className="stadium-play-team-badge-col">
-              {homeNickname ? (
-                <span className="stadium-play-team-nickname" title={homeNickname}>{homeNickname}</span>
-              ) : null}
-              <TeamBadge teamId={homeTeam.id} size="lg" />
-            </div>
-          </div>
-        </header>
+        <Scoreboard
+          awayTeamId={awayTeam.id}
+          homeTeamId={homeTeam.id}
+          awayLabel={awayLabel}
+          homeLabel={homeLabel}
+          totalAway={totalAway}
+          totalHome={totalHome}
+          awayNickname={awayNickname}
+          homeNickname={homeNickname}
+          baseState={baseState}
+          outs={outs}
+        />
 
         {/* 3. 1줄 상황판 — 타석 진행/공수교대/투수교체/타석 결과 등 모든 진행 알림.
             타격 이펙트(폭죽)는 공 출발 위치(타자 row) 에 portal 로 표시 — 별도 위치. */}
@@ -1267,152 +919,51 @@ export function PlayScreen() {
             isDone ? "is-final" : `is-offense-${battingSide}`
           }`}
         >
-          <div
-            className={`stadium-play-batting-card ${
-              !isDone && battingSide === "away" ? "is-offense" : ""
-            } ${isDone ? "is-final" : ""}`}
-          >
-            <div className="stadium-play-batting-head">
-              <span className="stadium-play-batting-pitcher">투수 {awayCurrentPitcher.name}</span>
-            </div>
-            <ol className="stadium-play-lineup">
-              {input.away.batters.map((b, idx) => renderLineupRow("away", b, idx, awayCurrentIdx))}
-            </ol>
-          </div>
-
-          <div
-            className={`stadium-play-batting-card ${
-              !isDone && battingSide === "home" ? "is-offense" : ""
-            } ${isDone ? "is-final" : ""}`}
-          >
-            <div className="stadium-play-batting-head">
-              <span className="stadium-play-batting-pitcher">투수 {homeCurrentPitcher.name}</span>
-            </div>
-            <ol className="stadium-play-lineup">
-              {input.home.batters.map((b, idx) => renderLineupRow("home", b, idx, homeCurrentIdx))}
-            </ol>
-          </div>
+          <LineupCard
+            side="away"
+            pitcherName={awayCurrentPitcher.name}
+            batters={input.away.batters}
+            currentIdx={awayCurrentIdx}
+            battingSide={battingSide}
+            showOutcome={showOutcome}
+            isDone={isDone}
+            inningOutcomes={inningOutcomes}
+            todayStats={todayStats}
+          />
+          <LineupCard
+            side="home"
+            pitcherName={homeCurrentPitcher.name}
+            batters={input.home.batters}
+            currentIdx={homeCurrentIdx}
+            battingSide={battingSide}
+            showOutcome={showOutcome}
+            isDone={isDone}
+            inningOutcomes={inningOutcomes}
+            todayStats={todayStats}
+          />
         </div>
 
         {/* 4. 컨트롤 */}
-        <footer className="stadium-play-controls">
-          {!isDone ? (
-            isLive ? (
-              <>
-                <div className="stadium-play-live-badge">
-                  <span className="stadium-live-dot" /> 실시간 매치 진행 중 — 컨트롤 잠금
-                </div>
-                <button
-                  type="button"
-                  className="stadium-play-btn stadium-play-btn-mute"
-                  onClick={toggleBgmMuted}
-                  aria-label={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
-                  aria-pressed={bgmMuted}
-                  title={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
-                >
-                  {bgmMuted ? <Music2 size={16} /> : <Music size={16} />}
-                </button>
-                <button
-                  type="button"
-                  className="stadium-play-btn stadium-play-btn-mute"
-                  onClick={toggleMuted}
-                  aria-label={muted ? "효과음 켜기" : "효과음 끄기"}
-                  aria-pressed={muted}
-                  title={muted ? "효과음 켜기" : "효과음 끄기"}
-                >
-                  {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="stadium-play-btn stadium-play-btn-icon"
-                  onClick={() => setPlaying((p) => !p)}
-                  aria-label={playing ? "일시정지" : "재생"}
-                  title={playing ? "일시정지" : "재생"}
-                >
-                  {playing ? <Pause size={16} /> : <Play size={16} />}
-                </button>
-                <div className="stadium-play-mode" role="radiogroup" aria-label="진행 모드">
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === "normal"}
-                    className={`stadium-play-mode-btn ${mode === "normal" ? "is-active" : ""}`}
-                    onClick={() => setMode("normal")}
-                  >
-                    일반
-                  </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === "fast"}
-                    className={`stadium-play-mode-btn ${mode === "fast" ? "is-active" : ""}`}
-                    onClick={() => setMode("fast")}
-                  >
-                    빠른
-                  </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === "superfast"}
-                    className={`stadium-play-mode-btn ${mode === "superfast" ? "is-active" : ""}`}
-                    onClick={() => setMode("superfast")}
-                  >
-                    빠른×2
-                  </button>
-                </div>
-                {/* 건너뛰기 — 6회 진입 이후만 동작 (5회 = KBO 정식경기 성립 기준).
-                    매치 시작 직후 무한 스킵으로 전적 어뷰징하는 것 방지.
-                    6회 전엔 disabled 대신 클릭 받아 안내 모달 노출 (사유 설명). */}
-                <button
-                  type="button"
-                  className="stadium-play-btn stadium-play-btn-skip"
-                  onClick={() => {
-                    if (linescore.currentInning < 6) {
-                      setSkipBlockedOpen(true);
-                      return;
-                    }
-                    setCursor(events.length);
-                  }}
-                  title="끝까지 건너뛰기"
-                >
-                  건너뛰기
-                </button>
-                <button
-                  type="button"
-                  className="stadium-play-btn stadium-play-btn-mute"
-                  onClick={toggleBgmMuted}
-                  aria-label={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
-                  aria-pressed={bgmMuted}
-                  title={bgmMuted ? "배경음악 켜기" : "배경음악 끄기"}
-                >
-                  {bgmMuted ? <Music2 size={16} /> : <Music size={16} />}
-                </button>
-                <button
-                  type="button"
-                  className="stadium-play-btn stadium-play-btn-mute"
-                  onClick={toggleMuted}
-                  aria-label={muted ? "효과음 켜기" : "효과음 끄기"}
-                  aria-pressed={muted}
-                  title={muted ? "효과음 켜기" : "효과음 끄기"}
-                >
-                  {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                </button>
-              </>
-            )
-          ) : (
-            <button
-              type="button"
-              className="stadium-cta-primary"
-              onClick={() => router.push("/stadium/result")}
-            >
-              <Trophy size={16} />
-              <span>결과 보기</span>
-            </button>
-          )}
-        </footer>
+        <PlayControls
+          isDone={isDone}
+          isLive={isLive}
+          playing={playing}
+          mode={mode}
+          muted={muted}
+          bgmMuted={bgmMuted}
+          onTogglePlaying={() => setPlaying((p) => !p)}
+          onChangeMode={setMode}
+          onSkip={() => {
+            if (linescore.currentInning < 6) {
+              setSkipBlockedOpen(true);
+              return;
+            }
+            setCursor(events.length);
+          }}
+          onToggleMuted={toggleMuted}
+          onToggleBgmMuted={toggleBgmMuted}
+          onGoResult={() => router.push("/stadium/result")}
+        />
       </section>
 
       {flyingBall && typeof document !== "undefined"
@@ -1455,30 +1006,7 @@ export function PlayScreen() {
           )
         : null}
 
-      {/* 6회 전 건너뛰기 시도 시 안내 모달. 5회까지 = KBO 정식경기 성립 기준. */}
-      <ModalShell
-        open={skipBlockedOpen}
-        title="건너뛰기 안내"
-        onClose={() => setSkipBlockedOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            전적이 누적되는 경기라 <strong>5회까지 진행한 뒤</strong> 건너뛰기가 가능해요.<br />
-            (KBO 정식경기 성립 기준)
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-primary"
-              onClick={() => setSkipBlockedOpen(false)}
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+      <SkipBlockedModal open={skipBlockedOpen} onClose={() => setSkipBlockedOpen(false)} />
     </AppShell>
   );
 }
