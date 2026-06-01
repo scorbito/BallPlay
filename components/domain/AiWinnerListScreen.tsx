@@ -42,6 +42,8 @@ type Props = {
   providerStats: AiProviderStats[];
   /** 운영자는 09시 공개 전이라도 잠금 해제 (컨텐츠 영상 제작용). */
   isAdmin?: boolean;
+  /** 소프트 게이트 — 비로그인/익명이면 true. 매치업만 보이고 AI 픽·분석은 로그인 유도. */
+  locked?: boolean;
 };
 
 const AI_LABEL: Record<AiProvider, string> = {
@@ -152,8 +154,11 @@ export function AiWinnerListScreen({
   nextGameDate,
   overallStats,
   providerStats,
-  isAdmin = false
+  isAdmin = false,
+  locked = false
 }: Props) {
+  // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.
+  const loginHref = `/login?next=${encodeURIComponent(`/predict/ai-winner?date=${selectedDate}`)}`;
   const countdown = useCountdown(publishAtISO);
   // 클라이언트 hydration 후 시간 계산 (SSR 미스매치 회피)
   const [hydrated, setHydrated] = useState(false);
@@ -233,6 +238,21 @@ export function AiWinnerListScreen({
             })}
           </div>
         </header>
+
+        {/* ── 로그인 유도 배너 (비로그인/익명 한정). 위 종합 적중률은 미끼로 그대로 노출. ── */}
+        {locked ? (
+          <div className="ai-winner-login-banner">
+            <Lock size={18} strokeWidth={2.5} aria-hidden="true" />
+            <div className="ai-winner-login-banner-text">
+              <strong>AI 승부예측은 로그인 후 볼 수 있어요</strong>
+              <p>오늘 어느 팀이 이길지 — 적중률 높은 AI들의 예측과 분석을 확인하세요.</p>
+            </div>
+            <Link href={loginHref} className="ai-winner-login-banner-cta" prefetch={false}>
+              로그인
+              <ArrowRight size={14} strokeWidth={2.5} />
+            </Link>
+          </div>
+        ) : null}
 
         {/* ── 날짜 네비게이션 — 경기 없는 날 자동 스킵.
             미래로도 이동 가능 (AI 예측 도착 전엔 카운트다운 카드로 표시). ── */}
@@ -319,14 +339,17 @@ export function AiWinnerListScreen({
                 //   3) 경기 종료 + 안 봤음 → "경기 종료 · 결과 보기" (적중 가림)
                 //   3') 경기 종료 + 봤음 → 점수 + 적중 노출
                 //   4) 그 외 (예측 없는데 09시 지남) → "예측 준비 중"
-                const showLocked = isBeforePublish && !hasPredictions;
-                const showOpenTeaser = hasPredictions && !finished && !effectiveSeen;
-                const showOpenRevealed = hasPredictions && !finished && effectiveSeen;
-                const showFinishedTeaser = finished && hasPredictions && !effectiveSeen;
-                const showFinishedRevealed = finished && effectiveSeen;
+                // 소프트 게이트: 잠겼으면 픽 데이터가 아예 없으니(predictions=[]) 모든 예측 상태를
+                // 끄고 로그인 유도만 표시. 매치업·점수(종료경기)는 위에서 그대로 노출됨.
+                const showLoginGate = locked;
+                const showLocked = !locked && isBeforePublish && !hasPredictions;
+                const showOpenTeaser = !locked && hasPredictions && !finished && !effectiveSeen;
+                const showOpenRevealed = !locked && hasPredictions && !finished && effectiveSeen;
+                const showFinishedTeaser = !locked && finished && hasPredictions && !effectiveSeen;
+                const showFinishedRevealed = !locked && finished && effectiveSeen;
                 // "예측 준비 중"은 오늘만 의미 있음. 과거 날짜(우천취소·예측 누락 등)에선
                 // 별도 메시지 없이 카드를 그대로 둔다 — 결과(점수) 만 보이거나 빈 카드.
-                const showPending = isToday
+                const showPending = !locked && isToday
                   && !showLocked && !showOpenTeaser && !showOpenRevealed
                   && !showFinishedTeaser && !showFinishedRevealed && !finished;
                 // 빈 종료 경기 (예측 없음 + finished) — 점수만 표시
@@ -400,6 +423,14 @@ export function AiWinnerListScreen({
                       </div>
                     ) : null}
 
+                    {/* 소프트 게이트 — 비로그인은 픽 자리에 로그인 안내. */}
+                    {showLoginGate ? (
+                      <div className="ai-winner-card-state ai-winner-state-locked">
+                        <Lock size={12} strokeWidth={2.5} />
+                        AI 픽 · 분석은 <strong>로그인 후 공개</strong>
+                      </div>
+                    ) : null}
+
                     {showPending ? (
                       <div className="ai-winner-card-state ai-winner-state-pending">
                         예측 준비 중
@@ -461,7 +492,12 @@ export function AiWinnerListScreen({
                       </div>
                     ) : null}
 
-                    {hasPredictions ? (
+                    {showLoginGate ? (
+                      <Link href={loginHref} className="ai-winner-card-cta" prefetch={false}>
+                        로그인하고 결과 보기
+                        <ArrowRight size={12} strokeWidth={2.5} />
+                      </Link>
+                    ) : hasPredictions ? (
                       <Link href={`/predict/ai-winner/${g.id}`} className="ai-winner-card-cta">
                         결과 보기
                         <ArrowRight size={12} strokeWidth={2.5} />

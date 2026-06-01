@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { listAiPredictionsForGame } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { getUserTier } from "@/lib/auth/userTier";
@@ -27,6 +27,13 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
   // 운영자(admin) 는 09시 공개 전이라도 예측을 미리 볼 수 있어야 함 (컨텐츠 영상 제작용).
   // RLS 가 published_at <= now() 만 노출하므로 admin 만 service_role 클라이언트로 우회.
   const userTier = await getUserTier(supabase);
+
+  // AI 예측 상세(reveal)는 정식 로그인 전용. 비로그인/익명(guest)은 로그인으로 보낸다.
+  // (리스트는 소프트 게이트로 매치업만 노출하지만, 상세는 곧 결과 전체라 하드 게이트.)
+  if (userTier.tier === "guest") {
+    redirect(`/login?next=${encodeURIComponent(`/predict/ai-winner/${params.gameId}`)}`);
+  }
+
   const predictionsClient =
     userTier.tier === "admin" ? createSupabaseAdminClient() : supabase;
 

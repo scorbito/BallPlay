@@ -77,6 +77,10 @@ export default async function AiWinnerPredictPage({
   // 일반 유저는 그대로 RLS 적용.
   const userTier = await getUserTier(supabase);
   const isAdmin = userTier.tier === "admin";
+  // 소프트 게이트: 비로그인/익명(guest)은 AI 픽을 못 본다. 매치업·AI 종합 적중률(미끼)만 노출.
+  // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 픽 데이터를 서버에서 비워 보내
+  // 개발자도구로도 훔쳐볼 수 없게 한다.
+  const locked = userTier.tier === "guest";
   const predictionsClient = isAdmin ? createSupabaseAdminClient() : supabase;
 
   // 예측 + 시즌 통계 병렬 (게임 데이터는 위에서 이미 확보)
@@ -105,7 +109,8 @@ export default async function AiWinnerPredictPage({
     homeScore: g.homeScore ?? null,
     awayScore: g.awayScore ?? null,
     status: g.status,
-    predictions: predictionsByGameId.get(g.id) ?? []
+    // 잠긴 사용자에겐 픽을 아예 비워서 전송 (클라이언트로 데이터 자체가 안 감).
+    predictions: locked ? [] : (predictionsByGameId.get(g.id) ?? [])
   }));
 
   // 다음 경기일 hint (auto-jump 했어도 경기 없는 날짜에 ?date= 명시 진입한 경우 표시용)
@@ -127,6 +132,7 @@ export default async function AiWinnerPredictPage({
       overallStats={overallResult.ok ? overallResult.stats : { total_count: 0, correct_count: 0, accuracy: null }}
       providerStats={providerResult.ok ? providerResult.rows : []}
       isAdmin={isAdmin}
+      locked={locked}
     />
   );
 }

@@ -546,6 +546,62 @@
 }
 
 /* ============================================================
+   소프트 게이트 — 비로그인 로그인 유도 배너
+   ============================================================ */
+.phone-frame-light .ai-winner-login-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(232, 74, 138, 0.05));
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 14px;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-winner-login-banner-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-light .ai-winner-login-banner-text strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text-primary);
+}
+
+.phone-frame-light .ai-winner-login-banner-text p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.35;
+}
+
+.phone-frame-light .ai-winner-login-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 9px 14px;
+  background: var(--bp-accent);
+  color: white;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.phone-frame-light .ai-winner-login-banner-cta:hover {
+  background: #d63a7c;
+}
+
+/* ============================================================
    풀스크린 reveal 페이지
    ============================================================ */
 
