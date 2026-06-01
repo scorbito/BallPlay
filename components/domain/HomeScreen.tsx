@@ -114,7 +114,7 @@ const sections: HomeSection[] = [
       {
         id: "records",
         href: "/records",
-        title: "내 라인업 기록",
+        title: "내 경기 기록",
         description: "공개 매칭·친구 대전 기록",
         icon: History,
         iconImage: "/icons/menu/my-records.png",
