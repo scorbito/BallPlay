@@ -27,6 +27,14 @@ export function RenameSlotModal({
     if (open) setRenameInput(initialName.slice(0, MAX_NAME_LEN));
   }, [open, initialName]);
 
+  // 한글 IME composition 등 비정상 경로로 상태가 12자 초과되면 강제 트림.
+  // onChange/maxLength로 막아도 IME 합성 도중 빠져나오는 케이스가 있어 안전망 추가.
+  useEffect(() => {
+    if (renameInput.length > MAX_NAME_LEN) {
+      setRenameInput(renameInput.slice(0, MAX_NAME_LEN));
+    }
+  }, [renameInput]);
+
   return (
     /* 슬롯 이름 변경 모달 */
     <ModalShell

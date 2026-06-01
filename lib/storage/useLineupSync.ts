@@ -96,6 +96,12 @@ function mergeByEntryId(local: LineupEntry[], remote: LineupEntry[]): LineupEntr
 // 마이그되지 않도록 localStorage를 리셋하기 위함.
 const LAST_SYNCED_USER_KEY = "ballplay:last-synced-user-id";
 
+// 마지막 sync 완료 시각 (user별). local-only entry가 새로 만든 건지 vs
+// 다른 기기에서 삭제된 건지 판정하는 기준점.
+//   - entry.updatedAt > lastSyncedAt → 마지막 sync 이후 생성/수정 → DB push
+//   - entry.updatedAt < lastSyncedAt → 한 번 sync된 후 DB에서 사라짐 → 다른 기기 삭제 → 로컬에서도 제거
+const LAST_SYNCED_AT_PREFIX = "ballplay:last-synced-at:";
+
 function readLastSyncedUserId(): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -110,6 +116,24 @@ function writeLastSyncedUserId(userId: string | null): void {
   try {
     if (userId) window.localStorage.setItem(LAST_SYNCED_USER_KEY, userId);
     else window.localStorage.removeItem(LAST_SYNCED_USER_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function readLastSyncedAt(userId: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(LAST_SYNCED_AT_PREFIX + userId);
+  } catch {
+    return null;
+  }
+}
+
+function writeLastSyncedAt(userId: string, iso: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LAST_SYNCED_AT_PREFIX + userId, iso);
   } catch {
     // ignore
   }
@@ -198,6 +222,7 @@ export function useLineupSync() {
         // 마이그 후 다시 fetch (서버 타임스탬프 기준 정렬)
         const final = up.rows.map(rowToEntry);
         saveLineupEntries(final);
+        writeLastSyncedAt(user.id, new Date().toISOString());
         setState({
           entries: final,
           status: "synced",
@@ -210,11 +235,27 @@ export function useLineupSync() {
       // 양쪽 merge (updatedAt 큰 쪽 우선)
       const merged = mergeByEntryId(local, remote);
 
-      // local에만 있던 entry는 DB로 push
+      // local에만 있는 entry 분류:
+      //   - lastSyncedAt 이후에 생성/수정된 entry → DB에 push (새로 만든 거)
+      //   - lastSyncedAt 이전에 마지막 수정된 entry → 다른 기기에서 삭제된 거로 간주, 로컬에서 제거
+      //   - lastSyncedAt 자체가 없으면 (이 user의 첫 sync) → 모두 push (마이그레이션)
+      const lastSyncedAt = readLastSyncedAt(user.id);
+      const lastSyncedTs = lastSyncedAt ? Date.parse(lastSyncedAt) || 0 : 0;
       const remoteIds = new Set(remote.map((e) => e.entryId));
       const localOnly = local.filter((e) => !remoteIds.has(e.entryId));
-      if (localOnly.length > 0) {
-        await bulkUpsertLineups(client, localOnly, user.id);
+      const toPush: LineupEntry[] = [];
+      const toRemoveIds = new Set<string>();
+      for (const e of localOnly) {
+        const localTs = Date.parse(e.updatedAt) || 0;
+        if (!lastSyncedAt || localTs > lastSyncedTs) {
+          toPush.push(e);
+        } else {
+          // 한 번 sync된 적 있는데 DB에 없음 → 다른 기기에서 삭제. 로컬에서도 제거.
+          toRemoveIds.add(e.entryId);
+        }
+      }
+      if (toPush.length > 0) {
+        await bulkUpsertLineups(client, toPush, user.id);
       }
 
       // local과 DB 둘 다 있지만 local이 더 최신인 것도 push
@@ -228,10 +269,16 @@ export function useLineupSync() {
         }
       }
 
-      saveLineupEntries(merged);
+      // "다른 기기 삭제" 판정된 entry는 최종 결과에서도 제외 (로컬도 정리됨).
+      const finalEntries = toRemoveIds.size > 0
+        ? merged.filter((e) => !toRemoveIds.has(e.entryId))
+        : merged;
+
+      saveLineupEntries(finalEntries);
+      writeLastSyncedAt(user.id, new Date().toISOString());
       if (cancelled) return;
       setState({
-        entries: merged,
+        entries: finalEntries,
         status: "synced",
         userId: user.id,
         errorMessage: null
@@ -288,6 +335,8 @@ export function useLineupSync() {
             if (!res.ok) {
               setState((s) => ({ ...s, status: "error", errorMessage: res.error }));
             } else {
+              // DB와 local이 일치 — 다음 full sync에서 "삭제됨 판정"의 기준점 갱신.
+              writeLastSyncedAt(userId, new Date().toISOString());
               setState((s) => (s.status === "error" ? s : { ...s, status: "synced" }));
             }
           })
@@ -341,6 +390,7 @@ export function useLineupSync() {
           if (!res.ok) {
             setState((s) => ({ ...s, status: "error", errorMessage: res.error }));
           } else {
+            writeLastSyncedAt(liveUserId, new Date().toISOString());
             setState((s) => (s.status === "error" ? s : { ...s, status: "synced" }));
           }
           opts?.onSyncResult?.(res);
@@ -371,6 +421,7 @@ export function useLineupSync() {
           if (!res.ok) {
             setState((s) => ({ ...s, status: "error", errorMessage: res.error }));
           } else {
+            writeLastSyncedAt(userId, new Date().toISOString());
             setState((s) => (s.status === "error" ? s : { ...s, status: "synced" }));
           }
         });
@@ -460,6 +511,7 @@ export function useLineupSync() {
           // DB가 돌려준 최종 row를 localStorage에 반영 (updated_at 등 server-side 값)
           const finalEntry = rowToEntry(res.row);
           localUpsert(finalEntry);
+          writeLastSyncedAt(userId, new Date().toISOString());
           setState((s) => ({
             ...s,
             entries: s.entries.map((e) => (e.entryId === entryId ? finalEntry : e)),
@@ -473,6 +525,7 @@ export function useLineupSync() {
             rollback(res.error);
             return { ok: false, error: res.error };
           }
+          writeLastSyncedAt(userId, new Date().toISOString());
           return { ok: true };
         }
       } finally {

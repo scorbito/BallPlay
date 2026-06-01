@@ -37,6 +37,13 @@ export function NewSlotModal({
     }
   }, [open, initialTeamId]);
 
+  // 한글 IME composition 등 비정상 경로로 상태가 12자 초과되면 강제 트림.
+  useEffect(() => {
+    if (newSlotName.length > MAX_NAME_LEN) {
+      setNewSlotName(newSlotName.slice(0, MAX_NAME_LEN));
+    }
+  }, [newSlotName]);
+
   return (
     /* 새 슬롯 만들기 모달 */
     <ModalShell

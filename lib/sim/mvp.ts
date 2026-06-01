@@ -66,7 +66,8 @@ function buildBatterReason(line: BatterBoxLine): string {
 }
 
 function buildPitcherReason(line: PitcherBoxLine): string {
-  const innings = (line.ipOuts / 3).toFixed(1);
+  // ipOuts(아웃수)를 이닝으로 변환. 부분 이닝(0.3/1.3 등)은 올림 처리 — 1아웃이라도 잡았으면 1이닝으로 표기.
+  const innings = Math.ceil(line.ipOuts / 3);
   const bits = [`${innings}이닝`, `${line.strikeouts}K`];
   if (line.earnedRuns === 0) bits.push("무실점");
   return bits.join(" ");
