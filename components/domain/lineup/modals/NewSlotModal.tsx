@@ -5,6 +5,8 @@ import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam, teams } from "@/lib/constants/teams";
 
+const MAX_NAME_LEN = 12;
+
 type NewSlotModalProps = {
   open: boolean;
   initialTeamId: string;
@@ -74,7 +76,7 @@ export function NewSlotModal({
           value={newSlotName}
           onChange={(e) => setNewSlotName(e.target.value)}
           placeholder={`예) ${nickname?.trim() ? `${nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}` : getTeam(newSlotTeamId).name}`}
-          maxLength={12}
+          maxLength={MAX_NAME_LEN}
         />
         <p className="lineup-newslot-name-hint">
           비워두면 &lsquo;
@@ -96,7 +98,8 @@ export function NewSlotModal({
             className="lineup-confirm-primary"
             onClick={() => {
               // 새 슬롯은 빈 라인업이므로 localStorage만 — 9명 채울 때 DB로 첫 commit.
-              onCreate(newSlotTeamId, newSlotName.trim());
+              // 이름은 12자 한도 강제 (비정상 입력 방어).
+              onCreate(newSlotTeamId, newSlotName.trim().slice(0, MAX_NAME_LEN));
             }}
           >
             만들기

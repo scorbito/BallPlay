@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { ModalShell } from "@/components/common/ModalShell";
 
+const MAX_NAME_LEN = 12;
+
 type RenameSlotModalProps = {
   open: boolean;
   /** 모달 오픈 시 input 초기값으로 사용할 현재 팀명 */
@@ -17,11 +19,12 @@ export function RenameSlotModal({
   onClose,
   onSubmit
 }: RenameSlotModalProps) {
-  const [renameInput, setRenameInput] = useState(initialName);
+  // 기존 저장된 긴 이름(이전 한도 20자 시절) 들어와도 12자로 잘라 표시.
+  const [renameInput, setRenameInput] = useState(() => initialName.slice(0, MAX_NAME_LEN));
 
-  // 모달 열릴 때마다 초기값으로 리셋
+  // 모달 열릴 때마다 초기값으로 리셋 (12자 한도 적용)
   useEffect(() => {
-    if (open) setRenameInput(initialName);
+    if (open) setRenameInput(initialName.slice(0, MAX_NAME_LEN));
   }, [open, initialName]);
 
   return (
@@ -41,7 +44,7 @@ export function RenameSlotModal({
           value={renameInput}
           onChange={(e) => setRenameInput(e.target.value)}
           placeholder="팀명"
-          maxLength={12}
+          maxLength={MAX_NAME_LEN}
           autoFocus
         />
         <div className="lineup-confirm-actions">
@@ -56,8 +59,9 @@ export function RenameSlotModal({
             type="button"
             className="lineup-confirm-primary"
             onClick={() => {
-              if (renameInput.trim()) {
-                onSubmit(renameInput.trim());
+              const trimmed = renameInput.trim().slice(0, MAX_NAME_LEN);
+              if (trimmed) {
+                onSubmit(trimmed);
               }
               onClose();
             }}
