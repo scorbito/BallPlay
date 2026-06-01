@@ -241,21 +241,48 @@
   display: block;
   margin-bottom: 10px;
   padding: 4px 0 0 4px;
+  /* 일러스트가 헤더 하단을 넘겨 아래 카드 그리드(경기장 버튼)에 시각적/클릭상으로 침범하지 않도록 클립 */
+  overflow: hidden;
 }
 
 .phone-frame-light .play-hub-hero-text {
-  /* 일러스트가 우측에 absolute로 올라가 있으므로 텍스트 영역에 우측 padding 확보 */
-  padding-right: 38%;
+  /* 일러스트는 데코 배경으로 뱃지 아래에 깔리므로 텍스트는 hero 전체 폭 사용.
+     뱃지가 hero 카드 우측 끝까지 닿고, 일러스트는 그 뒤 z-index에 위치. */
+  padding-right: 0;
 }
 
-/* 일러스트 — absolute 배치로 layout flow에서 빠짐. z-index: 0이라 카드 뒤에 위치. */
+/* 부제 + 매치 기록 뱃지 항상 한 줄 — 좁아지면 부제가 ellipsize, 뱃지는 유지. */
+.phone-frame-light .play-hub-hero-subtitle-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-top: 4px;
+}
+/* 뱃지가 row 안에 있을 때는 자체 margin-top 무효화 (gap이 간격 담당).
+   position: relative + z-index: 1 → 뒤에 깔린 일러스트(z-index: 0) 위로 노출.
+   flex-shrink: 0 + white-space: nowrap → 좁은 화면에서도 뱃지가 깨지지 않음. */
+.phone-frame-light .play-hub-hero-subtitle-row .home-hero-record-badge,
+.phone-frame-dark .play-hub-hero-subtitle-row .home-hero-record-badge {
+  margin-top: 0;
+  margin-left: auto;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* 일러스트 — 우상단 데코 배경. z-index: 0으로 뱃지(z-index: 1) 뒤에 위치.
+   pointer-events: none으로 뱃지 클릭 방해 안 함. opacity로 뱃지 텍스트 가독성 확보. */
 .phone-frame-light .play-hub-hero-illust {
   position: absolute;
-  top: -30px;
-  right: 5px;
-  width: 138px;
-  height: 138px;
-  z-index: 2;
+  top: -22px;
+  right: 8px;
+  width: 100px;
+  height: 100px;
+  z-index: 0;
+  opacity: 0.9;
   pointer-events: none;
 }
 
@@ -296,11 +323,16 @@
 
 .phone-frame-light .play-hub-hero-subtitle {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--bp-text-secondary);
   line-height: 1.4;
   letter-spacing: -0.1px;
+  /* flex 자식 — 뱃지와 한 줄 유지를 위해 좁아지면 ellipsize. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* (구) 일러스트 사이즈 오버라이드 자리 — 새 분리 자산 적용으로 위의 .play-hub-hero-illust 정의가 유효. */
@@ -423,13 +455,17 @@
     font-size: 28px;
   }
   .phone-frame-light .play-hub-hero-subtitle {
-    font-size: 14px;
+    font-size: 13px;
   }
   .phone-frame-light .play-hub-hero-illust {
-    top: -32px;
-    right: 15px;
-    width: 156px;
-    height: 156px;
+    top: -20px;
+    right: 12px;
+    width: 110px;
+    height: 110px;
+  }
+  /* 태블릿: 일러스트가 데코 배경이라 텍스트 padding-right 불필요 — 뱃지가 우측 끝까지. */
+  .phone-frame-light .play-hub-hero-text {
+    padding-right: 0;
   }
 
   /* PC/태블릿: 비대칭 레이아웃 유지 (시안과 동일 룩), 사이즈만 키움. */
@@ -492,13 +528,17 @@
     font-size: 32px;
   }
   .phone-frame-light .play-hub-hero-subtitle {
-    font-size: 15px;
+    font-size: 14px;
   }
   .phone-frame-light .play-hub-hero-illust {
-    top: -38px;
-    right: 18px;
-    width: 190px;
-    height: 190px;
+    top: -18px;
+    right: 16px;
+    width: 120px;
+    height: 120px;
+  }
+  /* PC: 일러스트가 데코 배경이라 텍스트 padding-right 불필요 — 뱃지가 우측 끝까지. */
+  .phone-frame-light .play-hub-hero-text {
+    padding-right: 0;
   }
   /* ── PC 전용: 시안 매칭 ──
      1) Hero 카드: 비대칭 → 3-col 균등 그리드, 세로 배치 + 좌측 정렬 (아이콘 상단-좌, 텍스트 하단-좌)
@@ -3358,4 +3398,222 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* =========================================================
+   라인업 랭킹 페이지 — /play/lineup/ranking
+   ========================================================= */
+
+.phone-frame-light .lineup-rank-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.phone-frame-light .lineup-rank-tab {
+  flex: 1;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--bp-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.phone-frame-light .lineup-rank-tab.is-active {
+  background: var(--bp-accent);
+  color: #fff;
+}
+
+.phone-frame-light .lineup-rank-hint {
+  font-size: 12px;
+  color: var(--bp-text-secondary);
+  margin: 0 4px 14px;
+  line-height: 1.4;
+}
+
+.phone-frame-light .lineup-rank-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .lineup-rank-item {
+  /* flex 행: 좌측 클러스터(랭크칩+팀뱃지+라인업명+닉네임)와 우측 클러스터(전적+승률)가
+     양 끝에 붙고, 중앙 빈 공간은 auto-fill. 가운데 정렬은 align-items: center. */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+}
+
+.phone-frame-light .lineup-rank-position {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bp-bg-soft, #f1f3f5);
+  color: var(--bp-text-secondary);
+  font-size: 14px;
+  font-weight: 800;
+  transition: width 0.15s ease, height 0.15s ease, font-size 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .lineup-rank-position.is-top {
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+/* 상위 3위 칩 안의 lucide SVG는 currentColor(#fff) 상속.
+   인라인 SVG가 가끔 baseline 정렬로 살짝 아래로 떨어지므로 block + 가운데 정렬 강제. */
+.phone-frame-light .lineup-rank-position.is-top svg {
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+}
+/* 상위 3위는 색 + 크기 모두 차등. 1위가 가장 큼 → 자연스러운 hierarchy. */
+.phone-frame-light .lineup-rank-position.is-top-1 {
+  background: #f4b400;   /* gold */
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+.phone-frame-light .lineup-rank-position.is-top-2 {
+  background: #9ca3af;   /* silver */
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
+}
+.phone-frame-light .lineup-rank-position.is-top-3 {
+  background: #cd7f32;   /* bronze */
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+
+/* 본문 텍스트 컬럼: 라인업명(위) + 닉네임(아래) 2줄 세로 스택.
+   팀뱃지는 형제 요소로 분리되어 .lineup-rank-item flex row에서 좌측에 배치됨. */
+.phone-frame-light .lineup-rank-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 라인업 이름이 메인 (큰 폰트). 너무 길면 ellipsis. */
+.phone-frame-light .lineup-rank-lineup-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* 닉네임 — 보조 텍스트(아래 줄). 괄호 없이 단독 표시. */
+.phone-frame-light .lineup-rank-nickname {
+  display: block;
+  font-size: 12.5px;
+  color: var(--bp-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* 우측 stats — 한 줄 inline: [7승 4패] [(.636)] */
+.phone-frame-light .lineup-rank-stats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .lineup-rank-wl {
+  font-size: 13.5px;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .lineup-rank-wl strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text);
+  margin-right: 2px;
+}
+
+/* 승률 — 보조 텍스트 (괄호 포함). */
+.phone-frame-light .lineup-rank-rate {
+  font-size: 12.5px;
+  color: var(--bp-text-muted, #9aa0a6);
+  font-weight: 600;
+}
+
+/* 라인업 보기 버튼 — 경기장 라인업 카드와 동일한 pill 형태(.stadium-lobby-card-btn
+   .stadium-lobby-card-btn-secondary)를 베이스로 쓰되, 이 화면에서는 핑크 아웃라인
+   액센트로 오버라이드한다 (흰 배경 + 핑크 보더 + 핑크 텍스트/아이콘).
+   align-self/margin은 baseline 정렬된 stats 클러스터 안 세로 가운데 맞춤 보정.
+   주의: stadium의 .stadium-lobby-card-btn-secondary와 selector specificity가 같으면
+   load order에 따라 stadium이 이겨 base state가 회색으로 남는다 → 컴파운드 셀렉터
+   (.lineup-rank-preview-btn.stadium-lobby-card-btn-secondary)로 특이도 한 단계 올림. */
+.phone-frame-light .lineup-rank-preview-btn {
+  align-self: center;
+  margin-left: 4px;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.phone-frame-light .lineup-rank-preview-btn.stadium-lobby-card-btn-secondary {
+  background: var(--bp-card);
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+.phone-frame-light .lineup-rank-preview-btn.stadium-lobby-card-btn-secondary:hover {
+  background: rgba(232, 74, 138, 0.08);
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+.phone-frame-light .lineup-rank-preview-btn.stadium-lobby-card-btn-secondary:focus-visible {
+  outline: 2px solid var(--bp-accent);
+  outline-offset: 2px;
+}
+.phone-frame-light .lineup-rank-preview-btn:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.phone-frame-light .lineup-rank-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .lineup-rank-empty p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.phone-frame-light .lineup-rank-empty-sub {
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: var(--bp-text-muted, #9aa0a6) !important;
 }

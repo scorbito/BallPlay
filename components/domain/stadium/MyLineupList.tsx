@@ -17,6 +17,7 @@ import type { LineupEntry } from "@/lib/types/lineup";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
@@ -149,7 +150,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
     setOpponentEntryId(null);
   };
 
-  const startMatch = () => {
+  const startMatch = async () => {
     if (!myEntry || !opponentEntry || starting) return;
     setStarting(true);
     setError(null);
@@ -162,7 +163,9 @@ export function MyLineupList({ maxItems = 10 }: Props) {
       return;
     }
 
-    const stats = buildStatsDirectory([myEntry.teamId, opponentEntry.teamId]);
+    // DB 스냅샷 기반 시즌+최근 폼 블렌드. fetch 실패 시 baseline 폴백.
+    const client = createSupabaseBrowserClient();
+    const stats = await buildStatsDirectoryWithRecentForm(client, [myEntry.teamId, opponentEntry.teamId]);
     const mine = buildSimTeamInput(myEntry.teamId, myEntry.batting, myPitching, stats, myEntry.name);
     if (!mine.ok) {
       setStarting(false);

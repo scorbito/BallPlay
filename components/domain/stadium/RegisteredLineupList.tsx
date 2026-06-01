@@ -31,6 +31,7 @@ import type { LineupEntry } from "@/lib/types/lineup";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 
 function formatOwnerLabel(row: PublishedLineupRow): string {
@@ -225,7 +226,9 @@ export function RegisteredLineupList({
       return;
     }
 
-    const stats = buildStatsDirectory([myEntry.teamId, selectedOpponent.team_id]);
+    // DB 스냅샷 기반 시즌+최근 폼 블렌드. fetch 실패 시 baseline 폴백.
+    const client = createSupabaseBrowserClient();
+    const stats = await buildStatsDirectoryWithRecentForm(client, [myEntry.teamId, selectedOpponent.team_id]);
     const mine = buildSimTeamInput(myEntry.teamId, myEntry.batting, myPitching, stats, myEntry.name);
     if (!mine.ok) {
       setStarting(false);
@@ -246,7 +249,6 @@ export function RegisteredLineupList({
     }
 
     // 본인 공개 라인업의 bp_lineups.id lookup
-    const client = createSupabaseBrowserClient();
     const myRow = await client
       .from("bp_lineups")
       .select("id")

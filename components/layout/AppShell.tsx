@@ -6,7 +6,7 @@ import { PullToRefresh } from "@/components/common/PullToRefresh";
 
 type AppShellProps = {
   activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
-  title?: string;
+  title?: ReactNode;
   /** 타이틀 좌우 장식. "slashes" = 핑크 사선 두 줄(경기 진행 화면용). */
   titleDecoration?: "slashes";
   showBeta?: boolean;

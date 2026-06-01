@@ -2078,6 +2078,9 @@
   align-items: flex-start;
   gap: 2px;
   line-height: 1;
+  /* 자식(.stadium-play-team-name)의 ellipsis가 동작하려면 flex 칼럼이 줄어들 수 있어야 함. */
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .phone-frame-light .stadium-play-team-right .stadium-play-team-info {
@@ -2089,6 +2092,12 @@
   color: var(--bp-text-secondary);
   font-weight: 700;
   letter-spacing: -0.2px;
+  /* 공백 포함 라인업명("NC 공룡!")이 좁은 칼럼에서 줄바꿈되는 문제 차단.
+     좌/우 카드 모두 동일 규칙. 넘치면 줄바꿈 대신 ellipsis. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .phone-frame-light .stadium-play-team-score {
@@ -2556,5 +2565,612 @@
   .phone-frame-light .stadium-fx-burst {
     animation: none;
     opacity: 0;
+  }
+}
+
+/* ============================================================
+ * MatchOpeningSequence — 경기 시작 전 풀스크린 오프닝 (4 phase)
+ *   phase 1: title (어웨이 vs 홈)
+ *   phase 2: lineups (양팀 1~9번 fade-in)
+ *   phase 3: countdown (3-2-1)
+ *   phase 4: PLAY BALL!
+ * ============================================================ */
+.phone-frame-light .match-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: transparent;
+  color: #f8fafc;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Phase 1 (title) + Phase 2 (lineups) 에서만 백그라운드 블러 — 라인업 가독성 ↑.
+ * Phase 3 (countdown) + Phase 4 (PLAY BALL) 에서는 깨끗한 투명 백그라운드 유지. */
+.phone-frame-light .match-opening[data-phase="title"],
+.phone-frame-light .match-opening[data-phase="lineups"] {
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: backdrop-filter 0.3s ease, background 0.3s ease;
+}
+
+.phone-frame-light .match-opening[data-phase="countdown"],
+.phone-frame-light .match-opening[data-phase="playball"] {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: backdrop-filter 0.3s ease, background 0.3s ease;
+}
+
+.phone-frame-light .match-opening::before {
+  /* 미묘한 라이트 빔 — 백그라운드 텍스처 */
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+      ellipse at 30% 20%,
+      rgba(244, 180, 0, 0.12),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 70% 80%,
+      rgba(236, 72, 153, 0.1),
+      transparent 55%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- skip 버튼 ---------- */
+.phone-frame-light .match-opening-skip {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    transform 0.15s ease;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.phone-frame-light .match-opening-skip:hover,
+.phone-frame-light .match-opening-skip:focus-visible {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.32);
+  outline: none;
+}
+
+.phone-frame-light .match-opening-skip:active {
+  transform: scale(0.96);
+}
+
+/* ============================================================
+ * Phase 1 — Title
+ * ============================================================ */
+.phone-frame-light .match-opening-title {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: match-opening-fade-in 0.4s ease both;
+}
+
+.phone-frame-light .match-opening-title-eyebrow {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.7);
+}
+
+.phone-frame-light .match-opening-title-teams {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.phone-frame-light .match-opening-title-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-frame-light .match-opening-title-side--away {
+  animation: match-opening-slide-from-top 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.phone-frame-light .match-opening-title-side--home {
+  animation: match-opening-slide-from-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1)
+    both;
+  animation-delay: 0.1s;
+}
+
+.phone-frame-light .match-opening-title-name {
+  font-size: clamp(20px, 6vw, 32px);
+  font-weight: 800;
+  text-align: center;
+  color: #f8fafc;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  word-break: keep-all;
+}
+
+.phone-frame-light .match-opening-title-vs {
+  font-size: clamp(28px, 8vw, 44px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #f4b400 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: match-opening-vs-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s
+    both;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-title-teams {
+    flex-direction: row;
+    gap: 32px;
+  }
+
+  .phone-frame-light .match-opening-title-side--away {
+    animation-name: match-opening-slide-from-left;
+  }
+
+  .phone-frame-light .match-opening-title-side--home {
+    animation-name: match-opening-slide-from-right;
+  }
+
+  .phone-frame-light .match-opening-title-name {
+    font-size: 28px;
+  }
+}
+
+/* ============================================================
+ * Phase 2 — Lineups
+ * ------------------------------------------------------------
+ * 컨테이너는 반투명 패널이 되어 어두운 백그라운드 위에 떠있도록.
+ * 모바일/좁은 phone-frame: column stack
+ * 데스크탑/태블릿(≥768px): side-by-side row
+ *
+ * 주의: 부모 .match-opening 은 이미 position:fixed; inset:0; flex center 이므로
+ *       여기서는 width:auto + max-width 만 잡아주면 자연스럽게 가운데로 모인다.
+ * ============================================================ */
+.phone-frame-light .match-opening-lineups {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  /* 모바일에서도 항상 side-by-side — 어웨이 vs 홈 한 화면에 비교. */
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  /* width:auto 는 콘텐츠 너비에 hug 되어 좌/우 col 이 안쪽으로 shrink 됨.
+   * min(100%, ...) 로 가용 너비를 적극적으로 사용해 col 내부에 이름 공간을 확보. */
+  width: min(100%, 720px);
+  min-width: 0;
+  max-width: 100%;
+  margin: 0 4px;
+  padding: 16px 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  animation: match-opening-fade-in 0.3s ease both;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-lineups {
+    gap: 32px;
+    margin: 0;
+    /* 데스크탑: 훨씬 넓게 (1280 → 1920px, +50%). 부모 .match-opening 은 fixed inset:0 이라
+     * phone-frame width 에 묶이지 않고 뷰포트 전체에서 가운데 정렬된다.
+     * width 를 능동적으로 가용 영역을 사용하도록 지정 — 콘텐츠 hug 방지. */
+    width: min(100%, 1920px);
+    max-width: min(100%, 1920px);
+    padding: 32px 44px;
+  }
+}
+
+.phone-frame-light .match-opening-lineups-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-lineups-col {
+    gap: 8px;
+    padding: 20px 28px;
+    /* min-width 를 제거 — 뷰포트가 좁을 때(예: 800px) 두 col 합산이
+     * 뷰포트를 초과해 flex shrink 가 강제로 col 폭을 줄여 이름이 ellipsis 되던 문제 해결.
+     * flex: 1 1 0 만으로 두 col 이 가용 폭을 균등 분배. */
+    min-width: 0;
+  }
+}
+
+.phone-frame-light .match-opening-lineups-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-lineups-head {
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+}
+
+.phone-frame-light .match-opening-lineups-head strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-lineups-head strong {
+    font-size: 14px;
+  }
+}
+
+.phone-frame-light .match-opening-starter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 2px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.phone-frame-light .match-opening-starter[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.phone-frame-light .match-opening-starter-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.phone-frame-light .match-opening-starter-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-starter-name {
+    font-size: 18px;
+  }
+}
+
+.phone-frame-light .match-opening-lineups-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* 부모 col 안에서 row 들이 col 폭을 넘지 않도록 — flex shrink 체인 보강 */
+  min-width: 0;
+}
+
+/* 라인업 빌더 스타일 — 흰 카드형 row + 핑크 번호 / 컬러 타격 pill / 회색 포지션 pill */
+.phone-frame-light .match-opening-lineups-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  min-width: 0;
+  font-weight: 600;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-lineups-row {
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+}
+
+.phone-frame-light .match-opening-lineups-row[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 번호 배지 — 어두운 패널 위에서 잘 읽히도록 밝은 중성톤 */
+.phone-frame-light .match-opening-lineups-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .match-opening-lineups-name {
+  /* flex 1 1 auto + min-width:0 — 외국인 긴 이름(예: ALCANTARA)이
+   * 좌측 번호 배지와 우측 포지션 pill 사이의 가용 공간을 최대로 흡수.
+   * ellipsis 는 fallback 으로 유지. */
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 포지션 pill — 우측 끝, 중성 회색.
+ * 이름 공간 확보를 위해 패딩/폰트를 다이어트 — 한글 5자 이름이 ellipsis 없이 들어오도록. */
+.phone-frame-light .match-opening-lineups-position {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 1px 5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ============================================================
+ * Phase 3 — Countdown
+ * ============================================================ */
+.phone-frame-light .match-opening-countdown {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.phone-frame-light .match-opening-countdown-num {
+  display: inline-block;
+  font-size: 6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--bp-accent, #ec4899);
+  text-shadow: 0 0 24px rgba(236, 72, 153, 0.55),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  animation: match-opening-countdown-pop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1)
+    both;
+}
+
+@media (min-width: 768px) {
+  .phone-frame-light .match-opening-countdown-num {
+    font-size: 10rem;
+  }
+}
+
+/* ============================================================
+ * Phase 4 — PLAY BALL!
+ * ============================================================ */
+.phone-frame-light .match-opening-playball {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 8px;
+}
+
+.phone-frame-light .match-opening-playball-text {
+  font-size: clamp(3rem, 14vw, 8rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-align: center;
+  background: linear-gradient(135deg, #f4b400 0%, #ec4899 60%, #f4b400 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 6px 24px rgba(244, 180, 0, 0.35);
+  filter: drop-shadow(0 4px 18px rgba(244, 180, 0, 0.35));
+  animation: match-opening-playball-burst 0.9s cubic-bezier(0.34, 1.56, 0.64, 1)
+    both;
+  white-space: nowrap;
+}
+
+/* ============================================================
+ * Keyframes
+ * ============================================================ */
+@keyframes match-opening-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes match-opening-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes match-opening-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes match-opening-slide-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes match-opening-slide-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes match-opening-vs-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes match-opening-countdown-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+}
+
+@keyframes match-opening-playball-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-4deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.2) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-light .match-opening-title,
+  .phone-frame-light .match-opening-title-side--away,
+  .phone-frame-light .match-opening-title-side--home,
+  .phone-frame-light .match-opening-title-vs,
+  .phone-frame-light .match-opening-lineups,
+  .phone-frame-light .match-opening-countdown-num,
+  .phone-frame-light .match-opening-playball-text {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .phone-frame-light .match-opening-lineups-row,
+  .phone-frame-light .match-opening-starter {
+    transition: none !important;
+  }
+
+  .phone-frame-light .match-opening-lineups-row[data-visible="true"],
+  .phone-frame-light .match-opening-starter[data-visible="true"] {
+    opacity: 1;
+    transform: none;
   }
 }

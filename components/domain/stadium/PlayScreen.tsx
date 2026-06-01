@@ -21,6 +21,7 @@ import { Scoreboard } from "./play/Scoreboard";
 import { LineupCard } from "./play/LineupCard";
 import { PlayControls } from "./play/PlayControls";
 import { SkipBlockedModal } from "./play/SkipBlockedModal";
+import { MatchOpeningSequence } from "./play/MatchOpeningSequence";
 import { buildNarration } from "./play/narration";
 import {
   deriveBaseState,
@@ -41,6 +42,11 @@ export function PlayScreen() {
   const { showToast, profile } = useAppState();
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(true);
+  // 경기 시작 전 오프닝 시퀀스(타이틀/라인업/카운트다운/PLAY BALL).
+  // 완료 또는 스킵 전엔 시뮬레이션 tick 중단(playing과 별개로 게이트).
+  // 라이브(친구) 매치는 자체 카운트다운/start 동기화가 있어 오프닝 스킵.
+  // 리플레이는 우선 기본 노출 — 후속에서 분리 가능.
+  const [openingDone, setOpeningDone] = useState(false);
   const { muted, bgmMuted, toggleMuted, toggleBgmMuted } = useMatchSounds();
   // 경기 종료 시 자동 저장 — 한 번만 실행하도록 추적.
   // useState는 비동기 업데이트라 두 번째 effect 실행에서 stale 값이 보일 수 있음 →
@@ -105,6 +111,13 @@ export function PlayScreen() {
     liveStartAt,
     setPlaying
   });
+
+  // 라이브(친구) 매치는 양 클라이언트 동기 카운트다운이 있어 오프닝 시퀀스 스킵.
+  // hydrate 직후 1회 openingDone=true 처리. 일반 매치는 오프닝이 onComplete 시 true.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (isLive) setOpeningDone(true);
+  }, [hydrated, isLive]);
 
   const currentInningEvents = useMemo(() => {
     if (cursor === 0) return [];
@@ -174,6 +187,7 @@ export function PlayScreen() {
 
   useEffect(() => {
     if (!playing || !hydrated) return;
+    if (!openingDone) return; // 오프닝 시퀀스 진행 중이면 시뮬 tick 멈춤
     if (phase === "GAME_END") return; // 게임 종료 페이즈에선 진행 멈춤
     if (cursor > events.length) return;
 
@@ -287,7 +301,7 @@ export function PlayScreen() {
     }, intervalByPhase[phase as keyof typeof intervalByPhase]);
 
     return () => window.clearTimeout(handle);
-  }, [playing, cursor, events, events.length, mode, hydrated, phase, outcomeStep]);
+  }, [playing, cursor, events, events.length, mode, hydrated, phase, outcomeStep, openingDone]);
 
   // OUTCOME phase 진입 + 안타류일 때 1회 ball 발사 trigger.
   // 같은 cursor 에서 outcomeStep 변경 등으로 useEffect 가 다시 도는 경우 중복 발사 방지.
@@ -591,6 +605,34 @@ export function PlayScreen() {
     </span>
   ) : null;
 
+  // 오프닝 시퀀스용 — 라인업명 폴백: displayName > 팀 shortName.
+  // SimBatter 엔 orderIdx 필드가 없고 batters 배열 자체가 1~9 타순. 인덱스+1을 orderIdx로 매핑.
+  const openingHome = {
+    teamId: input.home.teamId,
+    lineupName: (input.home.displayName?.trim() || homeTeam.shortName) ?? "",
+    starterName: input.home.starter.name,
+    starterHand: input.home.starter.throwingHand,
+    batters: input.home.batters.map((b, i) => ({
+      name: b.name,
+      orderIdx: i + 1,
+      position: b.position,
+      battingHand: b.battingHand
+    }))
+  };
+  const openingAway = {
+    teamId: input.away.teamId,
+    lineupName: (input.away.displayName?.trim() || awayTeam.shortName) ?? "",
+    starterName: input.away.starter.name,
+    starterHand: input.away.starter.throwingHand,
+    batters: input.away.batters.map((b, i) => ({
+      name: b.name,
+      orderIdx: i + 1,
+      position: b.position,
+      battingHand: b.battingHand
+    }))
+  };
+  const showOpening = !openingDone && !isLive;
+
   return (
     <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref="/stadium/lobby" theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
@@ -724,6 +766,18 @@ export function PlayScreen() {
         : null}
 
       <SkipBlockedModal open={skipBlockedOpen} onClose={() => setSkipBlockedOpen(false)} />
+
+      {/* 경기 시작 전 오프닝 오버레이 — fixed inset:0 풀스크린.
+          라이브(친구) 매치는 위 effect에서 openingDone=true로 즉시 스킵.
+          NOTE: portal이 아니라 인라인 렌더 — CSS rule(`.phone-frame-light .match-opening`)
+          이 ancestor 매칭을 요구하므로 portal로 body에 띄우면 스타일이 안 먹음. */}
+      {showOpening ? (
+        <MatchOpeningSequence
+          home={openingHome}
+          away={openingAway}
+          onComplete={() => setOpeningDone(true)}
+        />
+      ) : null}
     </AppShell>
   );
 }

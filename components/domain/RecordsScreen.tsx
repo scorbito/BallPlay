@@ -21,12 +21,14 @@ import {
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
 import { fetchLineupStatsBulk, listMyLineups, rowToEntry, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
+import { formatWinRate, type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { withTimeout } from "@/lib/utils/withTimeout";
 
@@ -59,7 +61,17 @@ function computeStats(records: BpRecordRow[], lineupId: string | null): Stats {
   return { wins, losses, draws };
 }
 
-export function RecordsScreen() {
+type RecordsScreenProps = {
+  /** 서버에서 계산한 누적 공개 매치 전적 — 상단 요약 카드용. */
+  userRecord?: UserPublicMatchRecord;
+  /** 익명 로그인 사용자 여부 — 로그인 CTA 노출 분기. */
+  isAnonymous?: boolean;
+};
+
+export function RecordsScreen({
+  userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
+  isAnonymous = false
+}: RecordsScreenProps = {}) {
   const router = useRouter();
   const { showToast } = useAppState();
   const [authState, setAuthState] = useState<AuthState>("loading");
@@ -270,7 +282,7 @@ export function RecordsScreen() {
     setRematchEntryId(publicLineups[0]?.entryId ?? null);
   };
 
-  const startRematch = () => {
+  const startRematch = async () => {
     if (!rematchRecord?.input || startingRematch) return;
     if (rematchRecord.source !== "public") return;
     const publicLineups = myLineups.filter((lineup) => lineup.entry.isPublished === true);
@@ -286,7 +298,9 @@ export function RecordsScreen() {
       showToast("투수 라인업을 만들 수 없습니다.");
       return;
     }
-    const stats = buildStatsDirectory([selected.entry.teamId, opponentTeam.teamId]);
+    // 내 팀만 DB 스냅샷 기반 시즌+최근 폼 블렌드. 상대팀은 원본 record 보존(재현성).
+    const rematchClient = createSupabaseBrowserClient();
+    const stats = await buildStatsDirectoryWithRecentForm(rematchClient, [selected.entry.teamId]);
     const mine = buildSimTeamInput(
       selected.entry.teamId,
       selected.entry.batting,
@@ -339,7 +353,7 @@ export function RecordsScreen() {
 
   if (authState === "loading") {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
+      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
         <p className="stadium-loading">불러오는 중...</p>
       </AppShell>
     );
@@ -347,8 +361,7 @@ export function RecordsScreen() {
 
   if (authState === "loggedOut") {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
-        <p className="records-subtitle">경기 기록은 계정에 저장돼요</p>
+      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
         <section className="records-empty">
           <span className="records-empty-icon">
             <Lock size={28} />
@@ -365,7 +378,7 @@ export function RecordsScreen() {
 
   if (loadError) {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
+      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
         <section className="records-empty">
           <strong>불러오기 실패</strong>
           <p>{loadError}</p>
@@ -383,8 +396,7 @@ export function RecordsScreen() {
 
   if (rows && rows.length === 0) {
     return (
-      <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
-        <p className="records-subtitle">공개 라인업 매칭과 친구 대전 결과가 자동으로 쌓여요</p>
+      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
         <section className="records-empty">
           <span className="records-empty-icon">
             <History size={28} />
@@ -409,26 +421,52 @@ export function RecordsScreen() {
   const rematchOpponentTeam = rematchRecord?.input?.[getOpponentSide(rematchRecord)] ?? null;
 
   return (
-    <AppShell activeTab="records" title="내 기록" theme="light" backHref="/" wide>
-      <p className="records-subtitle">자동 저장된 공개 라인업 매칭 · 친구 대전 (7일간 재생 가능)</p>
+    <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
+      {/* 누적 공개 매치 요약 카드 — 서버에서 집계해 props로 받은 값.
+          0전 0승 0패도 카드 노출(빈 메시지 분기). 익명 사용자에겐 로그인 CTA 추가. */}
+      <section className="records-summary-card" aria-label="누적 공개 매치 전적">
+        {userRecord.total > 0 ? (
+          <div className="records-summary-stats">
+            <span className="records-summary-icon" aria-hidden="true">📊</span>
+            <div className="records-summary-text">
+              <span className="records-summary-label">내 공개 매치 누적</span>
+              <strong className="records-summary-numbers">
+                {userRecord.wins}승 {userRecord.losses}패
+                <span className="records-summary-rate">· 승률 {formatWinRate(userRecord.winRate)}</span>
+              </strong>
+            </div>
+          </div>
+        ) : (
+          <div className="records-summary-stats">
+            <span className="records-summary-icon" aria-hidden="true">📊</span>
+            <div className="records-summary-text">
+              <span className="records-summary-label">내 공개 매치 누적</span>
+              <strong className="records-summary-numbers">아직 기록이 없어요</strong>
+            </div>
+          </div>
+        )}
+        {isAnonymous ? (
+          <Link href="/login?next=/records" className="records-summary-cta" prefetch>
+            기기 변경 시 기록 보존을 위해 로그인하세요
+          </Link>
+        ) : null}
+      </section>
 
       {/* 라인업 필터 chip — 라인업이 2개 이상일 때만 노출. "전체" + 본인 라인업 각각.
           각 chip: 1줄 라인업명 + 2줄 승·패·무. PC는 마우스 드래그로도 가로 스크롤. */}
       {myLineups.length >= 2 ? (
         <div className="records-filter" role="tablist" aria-label="라인업 필터" ref={filterRef}>
           {(() => {
-            const total = computeStats(rows ?? [], null);
             return (
               <button
                 type="button"
                 role="tab"
                 aria-selected={filterLineupId === null}
-                className={`records-filter-chip ${filterLineupId === null ? "is-active" : ""}`}
+                className={`records-filter-chip is-all ${filterLineupId === null ? "is-active" : ""}`}
                 onClick={() => setFilterLineupId(null)}
               >
                 <span className="records-filter-chip-text">
                   <span className="records-filter-chip-name">전체</span>
-                  <span className="records-filter-chip-stats">{total.wins}승 {total.losses}패</span>
                 </span>
               </button>
             );

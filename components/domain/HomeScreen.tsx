@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ClipboardCheck,
   FileText,
-  History,
   ListChecks,
   Play,
   PlaySquare,
@@ -22,6 +21,7 @@ import { HomeCardPulse } from "@/components/domain/HomeCardPulse";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { getLatestNoticePublishedAt } from "@/lib/supabase/query-parts/notices";
 import { getHomeBadgeServerData } from "@/lib/server/homeBadges";
+import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -88,7 +88,6 @@ const sections: HomeSection[] = [
     label: "내 라인업 플레이",
     variant: "hero",
     heroSubtitle: "나만의 최강 라인업으로 승리를 노려보세요!",
-    // 배경(패턴)은 CSS로, 일러스트는 별도 <img>로 렌더 (배경 + 일러스트 분리 자산)
     heroIllustration: "/assets/home-hero-illust.png",
     gridCols: 3,
     cards: [
@@ -112,12 +111,12 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "records",
-        href: "/records",
-        title: "내 경기 기록",
-        description: "공개 매칭·친구 대전 기록",
-        icon: History,
-        iconImage: "/icons/menu/my-records.png",
+        id: "lineup-ranking",
+        href: "/play/lineup/ranking",
+        title: "라인업 랭킹",
+        description: "공개 매치 시즌·주간 순위",
+        icon: Trophy,
+        iconImage: "/icons/menu/lineup-ranking.png",
         available: true
       }
     ]
@@ -249,7 +248,17 @@ const sections: HomeSection[] = [
   }
 ];
 
-export async function HomeScreen() {
+type HomeScreenProps = {
+  /** 현재 사용자의 공개 매치 누적 전적 (히어로 뱃지용). 미로그인 시 zeros. */
+  userRecord?: UserPublicMatchRecord;
+  /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
+  isAnonymous?: boolean;
+};
+
+export async function HomeScreen({
+  userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
+  isAnonymous = false
+}: HomeScreenProps = {}) {
   // 정적 카드 그리드만 렌더하는 Server Component. 인터랙티브 영역(공지 빨간점)은
   // NoticeButton client island가 담당 → 홈 진입 시 클라이언트 JS/hydration 최소화.
   // 최신 공지 시각을 서버에서 받아 client 배지 판정에 넘긴다.
@@ -257,6 +266,8 @@ export async function HomeScreen() {
     getLatestNoticePublishedAt(),
     getHomeBadgeServerData()
   ]);
+  // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
+  void isAnonymous;
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
       <header className="play-hub-header">
@@ -398,8 +409,24 @@ export async function HomeScreen() {
                 <div className="play-hub-hero-header">
                   <div className="play-hub-hero-text">
                     <h2 className="play-hub-hero-title">{section.label}</h2>
-                    {section.heroSubtitle ? (
-                      <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
+                    {/* 부제 + 매치 기록 뱃지를 한 줄 flex row로 묶음 — 좁은 화면에서는 flex-wrap으로 뱃지가 다음 줄로 떨어짐. */}
+                    {section.heroSubtitle || section.id === "lineup-play" ? (
+                      <div className="play-hub-hero-subtitle-row">
+                        {section.heroSubtitle ? (
+                          <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
+                        ) : null}
+                        {section.id === "lineup-play" ? (
+                          <Link href="/records" className="home-hero-record-badge" prefetch>
+                            {userRecord.total > 0 ? (
+                              <span>
+                                📊 내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
+                              </span>
+                            ) : (
+                              <span>📊 첫 매치 도전!</span>
+                            )}
+                          </Link>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
                   {section.heroIllustration ? (

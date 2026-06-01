@@ -1,13 +1,11 @@
 /* 내 기록 탭 — 기록 목록 + 카드 + 빈 상태 */
 
-/* AppShell 헤더 아래 한 줄 소제목 — 헤더와 가까이 붙여 시각 일관성 유지
-   (홈 화면용 play-hub-header는 padding-top 24px가 있어 부적합) */
-.phone-frame-light .records-subtitle {
-  margin: -8px 4px 8px;
-  font-size: 13px;
-  font-weight: 600;
+/* AppShell 헤더 타이틀 "내 기록" 옆에 인라인으로 붙는 보조 라벨 — 괄호 부제처럼 톤다운. */
+.phone-frame-light .records-title-suffix-inline {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--bp-text-secondary);
-  line-height: 1.4;
   letter-spacing: -0.1px;
 }
 
@@ -117,8 +115,9 @@
 
 .phone-frame-light .records-filter {
   display: flex;
+  align-items: stretch;
   gap: 6px;
-  margin: 4px 0 12px;
+  margin: 0 0 8px;
   padding: 0 4px 4px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -188,6 +187,22 @@
 
 .phone-frame-light .records-filter-chip.is-active .records-filter-chip-stats {
   opacity: 0.95;
+}
+
+/* "전체" chip — 다른 chip(2줄)과 시각 무게 맞추기 위해 폰트 크고 굵게.
+   승패 sub-text 없이 단일 라벨만 노출. */
+.phone-frame-light .records-filter-chip.is-all {
+  padding: 5px 14px;
+}
+
+.phone-frame-light .records-filter-chip.is-all .records-filter-chip-text {
+  justify-content: center;
+}
+
+.phone-frame-light .records-filter-chip.is-all .records-filter-chip-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
 }
 
 /* ── 카드 목록 ── */
@@ -445,3 +460,89 @@
   color: var(--bp-danger);
   border-color: rgba(220, 38, 38, 0.4);
 }
+
+/* ── 누적 공개 매치 요약 카드 (페이지 최상단) ──
+   서버에서 집계한 전적을 카드로 보여줌. 익명 사용자에겐 로그인 CTA 추가. */
+.phone-frame-light .records-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 2px 4px 4px;
+  padding: 12px 14px;
+  background: var(--bp-card, #fff);
+  border: 1px solid var(--bp-line-soft, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.phone-frame-light .records-summary-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phone-frame-light .records-summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  background: rgba(232, 74, 138, 0.10);
+  border-radius: 10px;
+  flex: 0 0 auto;
+}
+
+.phone-frame-light .records-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.phone-frame-light .records-summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .records-summary-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .records-summary-rate {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .records-summary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(232, 74, 138, 0.10);
+  border: 1px dashed rgba(232, 74, 138, 0.35);
+  color: var(--bp-accent, #e84a8a);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  text-decoration: none;
+  text-align: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-light .records-summary-cta:hover {
+  background: rgba(232, 74, 138, 0.16);
+  border-color: rgba(232, 74, 138, 0.5);
+}
+
