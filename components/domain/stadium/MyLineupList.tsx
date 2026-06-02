@@ -267,7 +267,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
         open={myEntry !== null}
         title="내 라인업끼리 대결"
         onClose={closeChallenge}
-        panelClassName="lineup-confirm-modal-panel"
+        panelClassName="lineup-confirm-modal-panel challenge-start-modal-panel"
         closeOnBackdrop
       >
         <div className="lineup-confirm-body">

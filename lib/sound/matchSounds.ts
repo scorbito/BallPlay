@@ -5,7 +5,7 @@
 //
 // localStorage "ballplay:sound:muted" === "1" 이면 무음.
 
-export type MatchSoundKey = "hit" | "homerun" | "strikeout" | "score" | "walk" | "out" | "double_play";
+export type MatchSoundKey = "hit" | "homerun" | "strikeout" | "score" | "walk" | "out" | "double_play" | "pitcher_change";
 
 const SRC: Record<MatchSoundKey, string> = {
   hit: "/sounds/hit.mp3",
@@ -14,7 +14,8 @@ const SRC: Record<MatchSoundKey, string> = {
   score: "/sounds/score.mp3",
   walk: "/sounds/walk.mp3",
   out: "/sounds/out.mp3",
-  double_play: "/sounds/double_play.mp3"
+  double_play: "/sounds/double_play.mp3",
+  pitcher_change: "/sounds/pitcher_change.mp3"
 };
 
 const VOLUME: Record<MatchSoundKey, number> = {
@@ -24,7 +25,8 @@ const VOLUME: Record<MatchSoundKey, number> = {
   score: 0.8,
   walk: 0.7,
   out: 0.7,
-  double_play: 0.8
+  double_play: 0.8,
+  pitcher_change: 0.75
 };
 
 const MUTED_KEY = "ballplay:sound:muted";

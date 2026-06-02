@@ -23,6 +23,7 @@ import { LineupCard } from "./play/LineupCard";
 import { PlayControls } from "./play/PlayControls";
 import { SkipBlockedModal } from "./play/SkipBlockedModal";
 import { MatchOpeningSequence } from "./play/MatchOpeningSequence";
+import { PitcherChangeBanner } from "./play/PitcherChangeBanner";
 import { buildNarration } from "./play/narration";
 import {
   deriveBaseState,
@@ -239,7 +240,9 @@ export function PlayScreen() {
       BATTER: 800 * modeMul,
       OUTCOME: (outcomeMs + ballMs + strikeoutMs) * modeMul,
       INNING_END: 1200 * modeMul,
-      PITCHER_CHANGE: 1200 * modeMul
+      // 투수 교체는 중요 정보라 mode별 명시 (modeMul 미적용).
+      PITCHER_CHANGE:
+        mode === "live" ? 1800 : mode === "fast" ? 1200 : mode === "superfast" ? 700 : 1500
     };
 
     const handle = window.setTimeout(() => {
@@ -409,6 +412,16 @@ export function PlayScreen() {
     hitFxFiredForCursorRef.current = cursor;
     setHitFx({ centerX, centerY, kind: "hr", key: cursor });
   }, [phase, cursor, events, hydrated]);
+
+  // 투수 교체 효과음 trigger — PITCHER_CHANGE phase 진입 시 1회.
+  const pitcherChangeFiredForCursorRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "PITCHER_CHANGE") return;
+    if (pitcherChangeFiredForCursorRef.current === cursor) return;
+    pitcherChangeFiredForCursorRef.current = cursor;
+    playMatchSound("pitcher_change");
+  }, [phase, cursor, hydrated]);
 
   // 득점 효과음 trigger — OUTCOME 진입 + runsScored > 0. 안타/홈런 사운드와 별개로 1회 추가 재생.
   // 다득점(1타석 2점+) 이어도 1회만 — 환호성이라 중첩 안 어울림.
@@ -691,10 +704,26 @@ export function PlayScreen() {
         />
 
         {/* 3. 1줄 상황판 — 타석 진행/공수교대/투수교체/타석 결과 등 모든 진행 알림.
+            PITCHER_CHANGE phase 일 땐 narration 대신 카드형 강조 배너로 노출.
             타격 이펙트(폭죽)는 공 출발 위치(타자 row) 에 portal 로 표시 — 별도 위치. */}
-        <div className={`stadium-play-narration is-${narration.variant}`}>
-          <span>{narration.text}</span>
-        </div>
+        {phase === "PITCHER_CHANGE" ? (
+          (() => {
+            const prevEvt = cursor > 0 ? events[cursor - 1] : null;
+            const nextEvt = events[cursor] ?? null;
+            const prevPitcher = prevEvt ? pitcherById.get(prevEvt.ab.pitcherId) : null;
+            const nextPitcher = nextEvt ? pitcherById.get(nextEvt.ab.pitcherId) : null;
+            return (
+              <PitcherChangeBanner
+                prev={prevPitcher ? { name: prevPitcher.name, role: prevPitcher.role } : null}
+                next={nextPitcher ? { name: nextPitcher.name, role: nextPitcher.role } : null}
+              />
+            );
+          })()
+        ) : (
+          <div className={`stadium-play-narration is-${narration.variant}`}>
+            <span>{narration.text}</span>
+          </div>
+        )}
 
         {/* 4. 양 팀 라인업 — 진행 중엔 공격팀이 크게, 종료 시엔 1:1 박스스코어 모드 */}
         <div

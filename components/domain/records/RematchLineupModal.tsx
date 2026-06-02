@@ -52,7 +52,7 @@ export function RematchLineupModal({
       open={open}
       title="재대전 라인업 선택"
       onClose={onClose}
-      panelClassName="lineup-confirm-modal-panel"
+      panelClassName="lineup-confirm-modal-panel challenge-start-modal-panel"
       closeOnBackdrop
     >
       {opponentTeam ? (

@@ -18,7 +18,7 @@ export function AiChallengeModal({ opponentTeamId, onClose }: Props) {
       open={opponentTeamId !== null}
       title="AI와 대결"
       onClose={onClose}
-      panelClassName="lineup-confirm-modal-panel ai-challenge-modal-panel"
+      panelClassName="lineup-confirm-modal-panel ai-challenge-modal-panel challenge-start-modal-panel"
       closeOnBackdrop
     >
       {opponentTeamId ? (

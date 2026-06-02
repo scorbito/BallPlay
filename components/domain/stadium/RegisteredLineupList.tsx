@@ -355,7 +355,7 @@ export function RegisteredLineupList({
         open={selectedOpponent !== null}
         title="도전 시작"
         onClose={() => setSelectedOpponent(null)}
-        panelClassName="lineup-confirm-modal-panel"
+        panelClassName="lineup-confirm-modal-panel challenge-start-modal-panel"
         closeOnBackdrop
       >
         <div className="lineup-confirm-body">
