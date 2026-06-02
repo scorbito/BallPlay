@@ -3411,7 +3411,7 @@
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .phone-frame-light .lineup-rank-tab {
@@ -3432,11 +3432,99 @@
   color: #fff;
 }
 
+/* 안내 + 팀 필터 드롭다운을 한 줄에 배치하는 래퍼.
+   .lineup-rank-hint 자체의 margin은 래퍼로 옮겼다. */
+.phone-frame-light .lineup-rank-hint-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0 4px 7px;
+}
+
 .phone-frame-light .lineup-rank-hint {
   font-size: 12px;
   color: var(--bp-text-secondary);
-  margin: 0 4px 14px;
+  margin: 0;
   line-height: 1.4;
+  min-width: 0;
+  flex: 1;
+}
+
+/* 팀 필터 드롭다운 — 우측 끝. 트리거 + 절대 위치 팝오버. */
+.phone-frame-light .lineup-rank-team-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .lineup-rank-team-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 999px;
+  color: var(--bp-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-light .lineup-rank-team-dropdown-btn:hover,
+.phone-frame-light .lineup-rank-team-dropdown-btn:focus-visible,
+.phone-frame-light .lineup-rank-team-dropdown-btn[aria-expanded="true"] {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+}
+
+/* 팝오버 메뉴 — 트리거 아래 우측 정렬. */
+.phone-frame-light .lineup-rank-team-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  padding: 4px;
+  min-width: 140px;
+  max-width: calc(100vw - 24px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-light .lineup-rank-team-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--bp-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  white-space: nowrap;
+}
+
+.phone-frame-light .lineup-rank-team-dropdown-item:hover {
+  background: rgba(232, 74, 138, 0.08);
+}
+
+.phone-frame-light .lineup-rank-team-dropdown-item.is-active {
+  background: rgba(232, 74, 138, 0.15);
+  color: var(--bp-accent);
 }
 
 .phone-frame-light .lineup-rank-list {
@@ -3450,7 +3538,8 @@
 
 .phone-frame-light .lineup-rank-item {
   /* flex 행: 좌측 클러스터(랭크칩+팀뱃지+라인업명+닉네임)와 우측 클러스터(전적+승률)가
-     양 끝에 붙고, 중앙 빈 공간은 auto-fill. 가운데 정렬은 align-items: center. */
+     양 끝에 붙고, 중앙 빈 공간은 auto-fill. 가운데 정렬은 align-items: center.
+     행 전체가 클릭 가능 — 라인업 미리보기 모달을 연다. */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -3458,6 +3547,23 @@
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
   border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.phone-frame-light .lineup-rank-item:hover {
+  background: rgba(20, 30, 50, 0.04);
+  border-color: rgba(232, 74, 138, 0.32);
+}
+
+.phone-frame-light .lineup-rank-item:focus-visible {
+  outline: 2px solid var(--bp-accent);
+  outline-offset: 2px;
+}
+
+.phone-frame-light .lineup-rank-item.is-loading {
+  opacity: 0.7;
+  cursor: progress;
 }
 
 .phone-frame-light .lineup-rank-position {
@@ -3539,7 +3645,8 @@
   min-width: 0;
 }
 
-/* 우측 stats — 한 줄 inline: [7승 4패] [(.636)] */
+/* 우측 stats — 한 줄 inline: [7승 4패] [(.636)].
+   행 전체가 클릭 가능해진 이후로는 별도 미리보기 버튼 없이 stats만 노출. */
 .phone-frame-light .lineup-rank-stats {
   display: inline-flex;
   align-items: baseline;
@@ -3566,38 +3673,6 @@
   font-weight: 600;
 }
 
-/* 라인업 보기 버튼 — 경기장 라인업 카드와 동일한 pill 형태(.stadium-lobby-card-btn
-   .stadium-lobby-card-btn-secondary)를 베이스로 쓰되, 이 화면에서는 핑크 아웃라인
-   액센트로 오버라이드한다 (흰 배경 + 핑크 보더 + 핑크 텍스트/아이콘).
-   align-self/margin은 baseline 정렬된 stats 클러스터 안 세로 가운데 맞춤 보정.
-   주의: stadium의 .stadium-lobby-card-btn-secondary와 selector specificity가 같으면
-   load order에 따라 stadium이 이겨 base state가 회색으로 남는다 → 컴파운드 셀렉터
-   (.lineup-rank-preview-btn.stadium-lobby-card-btn-secondary)로 특이도 한 단계 올림. */
-.phone-frame-light .lineup-rank-preview-btn {
-  align-self: center;
-  margin-left: 4px;
-  flex-shrink: 0;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-.phone-frame-light .lineup-rank-preview-btn.stadium-lobby-card-btn-secondary {
-  background: var(--bp-card);
-  border-color: var(--bp-accent);
-  color: var(--bp-accent);
-}
-.phone-frame-light .lineup-rank-preview-btn.stadium-lobby-card-btn-secondary:hover {
-  background: rgba(232, 74, 138, 0.08);
-  border-color: var(--bp-accent);
-  color: var(--bp-accent);
-}
-.phone-frame-light .lineup-rank-preview-btn.stadium-lobby-card-btn-secondary:focus-visible {
-  outline: 2px solid var(--bp-accent);
-  outline-offset: 2px;
-}
-.phone-frame-light .lineup-rank-preview-btn:disabled {
-  opacity: 0.5;
-  cursor: progress;
-}
-
 .phone-frame-light .lineup-rank-empty {
   display: flex;
   flex-direction: column;
@@ -3616,4 +3691,9 @@
   font-size: 11.5px !important;
   font-weight: 500 !important;
   color: var(--bp-text-muted, #9aa0a6) !important;
+}
+
+/* 팀 필터 결과 비어있을 때 — 전역 empty보다 슬림하게. */
+.phone-frame-light .lineup-rank-empty-team {
+  padding: 28px 16px;
 }

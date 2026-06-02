@@ -561,6 +561,16 @@
       "seasonGames": 2
     },
     {
+      "id": "samsung-75",
+      "name": "후라도",
+      "jerseyNumber": 75,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 11,
+      "_manual": true
+    },
+    {
       "id": "samsung-100",
       "name": "김시온",
       "jerseyNumber": 100,

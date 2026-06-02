@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Trophy, Crown, Medal, Award, List } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Trophy, Crown, Medal, Award, ChevronDown } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
-import { getTeam } from "@/lib/constants/teams";
+import { getTeam, teams } from "@/lib/constants/teams";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchPublishedLineupsByIds } from "@/lib/supabase/query-parts/bpLineups";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
@@ -36,9 +36,37 @@ function renderRankBadge(rank: number) {
 
 export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
   const [tab, setTab] = useState<Tab>("season");
+  const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
   const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
+  const ddRef = useRef<HTMLDivElement | null>(null);
   const rows = tab === "season" ? seasonRanking : weeklyRanking;
+  // 팀 필터 — 클라이언트 사이드 필터. 랭크 숫자는 전체 기준으로 유지(재계산 X).
+  const filteredRows = teamFilter ? rows.filter((r) => r.teamId === teamFilter) : rows;
+
+  // 드롭다운 외부 클릭 + Escape 키로 닫기
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (!ddRef.current) return;
+      if (!ddRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [dropdownOpen]);
+
+  const selectedTeam = teamFilter ? getTeam(teamFilter) : null;
+  const currentLabel = selectedTeam ? selectedTeam.shortName : "팀 전체";
 
   // 라인업 미리보기 — bp_lineups row 1건 조회 → SimTeamInput으로 변환 후 모달 오픈.
   // baseline 스탯 사용(DB 스냅샷 X) — 라인업 구성 미리보기 용도라 충분.
@@ -85,12 +113,60 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
         </button>
       </div>
 
-      {/* 안내 */}
-      <p className="lineup-rank-hint">
-        {tab === "season"
-          ? "공개 매치에서 누적된 라인업 전적 순위입니다."
-          : "이번 주(월요일 ~ 일요일) 공개 매치 전적 순위입니다."}
-      </p>
+      {/* 안내 + 팀 필터 드롭다운 — 한 줄. 좌: 안내 텍스트, 우: 드롭다운 */}
+      <div className="lineup-rank-hint-row">
+        <p className="lineup-rank-hint">
+          {tab === "season"
+            ? "공개 매치에서 누적된 라인업 전적 순위입니다."
+            : "이번 주(월요일 ~ 일요일) 공개 매치 전적 순위입니다."}
+        </p>
+        <div className="lineup-rank-team-dropdown" ref={ddRef}>
+          <button
+            type="button"
+            className="lineup-rank-team-dropdown-btn"
+            onClick={() => setDropdownOpen((o) => !o)}
+            aria-expanded={dropdownOpen}
+            aria-haspopup="listbox"
+          >
+            {selectedTeam ? <TeamBadge teamId={selectedTeam.id} size="sm" /> : null}
+            <span>{currentLabel}</span>
+            <ChevronDown size={14} aria-hidden />
+          </button>
+          {dropdownOpen ? (
+            <div className="lineup-rank-team-dropdown-menu" role="listbox" aria-label="팀 필터">
+              <button
+                type="button"
+                role="option"
+                aria-selected={teamFilter === null}
+                className={`lineup-rank-team-dropdown-item ${teamFilter === null ? "is-active" : ""}`}
+                onClick={() => {
+                  setTeamFilter(null);
+                  setDropdownOpen(false);
+                }}
+              >
+                <span>전체</span>
+              </button>
+              {teams.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="option"
+                  aria-selected={teamFilter === t.id}
+                  className={`lineup-rank-team-dropdown-item ${teamFilter === t.id ? "is-active" : ""}`}
+                  onClick={() => {
+                    setTeamFilter(t.id);
+                    setDropdownOpen(false);
+                  }}
+                  title={t.name}
+                >
+                  <TeamBadge teamId={t.id} size="sm" />
+                  <span>{t.shortName}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
 
       {/* 목록 */}
       {rows.length === 0 ? (
@@ -105,13 +181,30 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
             경기장에서 공개 매치를 진행하면 라인업이 랭킹에 등록됩니다.
           </p>
         </div>
+      ) : filteredRows.length === 0 ? (
+        <div className="lineup-rank-empty lineup-rank-empty-team">
+          <p>이 팀 라인업이 아직 랭킹에 없어요</p>
+        </div>
       ) : (
         <ol className="lineup-rank-list">
-          {rows.map((row) => {
+          {filteredRows.map((row) => {
             const team = row.teamId ? getTeam(row.teamId) : null;
             const isLoading = previewLoadingId === row.lineupId;
             return (
-              <li key={`${row.lineupId}-${row.ownerUserId}`} className="lineup-rank-item">
+              <li
+                key={`${row.lineupId}-${row.ownerUserId}`}
+                className={`lineup-rank-item ${isLoading ? "is-loading" : ""}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`라인업 보기 - ${row.lineupName}`}
+                onClick={() => openLineupPreview(row)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openLineupPreview(row);
+                  }
+                }}
+              >
                 <span
                   className={`lineup-rank-position ${
                     row.rank <= 3 ? `is-top is-top-${row.rank}` : ""
@@ -130,17 +223,6 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
                     <strong>{row.wins}</strong>승 {row.losses}패
                   </span>
                   <span className="lineup-rank-rate">({formatRate(row.winRate)})</span>
-                  <button
-                    type="button"
-                    className="stadium-lobby-card-btn stadium-lobby-card-btn-secondary lineup-rank-preview-btn"
-                    onClick={() => openLineupPreview(row)}
-                    disabled={isLoading}
-                    aria-label={`${row.lineupName} 라인업 보기`}
-                    title="라인업 보기"
-                  >
-                    <List size={14} aria-hidden />
-                    <span>라인업</span>
-                  </button>
                 </div>
               </li>
             );
