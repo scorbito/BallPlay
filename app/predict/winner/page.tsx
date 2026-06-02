@@ -88,6 +88,19 @@ export default async function WinnerPredictPage({
 
   const isToday = selectedDate === today;
   const isFuture = selectedDate > today;
+  // 미래 예측은 "내일까지만, 오늘 경기 끝났을 때만" 허용.
+  //   - 오늘 → 항상 편집 가능
+  //   - 내일(today+1) + 오늘 경기 모두 끝남 → 편집 가능
+  //   - 그 외 미래 → 보기만 가능
+  const tomorrow = addDays(today, 1);
+  const isTomorrow = selectedDate === tomorrow;
+  let canEditFuture = false;
+  if (isTomorrow) {
+    const todayGames = await listGamesFromDb({ from: today, to: today }).catch(() => []);
+    canEditFuture =
+      todayGames.length > 0 &&
+      todayGames.every((g) => g.status === "finished" || g.status === "canceled");
+  }
 
   // 본인 예측 + 통계 — 로그인(또는 익명 세션) 있을 때만 fetch. 비로그인은 빈 값.
   // dateStats는 화면에 표시 중인 selectedDate 기준 (어제로 가면 어제 적중률).
@@ -140,6 +153,7 @@ export default async function WinnerPredictPage({
       selectedDateISO={selectedDate}
       isToday={isToday}
       isFuture={isFuture}
+      canEditFuture={canEditFuture}
       prevDateISO={prevDate}
       nextDateISO={nextDate}
       games={games}

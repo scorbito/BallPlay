@@ -47,24 +47,26 @@ select
   g.away_team_id,
   g.home_score,
   g.away_score,
+  -- status='finished' 가 아니어도 양쪽 점수가 모두 들어와 있으면 종료로 간주.
+  -- KBO sync 가 status 늦게 올리는 경우(점수만 먼저 들어오는 케이스) 대응.
   case
-    when g.status = 'finished' and g.home_score is not null and g.away_score is not null
+    when g.home_score is not null and g.away_score is not null
          and g.home_score > g.away_score then g.home_team_id
-    when g.status = 'finished' and g.home_score is not null and g.away_score is not null
+    when g.home_score is not null and g.away_score is not null
          and g.away_score > g.home_score then g.away_team_id
     else null
   end as actual_winner_team_id,
   case
-    when g.status = 'finished' and g.home_score is not null and g.away_score is not null
+    when g.home_score is not null and g.away_score is not null
          and g.home_score <> g.away_score then true
     else false
   end as is_judged,
   case
-    when g.status = 'finished' and g.home_score is not null and g.away_score is not null
+    when g.home_score is not null and g.away_score is not null
          and g.home_score > g.away_score and p.predicted_winner_team_id = g.home_team_id then true
-    when g.status = 'finished' and g.home_score is not null and g.away_score is not null
+    when g.home_score is not null and g.away_score is not null
          and g.away_score > g.home_score and p.predicted_winner_team_id = g.away_team_id then true
-    when g.status = 'finished' and g.home_score is not null and g.away_score is not null
+    when g.home_score is not null and g.away_score is not null
          and g.home_score <> g.away_score then false
     else null
   end as is_correct_live

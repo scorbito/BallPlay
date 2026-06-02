@@ -331,7 +331,11 @@ export function AiWinnerListScreen({
               {games.map((g) => {
                 const home = getTeam(g.homeTeamId);
                 const away = getTeam(g.awayTeamId);
-                const finished = g.status === "finished";
+                // status='finished' 이거나 양쪽 점수가 다 들어와 있으면 종료로 간주.
+                // KBO sync가 status 늦게 올리는 경우도 점수만으로 적중 판정 가능.
+                const finished =
+                  g.status === "finished" ||
+                  (g.homeScore !== null && g.awayScore !== null);
                 const isCanceled = g.status === "canceled";
                 const hasPredictions = g.predictions.length > 0;
                 // AI 표시 순서 고정 (GPT → Gemini → Claude)

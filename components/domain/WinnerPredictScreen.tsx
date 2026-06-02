@@ -50,6 +50,8 @@ type Props = {
   isToday: boolean;
   /** 선택된 날짜가 오늘보다 미래인지 — true면 read-only로만 표시 */
   isFuture: boolean;
+  /** 미래 날짜 편집 허용 여부 — server에서 "내일 + 오늘 경기 모두 끝남"인 경우만 true. */
+  canEditFuture: boolean;
   /** 이전 경기일 (없으면 null — 화살표 숨김) */
   prevDateISO: string | null;
   /** 다음 경기일 (없으면 null — 화살표 숨김) */
@@ -80,6 +82,7 @@ export function WinnerPredictScreen({
   selectedDateISO,
   isToday,
   isFuture,
+  canEditFuture,
   prevDateISO,
   nextDateISO,
   games,
@@ -105,9 +108,11 @@ export function WinnerPredictScreen({
   const [locking, setLocking] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
 
-  // 편집 가능 조건: 오늘 또는 미래 + scheduled + 미잠금. 과거 날짜는 무조건 read-only.
-  // (오늘 경기 다 끝나도 오늘 결과는 보여주고, 내일 일정 탭으로 이동하면 미리 예측 가능.)
-  const canEditOnThisDate = isToday || isFuture;
+  // 편집 가능 조건:
+  //   - 오늘: 항상 허용
+  //   - 미래: server에서 결정 (오직 "내일 + 오늘 경기 모두 끝남"인 경우만 true)
+  //   - 모레 이후 미래 + 과거: read-only.
+  const canEditOnThisDate = isToday || (isFuture && canEditFuture);
   const editableGames = useMemo(
     () => (canEditOnThisDate ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id]) : []),
     [games, lockedMap, canEditOnThisDate]
@@ -336,7 +341,8 @@ export function WinnerPredictScreen({
               const away = getTeam(game.awayTeamId);
               const picked = predictions[game.id];
               const locked = lockedMap[game.id];
-              const editable = isToday && game.status === "scheduled" && !locked;
+              // canEditOnThisDate(=isToday||isFuture)와 일관되게 — 미래 날짜도 편집 허용.
+              const editable = canEditOnThisDate && game.status === "scheduled" && !locked;
               const showScores = game.status === "in_progress" || game.status === "finished";
 
               const homePicked = picked === game.homeTeamId;
