@@ -178,19 +178,33 @@ export function AiWinnerListScreen({
   }, [isToday, countdown.isPast, games, selectedDate]);
 
   // 한 번이라도 reveal 페이지에서 본 게임 id 집합. hydration 후에만 채움 (SSR 안전).
+  // pageshow / visibilitychange 도 같이 감지 — reveal 다녀와서 뒤로가기로 돌아온 경우
+  // bfcache로 useEffect 가 mount 시 한 번만 도는 걸 보완.
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
   useEffect(() => {
-    const next = new Set<string>();
-    for (const g of games) {
-      try {
-        if (window.localStorage.getItem(`${SEEN_STORAGE_PREFIX}${g.id}`) === "1") {
-          next.add(g.id);
+    const refresh = () => {
+      const next = new Set<string>();
+      for (const g of games) {
+        try {
+          if (window.localStorage.getItem(`${SEEN_STORAGE_PREFIX}${g.id}`) === "1") {
+            next.add(g.id);
+          }
+        } catch {
+          // ignore storage errors
         }
-      } catch {
-        // ignore storage errors
       }
-    }
-    setSeenIds(next);
+      setSeenIds(next);
+    };
+    refresh();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("pageshow", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("pageshow", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [games]);
 
   // 09:00 도달 전: 모든 경기가 잠금 상태.

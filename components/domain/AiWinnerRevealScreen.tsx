@@ -113,10 +113,11 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
     return () => window.clearTimeout(t);
   }, [visibleStage, orderedPredictions.length]);
 
-  // reveal 완주 시 seen 마킹
+  // reveal 페이지 진입 즉시 seen 마킹 — 사용자가 stage 4 도달 전에 뒤로 나가도
+  // "결과를 봤다"고 판단 (페이지 진입 = 의도. 목록에서 미스터리 풀려야 일관성).
   useEffect(() => {
-    if (visibleStage >= 4) markSeen(gameId);
-  }, [visibleStage, gameId]);
+    markSeen(gameId);
+  }, [gameId]);
 
   const replay = () => {
     setExpandedIdx(null);
