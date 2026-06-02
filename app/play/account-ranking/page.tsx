@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { AccountRankingScreen } from "@/components/domain/AccountRankingScreen";
-import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  getMyAccountRank,
-  listSeasonAccountRanking,
+  getCachedFullAccountRanking,
+  hydrateAccountRankingNicknames,
   type AccountRankingRow,
   type MyAccountRank
 } from "@/lib/supabase/query-parts/bpAccountRanking";
 
-// 공개 매치 결과가 누적되는 동안 자주 갱신 → ISR 5분.
-// 본인 user 조회 + getMyAccountRank 호출은 매 요청마다 발생해야 하므로 dynamic 처리도 함께 필요.
-// → 단순하게 force-dynamic. 라인업 랭킹과 달리 본인행 강조가 핵심이라 캐싱 X.
+// 본인 user 조회는 매 요청 발생해야 하므로 dynamic 유지.
+// 단 전체 랭킹 리스트는 unstable_cache(60초)로 공유 캐시 → DB 부하 완화.
+// 본인 강조 / 내 순위 카드 도출은 캐시된 리스트 위에서 user_id 매칭으로 처리한다.
+// → 캐시는 전체 사용자 공통 데이터만, 본인 종속 결과는 캐시 외부에서 계산.
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -19,22 +20,37 @@ export const metadata: Metadata = {
   alternates: { canonical: "/play/account-ranking" }
 };
 
+const TOP_LIMIT = 100;
+
 export default async function AccountRankingPage() {
-  const adminClient = createSupabaseAdminClient();
   const serverClient = createSupabaseServerClient();
 
-  // 본인 user — 익명(`is_anonymous`)은 비로그인 처리. 정식 로그인만 본인 행 강조 + 내 순위 카드.
+  // 1) 캐시된 전체 정렬 랭킹 (user_id 무관 → 공유 캐시 안전)
+  const allRanking = await getCachedFullAccountRanking();
+
+  // 2) 상위 N 슬라이스 후 닉네임 hydrate (캐시 외부, 가볍게 IN 쿼리)
+  const top = allRanking.slice(0, TOP_LIMIT);
+  const rankingRows: AccountRankingRow[] = await hydrateAccountRankingNicknames(top);
+
+  // 3) 본인 user 조회 — 절대 캐시 X. 익명은 비로그인 처리.
   const { data: { user } } = await serverClient.auth.getUser();
   const isLoggedIn = Boolean(user && !user.is_anonymous);
   const myUserId = isLoggedIn ? user?.id ?? null : null;
 
-  const rankingRes = await listSeasonAccountRanking(adminClient, 100);
-  const rankingRows: AccountRankingRow[] = rankingRes.ok ? rankingRes.rows : [];
-
+  // 4) 본인 순위 카드: 캐시된 전체 리스트에서 본인 row 매칭으로 도출.
+  //    → getMyAccountRank 의 풀스캔을 캐시 안에서 재사용 → DB 추가 호출 0.
   let myRank: MyAccountRank | null = null;
   if (myUserId) {
-    const myRes = await getMyAccountRank(adminClient, myUserId);
-    if (myRes.ok) myRank = myRes.data;
+    const mine = allRanking.find((r) => r.ownerUserId === myUserId);
+    if (mine) {
+      myRank = {
+        rank: mine.rank,
+        wins: mine.wins,
+        losses: mine.losses,
+        total: mine.total,
+        winRate: mine.winRate
+      };
+    }
   }
 
   return (

@@ -4,6 +4,7 @@
 // admin 클라이언트로 RLS 우회 → 다른 사용자 라인업/프로필 join 필요.
 // 라인업이 등록된 매치(home_lineup_id/away_lineup_id non-null)만 집계 대상.
 
+import { unstable_cache } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type LineupRankingRow = {
@@ -193,3 +194,25 @@ export async function listWeeklyLineupRanking(limit = 100): Promise<LineupRankin
     return [];
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 캐시 wrapper — 전체 사용자 공통 데이터(라인업 정렬 결과)만 60초 캐시.
+// 본인 user_id 종속 로직이 없으므로 단순 캐시 적용. 본인 강조는 클라이언트가
+// LineupRankingRow.ownerUserId 와 자체 보유 userId 를 비교하는 식으로 처리.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RANKING_REVALIDATE_SECONDS = 60;
+
+/** 시즌 라인업 랭킹 — 60초 캐시. */
+export const getCachedSeasonLineupRanking = unstable_cache(
+  async (limit = 100): Promise<LineupRankingRow[]> => listSeasonLineupRanking(limit),
+  ["lineup-ranking-season-v1"],
+  { tags: ["ranking", "lineup-ranking-season"], revalidate: RANKING_REVALIDATE_SECONDS }
+);
+
+/** 이번 주 라인업 랭킹 — 60초 캐시. */
+export const getCachedWeeklyLineupRanking = unstable_cache(
+  async (limit = 100): Promise<LineupRankingRow[]> => listWeeklyLineupRanking(limit),
+  ["lineup-ranking-weekly-v1"],
+  { tags: ["ranking", "lineup-ranking-weekly"], revalidate: RANKING_REVALIDATE_SECONDS }
+);

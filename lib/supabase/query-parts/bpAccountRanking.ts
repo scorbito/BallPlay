@@ -3,7 +3,9 @@
 // admin 클라이언트로 RLS 우회 → 전체 사용자 집계 가능. 닉네임은 profiles 별도 IN 쿼리.
 // 무승부는 wins/losses/total 어디에도 카운트 안 함 (랭킹/요약 카드와 동일 규칙).
 
+import { unstable_cache } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type AccountRankingRow = {
   rank: number;
@@ -190,4 +192,86 @@ export async function getMyAccountRank(
     console.warn("[accountRanking] my rank 조회 실패:", (e as Error).message);
     return { ok: false };
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 캐시 wrapper — 전체 사용자 공통의 "전체 정렬된 랭킹 리스트"만 60초 캐시.
+// 본인 user_id 종속 결과(getMyAccountRank)는 절대 캐시하지 않는다.
+// 대신 페이지에서 캐시된 full ranking 에서 본인 row 를 직접 찾는 식으로
+// 본인 강조 + 내 순위 카드 정보를 도출 → 캐시 효율 극대화.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ACCOUNT_RANKING_REVALIDATE_SECONDS = 60;
+
+/** 전체 사용자 정렬 결과 row(랭크 포함). 본인 user_id 와 무관하므로 공유 캐시 가능. */
+export type FullAccountRankingRow = {
+  rank: number;
+  ownerUserId: string;
+  wins: number;
+  losses: number;
+  total: number;
+  winRate: number;
+};
+
+/**
+ * 시즌 누적 계정 랭킹 — "전체 정렬 결과"를 닉네임 join 없이 가벼운 형태로 반환.
+ * - 본인 user_id 와 무관 → 안전하게 60초 캐시 가능.
+ * - 닉네임은 상위 N(top100) 슬라이스 후 별도 lookup (캐시 외부) — 캐시 페이로드 최소화.
+ * - 상한 max 는 내부 fetchAllPublicRecords 의 max(20000)로 충분.
+ */
+async function buildFullAccountRanking(): Promise<FullAccountRankingRow[]> {
+  const client = createSupabaseAdminClient();
+  try {
+    const records = await fetchAllPublicRecords(client);
+    const aggs = aggregateByUser(records);
+    const sorted = sortAggregates(aggs);
+    return sorted.map((s, idx) => ({
+      rank: idx + 1,
+      ownerUserId: s.ownerUserId,
+      wins: s.wins,
+      losses: s.losses,
+      total: s.total,
+      winRate: s.winRate
+    }));
+  } catch (e) {
+    console.warn("[accountRanking] full ranking build 실패:", (e as Error).message);
+    return [];
+  }
+}
+
+/** 60초 캐시된 전체 정렬 랭킹 리스트. 본인 user_id 와 무관. */
+export const getCachedFullAccountRanking = unstable_cache(
+  async (): Promise<FullAccountRankingRow[]> => buildFullAccountRanking(),
+  ["account-ranking-full-v1"],
+  { tags: ["ranking", "account-ranking"], revalidate: ACCOUNT_RANKING_REVALIDATE_SECONDS }
+);
+
+/**
+ * 상위 N명의 닉네임을 IN 쿼리로 hydrate.
+ * - 매 요청마다 호출되지만 N=100 으로 작아 부담 적음.
+ * - 캐시 외부에 두어 닉네임 변경이 ~60초 내에 반영되도록.
+ *   (캐시 안에 넣으면 전체 페이로드 부풀어서 비효율)
+ */
+export async function hydrateAccountRankingNicknames(
+  rows: FullAccountRankingRow[]
+): Promise<AccountRankingRow[]> {
+  if (rows.length === 0) return [];
+  const client = createSupabaseAdminClient();
+  const ownerIds = Array.from(new Set(rows.map((r) => r.ownerUserId)));
+  const profilesRes = await client.from("profiles").select("id, nickname").in("id", ownerIds);
+
+  const nickMap = new Map<string, string>();
+  for (const row of (profilesRes.data ?? []) as Array<{ id: string; nickname: string | null }>) {
+    nickMap.set(row.id, (row.nickname?.trim() || null) ?? "익명");
+  }
+
+  return rows.map((r) => ({
+    rank: r.rank,
+    ownerUserId: r.ownerUserId,
+    nickname: nickMap.get(r.ownerUserId) ?? "익명",
+    wins: r.wins,
+    losses: r.losses,
+    total: r.total,
+    winRate: r.winRate
+  }));
 }

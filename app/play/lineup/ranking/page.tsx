@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { LineupRankingScreen } from "@/components/domain/LineupRankingScreen";
 import {
-  listSeasonLineupRanking,
-  listWeeklyLineupRanking
+  getCachedSeasonLineupRanking,
+  getCachedWeeklyLineupRanking
 } from "@/lib/supabase/query-parts/bpLineupRankings";
 
 // 공개 매치 결과가 누적되는 동안 자주 갱신되므로 짧은 ISR.
-// 5분 캐시 → 사용자 부담 적고, 결과 직후 즉시 반영 안 돼도 OK.
-export const revalidate = 300;
+// 라우트 차원의 revalidate 와 별개로, 실제 쿼리 결과는 unstable_cache(60초)로
+// 사용자 전체가 공유한다. 본인 user_id 종속 로직이 라인업 랭킹엔 없음 → 단순 캐시 OK.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "라인업 랭킹",
@@ -17,8 +18,8 @@ export const metadata: Metadata = {
 
 export default async function LineupRankingPage() {
   const [seasonRanking, weeklyRanking] = await Promise.all([
-    listSeasonLineupRanking(100),
-    listWeeklyLineupRanking(100)
+    getCachedSeasonLineupRanking(100),
+    getCachedWeeklyLineupRanking(100)
   ]);
 
   return <LineupRankingScreen seasonRanking={seasonRanking} weeklyRanking={weeklyRanking} />;
