@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
@@ -109,11 +109,39 @@ export function PlayScreen() {
   } | null>(null);
 
   // 세션 hydrate + events 도출 (라이브 매치면 mode/playing도 세팅)
-  const { session, events, hydrated, isLive, liveStartAt } = useMatchSession({
+  const { session, events, hydrated, isLive, liveStartAt, liveMatchId } = useMatchSession({
     router,
     setMode,
     setPlaying
   });
+
+  // 친구 매치 오프닝 스킵 — 한쪽이 스킵하면 broadcast 로 상대도 동기 스킵.
+  // 채널은 PlayScreen 마운트 동안만 활성. opening 끝나면 더 안 씀.
+  const openingSkipChannelRef = useRef<ReturnType<ReturnType<typeof createSupabaseBrowserClient>["channel"]> | null>(null);
+  useEffect(() => {
+    if (!isLive || !liveMatchId) return;
+    const client = createSupabaseBrowserClient();
+    const channel = client
+      .channel(`bp_match_opening:${liveMatchId}`)
+      .on("broadcast", { event: "opening_skip" }, () => {
+        setOpeningDone(true);
+      })
+      .subscribe();
+    openingSkipChannelRef.current = channel;
+    return () => {
+      openingSkipChannelRef.current = null;
+      void client.removeChannel(channel);
+    };
+  }, [isLive, liveMatchId]);
+
+  // 라이브 매치에서 본인이 스킵할 때 — 로컬 + 상대 broadcast.
+  const handleLiveOpeningSkip = useCallback(() => {
+    setOpeningDone(true);
+    const channel = openingSkipChannelRef.current;
+    if (channel) {
+      void channel.send({ type: "broadcast", event: "opening_skip", payload: {} });
+    }
+  }, []);
 
   // 라이브 카운트다운 — startAt 도달 시 자동 play.
   const { countdownMs: liveCountdown } = useLiveCountdown({
@@ -123,11 +151,8 @@ export function PlayScreen() {
   });
 
   // 라이브(친구) 매치는 양 클라이언트 동기 카운트다운이 있어 오프닝 시퀀스 스킵.
-  // hydrate 직후 1회 openingDone=true 처리. 일반 매치는 오프닝이 onComplete 시 true.
-  useEffect(() => {
-    if (!hydrated) return;
-    if (isLive) setOpeningDone(true);
-  }, [hydrated, isLive]);
+  // hydrate 직후 openingDone 초기값은 false. 일반/라이브 모두 오프닝이 onComplete 시 true.
+  // (이전엔 라이브를 자동 스킵했지만, 친구 매치도 오프닝을 보여주기로 변경.)
 
   const currentInningEvents = useMemo(() => {
     if (cursor === 0) return [];
@@ -668,7 +693,7 @@ export function PlayScreen() {
       battingHand: b.battingHand
     }))
   };
-  const showOpening = !openingDone && !isLive;
+  const showOpening = !openingDone;
 
   return (
     <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref="/stadium/lobby" theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
@@ -833,7 +858,7 @@ export function PlayScreen() {
       <SkipBlockedModal open={skipBlockedOpen} onClose={() => setSkipBlockedOpen(false)} />
 
       {/* 경기 시작 전 오프닝 오버레이 — fixed inset:0 풀스크린.
-          라이브(친구) 매치는 위 effect에서 openingDone=true로 즉시 스킵.
+          친구 라이브 매치는 양쪽 동기화를 위해 스킵 버튼 숨김 — 둘 다 풀 시퀀스 시청.
           NOTE: portal이 아니라 인라인 렌더 — CSS rule(`.phone-frame-light .match-opening`)
           이 ancestor 매칭을 요구하므로 portal로 body에 띄우면 스타일이 안 먹음. */}
       {showOpening ? (
@@ -841,6 +866,8 @@ export function PlayScreen() {
           home={openingHome}
           away={openingAway}
           onComplete={() => setOpeningDone(true)}
+          showSkip
+          onSkip={isLive ? handleLiveOpeningSkip : undefined}
         />
       ) : null}
     </AppShell>

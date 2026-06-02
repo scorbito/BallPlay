@@ -146,6 +146,14 @@ export function LineupBuilderScreen() {
     return map;
   }, [roster]);
 
+  // 이름 → 로스터 매핑 — KBO 라인업 sync 시점엔 로스터에 없던 선수(예: 군 전역 직후)도
+  // 이후 _manual 로 추가되면 자동 채움에서 잡히도록 fallback.
+  const playersByName = useMemo(() => {
+    const map = new Map<string, Player>();
+    roster.forEach((p) => map.set(p.name, p));
+    return map;
+  }, [roster]);
+
   // 선택된 슬롯 변경 시 swap 선택도 초기화
   useEffect(() => {
     setSwapSource(null);
@@ -366,13 +374,17 @@ export function LineupBuilderScreen() {
     let missed = 0;
     sorted.forEach((b, idx) => {
       if (idx >= 9) return;
-      if (b.rosterId && playersById.has(b.rosterId)) {
-        const fallback = playersById.get(b.rosterId)!.primaryPosition;
+      // rosterId 우선, 없으면 이름으로 fallback (sync 시점 이후 로스터에 추가된 선수 대응).
+      const player =
+        (b.rosterId && playersById.get(b.rosterId)) ||
+        (b.name ? playersByName.get(b.name) : undefined);
+      if (player) {
+        const fallback = player.primaryPosition;
         // 한자 표기("三一" 등 경기 중 포지션 교체) 첫 글자 매핑 + 영문 코드 통과.
         const pos: Position = normalizeKboPosition(b.position) ?? fallback;
         nextSlots[idx] = {
           order: (idx + 1) as LineupOrder,
-          playerId: b.rosterId,
+          playerId: player.id,
           position: pos
         };
       } else {
@@ -383,14 +395,19 @@ export function LineupBuilderScreen() {
     setSwapOrderSourceIdx(null);
     setSwapSource(null);
 
-    const starterId = row.starter_roster_id;
-    if (starterId && playersById.has(starterId)) {
-      setPitcherSlots((current) => current.map((id, i) => (i === PITCHER_STARTER_INDEX ? starterId : id)));
+    // 선발 — rosterId 우선, 없으면 이름으로 fallback.
+    const resolvedStarter =
+      (row.starter_roster_id && playersById.get(row.starter_roster_id)) ||
+      (row.starter_name ? playersByName.get(row.starter_name) : undefined);
+    if (resolvedStarter) {
+      setPitcherSlots((current) =>
+        current.map((id, i) => (i === PITCHER_STARTER_INDEX ? resolvedStarter.id : id))
+      );
     }
 
     // 타자 9명 + 선발이 한 번에 채워지면 step1(타순 완성) 안내는 건너뛰고
     // step2(공개 준비 완료)만 뜨도록 step1을 미리 "본 것"으로 표시한다.
-    if (starterId && playersById.has(starterId)) {
+    if (resolvedStarter) {
       markGuideSeen("step1", currentEntry.entryId);
     }
 

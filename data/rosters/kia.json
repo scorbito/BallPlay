@@ -329,6 +329,16 @@
       "seasonGames": 11
     },
     {
+      "id": "kia-41",
+      "name": "황동하",
+      "jerseyNumber": 41,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 16,
+      "_manual": true
+    },
+    {
       "id": "kia-42",
       "name": "김태군",
       "jerseyNumber": 42,

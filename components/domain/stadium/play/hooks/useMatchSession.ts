@@ -26,6 +26,7 @@ type Return = {
   hydrated: boolean;
   isLive: boolean;
   liveStartAt: string | undefined;
+  liveMatchId: string | undefined;
 };
 
 export function useMatchSession({ router, setMode, setPlaying }: Args): Return {
@@ -75,6 +76,7 @@ export function useMatchSession({ router, setMode, setPlaying }: Args): Return {
 
   const isLive = !!session?.liveMatchId;
   const liveStartAt = session?.liveStartAt;
+  const liveMatchId = session?.liveMatchId;
 
-  return { session, events, hydrated, isLive, liveStartAt };
+  return { session, events, hydrated, isLive, liveStartAt, liveMatchId };
 }

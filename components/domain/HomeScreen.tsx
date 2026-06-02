@@ -87,7 +87,7 @@ const sections: HomeSection[] = [
     id: "lineup-play",
     label: "내 라인업 플레이",
     variant: "hero",
-    heroSubtitle: "나만의 최강 라인업으로 승리를 노려보세요!",
+    heroSubtitle: "나만의 라인업으로 승부하세요!",
     heroIllustration: "/assets/home-hero-illust.png",
     gridCols: 3,
     cards: [
@@ -251,12 +251,15 @@ const sections: HomeSection[] = [
 type HomeScreenProps = {
   /** 현재 사용자의 공개 매치 누적 전적 (히어로 뱃지용). 미로그인 시 zeros. */
   userRecord?: UserPublicMatchRecord;
+  /** 계정 누적 랭킹 내 본인 순위. 매치 기록 없거나 미로그인 시 null. */
+  myRank?: number | null;
   /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
   isAnonymous?: boolean;
 };
 
 export async function HomeScreen({
   userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
+  myRank = null,
   isAnonymous = false
 }: HomeScreenProps = {}) {
   // 정적 카드 그리드만 렌더하는 Server Component. 인터랙티브 영역(공지 빨간점)은
@@ -416,10 +419,11 @@ export async function HomeScreen({
                           <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
                         ) : null}
                         {section.id === "lineup-play" ? (
-                          <Link href="/records" className="home-hero-record-badge" prefetch>
+                          <Link href="/play/account-ranking" className="home-hero-record-badge" prefetch>
                             {userRecord.total > 0 ? (
                               <span>
                                 📊 내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
+                                {myRank !== null ? ` · ${myRank}위` : ""}
                               </span>
                             ) : (
                               <span>📊 첫 매치 도전!</span>

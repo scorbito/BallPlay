@@ -35,7 +35,7 @@ export function AccountRankingScreen({ ranking, myRank, myUserId, isLoggedIn }: 
     : null;
 
   return (
-    <AppShell activeTab="play" title="계정 누적 랭킹" theme="light" backHref="/records" wide>
+    <AppShell activeTab="play" title="계정 누적 랭킹" theme="light" backHref="/" wide>
       {/* 안내 한 줄 */}
       <div className="account-rank-hint-row">
         <p className="account-rank-hint">공개 매치에서 누적된 계정별 전적 순위입니다.</p>

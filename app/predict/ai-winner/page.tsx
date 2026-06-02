@@ -73,9 +73,8 @@ export default async function AiWinnerPredictPage({
 
   const supabase = createSupabaseServerClient();
 
-  // 운영자(admin) 는 09시 공개 전이라도 예측을 미리 볼 수 있어야 함 (컨텐츠 영상 제작용).
-  // RLS 가 published_at <= now() 만 노출하므로 service_role 클라이언트로 우회 fetch.
-  // 일반 유저는 그대로 RLS 적용.
+  // 운영자(admin) 는 시간 게이트(published_at) 만 우회 — 그 외 동작은 일반 유저와 동일.
+  // service_role 클라이언트로 RLS 우회 → 발행 전 픽도 미리 봄 (영상 사전 제작용).
   const userTier = await getUserTier(supabase);
   const isAdmin = userTier.tier === "admin";
   // 소프트 게이트: 비로그인/익명(guest)은 AI 픽을 못 본다. 매치업·AI 종합 적중률(미끼)만 노출.

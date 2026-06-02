@@ -517,6 +517,16 @@
       "seasonGames": 3
     },
     {
+      "id": "ssg-jeonus",
+      "name": "전의산",
+      "jerseyNumber": 47,
+      "primaryPosition": "1B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 1,
+      "_manual": true
+    },
+    {
       "id": "ssg-53",
       "name": "문상준",
       "jerseyNumber": 53,

@@ -44,6 +44,10 @@ type Props = {
   away: TeamSide;
   /** 시퀀스 완료 시 호출 (정상 종료 or 스킵 둘 다) */
   onComplete: () => void;
+  /** 스킵 버튼 표시 여부 (기본 true). */
+  showSkip?: boolean;
+  /** 본인이 스킵 버튼을 눌렀을 때 추가 호출 — 친구 매치에서 상대에게 broadcast. */
+  onSkip?: () => void;
 };
 
 type Phase = "title" | "lineups" | "countdown" | "playball" | "done";
@@ -58,7 +62,7 @@ const COUNTDOWN_STEP_MS = 1000;
 const COUNTDOWN_TOTAL_MS = 3000;
 const PLAYBALL_MS = 1000;
 
-export function MatchOpeningSequence({ home, away, onComplete }: Props) {
+export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, onSkip }: Props) {
   const [phase, setPhase] = useState<Phase>("title");
   const [lineupRowIdx, setLineupRowIdx] = useState<number>(-1);
   const [countdownN, setCountdownN] = useState<number>(3);
@@ -140,6 +144,7 @@ export function MatchOpeningSequence({ home, away, onComplete }: Props) {
   }, []);
 
   const handleSkip = () => {
+    onSkip?.();
     safeComplete();
   };
 
@@ -154,15 +159,17 @@ export function MatchOpeningSequence({ home, away, onComplete }: Props) {
 
   return (
     <div className="match-opening" data-phase={phase} role="dialog" aria-label="경기 오프닝">
-      <button
-        type="button"
-        className="match-opening-skip"
-        aria-label="오프닝 스킵"
-        onClick={handleSkip}
-      >
-        <SkipForward size={16} aria-hidden />
-        <span>스킵</span>
-      </button>
+      {showSkip ? (
+        <button
+          type="button"
+          className="match-opening-skip"
+          aria-label="오프닝 스킵"
+          onClick={handleSkip}
+        >
+          <SkipForward size={16} aria-hidden />
+          <span>스킵</span>
+        </button>
+      ) : null}
 
       {phase === "title" && (
         <div className="match-opening-title">

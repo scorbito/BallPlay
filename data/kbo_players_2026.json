@@ -8277,6 +8277,28 @@
           "bbRate": 0.067,
           "kRate": 0.467,
           "contactScore": 0.533
+        },
+        {
+          "playerId": "ssg-jeonus",
+          "name": "전의산",
+          "battingHand": "L",
+          "pa": 4,
+          "ab": 4,
+          "hits": 2,
+          "doubles": 0,
+          "triples": 0,
+          "homers": 0,
+          "walks": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "avg": 0.5,
+          "obp": 0.5,
+          "slg": 0.5,
+          "iso": 0,
+          "babip": 0.5,
+          "bbRate": 0,
+          "kRate": 0,
+          "contactScore": 1
         }
       ],
       "pitchers": [
@@ -11970,7 +11992,7 @@
           "playerId": "kia-41",
           "name": "황동하",
           "throwingHand": "R",
-          "role": "RP",
+          "role": "SP",
           "ip": 40,
           "k": 30,
           "bb": 13,
@@ -11986,7 +12008,7 @@
           "k9": 6.75,
           "bb9": 2.93,
           "hr9": 2.03,
-          "staminaPitches": 60
+          "staminaPitches": 100
         },
         {
           "playerId": "kia-54",

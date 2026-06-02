@@ -469,7 +469,12 @@ export function useLineupSync() {
           ? { ok: false, error: "공개 처리에 실패했어요. 잠시 후 다시 시도해 주세요." }
           : { ok: true };
       }
-      const current = state.entries.find((e) => e.entryId === entryId);
+      // ⚠️ state.entries 는 React 배치 때문에 직전 syncedUpsert 결과가 아직 반영 안 됐을 수 있다.
+      //    localStorage 는 syncedUpsert 가 동기 write 했으므로 항상 최신.
+      //    공개 시 stale pitching/batting 으로 hash 계산 + DB 저장되는 race condition 차단.
+      const current =
+        loadLineupEntries().find((e) => e.entryId === entryId) ??
+        state.entries.find((e) => e.entryId === entryId);
       if (!current) return { ok: false, error: "라인업을 찾을 수 없습니다." };
 
       publishingRef.current = true;
