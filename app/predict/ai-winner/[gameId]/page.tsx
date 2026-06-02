@@ -1,6 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { listAiPredictionsForGame } from "@/lib/supabase/query-parts/bpAiPredictions";
+import {
+  listAiPredictionResultsForGame,
+  type BpAiPredictionRow
+} from "@/lib/supabase/query-parts/bpAiPredictions";
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 
@@ -37,9 +40,26 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
   const predictionsClient =
     userTier.tier === "admin" ? createSupabaseAdminClient() : supabase;
 
-  // 예측 조회. 일반 유저는 RLS 에 의해 published_at <= now() 만 노출.
-  const predictionsResult = await listAiPredictionsForGame(predictionsClient, params.gameId);
-  const predictions = predictionsResult.ok ? predictionsResult.rows : [];
+  // 예측 조회. VIEW(bp_ai_predictions_with_result) — 점수 들어오자마자 is_correct_live 채워짐.
+  // 컴포넌트(AiWinnerRevealScreen) 시그니처는 BpAiPredictionRow[] 라서 page 안에서 is_correct_live → is_correct 로 매핑.
+  // 일반 유저는 VIEW(security_invoker=true) 가 underlying RLS(published_at <= now()) 상속.
+  const predictionsResult = await listAiPredictionResultsForGame(predictionsClient, params.gameId);
+  const predictions: BpAiPredictionRow[] = predictionsResult.ok
+    ? predictionsResult.rows.map((p) => ({
+        id: p.id,
+        game_id: p.game_id,
+        game_date: p.game_date,
+        ai_provider: p.ai_provider,
+        model_name: p.model_name,
+        predicted_winner_team_id: p.predicted_winner_team_id,
+        confidence: p.confidence,
+        key_factor: p.key_factor,
+        one_liner: p.one_liner,
+        detailed_analysis: p.detailed_analysis,
+        published_at: p.published_at,
+        is_correct: p.is_correct_live
+      }))
+    : [];
 
   const isToday = gameRow.game_date === kstToday();
 

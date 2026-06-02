@@ -3,7 +3,8 @@ import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   getAiOverallStats,
   getAiByProviderStats,
-  listAiPredictionsForDate,
+  listAiPredictionResultsForDate,
+  type BpAiPredictionResultRow,
   type BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
@@ -84,14 +85,15 @@ export default async function AiWinnerPredictPage({
   const predictionsClient = isAdmin ? createSupabaseAdminClient() : supabase;
 
   // 예측 + 시즌 통계 병렬 (게임 데이터는 위에서 이미 확보)
+  // 예측은 VIEW(bp_ai_predictions_with_result) 에서 가져옴 — 점수 입력 즉시 is_correct_live 채워짐.
   const [predictionsResult, overallResult, providerResult] = await Promise.all([
-    listAiPredictionsForDate(predictionsClient, selectedDate),
+    listAiPredictionResultsForDate(predictionsClient, selectedDate),
     getAiOverallStats(supabase),
     getAiByProviderStats(supabase)
   ]);
 
   // 경기별 예측 매핑
-  const predictionsByGameId = new Map<string, BpAiPredictionRow[]>();
+  const predictionsByGameId = new Map<string, BpAiPredictionResultRow[]>();
   if (predictionsResult.ok) {
     for (const row of predictionsResult.rows) {
       const list = predictionsByGameId.get(row.game_id) ?? [];
@@ -100,18 +102,39 @@ export default async function AiWinnerPredictPage({
     }
   }
 
-  const gameCards: AiWinnerGame[] = gamesForDate.map((g) => ({
-    id: g.id,
-    gameTime: g.time ?? null,
-    stadium: g.stadium,
-    homeTeamId: g.homeTeamId,
-    awayTeamId: g.awayTeamId,
-    homeScore: g.homeScore ?? null,
-    awayScore: g.awayScore ?? null,
-    status: g.status,
-    // 잠긴 사용자에겐 픽을 아예 비워서 전송 (클라이언트로 데이터 자체가 안 감).
-    predictions: locked ? [] : (predictionsByGameId.get(g.id) ?? [])
-  }));
+  const gameCards: AiWinnerGame[] = gamesForDate.map((g) => {
+    // VIEW 의 is_correct_live 를 BpAiPredictionRow.is_correct 로 매핑.
+    // 컴포넌트 시그니처(BpAiPredictionRow[]) 유지 위해 page 안에서 형변환.
+    const rawPredictions = predictionsByGameId.get(g.id) ?? [];
+    const enriched: BpAiPredictionRow[] = rawPredictions.map((p) => ({
+      id: p.id,
+      game_id: p.game_id,
+      game_date: p.game_date,
+      ai_provider: p.ai_provider,
+      model_name: p.model_name,
+      predicted_winner_team_id: p.predicted_winner_team_id,
+      confidence: p.confidence,
+      key_factor: p.key_factor,
+      one_liner: p.one_liner,
+      detailed_analysis: p.detailed_analysis,
+      published_at: p.published_at,
+      // VIEW 의 라이브 판정값을 컴포넌트가 기대하는 is_correct 자리에 채움.
+      is_correct: p.is_correct_live
+    }));
+
+    return {
+      id: g.id,
+      gameTime: g.time ?? null,
+      stadium: g.stadium,
+      homeTeamId: g.homeTeamId,
+      awayTeamId: g.awayTeamId,
+      homeScore: g.homeScore ?? null,
+      awayScore: g.awayScore ?? null,
+      status: g.status,
+      // 잠긴 사용자에겐 픽을 아예 비워서 전송 (클라이언트로 데이터 자체가 안 감).
+      predictions: locked ? [] : enriched
+    };
+  });
 
   // 다음 경기일 hint (auto-jump 했어도 경기 없는 날짜에 ?date= 명시 진입한 경우 표시용)
   const nextGameDate = nextDate;

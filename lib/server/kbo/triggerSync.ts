@@ -5,8 +5,10 @@
 //   2. 오늘 모든 게임이 finished 상태면 cascade:
 //      - 어제 라인업 sync   (throttle 30분, fire-and-forget)
 //      - 시즌 순위 sync     (throttle 30분, fire-and-forget)
-//      - AI 채점            (throttle 5분, fire-and-forget)
 //   3. cascade 는 응답을 늦추지 않도록 void 처리.
+//
+// AI 예측 적중 판정은 cron 의존을 끊고 bp_ai_predictions_with_result VIEW 가 라이브로 계산.
+// games sync(1단계)가 끝나면 VIEW 가 즉시 반영하므로 별도 채점 단계 불필요.
 //
 // 호출 위치 (server component):
 //   import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
@@ -23,17 +25,10 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { syncGamesInRange } from "./syncGames";
 import { syncLineupsForDate } from "./syncLineups";
 import { syncStandings } from "./syncStandings";
-import { scoreAiPredictionsForRange } from "./scoreAiPredictions";
 import { ensureSync } from "./ensureSync";
 
 function kstToday(): string {
   const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
-}
-
-function kstYesterday(): string {
-  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  kst.setDate(kst.getDate() - 1);
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
@@ -55,9 +50,9 @@ async function isAllFinished(dateISO: string): Promise<boolean> {
  */
 export async function triggerDailyDataSync(): Promise<void> {
   const today = kstToday();
-  const yesterday = kstYesterday();
 
   // 1) 오늘 게임 결과 sync (throttle 5분).
+  //    AI 적중 판정은 VIEW 라이브 계산이라 이 sync 만으로 즉시 반영됨.
   await ensureSync(
     `games-sync:${today}`,
     300,
@@ -65,7 +60,7 @@ export async function triggerDailyDataSync(): Promise<void> {
   ).catch(() => undefined);
 
   // 2) 오늘 게임 모두 finished? cascade 트리거.
-  //    어제 라인업/시즌 순위/AI 채점은 사용자가 결과를 보러 들어왔을 때만 의미 있음.
+  //    어제 라인업/시즌 순위는 사용자가 결과를 보러 들어왔을 때만 의미 있음.
   if (await isAllFinished(today)) {
     void ensureSync(
       `lineups-sync:${today}`,
@@ -78,12 +73,6 @@ export async function triggerDailyDataSync(): Promise<void> {
       `standings-sync:${season}`,
       1800,
       () => syncStandings(season)
-    ).catch(() => undefined);
-
-    void ensureSync(
-      `ai-scoring:${today}`,
-      300,
-      () => scoreAiPredictionsForRange(yesterday, today)
     ).catch(() => undefined);
   }
 }

@@ -2852,8 +2852,9 @@
 /* ---------- skip 버튼 ---------- */
 .phone-frame-light .match-opening-skip {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  /* iOS 노치/상태바와 겹치지 않도록 safe-area 가산. */
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: calc(16px + env(safe-area-inset-right, 0px));
   z-index: 2;
   display: inline-flex;
   align-items: center;
