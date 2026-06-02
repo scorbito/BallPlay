@@ -547,3 +547,42 @@
   border-color: rgba(232, 74, 138, 0.5);
 }
 
+/* 누적 카드 첫 줄 — 좌측 통계 + 우측 "랭킹 보기" 보조 버튼을 한 행에 배치.
+   기존 .records-summary-stats 가 단독일 때 영향 없도록 row 래퍼를 새로 둠. */
+.phone-frame-light .records-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-frame-light .records-summary-row .records-summary-stats {
+  min-width: 0;
+  flex: 1;
+}
+
+/* "랭킹 보기" — 작은 보조 버튼 톤. 누적 카드 우측 상단에 알약형.
+   accent 컬러 outline 스타일, 호버 시 살짝 채워짐. */
+.phone-frame-light .records-ranking-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.35);
+  color: var(--bp-accent, #e84a8a);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-light .records-ranking-link:hover {
+  background: rgba(232, 74, 138, 0.16);
+  border-color: rgba(232, 74, 138, 0.55);
+}
+

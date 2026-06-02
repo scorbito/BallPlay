@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { History, Lock } from "lucide-react";
+import { History, Lock, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
@@ -423,28 +423,40 @@ export function RecordsScreen({
   return (
     <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
       {/* 누적 공개 매치 요약 카드 — 서버에서 집계해 props로 받은 값.
-          0전 0승 0패도 카드 노출(빈 메시지 분기). 익명 사용자에겐 로그인 CTA 추가. */}
+          0전 0승 0패도 카드 노출(빈 메시지 분기). 익명 사용자에겐 로그인 CTA 추가.
+          우측 상단에 "랭킹 보기" 보조 버튼 — 계정 누적 랭킹 페이지로 진입. */}
       <section className="records-summary-card" aria-label="누적 공개 매치 전적">
-        {userRecord.total > 0 ? (
-          <div className="records-summary-stats">
-            <span className="records-summary-icon" aria-hidden="true">📊</span>
-            <div className="records-summary-text">
-              <span className="records-summary-label">내 공개 매치 누적</span>
-              <strong className="records-summary-numbers">
-                {userRecord.wins}승 {userRecord.losses}패
-                <span className="records-summary-rate">· 승률 {formatWinRate(userRecord.winRate)}</span>
-              </strong>
+        <div className="records-summary-row">
+          {userRecord.total > 0 ? (
+            <div className="records-summary-stats">
+              <span className="records-summary-icon" aria-hidden="true">📊</span>
+              <div className="records-summary-text">
+                <span className="records-summary-label">내 공개 매치 누적</span>
+                <strong className="records-summary-numbers">
+                  {userRecord.wins}승 {userRecord.losses}패
+                  <span className="records-summary-rate">· 승률 {formatWinRate(userRecord.winRate)}</span>
+                </strong>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="records-summary-stats">
-            <span className="records-summary-icon" aria-hidden="true">📊</span>
-            <div className="records-summary-text">
-              <span className="records-summary-label">내 공개 매치 누적</span>
-              <strong className="records-summary-numbers">아직 기록이 없어요</strong>
+          ) : (
+            <div className="records-summary-stats">
+              <span className="records-summary-icon" aria-hidden="true">📊</span>
+              <div className="records-summary-text">
+                <span className="records-summary-label">내 공개 매치 누적</span>
+                <strong className="records-summary-numbers">아직 기록이 없어요</strong>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          <Link
+            href="/play/account-ranking"
+            prefetch
+            className="records-ranking-link"
+            aria-label="계정 누적 랭킹 보기"
+          >
+            <Trophy size={14} aria-hidden />
+            <span>랭킹 보기</span>
+          </Link>
+        </div>
         {isAnonymous ? (
           <Link href="/login?next=/records" className="records-summary-cta" prefetch>
             기기 변경 시 기록 보존을 위해 로그인하세요

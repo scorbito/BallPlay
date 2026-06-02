@@ -3697,3 +3697,276 @@
 .phone-frame-light .lineup-rank-empty-team {
   padding: 28px 16px;
 }
+
+/* =========================================================
+   계정 누적 랭킹 페이지 — /play/account-ranking
+   라인업 랭킹과 동일 톤. 팀 배지 / 라인업명 컬럼 없음 — 닉네임 중심.
+   ========================================================= */
+
+.phone-frame-light .account-rank-hint-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0 4px 7px;
+}
+
+.phone-frame-light .account-rank-hint {
+  font-size: 12px;
+  color: var(--bp-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+  min-width: 0;
+  flex: 1;
+}
+
+.phone-frame-light .account-rank-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .account-rank-item {
+  /* flex 행: 좌측 랭크칩 + 닉네임, 우측 전적/승률.
+     라인업 랭킹과 달리 행 자체는 클릭 불가(상세 모달 없음) → cursor: default. */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+/* 본인 행 — 핑크 배경 + 보더로 강조. */
+.phone-frame-light .account-rank-item.is-me {
+  background: rgba(232, 74, 138, 0.08);
+  border-color: rgba(232, 74, 138, 0.4);
+}
+
+.phone-frame-light .account-rank-position {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bp-bg-soft, #f1f3f5);
+  color: var(--bp-text-secondary);
+  font-size: 14px;
+  font-weight: 800;
+  transition: width 0.15s ease, height 0.15s ease, font-size 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .account-rank-position.is-top {
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+.phone-frame-light .account-rank-position.is-top svg {
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+}
+.phone-frame-light .account-rank-position.is-top-1 {
+  background: #f4b400;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+.phone-frame-light .account-rank-position.is-top-2 {
+  background: #9ca3af;
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
+}
+.phone-frame-light .account-rank-position.is-top-3 {
+  background: #cd7f32;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+
+/* 본문 — 닉네임 한 줄 + 본인 표시 칩. */
+.phone-frame-light .account-rank-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-frame-light .account-rank-nickname {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* 본인 행에 붙는 "나" 칩 — 보조 강조. */
+.phone-frame-light .account-rank-me-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--bp-accent, #e84a8a);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+/* 우측 stats — 한 줄: [N승 M패] [(.xxx)]. */
+.phone-frame-light .account-rank-stats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .account-rank-wl {
+  font-size: 13.5px;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .account-rank-wl strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text);
+  margin-right: 2px;
+}
+
+.phone-frame-light .account-rank-rate {
+  font-size: 12.5px;
+  color: var(--bp-text-muted, #9aa0a6);
+  font-weight: 600;
+}
+
+.phone-frame-light .account-rank-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .account-rank-empty p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.phone-frame-light .account-rank-empty-sub {
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: var(--bp-text-muted, #9aa0a6) !important;
+}
+
+/* 본인 순위 카드 — 100위 밖일 때 리스트 하단에 강조. sticky 느낌(border-top + 핑크 배경).
+   리스트와 시각적으로 분리하려고 mt 충분히. */
+.phone-frame-light .account-rank-my-card {
+  margin: 16px 0 4px;
+  padding: 12px 14px;
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.4);
+  border-radius: 12px;
+}
+
+.phone-frame-light .account-rank-my-card-inner {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .account-rank-my-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .account-rank-my-card-rank {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--bp-accent, #e84a8a);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .account-rank-my-card-wl {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .account-rank-my-card-wl strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text);
+  margin-right: 2px;
+}
+.phone-frame-light .account-rank-my-card-rate {
+  font-size: 12.5px;
+  color: var(--bp-text-muted, #9aa0a6);
+  font-weight: 600;
+}
+
+.phone-frame-light .account-rank-my-card-empty {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--bp-text-muted);
+  font-weight: 600;
+}
+
+.phone-frame-light .account-rank-my-card-inner.is-empty {
+  align-items: center;
+}
+
+/* 비로그인 안내 카드 — 하단 로그인 CTA. */
+.phone-frame-light .account-rank-login-cta {
+  margin: 16px 0 4px;
+  padding: 16px;
+  background: var(--bp-card);
+  border: 1px dashed rgba(232, 74, 138, 0.4);
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-frame-light .account-rank-login-cta p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bp-text-secondary);
+  font-weight: 600;
+}
+
+.phone-frame-light .account-rank-login-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  border-radius: 10px;
+  background: var(--bp-accent, #e84a8a);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.phone-frame-light .account-rank-login-cta-btn:hover {
+  opacity: 0.92;
+}
