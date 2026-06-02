@@ -107,11 +107,11 @@ export function MatchOpeningSequence({ home, away, onComplete }: Props) {
       schedule(() => {
         setPhase("countdown");
         setCountdownN(3);
-        // 카운트다운 비프 — strikeout SFX 재사용 (짧고 날카로운 펄스 톤)
-        playMatchSound("strikeout");
+        // 카운트다운 — 3, 2 는 out SFX, 마지막 1 은 strikeout SFX(가장 강조).
+        playMatchSound("out");
         schedule(() => {
           setCountdownN(2);
-          playMatchSound("strikeout");
+          playMatchSound("out");
         }, COUNTDOWN_STEP_MS);
         schedule(() => {
           setCountdownN(1);

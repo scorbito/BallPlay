@@ -1572,6 +1572,59 @@
   }
 }
 
+/* ============================================================
+ * 배트 스윙 이펙트 — 안타 발사 시 타자 위치에 동시 표시.
+ * 500ms 짧은 스윙. 손잡이 끝(SVG 좌측 노브)을 회전축으로.
+ * left/top = 타자 row 중심. transform translate(-50%,-50%) 로 SVG 중앙을 그 좌표에 정렬한 뒤,
+ * transform-origin 을 손잡이 쪽(좌측 5%, 세로 중앙)으로 둬 손목 회전처럼 휘어짐.
+ * --bat-rot-end: 우타 +135deg / 좌타 -135deg.
+ * --bat-flip-x : 좌타 -1 (수평 반전) / 우타 1.
+ * ============================================================ */
+.stadium-bat-swing {
+  position: fixed;
+  width: 70px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 9998; /* FlyingBall(9999) 바로 아래 — 공이 배트 위로 보이도록 */
+  /* 손잡이 끝 부근을 축으로 — SVG 좌측 노브가 (cx=2 / 70 ≈ 3%) 에 있음 */
+  transform-origin: 3% 50%;
+  /* 초기엔 보이지 않다가 keyframes 에서 ramp-in */
+  opacity: 0;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.stadium-bat-swing svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@keyframes stadium-bat-swing {
+  /* 0%: 시작 — 회전 0, opacity 0. translate 로 SVG 중심을 좌표에 정렬.
+     scaleX(var(--bat-flip-x)) 로 좌타 수평 반전 (손잡이가 오른쪽에 오도록).
+     주의: transform-origin 이 3% 50% 이므로 translate(-50%,-50%) 후에도
+     실제 회전축은 SVG 좌측 노브 부근. */
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(0deg);
+  }
+  /* 10%: 빠르게 페이드 인 (50ms ramp-in 비슷) */
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(calc(var(--bat-rot-end) * 0.1));
+  }
+  /* 80%: 풀스윙 — 회전 끝 위치 도달 후 잔상 유지 */
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(var(--bat-rot-end));
+  }
+  /* 100%: 페이드 아웃 (마지막 100ms = 400→500ms 구간 = 20%) */
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(var(--bat-rot-end));
+  }
+}
+
 @keyframes stadium-ball-fly {
   /* 0%: 시작점 — 원 크기 */
   0% {

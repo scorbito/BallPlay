@@ -2,7 +2,7 @@
 
 import { type ReactNode } from "react";
 
-type LineupBatter = { playerId: string; name: string };
+type LineupBatter = { playerId: string; name: string; battingHand?: "L" | "R" | "S" };
 
 type InningOutcome = { label: string; isHit: boolean; isHr: boolean };
 type TodayStat = { ab: number; hits: number };
@@ -90,6 +90,7 @@ function renderLineupRow(
       key={batter.playerId}
       className={`stadium-play-lineup-row ${isCurrent ? "is-current" : ""}`}
       data-batter-id={batter.playerId}
+      data-batting-hand={batter.battingHand}
     >
       <span className="stadium-play-lineup-order">{idx + 1}</span>
       <span className="stadium-play-lineup-name">

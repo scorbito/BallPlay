@@ -14,6 +14,7 @@ import { playMatchSound } from "@/lib/sound/matchSounds";
 import { OUTCOME_LABEL } from "./play/types";
 import { buildLinescore } from "./play/eventHelpers";
 import { FlyingBall } from "./play/effects/FlyingBall";
+import { BatSwing } from "./play/effects/BatSwing";
 import { HitEffectAtPosition } from "./play/effects/HitEffect";
 import { StrikeoutEffect } from "./play/effects/StrikeoutEffect";
 import { Linescore } from "./play/Linescore";
@@ -97,6 +98,14 @@ export function PlayScreen() {
     key: number;
   } | null>(null);
   const hitFxFiredForCursorRef = useRef<number>(-1);
+  // 배트 스윙 이펙트 — 안타 발사 시 타자 row 위치에 0.5초 회전 SVG 배트.
+  // FlyingBall 과 같은 cursor 에서 sibling 으로 동시 발사.
+  const [batSwing, setBatSwing] = useState<{
+    centerX: number;
+    centerY: number;
+    battingHand: "L" | "R";
+    key: number;
+  } | null>(null);
 
   // 세션 hydrate + events 도출 (라이브 매치면 mode/playing도 세팅)
   const { session, events, hydrated, isLive, liveStartAt } = useMatchSession({
@@ -350,6 +359,21 @@ export function PlayScreen() {
 
     console.log("[ball] fire", { outcome: o, fromX, fromY, dx, dy, durationMs, maxScale, mode });
     ballFiredForCursorRef.current = cursor;
+    // 배트 스윙도 같이 발사 — battingHand 결정:
+    // 1) input.batters 에서 batterId 매칭으로 SimBatter 의 battingHand 사용 (정식 소스).
+    // 2) 실패 시 lineup row DOM 의 data-batting-hand attribute fallback.
+    // 3) 그래도 없으면 우타("R") 가정. 스위치("S")는 단순화로 우타 취급.
+    const allBatters = session?.input
+      ? [...session.input.home.batters, ...session.input.away.batters]
+      : [];
+    const batterEntity = allBatters.find((b) => b.playerId === evt.ab.batterId);
+    let rawHand: string | null = batterEntity?.battingHand ?? null;
+    if (!rawHand) {
+      const attr = row.getAttribute("data-batting-hand");
+      if (attr) rawHand = attr;
+    }
+    const battingHand: "L" | "R" = rawHand === "L" ? "L" : "R";
+    setBatSwing({ centerX: fromX, centerY: fromY, battingHand, key: cursor });
     setFlyingBall({ fromX, fromY, dx, dy, durationMs, maxScale, key: cursor });
     playMatchSound(o === "HR" ? "homerun" : "hit");
 
@@ -359,7 +383,7 @@ export function PlayScreen() {
       const fxKind: "hit" | "hr" = o === "HR" || evt.ab.runsScored > 0 ? "hr" : "hit";
       setHitFx({ centerX: fromX, centerY: fromY, kind: fxKind, key: cursor });
     }
-  }, [phase, cursor, events, hydrated, mode]);
+  }, [phase, cursor, events, hydrated, mode, session]);
 
   // HR / 타점 이펙트가 안타 외 케이스 (땅볼 RBI / SF 등) 에도 발동해야 함.
   // ball trigger 는 안타류만 발사하니, 그 외 득점 케이스를 별도로 잡음.
@@ -736,6 +760,18 @@ export function PlayScreen() {
               durationMs={flyingBall.durationMs}
               maxScale={flyingBall.maxScale}
               onEnd={() => setFlyingBall(null)}
+            />,
+            document.body
+          )
+        : null}
+      {batSwing && typeof document !== "undefined"
+        ? createPortal(
+            <BatSwing
+              key={batSwing.key}
+              centerX={batSwing.centerX}
+              centerY={batSwing.centerY}
+              battingHand={batSwing.battingHand}
+              onEnd={() => setBatSwing(null)}
             />,
             document.body
           )
