@@ -50,35 +50,15 @@ export function BatSwing({
       onAnimationEnd={onEnd}
       aria-hidden="true"
     >
-      {/* 인라인 SVG 배트 — viewBox 70x12.
-          배럴(barrel): 굵은 갈색 그라데이션 막대, 손잡이(grip): 가늘게 테이퍼.
-          좌하단(0, 12) 부근이 손잡이 끝 = transform-origin 으로 사용. */}
-      <svg
-        viewBox="0 0 70 12"
-        xmlns="http://www.w3.org/2000/svg"
+      {/* PNG 배트 — 가로 방향, 손잡이 좌측 / 배럴 우측. transform-origin 은 CSS 에서 설정. */}
+      <img
+        src="/assets/bat-swing.png"
+        alt=""
         width="70"
-        height="12"
+        height="70"
         aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="bat-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#5a3a1a" />
-            <stop offset="50%" stopColor="#8b5a2b" />
-            <stop offset="100%" stopColor="#a06a35" />
-          </linearGradient>
-        </defs>
-        {/* 손잡이 노브(knob) — 끝부분 약간 굵게 */}
-        <circle cx="2" cy="6" r="2.2" fill="#3d2410" />
-        {/* 손잡이(grip) — 가늘게 */}
-        <rect x="3" y="5" width="14" height="2" rx="1" fill="#3d2410" />
-        {/* 배럴(barrel) — 두께감 있는 막대 */}
-        <path
-          d="M17 4.2 L62 3 Q68 3 68 6 Q68 9 62 9 L17 7.8 Z"
-          fill="url(#bat-grad)"
-          stroke="#3d2410"
-          strokeWidth="0.4"
-        />
-      </svg>
+        style={{ display: "block" }}
+      />
     </div>
   );
 }

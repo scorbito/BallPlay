@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { AccountRankingScreen } from "@/components/domain/AccountRankingScreen";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import {
-  getCachedFullAccountRanking,
-  hydrateAccountRankingNicknames,
-  type AccountRankingRow,
-  type MyAccountRank
+import type {
+  AccountRankingRow,
+  MyAccountRank
 } from "@/lib/supabase/query-parts/bpAccountRanking";
+import {
+  getCachedFullAccountStatsRanking,
+  hydrateAccountStatsNicknames
+} from "@/lib/supabase/query-parts/bpAccountStats";
 
 // 본인 user 조회는 매 요청 발생해야 하므로 dynamic 유지.
 // 단 전체 랭킹 리스트는 unstable_cache(60초)로 공유 캐시 → DB 부하 완화.
@@ -26,11 +28,12 @@ export default async function AccountRankingPage() {
   const serverClient = createSupabaseServerClient();
 
   // 1) 캐시된 전체 정렬 랭킹 (user_id 무관 → 공유 캐시 안전)
-  const allRanking = await getCachedFullAccountRanking();
+  //    bp_account_stats 카운터 기반 — mirror row 제외된 본인 직접 플레이 전적.
+  const allRanking = await getCachedFullAccountStatsRanking();
 
   // 2) 상위 N 슬라이스 후 닉네임 hydrate (캐시 외부, 가볍게 IN 쿼리)
   const top = allRanking.slice(0, TOP_LIMIT);
-  const rankingRows: AccountRankingRow[] = await hydrateAccountRankingNicknames(top);
+  const rankingRows: AccountRankingRow[] = await hydrateAccountStatsNicknames(top);
 
   // 3) 본인 user 조회 — 절대 캐시 X. 익명은 비로그인 처리.
   const { data: { user } } = await serverClient.auth.getUser();

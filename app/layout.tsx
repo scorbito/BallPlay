@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { InstallAppBanner } from "@/components/domain/InstallAppBanner";
 import { AuthRefreshOnVisible } from "@/components/common/AuthRefreshOnVisible";
+import { CustomCursor } from "@/components/common/CustomCursor";
 import { AppStateLoader } from "./app-state-loader";
 import "./globals.css";
 import "@/styles/light-home.css";
@@ -184,6 +185,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {children}
               <InstallAppBanner />
               <AuthRefreshOnVisible />
+              <CustomCursor />
             </AppStateLoader>
           </Suspense>
         </ErrorBoundary>

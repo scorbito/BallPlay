@@ -2,6 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 커스텀 마우스 커서 — JS 기반.
+   body.has-custom-cursor 면 (1) 기본 커서 숨김, (2) CustomCursor 컴포넌트가 div 로 렌더.
+   PC 전용 효과 (모바일은 터치라 영향 없음 — mousemove 이벤트 안 옴). */
+body.has-custom-cursor,
+body.has-custom-cursor *,
+body.has-custom-cursor button,
+body.has-custom-cursor a,
+body.has-custom-cursor [role="button"],
+body.has-custom-cursor input,
+body.has-custom-cursor textarea {
+  cursor: none !important;
+}
+
+/* 컨테이너 — inline transform 으로 마우스 위치 따라감 (translate3d).
+   회전 애니메이션은 ::before 자식에 분리해서 inline transform 과 충돌 안 함. */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+  z-index: 99999;
+  /* 배트 손잡이 끝(좌상단 부근)이 마우스 클릭 포인트와 일치하도록 음수 offset. */
+  margin-left: -4px;
+  margin-top: -4px;
+  transition: opacity 80ms ease;
+}
+
+.custom-cursor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/cursors/ballplay.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform-origin: 85% 85%; /* 손잡이(하단) = 회전축 */
+}
+
+.custom-cursor.is-swing::before {
+  animation: custom-cursor-swing 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes custom-cursor-swing {
+  0%   { transform: rotate(0deg); }
+  35%  { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+
 :root {
   --font-pretendard: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --primary: #ff6b35;

@@ -1,8 +1,7 @@
 import { HomeScreen } from "@/components/domain/HomeScreen";
 import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
-import { getUserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
-import { getMyAccountRank } from "@/lib/supabase/query-parts/bpAccountRanking";
+import { getAccountStats, getMyAccountStatsRank } from "@/lib/supabase/query-parts/bpAccountStats";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +17,10 @@ export default async function HomePage() {
   const adminClient = createSupabaseAdminClient();
   const [record, rankResult] = await Promise.all([
     user
-      ? getUserPublicMatchRecord(adminClient, user.id)
+      ? getAccountStats(adminClient, user.id)
       : Promise.resolve({ wins: 0, losses: 0, total: 0, winRate: 0 }),
     user
-      ? getMyAccountRank(adminClient, user.id)
+      ? getMyAccountStatsRank(adminClient, user.id)
       : Promise.resolve({ ok: false as const })
   ]);
   const myRank = rankResult.ok ? rankResult.data.rank : null;

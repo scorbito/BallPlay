@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { UserProfile } from "@/lib/types/domain";
 import type { UserProfileRecord } from "@/lib/types/api-contracts";
 import { useVisibilityRefresh } from "@/lib/hooks/useVisibilityRefresh";
+import { initCustomCursor } from "@/lib/cursor/customCursor";
 
 type Toast = {
   id: number;
@@ -63,6 +64,11 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   const [toast, setToast] = useState<Toast | null>(null);
 
   useVisibilityRefresh();
+
+  // 마운트 시 localStorage 기준으로 커스텀 커서 body 클래스 부여 (PC 전용).
+  useEffect(() => {
+    initCustomCursor();
+  }, []);
 
   useEffect(() => {
     if (!initialProfile) return;

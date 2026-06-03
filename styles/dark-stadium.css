@@ -1608,17 +1608,17 @@
 .stadium-bat-swing {
   position: fixed;
   width: 70px;
-  height: 12px;
+  height: 70px;
   pointer-events: none;
   z-index: 9998; /* FlyingBall(9999) 바로 아래 — 공이 배트 위로 보이도록 */
-  /* 손잡이 끝 부근을 축으로 — SVG 좌측 노브가 (cx=2 / 70 ≈ 3%) 에 있음 */
-  transform-origin: 3% 50%;
+  /* PNG 배트의 손잡이가 좌측에 있음 — 좌측 가장자리 부근을 회전축으로. */
+  transform-origin: 10% 50%;
   /* 초기엔 보이지 않다가 keyframes 에서 ramp-in */
   opacity: 0;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
 
-.stadium-bat-swing svg {
+.stadium-bat-swing img {
   width: 100%;
   height: 100%;
   display: block;

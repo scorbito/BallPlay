@@ -1,6 +1,13 @@
 // 사용자 누적 공개 매치 전적 집계 — bp_records (source='public') 기준.
 // HOME 히어로 뱃지와 /records 상단 카드에서 공통 사용.
 // 무승부는 wins/losses/total 어디에도 카운트 안 함 (랭킹 페이지와 동일 규칙).
+//
+// ⚠️ DEPRECATED (2026-06-03):
+//   본 집계는 bp_records 전체 row 를 읽기 때문에 mirror-bp-records-for-opponent.sql
+//   가 만든 mirror row 도 포함된다 → "자고 일어났더니 1패" 현상.
+//   계정 누적 전적은 bpAccountStats.getAccountStats 로 교체됨.
+//   formatWinRate 헬퍼는 여전히 공용 → 유지.
+//   호출처가 모두 옮겨졌으므로 본 함수는 직접 호출하지 말 것.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -23,6 +30,8 @@ type RecordRowSlim = {
  * - service-role 클라이언트(또는 본인 인증 클라이언트)를 받아 RLS 우회.
  * - 무승부는 제외 (랭킹 페이지 정책과 일치).
  * - 페이지네이션으로 1000행 한도 우회.
+ *
+ * @deprecated mirror row 포함 문제로 bpAccountStats.getAccountStats 로 대체. 호출 금지.
  */
 export async function getUserPublicMatchRecord(
   client: SupabaseClient,

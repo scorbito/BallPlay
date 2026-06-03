@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { RecordsScreen } from "@/components/domain/RecordsScreen";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
-import { getUserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
+import { getAccountStats } from "@/lib/supabase/query-parts/bpAccountStats";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export default async function RecordsPage() {
   const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   const record = user
-    ? await getUserPublicMatchRecord(createSupabaseAdminClient(), user.id)
+    ? await getAccountStats(createSupabaseAdminClient(), user.id)
     : { wins: 0, losses: 0, total: 0, winRate: 0 };
   const isAnonymous = Boolean(user?.is_anonymous);
 

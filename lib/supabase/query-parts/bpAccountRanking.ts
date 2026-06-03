@@ -2,6 +2,13 @@
 // 라인업 랭킹(bpLineupRankings)과 달리 라인업 ID는 무시하고 사용자별 누적 전적만 본다.
 // admin 클라이언트로 RLS 우회 → 전체 사용자 집계 가능. 닉네임은 profiles 별도 IN 쿼리.
 // 무승부는 wins/losses/total 어디에도 카운트 안 함 (랭킹/요약 카드와 동일 규칙).
+//
+// ⚠️ DEPRECATED (2026-06-03):
+//   본 집계는 mirror row(상대 owner 에게 자동 INSERT 된 row) 까지 포함하기 때문에
+//   "본인이 직접 플레이하지 않은 매치" 도 카운트된다. 계정 단위 누적 전적은
+//   bpAccountStats.* (bp_account_stats 카운터 테이블) 로 이관됨.
+//   AccountRankingRow / MyAccountRank / FullAccountRankingRow 타입은
+//   AccountRankingScreen 호환을 위해 그대로 유지 — 새 코드는 bpAccountStats 사용 권장.
 
 import { unstable_cache } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -118,6 +125,7 @@ function sortAggregates(aggs: Aggregate[]): Array<Aggregate & { total: number; w
  * - 상위 `limit`명까지. 정렬: wins desc → winRate desc → total desc.
  * - 닉네임은 profiles 테이블 IN 쿼리. FK가 없을 수 있으니 별도 select.
  */
+/** @deprecated bp_account_stats 기반 listAccountStatsRanking 으로 교체. */
 export async function listSeasonAccountRanking(
   client: SupabaseClient,
   limit = 100
@@ -163,6 +171,7 @@ export async function listSeasonAccountRanking(
  *   본인보다 앞선 인원 수 + 1.
  * - 본인 row가 집계 결과에 존재하지 않으면(공개 매치 0건) ok:false.
  */
+/** @deprecated bp_account_stats 기반 getMyAccountStatsRank 로 교체. */
 export async function getMyAccountRank(
   client: SupabaseClient,
   userId: string | null | undefined
@@ -240,6 +249,7 @@ async function buildFullAccountRanking(): Promise<FullAccountRankingRow[]> {
 }
 
 /** 60초 캐시된 전체 정렬 랭킹 리스트. 본인 user_id 와 무관. */
+/** @deprecated bp_account_stats 기반 getCachedFullAccountStatsRanking 으로 교체. */
 export const getCachedFullAccountRanking = unstable_cache(
   async (): Promise<FullAccountRankingRow[]> => buildFullAccountRanking(),
   ["account-ranking-full-v1"],
@@ -252,6 +262,7 @@ export const getCachedFullAccountRanking = unstable_cache(
  * - 캐시 외부에 두어 닉네임 변경이 ~60초 내에 반영되도록.
  *   (캐시 안에 넣으면 전체 페이로드 부풀어서 비효율)
  */
+/** @deprecated bp_account_stats 기반 hydrateAccountStatsNicknames 로 교체. */
 export async function hydrateAccountRankingNicknames(
   rows: FullAccountRankingRow[]
 ): Promise<AccountRankingRow[]> {

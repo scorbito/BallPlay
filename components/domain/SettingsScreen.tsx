@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, ShieldCheck, UserCircle } from "lucide-react";
+import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, UserCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -11,6 +11,7 @@ import { signOutAction } from "@/lib/actions/auth";
 import { updateProfileAction } from "@/lib/actions/profile";
 import { useAppState } from "@/lib/state/AppState";
 import type { AuthAccountInfo } from "@/lib/supabase/queries";
+import { getCustomCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor/customCursor";
 
 const NICKNAME_MAX = 16;
 
@@ -47,6 +48,17 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
   useEffect(() => {
     setNicknameDraft(profile?.nickname ?? "");
   }, [profile?.nickname]);
+
+  // 커스텀 커서 토글 — localStorage 기준. 마운트 후 hydration-safe 하게 읽음.
+  const [cursorEnabled, setCursorEnabled] = useState(false);
+  useEffect(() => {
+    setCursorEnabled(getCustomCursorEnabled());
+  }, []);
+  const handleToggleCursor = () => {
+    const next = !cursorEnabled;
+    setCursorEnabled(next);
+    setCustomCursorEnabled(next);
+  };
 
   const nicknameTrimmed = nicknameDraft.trim();
   const nicknameDirty = nicknameTrimmed.length > 0 && nicknameTrimmed !== (profile?.nickname ?? "");
@@ -137,6 +149,21 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
         ) : (
           <p className="settings-nickname-hint">경기장 등록 라인업에 닉네임이 표시됩니다 (최대 {NICKNAME_MAX}자)</p>
         )}
+      </section>
+
+      {/* 화면 설정 — 커스텀 마우스 커서 토글 (PC 전용) */}
+      <section className="menu-list settings-list settings-list-secondary" aria-label="화면 설정">
+        <button
+          type="button"
+          className="settings-row"
+          onClick={handleToggleCursor}
+          aria-pressed={cursorEnabled}
+        >
+          <MousePointer2 size={18} />
+          <strong>커스텀 마우스 커서</strong>
+          <span className="settings-value">{cursorEnabled ? "켜짐" : "꺼짐"}</span>
+          <ChevronRight size={18} aria-hidden />
+        </button>
       </section>
 
       <section className="menu-list settings-list settings-list-secondary">
