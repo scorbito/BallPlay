@@ -3533,6 +3533,10 @@
 }
 
 .phone-frame-light .stadium-lobby-rank-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 700;
@@ -3542,6 +3546,10 @@
   border-radius: 999px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-light .stadium-lobby-rank-tab > svg {
+  flex-shrink: 0;
 }
 
 .phone-frame-light .stadium-lobby-rank-tab.is-active {

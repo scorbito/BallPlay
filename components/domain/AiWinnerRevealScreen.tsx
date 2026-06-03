@@ -169,7 +169,7 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
               <div className="ai-reveal-team-info">
                 <span className="ai-reveal-team-name">{home.shortName}</span>
                 {game.homeStarter ? (
-                  <span className="ai-reveal-team-starter">선발 {game.homeStarter}</span>
+                  <span className="ai-reveal-team-starter">{game.homeStarter}</span>
                 ) : null}
               </div>
               {finished ? <span className="ai-reveal-team-score">{game.homeScore ?? 0}</span> : null}
@@ -180,7 +180,7 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
               <div className="ai-reveal-team-info">
                 <span className="ai-reveal-team-name">{away.shortName}</span>
                 {game.awayStarter ? (
-                  <span className="ai-reveal-team-starter">선발 {game.awayStarter}</span>
+                  <span className="ai-reveal-team-starter">{game.awayStarter}</span>
                 ) : null}
               </div>
               <TeamBadge teamId={game.awayTeamId} size="md" />

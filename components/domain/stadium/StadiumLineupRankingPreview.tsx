@@ -67,14 +67,7 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
 
   return (
     <section className="stadium-lobby-section stadium-lobby-rank-preview">
-      <header className="stadium-lobby-section-head">
-        <h2 className="stadium-lobby-section-title">
-          <Trophy size={14} aria-hidden />
-          랭킹 TOP 5
-        </h2>
-      </header>
-
-      {/* 탭 — 라인업 / 계정 누적 */}
+      {/* 탭 — 라인업 / 계정 누적 (TOP5 라벨도 탭 안에 포함해 한 줄 절약) */}
       <div className="stadium-lobby-rank-tabs" role="tablist" aria-label="랭킹 종류">
         <button
           type="button"
@@ -83,7 +76,8 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
           className={`stadium-lobby-rank-tab ${tab === "lineup" ? "is-active" : ""}`}
           onClick={() => setTab("lineup")}
         >
-          라인업 랭킹
+          <Trophy size={14} aria-hidden />
+          <span>라인업 랭킹 TOP5</span>
         </button>
         <button
           type="button"
@@ -92,7 +86,8 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
           className={`stadium-lobby-rank-tab ${tab === "account" ? "is-active" : ""}`}
           onClick={() => setTab("account")}
         >
-          계정 누적 랭킹
+          <Trophy size={14} aria-hidden />
+          <span>계정 누적 랭킹 TOP5</span>
         </button>
       </div>
 
