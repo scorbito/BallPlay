@@ -18,7 +18,6 @@ import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
-import { getAccountStats } from "@/lib/supabase/query-parts/bpAccountStats";
 import { TierUpHost } from "@/components/common/TierUpHost";
 
 export function ResultScreen() {
@@ -54,8 +53,14 @@ export function ResultScreen() {
         const client = createSupabaseBrowserClient();
         const { data: { user } } = await client.auth.getUser();
         if (!user || user.is_anonymous) return;
-        const stats = await getAccountStats(client, user.id);
-        setAccountWins(stats.wins);
+        // bp_account_stats 직접 query — getAccountStats 모듈은 server-only import 포함이라
+        // client에서 import 못 함. 인라인으로 동일 로직 수행.
+        const { data } = await client
+          .from("bp_account_stats")
+          .select("wins")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        setAccountWins(data?.wins ?? 0);
       } catch {
         // ignore — 단순 부가 기능
       }
