@@ -3,6 +3,7 @@
 // 라인업 상세 모달 — 라인업짜기처럼 타순(포지션+좌/우타) + 투수(선발/불펜, 좌/우투) 표시.
 // 매일 바뀌는 시즌 스탯은 표시하지 않음.
 
+import { Swords } from "lucide-react";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
@@ -13,6 +14,12 @@ type LineupDetailModalProps = {
   open: boolean;
   team: SimTeamInput | null;
   onClose: () => void;
+  /**
+   * 도전 버튼 — 헤더 타이틀 우측에 핑크 칩으로 표시.
+   * 미지정 시 도전 버튼은 노출되지 않음 (기존 사용처 영향 X).
+   * 클릭 시 onClose → onChallenge 순으로 호출되어 모달이 닫히고 도전 흐름이 시작됨.
+   */
+  onChallenge?: () => void;
 };
 
 const HAND_LABEL: Record<"L" | "R" | "S", string> = { L: "좌", R: "우", S: "양" };
@@ -30,7 +37,7 @@ const POSITION_LABEL: Record<string, string> = {
   DH: "DH"
 };
 
-export function LineupDetailModal({ open, team, onClose }: LineupDetailModalProps) {
+export function LineupDetailModal({ open, team, onClose, onChallenge }: LineupDetailModalProps) {
   if (!team) {
     return (
       <ModalShell
@@ -47,6 +54,11 @@ export function LineupDetailModal({ open, team, onClose }: LineupDetailModalProp
 
   const teamMeta = getTeam(team.teamId);
   const lineupName = team.displayName?.trim() || teamMeta.shortName;
+
+  const handleChallengeClick = () => {
+    onClose();
+    onChallenge?.();
+  };
 
   // 포지션 lookup — 사용자가 라인업에서 지정한 포지션(b.position) 우선,
   // 없으면(AI 자동 생성팀 등) 로스터의 primaryPosition으로 폴백.
@@ -65,6 +77,17 @@ export function LineupDetailModal({ open, team, onClose }: LineupDetailModalProp
         <span className="lineup-detail-title">
           <TeamBadge teamId={team.teamId} size="sm" />
           <span>{lineupName}</span>
+          {onChallenge ? (
+            <button
+              type="button"
+              className="lineup-detail-challenge-btn"
+              onClick={handleChallengeClick}
+              aria-label={`${lineupName}에 도전`}
+            >
+              <Swords size={12} aria-hidden />
+              <span>도전</span>
+            </button>
+          ) : null}
         </span>
       }
       onClose={onClose}

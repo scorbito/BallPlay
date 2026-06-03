@@ -3398,3 +3398,181 @@
     transform: none;
   }
 }
+
+/* ── 경기장 상단 라인업 랭킹 TOP5 프리뷰 ── */
+.phone-frame-light .stadium-lobby-rank-preview {
+  margin-top: 4px;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bp-surface, #fff);
+  border: 1px solid rgba(20, 30, 50, 0.08);
+  border-radius: 10px;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-pos.is-top-1 { color: #f59e0b; }
+.phone-frame-light .stadium-lobby-rank-preview-pos.is-top-2 { color: #94a3b8; }
+.phone-frame-light .stadium-lobby-rank-preview-pos.is-top-3 { color: #b45309; }
+
+.phone-frame-light .stadium-lobby-rank-preview-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-nick {
+  font-size: 11px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-stats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-wl strong {
+  font-size: 13px;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bp-text-secondary);
+  background: rgba(20, 30, 50, 0.03);
+  border-radius: 10px;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-empty-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* TOP5 행의 우측 "라인업" 버튼 — 작은 outline 칩 */
+.phone-frame-light .stadium-lobby-rank-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.3);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-btn:hover {
+  background: rgba(232, 74, 138, 0.14);
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* TOP5 위젯 — 라인업/계정 누적 탭 */
+.phone-frame-light .stadium-lobby-rank-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin: 0 0 8px;
+  background: rgba(20, 30, 50, 0.05);
+  border-radius: 999px;
+}
+
+.phone-frame-light .stadium-lobby-rank-tab {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-light .stadium-lobby-rank-tab.is-active {
+  background: var(--bp-accent);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(232, 74, 138, 0.28);
+}
+
+/* TOP5 위젯 — 5등 밑 "전체 보기" 행 (CTA 톤) */
+.phone-frame-light .stadium-lobby-rank-preview-more {
+  list-style: none;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-more-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px dashed rgba(232, 74, 138, 0.4);
+  border-radius: 10px;
+  text-decoration: none;
+  letter-spacing: -0.1px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-light .stadium-lobby-rank-preview-more-link:hover {
+  background: rgba(232, 74, 138, 0.14);
+  border-color: var(--bp-accent);
+}

@@ -14,6 +14,8 @@ type Props = {
   myRank: MyAccountRank | null;
   myUserId: string | null;
   isLoggedIn: boolean;
+  /** 뒤로가기 목적지 — 페이지 진입 시점의 출처 따라 결정 (?from=). 기본 /records. */
+  backHref?: string;
 };
 
 // 0.857 형식, 단 정수형 .000 처리 — LineupRankingScreen 패턴과 동일.
@@ -29,14 +31,20 @@ function renderRankBadge(rank: number) {
   return rank;
 }
 
-export function AccountRankingScreen({ ranking, myRank, myUserId, isLoggedIn }: Props) {
+export function AccountRankingScreen({
+  ranking,
+  myRank,
+  myUserId,
+  isLoggedIn,
+  backHref = "/records"
+}: Props) {
   // 본인이 상위 100위 안에 들어 있는지 — 들어 있으면 별도 내 순위 카드 노출 생략.
   const myRowInTop = myUserId
     ? ranking.find((r) => r.ownerUserId === myUserId) ?? null
     : null;
 
   return (
-    <AppShell activeTab="play" title="계정 누적 랭킹" theme="light" backHref="/" wide>
+    <AppShell activeTab="play" title="계정 누적 랭킹" theme="light" backHref={backHref} wide>
       {/* 안내 한 줄 */}
       <div className="account-rank-hint-row">
         <p className="account-rank-hint">공개 매치에서 누적된 계정별 전적 순위입니다.</p>

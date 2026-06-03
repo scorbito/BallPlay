@@ -24,8 +24,18 @@ export const metadata: Metadata = {
 
 const TOP_LIMIT = 100;
 
-export default async function AccountRankingPage() {
+export default async function AccountRankingPage({
+  searchParams
+}: {
+  searchParams: { from?: string };
+}) {
   const serverClient = createSupabaseServerClient();
+
+  // ?from= 으로 들어온 출처에 따라 뒤로가기 목적지 결정.
+  // 미지정 시 기본 /records (홈 뱃지에서 옴 → 이제 홈은 /records 로 직행이지만 안전망).
+  const from = searchParams.from;
+  const backHref =
+    from === "stadium" ? "/stadium/lobby" : from === "records" ? "/records" : "/records";
 
   // 1) 캐시된 전체 정렬 랭킹 (user_id 무관 → 공유 캐시 안전)
   //    bp_account_stats 카운터 기반 — mirror row 제외된 본인 직접 플레이 전적.
@@ -62,6 +72,7 @@ export default async function AccountRankingPage() {
       myRank={myRank}
       myUserId={myUserId}
       isLoggedIn={isLoggedIn}
+      backHref={backHref}
     />
   );
 }

@@ -6,6 +6,7 @@ import {
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
+import type { GameStatus } from "@/lib/types/api-contracts";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,41 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
 
   // game 자체는 listGamesFromDb 가 날짜 범위라 광범위. 한 행만 가져오는 게 더 적합한데
   // 별도 query helper 없으니 일단 단일 select 로.
-  const { data: gameRow, error: gameError } = await supabase
-    .from("games")
-    .select("id,game_date,game_time,stadium,home_team_id,away_team_id,home_score,away_score,status")
-    .eq("id", params.gameId)
-    .maybeSingle();
+  // 선발 투수 컬럼(home_starter/away_starter)은 add-games-starters.sql 적용 후에만 존재.
+  // 미적용 환경 대비 fallback select.
+  type GameRow = {
+    id: string;
+    game_date: string;
+    game_time: string | null;
+    stadium: string;
+    home_team_id: string;
+    away_team_id: string;
+    home_score: number | null;
+    away_score: number | null;
+    status: GameStatus;
+    home_starter?: string | null;
+    away_starter?: string | null;
+  };
+  let gameRow: GameRow | null = null;
+  let gameError: { code?: string } | null = null;
+  {
+    const res = await supabase
+      .from("games")
+      .select("id,game_date,game_time,stadium,home_team_id,away_team_id,home_score,away_score,status,home_starter,away_starter")
+      .eq("id", params.gameId)
+      .maybeSingle();
+    gameRow = res.data as GameRow | null;
+    gameError = res.error;
+  }
+  if (gameError?.code === "42703") {
+    const fb = await supabase
+      .from("games")
+      .select("id,game_date,game_time,stadium,home_team_id,away_team_id,home_score,away_score,status")
+      .eq("id", params.gameId)
+      .maybeSingle();
+    gameRow = fb.data as GameRow | null;
+    gameError = fb.error;
+  }
 
   if (gameError || !gameRow) notFound();
 
@@ -74,7 +105,9 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
         awayTeamId: gameRow.away_team_id,
         homeScore: gameRow.home_score,
         awayScore: gameRow.away_score,
-        status: gameRow.status
+        status: gameRow.status,
+        homeStarter: (gameRow as { home_starter?: string | null }).home_starter ?? null,
+        awayStarter: (gameRow as { away_starter?: string | null }).away_starter ?? null
       }}
       predictions={predictions}
       isToday={isToday}

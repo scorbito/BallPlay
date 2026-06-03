@@ -455,7 +455,7 @@ export function RecordsScreen({
             </div>
           )}
           <Link
-            href="/play/account-ranking"
+            href="/play/account-ranking?from=records"
             prefetch
             className="records-ranking-link"
             aria-label="계정 누적 랭킹 보기"

@@ -273,7 +273,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   // ── 렌더 분기 ────────────────────────────────────────────
   if (loading) {
     return (
-      <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
+      <AppShell activeTab="play" title="친구와 대결" backHref="/play/practice" theme="light" wide hideBottomTabs>
         <p className="stadium-loading">
           <Loader2 size={16} className="stadium-spin" /> 매치 정보를 불러오는 중...
         </p>
@@ -283,7 +283,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
 
   if (error && !row) {
     return (
-      <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
+      <AppShell activeTab="play" title="친구와 대결" backHref="/play/practice" theme="light" wide hideBottomTabs>
         <section className="stadium-replay-error">
           <AlertCircle size={28} />
           <strong>매치를 열 수 없어요</strong>
@@ -320,7 +320,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   const finished = row.status === "finished" || row.status === "cancelled";
 
   return (
-    <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
+    <AppShell activeTab="play" title="친구와 대결" backHref="/play/practice" theme="light" wide hideBottomTabs>
       <section className="stadium-live">
         {/* ── 매치 VS 헤더 — 라인업 카드 클릭 시 상세 모달 ── */}
         <div className="stadium-enter-vs">
@@ -433,13 +433,8 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                   })}
                 </div>
                 <p className="stadium-enter-picker-hint">
-                  양쪽 모두 <strong>공개 등록</strong> 라인업이면 <strong>정식 매치</strong>로 기록돼요.
+                  친구 매치는 <strong>연습 매치</strong>로 기록만 남고 랭킹·전적에는 집계되지 않아요.
                 </p>
-                {Object.keys(publishedLineupIdByEntry).length === 0 ? (
-                  <Link href="/play/lineup" className="stadium-enter-picker-cta" prefetch>
-                    라인업 공개 등록하고 정식 매치로 진행 →
-                  </Link>
-                ) : null}
               </div>
             ) : (
               <div className="stadium-enter-empty-box">

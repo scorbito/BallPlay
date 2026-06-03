@@ -114,12 +114,12 @@ const sections: HomeSection[] = [
         featured: true
       },
       {
-        id: "lineup-ranking",
-        href: "/play/lineup/ranking",
-        title: "라인업 랭킹",
-        description: "공개 매치 시즌·주간 순위",
-        icon: Trophy,
-        iconImage: "/icons/menu/lineup-ranking.png",
+        id: "practice-stadium",
+        href: "/play/practice",
+        title: "연습경기장",
+        description: "AI · 친구 · 내 라인업 자유 대결",
+        icon: Swords,
+        iconImage: "/icons/menu/practice-stadium.png",
         available: true
       }
     ]
@@ -422,17 +422,17 @@ export async function HomeScreen({
                           <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
                         ) : null}
                         {section.id === "lineup-play" ? (
-                          <Link href="/play/account-ranking" className="home-hero-record-badge" prefetch>
+                          <Link href="/records" className="home-hero-record-badge" prefetch>
                             {userRecord.total > 0 ? (
                               <>
                                 <AccountTierBadge wins={userRecord.wins} size={24} />
                                 <span>
-                                  📊 내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
+                                  내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
                                   {myRank !== null ? ` · ${myRank}위` : ""}
                                 </span>
                               </>
                             ) : (
-                              <span>📊 첫 매치 도전!</span>
+                              <span>첫 매치 도전!</span>
                             )}
                           </Link>
                         ) : null}

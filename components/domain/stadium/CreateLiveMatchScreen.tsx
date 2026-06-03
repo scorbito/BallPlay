@@ -99,7 +99,7 @@ export function CreateLiveMatchScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="친구와 대결" backHref="/stadium/lobby" theme="light" wide>
+    <AppShell activeTab="play" title="친구와 대결" backHref="/play/practice" theme="light" wide>
       <section className="stadium-live-create">
         <header className="stadium-enter-head">
           <h1 className="stadium-h1">친구와 실시간 대결</h1>
@@ -137,13 +137,8 @@ export function CreateLiveMatchScreen() {
               })}
             </div>
             <p className="stadium-enter-picker-hint">
-              양쪽 모두 <strong>공개 등록</strong> 라인업이면 <strong>정식 매치</strong>로 기록돼요. 한쪽이라도 비등록이면 <strong>연습 매치</strong>.
+              친구 매치는 <strong>연습 매치</strong>로 기록만 남고 랭킹·전적에는 집계되지 않아요.
             </p>
-            {Object.keys(publishedLineupIdByEntry).length === 0 ? (
-              <Link href="/play/lineup" className="stadium-enter-picker-cta" prefetch>
-                라인업 공개 등록하고 정식 매치로 진행 →
-              </Link>
-            ) : null}
           </div>
         ) : (
           <div className="stadium-enter-empty-box">

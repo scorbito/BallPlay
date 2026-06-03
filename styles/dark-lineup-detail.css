@@ -54,13 +54,68 @@
   color: var(--bp-text-secondary) !important;
 }
 
-/* 헤더 타이틀 — 배지 + 라인업 이름 */
+/* 모달 헤더 grid (42px 1fr 42px) 의 title(strong)을 우측 컬럼까지 확장
+   → 도전 버튼이 모달 우측 끝(close 버튼 반대편)까지 갈 수 있도록. */
+.lineup-detail-panel .modal-header > strong {
+  grid-column: 2 / -1;
+}
+
+/* 헤더 타이틀 — 배지+라인업 이름은 헤더 중앙 정렬, 도전 칩은 우측 끝.
+   도전 칩을 absolute 로 띄워서 flex 가 배지+이름만 자연 중앙 정렬.
+   정중앙은 X 버튼과 도전 버튼이 좌우 대칭으로 차지하는 공간을 padding으로 보정. */
 .lineup-detail-panel .lineup-detail-title {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  position: relative;
+  width: 100%;
+  /* 우측에 도전 버튼이 absolute 로 자리잡으니, 배지+이름이 진짜 중앙에 오도록
+     오른쪽으로 도전 버튼 예상 폭만큼 padding 보정. */
+  padding-right: 70px;
   font-size: 16px;
   font-weight: 800;
+}
+
+/* 헤더 우측 "도전" 버튼 — 핑크 chip, absolute 우측 끝 */
+.lineup-detail-panel .lineup-detail-challenge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: absolute;
+  /* 우측 정렬 — 모달 body padding(16) - header padding(10) = 6px 보정해서
+     투수 카드 우측 가장자리와 맞춤. */
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--bp-accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(232, 74, 138, 0.32);
+  transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.12s ease, filter 0.12s ease;
+  letter-spacing: 0.2px;
+  line-height: 1;
+}
+
+/* hover — 보라색 (--bp-accent-2) 으로 튀던 버그 수정. 핑크 톤 어둡게. */
+.lineup-detail-panel .lineup-detail-challenge-btn:hover {
+  filter: brightness(0.93);
+  box-shadow: 0 3px 10px rgba(232, 74, 138, 0.36);
+}
+
+.lineup-detail-panel .lineup-detail-challenge-btn:active {
+  transform: translateY(calc(-50% + 1px));
+  box-shadow: 0 1px 4px rgba(232, 74, 138, 0.28);
+}
+
+.lineup-detail-panel .lineup-detail-challenge-btn:focus-visible {
+  outline: 2px solid var(--bp-accent);
+  outline-offset: 2px;
 }
 
 /* ── 2열 레이아웃: 왼쪽 타순, 오른쪽 투수 ── */

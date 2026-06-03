@@ -20,6 +20,8 @@ type GameInfo = {
   homeScore: number | null;
   awayScore: number | null;
   status: GameStatus;
+  homeStarter: string | null;
+  awayStarter: string | null;
 };
 
 type Props = {
@@ -164,13 +166,23 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
           <div className="ai-reveal-matchup-teams">
             <div className="ai-reveal-team">
               <TeamBadge teamId={game.homeTeamId} size="md" />
-              <span className="ai-reveal-team-name">{home.shortName}</span>
+              <div className="ai-reveal-team-info">
+                <span className="ai-reveal-team-name">{home.shortName}</span>
+                {game.homeStarter ? (
+                  <span className="ai-reveal-team-starter">선발 {game.homeStarter}</span>
+                ) : null}
+              </div>
               {finished ? <span className="ai-reveal-team-score">{game.homeScore ?? 0}</span> : null}
             </div>
             <span className="ai-reveal-vs">VS</span>
             <div className="ai-reveal-team">
               {finished ? <span className="ai-reveal-team-score">{game.awayScore ?? 0}</span> : null}
-              <span className="ai-reveal-team-name">{away.shortName}</span>
+              <div className="ai-reveal-team-info">
+                <span className="ai-reveal-team-name">{away.shortName}</span>
+                {game.awayStarter ? (
+                  <span className="ai-reveal-team-starter">선발 {game.awayStarter}</span>
+                ) : null}
+              </div>
               <TeamBadge teamId={game.awayTeamId} size="md" />
             </div>
           </div>

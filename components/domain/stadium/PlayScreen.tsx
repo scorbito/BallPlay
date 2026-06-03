@@ -570,8 +570,8 @@ export function PlayScreen() {
           mvpName: mvpEntity?.name ?? null,
           isWalkoff: isWalkOff,
           totalInnings,
-          // 라인업 전적 집계용 — source 무관, 양쪽 lineup_id 둘 다 NOT NULL 이면 정식 매치로 view 집계.
-          // 친구 대전이라도 양쪽 공개 라인업이면 정식 매치. 한쪽이라도 비등록이면 연습 매치.
+          // 라인업 ID 는 정보 보존용으로 저장. 실제 랭킹 집계는 source='public' 인 row 만 대상.
+          // 친구 매치(source='friend')는 공개 라인업이라도 연습 매치 — 랭킹/누적 전적 집계 X.
           homeLineupId: session.userSide === "home"
             ? (session.myLineupId ?? null)
             : (session.opponentLineupId ?? null),
@@ -610,9 +610,13 @@ export function PlayScreen() {
     };
   }, [phase, session, recordSavedId, recordSaving, showToast]);
 
+  // 뒤로가기 목적지 — public 매치(공식)는 경기장, 그 외(친구/AI/내 라인업)는 연습경기장.
+  const backHrefForSource =
+    session?.source === "public" ? "/stadium/lobby" : "/play/practice";
+
   if (!hydrated || !session?.result) {
     return (
-      <AppShell activeTab="stadium" title="시뮬레이션" backHref="/stadium/lobby" theme="light" wide hideBottomTabs>
+      <AppShell activeTab="stadium" title="시뮬레이션" backHref={backHrefForSource} theme="light" wide hideBottomTabs>
         <p className="stadium-loading">경기 준비 중...</p>
       </AppShell>
     );
@@ -696,7 +700,7 @@ export function PlayScreen() {
   const showOpening = !openingDone;
 
   return (
-    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref="/stadium/lobby" theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
+    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref={backHrefForSource} theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>

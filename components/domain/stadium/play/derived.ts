@@ -79,8 +79,8 @@ export function deriveHeaderTitle(isDone: boolean, latest: FlatEvent | undefined
 
 // 매치 종류 — 모든 경기에서 표시. 양쪽 lineup_id 있으면 정식(전적 집계), 아니면 연습.
 // public: 항상 양쪽 lineup_id 있음 → 정식
-// friend: 양쪽 공개 라인업이면 정식, 아니면 연습
-// ai/self: lineup_id 없음 → 연습
+// 공식 매치 판정 — source='public' (공개 매치 도전) 이면서 양쪽 라인업 ID 둘 다 있을 때만.
+// friend/ai/self 는 무조건 연습 (랭킹·전적 집계 안 됨).
 export function deriveIsOfficial(session: MatchSession | null | undefined): boolean {
-  return !!session?.myLineupId && !!session?.opponentLineupId;
+  return session?.source === "public" && !!session?.myLineupId && !!session?.opponentLineupId;
 }

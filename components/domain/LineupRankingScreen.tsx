@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Trophy, Crown, Medal, Award, ChevronDown } from "lucide-react";
+import { Trophy, Crown, Medal, Award, ChevronDown, List } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
+import { PublicLineupChallenge } from "@/components/domain/stadium/PublicLineupChallenge";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchPublishedLineupsByIds } from "@/lib/supabase/query-parts/bpLineups";
@@ -39,6 +40,8 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
+  const [previewLineupId, setPreviewLineupId] = useState<string | null>(null);
+  const [challengeLineupId, setChallengeLineupId] = useState<string | null>(null);
   const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
   const ddRef = useRef<HTMLDivElement | null>(null);
   const rows = tab === "season" ? seasonRanking : weeklyRanking;
@@ -84,13 +87,14 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
       const built = buildSimTeamInput(lineup.team_id, lineup.batting, pitching, stats, lineup.name);
       if (!built.ok) return;
       setPreviewTeam(built.team);
+      setPreviewLineupId(row.lineupId);
     } finally {
       setPreviewLoadingId(null);
     }
   };
 
   return (
-    <AppShell activeTab="play" title="라인업 랭킹" theme="light" backHref="/" wide>
+    <AppShell activeTab="play" title="라인업 랭킹" theme="light" backHref="/stadium/lobby" wide>
       {/* 탭 */}
       <div className="lineup-rank-tabs" role="tablist" aria-label="랭킹 기간">
         <button
@@ -222,8 +226,20 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
                   <span className="lineup-rank-wl">
                     <strong>{row.wins}</strong>승 {row.losses}패
                   </span>
-                  <span className="lineup-rank-rate">({formatRate(row.winRate)})</span>
                 </div>
+                <button
+                  type="button"
+                  className="lineup-rank-preview-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openLineupPreview(row);
+                  }}
+                  disabled={isLoading}
+                  aria-label={`${row.lineupName} 라인업 보기`}
+                >
+                  <List size={12} aria-hidden />
+                  <span>라인업</span>
+                </button>
               </li>
             );
           })}
@@ -233,7 +249,16 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
       <LineupDetailModal
         open={previewTeam !== null}
         team={previewTeam}
-        onClose={() => setPreviewTeam(null)}
+        onClose={() => {
+          setPreviewTeam(null);
+          setPreviewLineupId(null);
+        }}
+        onChallenge={previewLineupId ? () => setChallengeLineupId(previewLineupId) : undefined}
+      />
+
+      <PublicLineupChallenge
+        opponentLineupId={challengeLineupId}
+        onClose={() => setChallengeLineupId(null)}
       />
     </AppShell>
   );

@@ -4005,3 +4005,31 @@
 .phone-frame-light .account-rank-login-cta-btn:hover {
   opacity: 0.92;
 }
+
+/* 라인업 랭킹 행 우측 "라인업" 버튼 — 작은 outline 칩 */
+.phone-frame-light .lineup-rank-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.3);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.phone-frame-light .lineup-rank-preview-btn:hover {
+  background: rgba(232, 74, 138, 0.14);
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .lineup-rank-preview-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

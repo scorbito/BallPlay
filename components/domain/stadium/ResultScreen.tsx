@@ -194,9 +194,13 @@ export function ResultScreen() {
     };
   }, [hydrated, canSave, session, mvpPlayer, savedId, saving, showToast]);
 
+  // 뒤로가기 — public 매치는 경기장, 그 외는 연습경기장.
+  const backHrefForSource =
+    session?.source === "public" ? "/stadium/lobby" : "/play/practice";
+
   if (!hydrated || !session?.result || !session.input) {
     return (
-      <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="light" wide>
+      <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide>
         <p className="stadium-loading">결과를 불러오는 중...</p>
       </AppShell>
     );
@@ -272,7 +276,7 @@ export function ResultScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="light" wide>
+    <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide>
       {/* 승급 감지 + 모달 — 매치 결과 직후 즉시 알림. */}
       <TierUpHost wins={accountWins} />
       <section className="stadium-result">
