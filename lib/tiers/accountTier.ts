@@ -27,15 +27,15 @@ export type AccountTier = {
 
 const TIERS = [
   { wins: 1, name: "신인", file: "1w.png" },
-  { wins: 5, name: "후보", file: "5w.png" },
-  { wins: 10, name: "백업", file: "10w.png" },
+  { wins: 5, name: "유망주", file: "5w.png" },
+  { wins: 10, name: "후보", file: "10w.png" },
   { wins: 50, name: "주전", file: "50w.png" },
   { wins: 100, name: "베테랑", file: "100w.png" },
   { wins: 300, name: "4번타자", file: "300w.png" },
   { wins: 500, name: "올스타", file: "500w.png" },
   { wins: 700, name: "골든글러브", file: "700w.png" },
   { wins: 1000, name: "MVP", file: "1000w.png" },
-  { wins: 1500, name: "명예의 전당", file: "1500w.png" },
+  { wins: 1500, name: "전설", file: "1500w.png" },
   { wins: 2000, name: "영구결번", file: "2000w.png" }
 ] as const;
 

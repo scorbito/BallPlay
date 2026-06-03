@@ -18,6 +18,8 @@ import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
+import { getAccountStats } from "@/lib/supabase/query-parts/bpAccountStats";
+import { TierUpHost } from "@/components/common/TierUpHost";
 
 export function ResultScreen() {
   const router = useRouter();
@@ -29,6 +31,8 @@ export function ResultScreen() {
   const [savedId, setSavedId] = useState<string | null>(null);
   // 동기 ref 가드 — useEffect가 두 번 실행돼도 INSERT 1회만 시도하도록 차단.
   const saveAttemptedRef = useRef(false);
+  // 매치 종료 직후 승급 모달 트리거용 — 본인 누적 승수.
+  const [accountWins, setAccountWins] = useState<number>(0);
 
   useEffect(() => {
     const s = loadMatchSession();
@@ -39,6 +43,24 @@ export function ResultScreen() {
     setSession(s);
     setHydrated(true);
   }, [router]);
+
+  // 마운트 + 저장 완료 후 본인 누적 승수 조회 → 승급 모달 트리거.
+  // PlayScreen이 GAME_END 시점에 이미 저장했으면 mount 시점에 바로 최신값 잡힘.
+  // ResultScreen이 직접 저장하는 케이스(fallback)는 savedId 변화 후 다시 조회.
+  useEffect(() => {
+    if (!hydrated) return;
+    (async () => {
+      try {
+        const client = createSupabaseBrowserClient();
+        const { data: { user } } = await client.auth.getUser();
+        if (!user || user.is_anonymous) return;
+        const stats = await getAccountStats(client, user.id);
+        setAccountWins(stats.wins);
+      } catch {
+        // ignore — 단순 부가 기능
+      }
+    })();
+  }, [hydrated, savedId]);
 
   const mvpPlayer = useMemo(() => {
     if (!session?.result || !session.input) return null;
@@ -246,6 +268,8 @@ export function ResultScreen() {
 
   return (
     <AppShell activeTab="stadium" title="결과" backHref="/stadium/lobby" theme="light" wide>
+      {/* 승급 감지 + 모달 — 매치 결과 직후 즉시 알림. */}
+      <TierUpHost wins={accountWins} />
       <section className="stadium-result">
         <div className="stadium-result-banner">
           <Trophy size={24} />

@@ -326,7 +326,18 @@ export function AiWinnerListScreen({
                 <p className="ai-winner-empty-sub">다음 일정은 곧 업데이트됩니다</p>
               ) : null}
             </div>
-          ) : (
+          ) : (() => {
+            // 오늘 경기가 모두 종료되면 미스터리 연출 끄고 자동으로 적중/실패 노출.
+            // 사용자가 reveal 페이지 일일이 안 들어가도 결과가 한눈에 보이도록.
+            const allTodayFinished =
+              isToday &&
+              games.every(
+                (g) =>
+                  g.status === "finished" ||
+                  g.status === "canceled" ||
+                  (g.homeScore !== null && g.awayScore !== null)
+              );
+            return (
             <ul className="ai-winner-game-list">
               {games.map((g) => {
                 const home = getTeam(g.homeTeamId);
@@ -348,7 +359,7 @@ export function AiWinnerListScreen({
                 // ⚠️ 미스터리 연출은 "오늘 첫 reveal"에만 의미 있음. 과거 날짜 경기는
                 //    적중 결과 확인이 목적이므로 무조건 펼친 상태로 노출.
                 const hasSeenReveal = seenIds.has(g.id);
-                const effectiveSeen = hasSeenReveal || !isToday;
+                const effectiveSeen = hasSeenReveal || !isToday || allTodayFinished;
 
                 // 카드 상태:
                 //   1) 09시 전 + 예측 없음 → 잠금 카운트다운
@@ -525,7 +536,8 @@ export function AiWinnerListScreen({
                 );
               })}
             </ul>
-          )}
+            );
+          })()}
         </section>
       </section>
     </AppShell>
