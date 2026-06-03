@@ -95,23 +95,23 @@ const sections: HomeSection[] = [
     gridCols: 3,
     cards: [
       {
-        id: "lineup",
-        href: "/play/lineup",
-        title: "팀 라인업 짜기",
-        description: "9인 타순 + 수비 위치 구성",
-        icon: ListChecks,
-        iconImage: "/icons/menu/lineup-builder.png",
-        available: true,
-        featured: true
-      },
-      {
         id: "stadium",
         href: "/stadium",
         title: "경기장 들어가기",
         description: "라인업 경기 시뮬 + 친구 대결",
         icon: Swords,
-        iconImage: "/icons/menu/stadium.png",
+        iconImage: "/icons/tabs/stadium.png",
         available: true
+      },
+      {
+        id: "lineup",
+        href: "/play/lineup",
+        title: "팀 라인업 짜기",
+        description: "9인 타순 + 수비 위치 구성",
+        icon: ListChecks,
+        iconImage: "/icons/tabs/play.png",
+        available: true,
+        featured: true
       },
       {
         id: "lineup-ranking",
