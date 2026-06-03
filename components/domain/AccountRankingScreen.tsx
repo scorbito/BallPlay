@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Trophy, Crown, Medal, Award } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import type {
   AccountRankingRow,
   MyAccountRank
@@ -67,6 +68,8 @@ export function AccountRankingScreen({ ranking, myRank, myUserId, isLoggedIn }: 
                 >
                   {renderRankBadge(row.rank)}
                 </span>
+                {/* 누적 승수 마일스톤 뱃지 — 랭킹 진입 자체가 wins >= 1 보장이라 항상 렌더됨. */}
+                <AccountTierBadge wins={row.wins} size={32} />
                 <div className="account-rank-body">
                   <span className="account-rank-nickname">
                     {row.nickname}

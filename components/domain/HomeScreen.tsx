@@ -45,6 +45,9 @@ function BaseballIcon({ size = 24 }: { size?: number }) {
   );
 }
 import { AppShell } from "@/components/layout/AppShell";
+import { AccountTierBadge } from "@/components/common/AccountTierBadge";
+import { TierUpHost } from "@/components/common/TierUpHost";
+import { getAccountTierByWins } from "@/lib/tiers/accountTier";
 
 type HomeCard = {
   id: string;
@@ -421,10 +424,13 @@ export async function HomeScreen({
                         {section.id === "lineup-play" ? (
                           <Link href="/play/account-ranking" className="home-hero-record-badge" prefetch>
                             {userRecord.total > 0 ? (
-                              <span>
-                                📊 내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
-                                {myRank !== null ? ` · ${myRank}위` : ""}
-                              </span>
+                              <>
+                                <AccountTierBadge wins={userRecord.wins} size={24} />
+                                <span>
+                                  📊 내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
+                                  {myRank !== null ? ` · ${myRank}위` : ""}
+                                </span>
+                              </>
                             ) : (
                               <span>📊 첫 매치 도전!</span>
                             )}
@@ -433,17 +439,25 @@ export async function HomeScreen({
                       </div>
                     ) : null}
                   </div>
-                  {section.heroIllustration ? (
-                    <div className="play-hub-hero-illust">
-                      <Image
-                        src={section.heroIllustration}
-                        alt=""
-                        width={160}
-                        height={160}
-                        priority
-                      />
-                    </div>
-                  ) : null}
+                  {section.heroIllustration ? (() => {
+                    // 등급 모자 일러스트 — 사용자 현재 등급에 맞춰 cap 이미지 선택.
+                    // 등급 없음(0승) 케이스는 기본 일러스트 그대로.
+                    const tier = section.id === "lineup-play"
+                      ? getAccountTierByWins(userRecord.wins)
+                      : null;
+                    const illustSrc = tier?.capPath ?? section.heroIllustration;
+                    return (
+                      <div className="play-hub-hero-illust">
+                        <Image
+                          src={illustSrc}
+                          alt=""
+                          width={160}
+                          height={160}
+                          priority
+                        />
+                      </div>
+                    );
+                  })() : null}
                 </div>
                 {cardsGrid}
               </div>
@@ -497,6 +511,8 @@ export async function HomeScreen({
         });
         return out;
       })()}
+      {/* 승급 모달 — 홈 진입 시 자동 감지. 익명/0승은 detector 내부에서 no-op. */}
+      <TierUpHost wins={userRecord.wins} />
     </AppShell>
   );
 }

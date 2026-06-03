@@ -51,6 +51,7 @@ import "@/styles/dark-videos.css";
 import "@/styles/dark-predict.css";
 import "@/styles/dark-ai-predict.css";
 import "@/styles/light-bp-core.css";
+import "@/styles/light-tier-up.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ballnori.com";
 const SITE_TITLE = "야구놀이터";

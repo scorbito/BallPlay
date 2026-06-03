@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { History, Lock, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { AccountTierBadge } from "@/components/common/AccountTierBadge";
+import { TierUpHost } from "@/components/common/TierUpHost";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import {
   RematchLineupModal,
@@ -429,7 +431,12 @@ export function RecordsScreen({
         <div className="records-summary-row">
           {userRecord.total > 0 ? (
             <div className="records-summary-stats">
-              <span className="records-summary-icon" aria-hidden="true">📊</span>
+              {/* wins>=1이면 마일스톤 뱃지, 아니면 기본 📊 — 0/0 케이스는 아래 else 분기. */}
+              {userRecord.wins >= 1 ? (
+                <AccountTierBadge wins={userRecord.wins} size={48} />
+              ) : (
+                <span className="records-summary-icon" aria-hidden="true">📊</span>
+              )}
               <div className="records-summary-text">
                 <span className="records-summary-label">내 공개 매치 누적</span>
                 <strong className="records-summary-numbers">
@@ -533,6 +540,8 @@ export function RecordsScreen({
           );
         })}
       </section>
+      {/* 승급 모달 — 홈을 안 거치고 바로 내 기록 페이지에 들어오는 케이스 대비. */}
+      <TierUpHost wins={userRecord.wins} />
       <LineupDetailModal
         open={previewTeam !== null}
         team={previewTeam}

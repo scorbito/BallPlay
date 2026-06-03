@@ -1,0 +1,189 @@
+/* 계정 누적 승수 마일스톤 뱃지 + 승급 모달 + CSS-only 폭죽. */
+
+/* ── AccountTierBadge ──
+   img wrapper. size 는 컴포넌트가 --bp-tier-badge-size CSS 변수로 주입.
+   showName=true 일 때는 텍스트가 우측에 옴. */
+.account-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.account-tier-badge-img {
+  display: block;
+  width: var(--bp-tier-badge-size, 32px);
+  height: var(--bp-tier-badge-size, 32px);
+  object-fit: contain;
+  /* 뱃지 자체에 그림자 효과가 있는 PNG 라 추가 box-shadow 는 안 줌. */
+}
+
+.account-tier-badge-name {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: inherit;
+}
+
+/* ── TierUpModal ── */
+.tier-up-modal-backdrop {
+  /* 폭죽 입자가 backdrop 영역 안에서 떨어지도록 stacking context 형성. */
+  position: fixed;
+  overflow: hidden;
+}
+
+.tier-up-modal-panel {
+  max-width: 360px;
+  width: calc(100% - 32px);
+  border-radius: 18px;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-up-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 16px;
+  text-align: center;
+}
+
+.tier-up-modal-badge-wrap {
+  /* 뱃지 영역 — 살짝 떠오르는 진입 모션. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  animation: tier-up-badge-pop 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tier-up-modal-badge {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 22px rgba(232, 74, 138, 0.28));
+}
+
+.tier-up-modal-name {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  color: #1a1f36;
+}
+
+.tier-up-modal-message {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(26, 31, 54, 0.7);
+  line-height: 1.5;
+}
+
+.tier-up-modal-confirm {
+  margin-top: 4px;
+  padding: 11px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #e84a8a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.tier-up-modal-confirm:hover {
+  background: #d63d7c;
+}
+.tier-up-modal-confirm:active {
+  transform: scale(0.97);
+}
+
+/* ── 폭죽 (CSS-only) ──
+   .tier-up-confetti 는 backdrop 안에 절대위치된 컨테이너. 각 piece 는
+   상단(-12vh) 에서 시작해 화면 하단(110vh) 로 떨어지면서 회전. ~3초 후 소거(애니메이션
+   1회만 실행 + opacity 0 로 끝나서 자연스럽게 사라짐). */
+.tier-up-confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1; /* modal-panel 보다 아래(=backdrop 위) — 입자가 모달 뒤로도 살짝 보이게. */
+  overflow: hidden;
+}
+
+.tier-up-confetti-piece {
+  position: absolute;
+  top: -12vh;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0.95;
+  animation-name: tier-up-confetti-fall;
+  animation-timing-function: cubic-bezier(0.4, 0.0, 0.6, 1.0);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+@keyframes tier-up-confetti-fall {
+  0% {
+    transform: translateY(0) rotate(var(--bp-confetti-rotate-start, 0deg));
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(120vh) rotate(calc(var(--bp-confetti-rotate-start, 0deg) + 720deg));
+    opacity: 0;
+  }
+}
+
+@keyframes tier-up-badge-pop {
+  0% {
+    transform: scale(0.4) translateY(20px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── 모션 감소 선호 사용자 — 폭죽 / pop 비활성 ── */
+@media (prefers-reduced-motion: reduce) {
+  .tier-up-confetti-piece {
+    animation: none;
+    display: none;
+  }
+  .tier-up-modal-badge-wrap {
+    animation: none;
+  }
+}
+
+/* ── HomeScreen home-hero-record-badge 안의 뱃지 정렬 보정 ──
+   기존 record-badge 는 한 줄 텍스트 기반. 뱃지가 앞에 붙어도 baseline 흐트러지지
+   않도록 align-items: center 보장. */
+.phone-frame-light .home-hero-record-badge,
+.phone-frame-dark .home-hero-record-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── RecordsScreen summary card — 뱃지가 들어가면 정사각 박스 자리에 자연스레 들어맞도록 ── */
+.phone-frame-light .records-summary-stats .account-tier-badge {
+  flex: 0 0 auto;
+}
+
+/* ── AccountRankingScreen list — 뱃지가 rank 칩과 닉네임 사이에 안정적으로 배치되도록 ── */
+.phone-frame-light .account-rank-item .account-tier-badge {
+  flex: 0 0 auto;
+}
