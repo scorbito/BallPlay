@@ -852,3 +852,53 @@
     height: 180px;
   }
 }
+
+/* ── 운영자 전용 "다시 돌리기" ────────────────── */
+.phone-frame-light .sim1000-admin-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 2px 4px;
+  flex-wrap: wrap;
+}
+
+.phone-frame-light .sim1000-admin-rerun {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid rgba(232, 74, 138, 0.45);
+  border-radius: 999px;
+  color: var(--bp-accent, #e84a8a);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .sim1000-admin-rerun:hover {
+  background: rgba(232, 74, 138, 0.08);
+  border-color: rgba(232, 74, 138, 0.70);
+}
+
+.phone-frame-light .sim1000-admin-rerun:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.phone-frame-light .sim1000-admin-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted, #98a0aa);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .sim1000-admin-spin {
+  animation: sim1000-spin 0.9s linear infinite;
+}
+
+@keyframes sim1000-spin {
+  to { transform: rotate(360deg); }
+}

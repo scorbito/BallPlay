@@ -5,6 +5,7 @@ import {
   listSimResultDates,
   type BpSimResultRow
 } from "@/lib/supabase/query-parts/bpSimResults";
+import { getUserTier } from "@/lib/auth/userTier";
 import { Sim1000ListScreen, type Sim1000GameCard } from "@/components/domain/Sim1000ListScreen";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,10 @@ export default async function Sim1000ListPage({
   const selectedDate = explicitDate ?? today;
 
   const supabase = createSupabaseServerClient();
+
+  // 운영자(admin) 여부 — "다시 돌리기" 버튼 노출 분기용. 일반 사용자는 false.
+  const userTier = await getUserTier(supabase);
+  const isAdmin = userTier.tier === "admin";
 
   // 시뮬 결과 + 게임 부가 정보 병렬.
   // listGamesFromDb 는 admin client (선발 컬럼 포함) — 매치업 시각·구장 보강용.
@@ -89,6 +94,7 @@ export default async function Sim1000ListPage({
       prevDate={prevDate}
       nextDate={nextDate}
       games={cards}
+      isAdmin={isAdmin}
     />
   );
 }
