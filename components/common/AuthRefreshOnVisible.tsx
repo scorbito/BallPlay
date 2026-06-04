@@ -1,19 +1,26 @@
 "use client";
 
-// 모바일 백그라운드 → 포그라운드 복귀 처리.
+// 백그라운드 → 포그라운드 복귀 시 fetch limbo 복구.
 //
 // 정책 (무조건 probe):
 //   visibility가 visible로 돌아올 때마다 (백그라운드 시간 무관) Supabase로
-//   refresh + 쿼리 동시 발사. 1.5초 cap.
-//   - 둘 다 응답: 리로드 안 함 (각 화면 핸들러가 refetch)
-//   - 타임아웃 또는 실패: iOS fetch limbo로 추정 → window.location.reload()
+//   가벼운 HEAD 쿼리를 발사. 1.5초 cap.
+//   - 응답: 리로드 안 함 (각 화면 핸들러가 refetch)
+//   - 타임아웃 또는 실패: iOS fetch limbo (또는 PC 의 hung Supabase 커넥션)
+//     으로 추정 → window.location.reload()
 //
 //   threshold(예: "1초 이상 hidden일 때만 probe")는 사용 안 함 — 사용자 보고로
-//   0.5~1초 짧은 백그라운드에서도 limbo가 재현됨. 무조건 probe로 빠짐없이 검출.
+//   0.5~1초 짧은 백그라운드에서도 limbo가 재현됨.
 //
-//   정상 네트워크에선 probe가 ~300ms에 OK 떨어져 리로드 없음. probe 자체는
-//   가벼움(HEAD 쿼리 + 토큰 refresh) — 알림센터 슬쩍 내림에도 호출되지만
-//   사용자가 못 느낌.
+// ⚠️ refreshSession 은 여기서 호출 X — lib/supabase/client.ts 의 전역
+//   visibilitychange 핸들러가 single-flight 락으로 직렬화해 처리한다. 여기서
+//   다시 호출하면 같은 refresh_token 을 두 번 소비해 invalid_grant(400) 가
+//   터지고 세션이 영구 무효화됨 (PC 창 최소화 → 복원 후 쿼리가 모두 죽는 버그).
+//
+// PC 도 동작: 기존엔 데스크톱에서 매 탭 전환마다 probe→타임아웃→리로드가 터지는
+//   문제로 모바일만 활성화했었으나, probe 가 단순 HEAD 쿼리라 PC 에선 사실상
+//   항상 통과 (limbo 가 발생할 때만 리로드). PC 의 hung Supabase 연결도 복구되어
+//   "불러오는 중..." 무한 대기 케이스를 막는다.
 //
 // visibilitychange 외 pageshow(persisted=true)도 같이 듣는 이유:
 //   iOS PWA에서 visibilitychange가 누락되는 케이스 백업 (bfcache 복원).
@@ -34,27 +41,17 @@ export function AuthRefreshOnVisible() {
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    // probe + reload 폴백은 iOS Safari/PWA의 fetch limbo 버그 대응. 데스크톱
-    // 브라우저는 같은 증상이 없는데도 매 탭 전환마다 probe→타임아웃→리로드가
-    // 터져서 사용자가 "네트워크 끊김"으로 인지함. 모바일에서만 활성화.
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-    if (!isMobile) return;
-
     const client = createSupabaseBrowserClient();
 
-    /** 엄격 probe — auth.refreshSession + 실제 쿼리 둘 다 1.5초 안에 성공해야 true.
-     *  단일 probe만 통과하고 다음 fetch가 hang하는 케이스를 잡기 위해 2단계 검사. */
+    /** 가벼운 HEAD 쿼리 probe — 1.5초 안에 응답 없으면 limbo 로 간주.
+     *  refreshSession 은 client.ts 의 전역 핸들러가 처리하므로 여기선 호출 X. */
     const probe = async (): Promise<boolean> => {
       let timedOut = false;
       const tid = setTimeout(() => { timedOut = true; }, PROBE_TIMEOUT_MS);
       try {
-        const combined = Promise.all([
-          client.auth.refreshSession(),
-          client.from("bp_user_tier").select("user_id", { count: "exact", head: true })
-        ]);
+        const query = client.from("bp_user_tier").select("user_id", { count: "exact", head: true });
         const result = await Promise.race([
-          combined.then(() => "ok" as const),
+          query.then(() => "ok" as const),
           new Promise<"timeout">((resolve) =>
             setTimeout(() => resolve("timeout"), PROBE_TIMEOUT_MS)
           )

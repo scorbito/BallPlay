@@ -295,9 +295,9 @@ export function useLineupSync() {
       }
     });
 
-    // 모바일: 백그라운드 → 포그라운드 복귀 시 재동기화.
-    // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
-    // 여기서 await하면 iOS hang 시 syncOnce가 영원히 실행 안 됨 → 절대 await X.
+    // 백그라운드 → 포그라운드 복귀 시 재동기화.
+    // refreshSession 은 lib/supabase/client.ts 의 전역 핸들러가 single-flight 락으로
+    // 직렬화해 처리. 여기선 syncOnce 만 — refreshSession 호출 금지 (race 시 invalid_grant).
     //
     // ⚠️ publishingRef 진행 중에는 스킵 — togglePublished/syncedUpsert가 끝나기 전에
     //   동기화하면 DB의 stale 상태(racing UPDATE/UPSERT 사이)가 local을 덮어쓸 수 있다.
