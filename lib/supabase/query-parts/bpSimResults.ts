@@ -123,11 +123,12 @@ const ACCURACY_CHUNK = 500;
  * 시즌 누적 1000판 시뮬 적중률 (페이지 로드 시 live 집계).
  *
  * 판정:
- *  - 실제 점수 둘 다 존재 + status != 'canceled' 인 경기만 대상.
- *  - 시뮬 우세: home_wins > away_wins → home / 반대 → away / 동률 → neutral.
- *  - 실제 승리: home_score > away_score → home / 반대 → away / 무승부 → neutral.
- *  - 시뮬·실제 중 하나라도 neutral 이면 집계 제외 (total 미증가).
- *  - 둘 다 우열 있을 때만 total++, 우세팀==승리팀이면 correct++.
+ *  - status === 'finished' 인 경기만 대상 (경기 중/진행 중인 중간 스코어 배제).
+ *    ※ in_progress 인데 점수만 있는 경기를 포함하면 미확정 결과가 적중률을 오염시킴.
+ *  - 시뮬 우세팀이 있는 경기만 total 에 포함 (시뮬 박빙=예측 없음은 제외).
+ *  - 실제 무승부도 total 에 포함 (시뮬은 한 팀을 예측했으니 빗나간 것 = 분모에 카운트).
+ *  - correct 는 시뮬 우세팀 == 실제 승리팀일 때만. (무승부·빗나감은 correct 아님)
+ *  - 예: 5경기 종료, 시뮬이 3경기 적중 → 3/5 = 60%.
  *
  * 쿼리: bp_sim_results 는 필요 컬럼만(game_id,home_wins,away_wins) 전수 조회.
  *       games 는 해당 game_id 들을 청크(.in) 로 나눠 id,home_score,away_score,status 만 조회.
@@ -181,15 +182,16 @@ export async function getSim1000AccuracyStats(
   let total = 0;
   let correct = 0;
   for (const g of gameRows) {
-    if (g.status === "canceled") continue;
+    // 종료된 경기만 — 진행 중(in_progress) 중간 스코어는 미확정이라 제외.
+    if (g.status !== "finished") continue;
     if (g.home_score === null || g.away_score === null) continue;
     const simSide = simSideById.get(g.id);
-    if (!simSide) continue; // 시뮬 동률(neutral)
+    if (!simSide) continue; // 시뮬 박빙(예측 없음) → 평가 불가, 분모 제외
+    // 실제 무승부도 분모에 포함 — 시뮬은 한 팀을 예측했으니 못 맞힌 것.
     const actSide =
       g.home_score > g.away_score ? "home" : g.away_score > g.home_score ? "away" : null;
-    if (!actSide) continue; // 실제 무승부(neutral)
     total += 1;
-    if (simSide === actSide) correct += 1;
+    if (actSide !== null && simSide === actSide) correct += 1;
   }
 
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : null;

@@ -13,27 +13,14 @@
   padding: 12px 14px 28px;
 }
 
-/* ── 헤더 설명 카드 (목록) ─────────────────── */
-.phone-frame-light .sim1000-intro-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(232, 74, 138, 0.04));
-  border: 1px solid rgba(232, 74, 138, 0.25);
-  border-radius: 14px;
-}
-
-.phone-frame-light .sim1000-intro-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: rgba(232, 74, 138, 0.16);
-  color: var(--bp-accent);
-  border-radius: 8px;
-  flex-shrink: 0;
+/* ── 설명 텍스트 (카드 없이) ─────────────────── */
+.phone-frame-light .sim1000-intro-note {
+  margin: 0;
+  padding: 2px 2px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  line-height: 1.45;
 }
 
 /* ── 시즌 누적 적중률 헤더 카드 (핑크 accent, AI 예측 .ai-winner-stats-* 톤) ── */
@@ -83,28 +70,6 @@
   font-weight: 600;
   color: var(--bp-text-muted);
   margin-top: 2px;
-}
-
-.phone-frame-light .sim1000-intro-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.phone-frame-light .sim1000-intro-text strong {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--bp-text);
-  letter-spacing: -0.2px;
-}
-
-.phone-frame-light .sim1000-intro-text p {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--bp-text-secondary);
-  line-height: 1.45;
 }
 
 /* ── 날짜 네비 ──────────────────────────────── */
@@ -908,6 +873,111 @@
 .phone-frame-light .sim1000-hist-value-pct {
   color: var(--bp-text-muted);
   font-weight: 600;
+}
+
+/* ── 출전 라인업 (타순 9명 + 선발) ── */
+.phone-frame-light .sim1000-lineup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phone-frame-light .sim1000-lineup-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bp-card-soft);
+  border-radius: 10px;
+}
+
+.phone-frame-light .sim1000-lineup-col-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-lineup-starter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 7px 10px;
+  background: rgba(232, 74, 138, 0.10);
+  border: 1px solid rgba(232, 74, 138, 0.22);
+  border-radius: 8px;
+}
+
+.phone-frame-light .sim1000-lineup-starter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .sim1000-lineup-starter-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-lineup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.phone-frame-light .sim1000-lineup-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  background: var(--bp-card);
+  border-radius: 6px;
+  border: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .sim1000-lineup-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--bp-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .sim1000-lineup-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-lineup-pos {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  white-space: nowrap;
 }
 
 /* ── 타자 TOP ── */

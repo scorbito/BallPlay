@@ -156,7 +156,7 @@ const sections: HomeSection[] = [
         title: "1000판 시뮬레이션",
         description: "오늘 경기 1000판 결과",
         icon: BarChart3,
-        iconImage: "/icons/menu/predict-ranking.png",
+        iconImage: "/icons/menu/sim-1000.png",
         available: true
       }
     ]

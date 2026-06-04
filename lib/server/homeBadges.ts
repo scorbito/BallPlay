@@ -14,6 +14,7 @@ export type HomeBadgeServerData = {
   todayGamesFinished: number;
   userPredictionsToday: number;     // 로그인 안 했으면 0
   aiPredictionsToday: number;       // RLS가 published_at <= now() 필터링하므로 공개분만 카운트
+  simResultsToday: number;          // bp_sim_results 오늘자 행 수 (1000판 시뮬 신규 신호)
   latestVideoAt: string | null;     // bp_videos.created_at 최신값 (ISO)
   latestNewsAt: string | null;      // bp_news.published_at 최신값 (ISO)
 };
@@ -23,7 +24,7 @@ export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
   try {
     const supabase = createSupabaseServerClient();
 
-    const [gamesRes, finishedRes, aiRes, userRes, latestVideoRes, latestNewsRes] = await Promise.all([
+    const [gamesRes, finishedRes, aiRes, simRes, userRes, latestVideoRes, latestNewsRes] = await Promise.all([
       supabase.from("games").select("id", { count: "exact", head: true }).eq("game_date", todayDate),
       supabase
         .from("games")
@@ -32,6 +33,10 @@ export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
         .eq("status", "finished"),
       supabase
         .from("bp_ai_predictions")
+        .select("id", { count: "exact", head: true })
+        .eq("game_date", todayDate),
+      supabase
+        .from("bp_sim_results")
         .select("id", { count: "exact", head: true })
         .eq("game_date", todayDate),
       supabase.auth.getUser(),
@@ -66,6 +71,7 @@ export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
       todayGamesFinished: finishedRes.count ?? 0,
       userPredictionsToday,
       aiPredictionsToday: aiRes.count ?? 0,
+      simResultsToday: simRes.count ?? 0,
       latestVideoAt: (latestVideoRes.data?.created_at as string | undefined) ?? null,
       latestNewsAt: (latestNewsRes.data?.published_at as string | undefined) ?? null
     };
@@ -77,6 +83,7 @@ export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
       todayGamesFinished: 0,
       userPredictionsToday: 0,
       aiPredictionsToday: 0,
+      simResultsToday: 0,
       latestVideoAt: null,
       latestNewsAt: null
     };

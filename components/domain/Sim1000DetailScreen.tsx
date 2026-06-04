@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { BarChart3, ClipboardCheck, Crown, Dices, Swords, Target, Trophy, Users } from "lucide-react";
+import { BarChart3, ClipboardCheck, Crown, Dices, ListOrdered, Swords, Target, Trophy, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
@@ -27,9 +27,19 @@ export type Sim1000GameInfo = {
   status: GameStatus;
 };
 
+/** 시뮬에 쓰인 타순 1명 (1~9번). */
+export type Sim1000LineupBatter = {
+  order: number;
+  name: string;
+  position: string | null;
+};
+
 type Props = {
   game: Sim1000GameInfo;
   sim: BpSimResultRow;
+  /** 시뮬에 쓰인 타순 (없으면 라인업 섹션 미노출). */
+  homeLineup?: Sim1000LineupBatter[] | null;
+  awayLineup?: Sim1000LineupBatter[] | null;
 };
 
 // (구) 정적 HOME/AWAY 색 상수 — 팀 컬러로 치환. 컴포넌트 안에서 home.color / away.color 사용.
@@ -286,7 +296,7 @@ function findStarter(
   return best;
 }
 
-export function Sim1000DetailScreen({ game, sim }: Props) {
+export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props) {
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
   // 차트·뱃지 색은 팀 컬러 기준. (이전 핑크/회색 정적 토큰 대체)
@@ -329,17 +339,19 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
             시뮬 우세팀 vs 실제 승리팀 적중 판정. */}
         {(() => {
           const isCanceled = game.status === "canceled";
-          const hasScore = game.homeScore !== null && game.awayScore !== null;
+          // 종료된 경기만 결과로 — 진행 중 중간 스코어는 미확정이라 제외.
+          const hasScore =
+            game.status === "finished" && game.homeScore !== null && game.awayScore !== null;
           if (!isCanceled && !hasScore) return null;
 
           const simHomeUp = sim.home_wins > sim.away_wins;
           const simAwayUp = sim.away_wins > sim.home_wins;
           const actHomeUp = hasScore && (game.homeScore as number) > (game.awayScore as number);
           const actAwayUp = hasScore && (game.awayScore as number) > (game.homeScore as number);
+          // 시뮬 박빙(예측 없음)만 neutral, 실제 무승부는 miss(못 맞힘).
           let verdict: "hit" | "miss" | "neutral" = "neutral";
           if (hasScore) {
             if (!simHomeUp && !simAwayUp) verdict = "neutral";
-            else if (!actHomeUp && !actAwayUp) verdict = "neutral";
             else if (simHomeUp && actHomeUp) verdict = "hit";
             else if (simAwayUp && actAwayUp) verdict = "hit";
             else verdict = "miss";
@@ -514,6 +526,31 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
           />
         </section>
 
+        {/* 출전 라인업 — 타순 9명 + 선발 투수 (시뮬에 쓰인 라인업) */}
+        {homeLineup || awayLineup ? (
+          <section className="sim1000-section">
+            <h2 className="sim1000-section-title">
+              <ListOrdered size={14} strokeWidth={2.5} />
+              출전 라인업
+            </h2>
+            <p className="sim1000-section-sub">시뮬에 쓰인 타순 + 선발 투수</p>
+            <div className="sim1000-lineup-grid">
+              <LineupColumn
+                teamId={game.homeTeamId}
+                teamName={home.shortName}
+                starter={game.homeStarter}
+                batters={homeLineup ?? null}
+              />
+              <LineupColumn
+                teamId={game.awayTeamId}
+                teamName={away.shortName}
+                starter={game.awayStarter}
+                batters={awayLineup ?? null}
+              />
+            </div>
+          </section>
+        ) : null}
+
         {/* 3. 타자 누적 TOP 6 (팀별 3명) */}
         <section className="sim1000-section">
           <h2 className="sim1000-section-title">
@@ -636,6 +673,48 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
         </footer>
       </section>
     </AppShell>
+  );
+}
+
+/** 한 팀의 출전 라인업 — 선발 투수 헤더 + 타순 9명. */
+function LineupColumn({
+  teamId,
+  teamName,
+  starter,
+  batters
+}: {
+  teamId: string;
+  teamName: string;
+  starter: string | null;
+  batters: Sim1000LineupBatter[] | null;
+}) {
+  return (
+    <div className="sim1000-lineup-col">
+      <div className="sim1000-lineup-col-head">
+        <TeamBadge teamId={teamId} size="sm" />
+        <span className="sim1000-lineup-col-team">{teamName}</span>
+      </div>
+      <div className="sim1000-lineup-starter">
+        <span className="sim1000-lineup-starter-label">
+          <Target size={11} strokeWidth={2.5} aria-hidden="true" />
+          선발
+        </span>
+        <span className="sim1000-lineup-starter-name">{starter ?? "—"}</span>
+      </div>
+      {batters && batters.length > 0 ? (
+        <ol className="sim1000-lineup-list">
+          {batters.map((b) => (
+            <li key={b.order} className="sim1000-lineup-row">
+              <span className="sim1000-lineup-order">{b.order}</span>
+              <span className="sim1000-lineup-name">{b.name}</span>
+              {b.position ? <span className="sim1000-lineup-pos">{b.position}</span> : null}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="sim1000-empty-inline">타순 데이터 없음</p>
+      )}
+    </div>
   );
 }
 

@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, ChevronLeft, ChevronRight, Dices, Flame, Loader2, RefreshCw, Target } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Dices, Flame, Target } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
-import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
+import { SIM_1000_VIEWED_KEY } from "@/components/domain/HomeCardPulse";
 import type { Sim1000AccuracyStats } from "@/lib/supabase/query-parts/bpSimResults";
 
 /** /predict/sim-1000 목록 카드 1개 데이터. page 에서 row → card 매핑. */
@@ -50,14 +49,6 @@ function formatDateLabel(dateISO: string): string {
   return `${Number(m)}월 ${Number(d)}일`;
 }
 
-/** today (YYYY-MM-DD) → 어제 (YYYY-MM-DD). UTC 기반 단순 -1일 계산이라 timezone 무관. */
-function computeYesterday(today: string): string {
-  const [y, m, d] = today.split("-").map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d));
-  date.setUTCDate(date.getUTCDate() - 1);
-  return date.toISOString().slice(0, 10);
-}
-
 function formatGameTime(time: string | null): string {
   if (!time) return "";
   return time.slice(0, 5);
@@ -72,8 +63,8 @@ function shouldShowStadium(stadium: string | null): boolean {
 
 /**
  * 시뮬 우세팀 vs 실제 승리팀 일치 여부.
- * - 시뮬 박빙(homeWins == awayWins) 또는 실제 무승부(actualHome == actualAway) → "neutral"
- *   ※ 이 경우 적중/빗나감 판정 불가 → 배지 미노출.
+ * - 시뮬 박빙(homeWins == awayWins) → "neutral" (예측 자체가 없으니 판정 제외).
+ * - 실제 무승부 → "miss" (시뮬은 한 팀을 예측했으니 못 맞힌 것).
  * - 시뮬 우세팀과 실제 승리팀이 같으면 "hit", 다르면 "miss".
  * - 우천취소 케이스는 호출 전에 status 로 가드 (여기서 다루지 않음).
  */
@@ -87,11 +78,10 @@ function judgeAccuracy(
   const simAwayUp = awayWins > homeWins;
   const actHomeUp = actualHome > actualAway;
   const actAwayUp = actualAway > actualHome;
-  if (!simHomeUp && !simAwayUp) return "neutral";
-  if (!actHomeUp && !actAwayUp) return "neutral";
+  if (!simHomeUp && !simAwayUp) return "neutral"; // 시뮬 박빙 → 평가 불가
   if (simHomeUp && actHomeUp) return "hit";
   if (simAwayUp && actAwayUp) return "hit";
-  return "miss";
+  return "miss"; // 실제 무승부 포함 — 못 맞힘
 }
 
 /** 승률 계산: 무승부 제외한 비율. n 이 0 이면 50/50. */
@@ -103,81 +93,34 @@ function winRatePct(homeWins: number, awayWins: number): { home: number; away: n
 }
 
 export function Sim1000ListScreen({
-  today,
   selectedDate,
   isToday,
   isFuture,
   prevDate,
   nextDate,
   games,
-  isAdmin = false,
   accuracyStats
 }: Props) {
-  const router = useRouter();
-  const { showToast } = useAppState();
-  const [rerunning, setRerunning] = useState(false);
-
-  // 운영자 "다시 돌리기" — 09:00 cron 이후 발표 라인업/선발 교체 등이 반영된 데이터로 다시 시뮬.
-  // 1회 실행 ~ 5경기 × 3~5초 = 수 초 단위. 진행 중에는 버튼 disabled.
-  async function handleRerun() {
-    if (rerunning) return;
-    setRerunning(true);
-    showToast("다시 돌리는 중이에요. 수 초 걸려요…");
-    try {
-      const res = await fetch("/api/admin/sim-1000/rerun", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: selectedDate })
-      });
-      const json = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        ran?: number;
-        failed?: number;
-        error?: string;
-      };
-      if (!res.ok || !json.ok) {
-        showToast(`다시 돌리기 실패: ${json.error ?? res.statusText}`);
-        return;
-      }
-      const ran = json.ran ?? 0;
-      const failed = json.failed ?? 0;
-      showToast(
-        failed > 0
-          ? `다시 돌렸어요 (${ran}경기 성공, ${failed}경기 실패)`
-          : `다시 돌렸어요 (${ran}경기)`
-      );
-      router.refresh();
-    } catch (err) {
-      showToast(`다시 돌리기 실패: ${(err as Error).message}`);
-    } finally {
-      setRerunning(false);
-    }
-  }
-
-  // 어제 경기만 admin 재실행 허용 — 실제 발표 라인업·실제 선발 기반 사후 검증 시뮬용.
-  // 오늘은 09:00 cron 이 처리, 그 이전 날짜는 의미 없으므로 비활성.
-  const yesterday = computeYesterday(today);
-  const isYesterday = selectedDate === yesterday;
-  const showRerun = isAdmin && isYesterday;
   // 과거 날짜만 실제 결과 vs 시뮬 비교 표시 (오늘·미래는 점수 미존재).
   const isPast = !isToday && !isFuture;
-  // admin이 오늘 페이지에서 어제 데이터가 없을 때 — prev 화살표는 시뮬 데이터 존재 날짜만
-  // 이동하므로 어제 데이터가 없으면 영원히 갈 수 없는 모순. 이 케이스에 직접 점프 링크 노출.
-  const showJumpToYesterday = isAdmin && isToday && prevDate !== yesterday;
+
+  // 홈 펄스 뱃지 해제 — 오늘자 시뮬 결과가 있는 페이지에 진입하면 viewed 마킹.
+  useEffect(() => {
+    if (!isToday || games.length === 0) return;
+    try {
+      window.localStorage.setItem(SIM_1000_VIEWED_KEY, selectedDate);
+    } catch {
+      // ignore storage errors
+    }
+  }, [isToday, games.length, selectedDate]);
 
   return (
     <AppShell activeTab="home" title="1000판 시뮬레이션" theme="light" backHref="/" wide>
       <section className="sim1000-screen">
-        {/* ── 헤더 설명 카드 ── */}
-        <header className="sim1000-intro-card">
-          <span className="sim1000-intro-icon">
-            <Dices size={16} strokeWidth={2.5} />
-          </span>
-          <div className="sim1000-intro-text">
-            <strong>1000판 시뮬레이션</strong>
-            <p>어제 라인업 + 오늘 선발 투수 기준으로 한 경기를 1000번 돌려본 결과예요.</p>
-          </div>
-        </header>
+        {/* ── 설명 (카드 없이 텍스트만) ── */}
+        <p className="sim1000-intro-note">
+          어제 라인업 + 오늘 선발 투수 기준으로 한 경기를 1000번 돌려본 결과예요.
+        </p>
 
         {/* ── 시즌 누적 적중률 헤더 카드 (live 집계) ── */}
         <div className="sim1000-accuracy-card">
@@ -198,42 +141,6 @@ export function Sim1000ListScreen({
             <span className="sim1000-accuracy-empty">아직 판정된 경기가 없어요</span>
           )}
         </div>
-
-        {/* ── 운영자 전용 "어제 경기 시뮬" (어제 + admin) — AI 예측 vs 시뮬 vs 실제 결과 3중 비교용 사후 검증 ── */}
-        {showRerun ? (
-          <div className="sim1000-admin-bar">
-            <button
-              type="button"
-              className="sim1000-admin-rerun"
-              onClick={handleRerun}
-              disabled={rerunning}
-              aria-label="어제 라인업으로 시뮬 다시 돌리기 (운영자)"
-            >
-              {rerunning ? (
-                <Loader2 size={13} strokeWidth={2.5} className="sim1000-admin-spin" aria-hidden="true" />
-              ) : (
-                <RefreshCw size={13} strokeWidth={2.5} aria-hidden="true" />
-              )}
-              <span>{rerunning ? "돌리는 중…" : "어제 경기 시뮬"}</span>
-            </button>
-            <span className="sim1000-admin-hint">실제 발표 라인업 + 실제 선발 기준 사후 검증</span>
-          </div>
-        ) : null}
-
-        {/* ── 운영자 전용 — 어제 데이터 없을 때 직접 점프 (prev 화살표 비활성화 우회) ── */}
-        {showJumpToYesterday ? (
-          <div className="sim1000-admin-bar">
-            <Link
-              href={`/predict/sim-1000?date=${yesterday}`}
-              className="sim1000-admin-rerun"
-              prefetch={false}
-            >
-              <ChevronLeft size={13} strokeWidth={2.5} />
-              <span>어제({formatDateLabel(yesterday)})로 가기</span>
-            </Link>
-            <span className="sim1000-admin-hint">어제 시뮬 데이터가 아직 없어요 — 이동 후 "어제 경기 시뮬"</span>
-          </div>
-        ) : null}
 
         {/* ── 날짜 네비게이션 (시뮬 결과 존재 날짜만 이동) ── */}
         <nav className="sim1000-date-nav" aria-label="날짜 선택">
@@ -315,14 +222,16 @@ export function Sim1000ListScreen({
 
                 // ── 실제 결과 비교 (과거 카드 한정) ──
                 // - canceled: "🌧 취소" 라벨, 적중 판정 없음
-                // - 양쪽 점수 존재: 실제 점수 행 + 적중 배지 표시
-                // - 그 외(미진행 등): 비교 행 미노출
+                // - finished + 양쪽 점수: 실제 점수 행 + 적중 배지 표시
+                // - 진행 중(in_progress)·미시작: 비교 행 미노출 (중간 스코어 = 미확정)
                 const isCanceled = g.gameStatus === "canceled";
-                const hasActualScore =
-                  g.actualHomeScore !== null && g.actualAwayScore !== null;
-                const showActualRow = isPast && (isCanceled || hasActualScore);
+                const isFinished =
+                  g.gameStatus === "finished" &&
+                  g.actualHomeScore !== null &&
+                  g.actualAwayScore !== null;
+                const showActualRow = isPast && (isCanceled || isFinished);
                 const verdict =
-                  isPast && hasActualScore && !isCanceled
+                  isPast && isFinished
                     ? judgeAccuracy(
                         g.homeWins,
                         g.awayWins,
