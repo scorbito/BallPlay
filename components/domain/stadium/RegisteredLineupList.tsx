@@ -28,6 +28,7 @@ import {
 } from "@/lib/supabase/query-parts/bpLineups";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
+import { getRoster } from "@/lib/rosters";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
@@ -182,7 +183,8 @@ export function RegisteredLineupList({
 
   // 공개 라인업 미리보기 → SimTeamInput으로 변환
   const openLineupPreview = (row: PublishedLineupRow) => {
-    const pitching = fillMissingPitcherSlots(row.team_id, row.pitching?.slots ?? []);
+    const validIds = new Set(getRoster(row.team_id).map((p) => p.id));
+    const pitching = fillMissingPitcherSlots(row.team_id, row.pitching?.slots ?? [], validIds);
     if (!pitching) return;
     const stats = buildStatsDirectory([row.team_id]);
     const built = buildSimTeamInput(row.team_id, row.batting, pitching, stats, row.name);
@@ -217,8 +219,18 @@ export function RegisteredLineupList({
     setStarting(true);
     setError(null);
 
-    const opponentPitching = fillMissingPitcherSlots(selectedOpponent.team_id, selectedOpponent.pitching?.slots ?? []);
-    const myPitching = fillMissingPitcherSlots(myEntry.teamId, myEntry.pitching?.slots ?? []);
+    const opponentValidIds = new Set(getRoster(selectedOpponent.team_id).map((p) => p.id));
+    const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
+    const opponentPitching = fillMissingPitcherSlots(
+      selectedOpponent.team_id,
+      selectedOpponent.pitching?.slots ?? [],
+      opponentValidIds
+    );
+    const myPitching = fillMissingPitcherSlots(
+      myEntry.teamId,
+      myEntry.pitching?.slots ?? [],
+      myValidIds
+    );
 
     if (!opponentPitching || !myPitching) {
       setStarting(false);

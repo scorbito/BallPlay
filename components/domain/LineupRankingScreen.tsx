@@ -7,6 +7,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { PublicLineupChallenge } from "@/components/domain/stadium/PublicLineupChallenge";
 import { getTeam, teams } from "@/lib/constants/teams";
+import { getRoster } from "@/lib/rosters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchPublishedLineupsByIds } from "@/lib/supabase/query-parts/bpLineups";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
@@ -81,7 +82,8 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
       const fetched = await fetchPublishedLineupsByIds(client, [row.lineupId]);
       if (!fetched.ok || fetched.rows.length === 0) return;
       const lineup = fetched.rows[0];
-      const pitching = fillMissingPitcherSlots(lineup.team_id, lineup.pitching?.slots ?? []);
+      const validIds = new Set(getRoster(lineup.team_id).map((p) => p.id));
+      const pitching = fillMissingPitcherSlots(lineup.team_id, lineup.pitching?.slots ?? [], validIds);
       if (!pitching) return;
       const stats = buildStatsDirectory([lineup.team_id]);
       const built = buildSimTeamInput(lineup.team_id, lineup.batting, pitching, stats, lineup.name);

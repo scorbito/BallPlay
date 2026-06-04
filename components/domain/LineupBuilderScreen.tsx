@@ -204,6 +204,35 @@ export function LineupBuilderScreen() {
     setHydratedEntryId(currentEntry.entryId);
   }, [currentEntry?.entryId]);
 
+  // 로스터(playersById)가 바뀌면 stale ID를 null 로 정리.
+  // - 이적/은퇴/말소된 옛 선수 ID 가 슬롯에 남아 UI 에선 "(자동)" 으로 보이지만
+  //   실제 값이 차 있어서 추가/자동 채움 모두 막혔던 문제 해결.
+  // - 다음 저장 사이클에 정리된 상태가 그대로 storage 에 반영됨.
+  useEffect(() => {
+    setPitcherSlots((current) => {
+      let changed = false;
+      const next = current.map((id) => {
+        if (id !== null && !playersById.has(id)) {
+          changed = true;
+          return null;
+        }
+        return id;
+      });
+      return changed ? next : current;
+    });
+    setSlots((current) => {
+      let changed = false;
+      const next = current.map((s) => {
+        if (s !== null && !playersById.has(s.playerId)) {
+          changed = true;
+          return null;
+        }
+        return s;
+      });
+      return changed ? next : current;
+    });
+  }, [playersById]);
+
   // 타자/투수 라인업 변경 → 현재 entry 업데이트 + 저장. 복원 완료 전엔 skip.
   // 공개 상태면 DB trigger가 변경을 막으므로 저장 시도 자체 skip.
   //
@@ -302,7 +331,9 @@ export function LineupBuilderScreen() {
       showToast("야수는 타자 라인업에서 관리해주세요.");
       return;
     }
-    const emptyIdx = pitcherSlots.findIndex((id) => id === null);
+    // 빈 자리 = null 슬롯 OR 로스터에서 해석 안 되는 stale ID (현재 명단에서 빠진 선수).
+    // stale ID는 UI에서 "(자동)" 으로 표시되지만 실제 값이 차 있어서 add 가 막혔던 버그.
+    const emptyIdx = pitcherSlots.findIndex((id) => id === null || !playersById.has(id));
     if (emptyIdx === -1) {
       showToast("투수 자리가 모두 찼어요.");
       return;
@@ -565,8 +596,9 @@ export function LineupBuilderScreen() {
 
 
   const selectedTeam = getTeam(selectedTeamId);
-  const filledCount = slots.filter((s) => s !== null).length;
-  const pitcherFilled = pitcherSlots.filter(Boolean).length;
+  // stale ID(로스터에서 빠진 선수)는 UI에서 "(자동)" 으로 보이므로 카운트에서도 제외.
+  const filledCount = slots.filter((s) => s !== null && playersById.has(s.playerId)).length;
+  const pitcherFilled = pitcherSlots.filter((id) => id !== null && playersById.has(id)).length;
   // 공개 가능 조건 — 타선 9명 + 선발 1명. 마무리/불펜은 공개 시 자동 채움.
   const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] != null;
   const hasCloser = pitcherSlots[PITCHER_CLOSER_INDEX] != null;
@@ -657,7 +689,11 @@ export function LineupBuilderScreen() {
   // 자동 채움 모달의 "자동 채움 + 공개" 클릭 — 빈 자리 채움 + entry 직접 upsert + 공개 토글.
   const handleAutoFillAndPublish = async () => {
     if (!currentEntry) return;
-    const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
+    const filled = fillMissingPitcherSlots(
+      currentEntry.teamId,
+      pitcherSlots,
+      new Set(playersById.keys())
+    );
     if (!filled) {
       showToast("투수 자동 채움 실패");
       return;
@@ -685,7 +721,11 @@ export function LineupBuilderScreen() {
     if (!currentEntry) return;
     setPublishProcessing(true);
     if (needsAutoFillNotice) {
-      const filled = fillMissingPitcherSlots(currentEntry.teamId, pitcherSlots);
+      const filled = fillMissingPitcherSlots(
+        currentEntry.teamId,
+        pitcherSlots,
+        new Set(playersById.keys())
+      );
       if (filled) {
         setPitcherSlots(filled.slots);
         const now = new Date().toISOString();

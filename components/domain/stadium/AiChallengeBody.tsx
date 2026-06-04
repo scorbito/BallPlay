@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
+import { getRoster } from "@/lib/rosters";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
@@ -88,9 +89,11 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
     setStarting(true);
     const seed = generateSeed();
 
+    const validIds = new Set(getRoster(selectedEntry.teamId).map((p) => p.id));
     const pitchingToUse = fillMissingPitcherSlots(
       selectedEntry.teamId,
-      selectedEntry.pitching?.slots ?? []
+      selectedEntry.pitching?.slots ?? [],
+      validIds
     );
     if (!pitchingToUse) {
       setError("투수 라인업을 자동 생성하지 못했습니다.");

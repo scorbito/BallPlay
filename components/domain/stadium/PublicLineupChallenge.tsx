@@ -27,6 +27,7 @@ import {
 } from "@/lib/supabase/query-parts/bpLineups";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
+import { getRoster } from "@/lib/rosters";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
@@ -149,8 +150,18 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
     setStarting(true);
     setError(null);
 
-    const opponentPitching = fillMissingPitcherSlots(opponent.team_id, opponent.pitching?.slots ?? []);
-    const myPitching = fillMissingPitcherSlots(myEntry.teamId, myEntry.pitching?.slots ?? []);
+    const opponentValidIds = new Set(getRoster(opponent.team_id).map((p) => p.id));
+    const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
+    const opponentPitching = fillMissingPitcherSlots(
+      opponent.team_id,
+      opponent.pitching?.slots ?? [],
+      opponentValidIds
+    );
+    const myPitching = fillMissingPitcherSlots(
+      myEntry.teamId,
+      myEntry.pitching?.slots ?? [],
+      myValidIds
+    );
     if (!opponentPitching || !myPitching) {
       setStarting(false);
       setError("투수 라인업 자동 보강에 실패했습니다.");

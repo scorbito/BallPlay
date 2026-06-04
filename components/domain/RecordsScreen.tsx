@@ -25,6 +25,7 @@ import {
 import { fetchLineupStatsBulk, listMyLineups, rowToEntry, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import { formatWinRate, type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 import { getTeam } from "@/lib/constants/teams";
+import { getRoster } from "@/lib/rosters";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
@@ -213,10 +214,10 @@ export function RecordsScreen({
     };
   }, [myLineups.length]);
 
-  // 모바일: 백그라운드 → 포그라운드 복귀 시 목록 재조회.
-  // refreshSession은 layout의 AuthRefreshOnVisible이 fire-and-forget(5s 타임아웃)으로 처리.
-  // 여기서 await하면 iOS Safari가 refresh를 limbo 상태로 hang시킬 때 fetchRecords가
-  // 영원히 실행 안 됨 → 절대 refreshSession을 await하지 말 것.
+  // 백그라운드 → 포그라운드 복귀 시 목록 재조회.
+  // refreshSession 은 lib/supabase/client.ts 의 전역 visibilitychange 핸들러가
+  // single-flight 락으로 직렬화해 처리. 여기서 따로 호출하면 같은 refresh_token
+  // 동시 소비로 invalid_grant(400) 가 터지므로 절대 호출 X — fetchRecords 만.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const onVisible = () => {
@@ -295,7 +296,12 @@ export function RecordsScreen({
     }
     const opponentSide = getOpponentSide(rematchRecord);
     const opponentTeam = rematchRecord.input[opponentSide];
-    const myPitching = fillMissingPitcherSlots(selected.entry.teamId, selected.entry.pitching?.slots ?? []);
+    const myValidIds = new Set(getRoster(selected.entry.teamId).map((p) => p.id));
+    const myPitching = fillMissingPitcherSlots(
+      selected.entry.teamId,
+      selected.entry.pitching?.slots ?? [],
+      myValidIds
+    );
     if (!myPitching) {
       showToast("투수 라인업을 만들 수 없습니다.");
       return;

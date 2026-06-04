@@ -11,6 +11,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
+import { getRoster } from "@/lib/rosters";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { LINEUP_ENTRIES_CHANGED_EVENT, loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
@@ -124,7 +125,8 @@ export function MyLineupList({ maxItems = 10 }: Props) {
 
   const openLineupPreview = (entry: LineupEntry) => {
     // partial pitching(선발만 있는 경우 등)도 안전하게 9슬롯으로 보강
-    const pitching = fillMissingPitcherSlots(entry.teamId, entry.pitching?.slots ?? []);
+    const validIds = new Set(getRoster(entry.teamId).map((p) => p.id));
+    const pitching = fillMissingPitcherSlots(entry.teamId, entry.pitching?.slots ?? [], validIds);
     if (!pitching) return;
     const stats = buildStatsDirectory([entry.teamId]);
     const built = buildSimTeamInput(entry.teamId, entry.batting, pitching, stats, entry.name);
@@ -155,8 +157,18 @@ export function MyLineupList({ maxItems = 10 }: Props) {
     setStarting(true);
     setError(null);
 
-    const myPitching = fillMissingPitcherSlots(myEntry.teamId, myEntry.pitching?.slots ?? []);
-    const oppPitching = fillMissingPitcherSlots(opponentEntry.teamId, opponentEntry.pitching?.slots ?? []);
+    const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
+    const oppValidIds = new Set(getRoster(opponentEntry.teamId).map((p) => p.id));
+    const myPitching = fillMissingPitcherSlots(
+      myEntry.teamId,
+      myEntry.pitching?.slots ?? [],
+      myValidIds
+    );
+    const oppPitching = fillMissingPitcherSlots(
+      opponentEntry.teamId,
+      opponentEntry.pitching?.slots ?? [],
+      oppValidIds
+    );
     if (!myPitching || !oppPitching) {
       setStarting(false);
       setError("투수 라인업 자동 보강에 실패했습니다.");
