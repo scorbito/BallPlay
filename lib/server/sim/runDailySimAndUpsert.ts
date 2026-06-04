@@ -18,6 +18,7 @@ type GameRow = {
   away_team_id: string;
   home_starter: string | null;
   away_starter: string | null;
+  stadium: string | null;
   status: string;
 };
 
@@ -56,7 +57,7 @@ export async function runDailySimAndUpsert(
 ): Promise<DailySimOutcome | DailySimError> {
   const { data: games, error: gErr } = await adminClient
     .from("games")
-    .select("id, game_date, home_team_id, away_team_id, home_starter, away_starter, status")
+    .select("id, game_date, home_team_id, away_team_id, home_starter, away_starter, stadium, status")
     .eq("game_date", date)
     .order("game_time", { ascending: true });
 
@@ -77,7 +78,8 @@ export async function runDailySimAndUpsert(
         homeTeamId: game.home_team_id,
         awayTeamId: game.away_team_id,
         homeStarter: game.home_starter,
-        awayStarter: game.away_starter
+        awayStarter: game.away_starter,
+        stadium: game.stadium
       });
 
       if (!sim.ok) {

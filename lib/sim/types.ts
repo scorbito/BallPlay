@@ -56,6 +56,11 @@ export type SimBatter = {
   contactScore: number;
 
   wrcPlus?: number;
+
+  /** 좌투 상대 OPS — 있으면 platoon 매치업 계산에 사용. 없으면 리그 평균 split 폴백. */
+  vsLhpOps?: number;
+  /** 우투 상대 OPS — 있으면 platoon 매치업 계산에 사용. 없으면 리그 평균 split 폴백. */
+  vsRhpOps?: number;
 };
 
 export type PitcherRole = "SP" | "RP" | "CL";

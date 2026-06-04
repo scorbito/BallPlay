@@ -4,6 +4,7 @@ import { MAX_INNINGS } from "./constants";
 import { canBeSacFly, drawAtBatOutcome, shouldPromoteToDoublePlay } from "./atBat";
 import { applyOutcome, EMPTY_BASE } from "./baseRunning";
 import { selectMvp } from "./mvp";
+import { getParkFactor, type ParkFactor } from "./parkFactors";
 import { createBullpenState, tickAndMaybeSwap, type BullpenState } from "./pitcherMgmt";
 import { createRng } from "./rng";
 import { SIM_ENGINE_VERSION } from "./version";
@@ -33,6 +34,7 @@ type LiveState = {
   events: GameEvent[];
   batting: Record<string, BatterBoxLine>;
   pitching: Record<string, PitcherBoxLine>;
+  park: ParkFactor;
 };
 
 export function simulateGame(input: SimGameInput, seed: number): SimGameResult {
@@ -48,7 +50,10 @@ export function simulateGame(input: SimGameInput, seed: number): SimGameResult {
     innings: [],
     events: [],
     batting: {},
-    pitching: {}
+    pitching: {},
+    // 구장 효과 — context.parkId 가 있으면 KBO 구장 factor, 없으면 neutral 1.0.
+    // 공개매치는 parkId 미전달 → 평탄. AI매치/1000판 시뮬은 stadium 을 parkId 로 전달.
+    park: getParkFactor(input.context?.parkId)
   };
 
   // 각 선수 박스라인 초기화
@@ -114,7 +119,7 @@ function playHalfInning(
     state.batterIdxByTeam[battingSide] = (batterIdx + 1) % battingTeam.batters.length;
 
     const pitcher = bullpen.currentPitcher;
-    let outcome = drawAtBatOutcome(batter, pitcher, rng);
+    let outcome = drawAtBatOutcome(batter, pitcher, rng, state.park);
 
     // SF는 3루 주자 + 아웃<2 조건일 때만 유지, 아니면 외야 플라이로 강등
     if (outcome === "SF" && !canBeSacFly(base, outs)) {

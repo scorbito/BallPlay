@@ -35,6 +35,8 @@ export type BatchSimInput = {
   awayTeamId: string;
   homeStarter: string | null;
   awayStarter: string | null;
+  /** 구장 이름(games.stadium). 시뮬 엔진의 parkId 로 전달돼 HR·안타 factor 에 반영. */
+  stadium?: string | null;
   /** override N (default 1000). 테스트용. */
   n?: number;
 };
@@ -215,10 +217,13 @@ export async function runBatchSim(
     );
 
     // ── 1000판 실행 ──
+    // context.parkId 는 구장별 HR·안타 factor 에 사용. 입력에 stadium 이 있으면 전달,
+    // 없으면 미지정 → neutral 1.0.
     const t0 = Date.now();
     const results: SimGameResult[] = [];
+    const simContext = input.stadium ? { parkId: input.stadium } : {};
     for (let seed = 0; seed < N; seed++) {
-      results.push(simulateGame({ home: homeTeam, away: awayTeam, context: {} }, seed));
+      results.push(simulateGame({ home: homeTeam, away: awayTeam, context: simContext }, seed));
     }
     const elapsedMs = Date.now() - t0;
 
