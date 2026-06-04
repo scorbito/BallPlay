@@ -110,6 +110,34 @@
   cursor: not-allowed;
 }
 
+/* primary 와 같은 폭/패딩, 핑크 outline — 보조 액션이지만 명확히 버튼으로 인지되어야 할 때.
+   예: 라인업 없을 때 "AI 자동 라인업으로 체험" — primary 옆에 자연스럽게 짝 이루도록. */
+.phone-frame-light .stadium-cta-outline-pink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 16px;
+  background: #fff;
+  border: 2px solid var(--bp-accent);
+  border-radius: 12px;
+  color: var(--bp-accent);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.phone-frame-light .stadium-cta-outline-pink:hover:not(:disabled) {
+  background: rgba(232, 74, 138, 0.08);
+}
+
+.phone-frame-light .stadium-cta-outline-pink:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── 로비 ── */
 .phone-frame-light .stadium-lobby-header {
   padding: 4px 4px 12px;

@@ -308,7 +308,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
           </Link>
           <button
             type="button"
-            className="stadium-cta-secondary"
+            className="stadium-cta-outline-pink"
             onClick={handleAiTrialStart}
             disabled={starting}
           >

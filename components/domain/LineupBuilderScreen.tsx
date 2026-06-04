@@ -23,11 +23,7 @@ import {
   type Player,
   type Position
 } from "@/lib/types/lineup";
-import {
-  createEmptyEntry,
-  deleteLineupEntry as localDeleteEntry,
-  loadLineupEntries
-} from "@/lib/storage/lineupEntries";
+import { createEmptyEntry } from "@/lib/storage/lineupEntries";
 import { hasSeenGuide, hasSeenStep0, markGuideSeen, markStep0Seen } from "@/lib/storage/lineupGuides";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
@@ -122,8 +118,6 @@ export function LineupBuilderScreen() {
   const [guideStep0Open, setGuideStep0Open] = useState(false);
   const [guideStep1Open, setGuideStep1Open] = useState(false);
   const [guideStep2Open, setGuideStep2Open] = useState(false);
-  // 첫 진입에서 자동으로 만든 빈 슬롯 id — 사용자가 한 명도 안 넣고 떠나면 unmount 시 정리.
-  const autoCreatedEntryIdRef = useRef<string | null>(null);
   // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
@@ -147,53 +141,24 @@ export function LineupBuilderScreen() {
     if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
   }, [entries, selectedEntryId]);
 
-  // 첫 진입(슬롯 0개) 자동 빈 슬롯 생성 + step0 코치마크.
-  // - sync 완료(loading 외) + 진짜 entries 0개일 때만 작동.
-  // - 응원팀 개념이 없으므로 시드된 팀 중 무작위 선택.
-  // - autoCreatedEntryIdRef 에 기록 → 사용자가 선수 0명인 채로 떠나면 unmount 시 정리.
-  const autoCreateAttemptedRef = useRef(false);
+  // 첫 진입(슬롯 0개) 시 "새 라인업 슬롯" 모달 자동 오픈.
+  // - sync 완료(loading 외) + 진짜 entries 0개일 때만.
+  // - 사용자가 모달을 취소하면 다시 자동 오픈하지 않음 (ref 잠금).
+  // - 슬롯은 모달의 "만들기" 버튼으로 사용자가 명시적으로 생성 → "내 팀이 아닌 슬롯" 위화감 제거.
+  const autoOpenAttemptedRef = useRef(false);
   useEffect(() => {
-    if (autoCreateAttemptedRef.current) return;
-    if (syncStatus === "loading") return; // sync 끝나기 전 race로 중복 생성 차단
+    if (autoOpenAttemptedRef.current) return;
+    if (syncStatus === "loading") return; // sync 끝나기 전 race로 false-positive 차단
     if (entries.length > 0) {
-      autoCreateAttemptedRef.current = true; // 기존 슬롯이 있으면 자동 생성 안 함
+      autoOpenAttemptedRef.current = true; // 기존 슬롯이 있으면 자동 오픈 안 함
       return;
     }
-    autoCreateAttemptedRef.current = true;
-    const ids = Array.from(seededTeamIds);
-    if (ids.length === 0) return;
-    const randomTeamId = ids[Math.floor(Math.random() * ids.length)];
-    const newEntry = createEmptyEntry(randomTeamId, "내 라인업 1", profile.nickname);
-    autoCreatedEntryIdRef.current = newEntry.entryId;
-    localUpsertEntry(newEntry);
-    setSelectedEntryId(newEntry.entryId);
-    if (!hasSeenStep0()) {
-      setGuideStep0Open(true);
-      markStep0Seen();
+    autoOpenAttemptedRef.current = true;
+    // 이미 다른 모달이 열려있으면 충돌 방지 — NewSlotModal 외 다른 모달 동시 오픈 시나리오는 없지만 가드.
+    if (!newSlotOpen) {
+      setNewSlotOpen(true);
     }
-  }, [syncStatus, entries.length, seededTeamIds, profile.nickname, localUpsertEntry]);
-
-  // 자동 생성한 빈 슬롯은 사용자가 아무 선수도 안 넣었으면 화면 unmount 시 삭제 — 빈 슬롯 누적 방지.
-  // 의존성 빈 배열 + localStorage 직접 read → React state staleness 회피.
-  // (자동 생성된 slot은 localUpsertEntry로만 저장됐고 9명 채우기 전엔 DB에 안 올라가니 안전.)
-  useEffect(() => {
-    return () => {
-      const autoId = autoCreatedEntryIdRef.current;
-      if (!autoId) return;
-      try {
-        const fresh = loadLineupEntries();
-        const current = fresh.find((e) => e.entryId === autoId);
-        if (!current) return;
-        const battingFilled = current.batting?.slots?.length ?? 0;
-        const pitchingFilled = current.pitching?.slots?.filter(Boolean).length ?? 0;
-        if (battingFilled === 0 && pitchingFilled === 0) {
-          localDeleteEntry(autoId);
-        }
-      } catch {
-        // 정리 실패는 무해 — 다음 진입에서 사용자가 처리.
-      }
-    };
-  }, []);
+  }, [syncStatus, entries.length, newSlotOpen]);
 
   const roster = useMemo(() => getRoster(selectedTeamId), [selectedTeamId]);
   const playersById = useMemo(() => {
@@ -1035,6 +1000,12 @@ export function LineupBuilderScreen() {
           setSelectedEntryId(newEntry.entryId);
           setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
           setNewSlotOpen(false);
+          // 첫 슬롯 생성 후 step0 코치마크 — 대기 풀/타순 사용법 안내.
+          // 이전에는 자동 생성 시점에 뜨던 흐름을 모달 onCreate 완료 시점으로 이동.
+          if (!hasSeenStep0()) {
+            setGuideStep0Open(true);
+            markStep0Seen();
+          }
         }}
       />
 
