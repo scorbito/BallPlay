@@ -18,6 +18,7 @@ import { ArrowRight, LogIn, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import {
   fetchLineupStatsBulk,
   fetchPublishedLineupsByIds,
@@ -73,11 +74,16 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
     void (async () => {
       const client = createSupabaseBrowserClient();
       const { data: authData } = await client.auth.getUser();
-      const uid = authData.user?.id ?? null;
+      let uid = authData.user?.id ?? null;
+      // 익명 사용자도 도전 가능 — 세션 없으면 lazy 익명 계정 생성 (2026-06-04).
+      if (!uid) {
+        uid = await ensureAnonymousClient(client);
+      }
       if (cancelled) return;
       setUserId(uid);
 
       if (!uid) {
+        // 익명 생성까지 실패한 안전 폴백 — 네트워크/RLS 이슈 시에만 도달.
         setStage("login-gate");
         return;
       }
@@ -143,12 +149,22 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
 
   const startChallenge = useCallback(async () => {
     if (!opponent || !myEntry || starting) return;
-    if (!userId) {
+    setStarting(true);
+    setError(null);
+
+    const client = createSupabaseBrowserClient();
+    // 익명 사용자도 도전 가능 — 세션 없으면 lazy 익명 계정 생성 (2026-06-04).
+    let effectiveUserId = userId;
+    if (!effectiveUserId) {
+      effectiveUserId = await ensureAnonymousClient(client);
+      if (effectiveUserId) setUserId(effectiveUserId);
+    }
+    if (!effectiveUserId) {
+      // 안전 폴백 — 익명 생성도 실패한 경우만.
+      setStarting(false);
       setStage("login-gate");
       return;
     }
-    setStarting(true);
-    setError(null);
 
     const opponentValidIds = new Set(getRoster(opponent.team_id).map((p) => p.id));
     const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
@@ -168,7 +184,6 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
       return;
     }
 
-    const client = createSupabaseBrowserClient();
     const stats = await buildStatsDirectoryWithRecentForm(client, [myEntry.teamId, opponent.team_id]);
     const mine = buildSimTeamInput(myEntry.teamId, myEntry.batting, myPitching, stats, myEntry.name);
     if (!mine.ok) {
@@ -193,7 +208,7 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
     const myRow = await client
       .from("bp_lineups")
       .select("id")
-      .eq("owner_user_id", userId)
+      .eq("owner_user_id", effectiveUserId)
       .eq("entry_id", myEntry.entryId)
       .maybeSingle();
     const myLineupId = (myRow.data as { id: string } | null)?.id ?? null;

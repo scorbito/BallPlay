@@ -10,13 +10,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, List, LogIn, RefreshCw, Swords } from "lucide-react";
+import { ArrowRight, List, RefreshCw, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import {
   fetchLineupStatsBulk,
   fetchPublishedLineupsByIds,
@@ -73,7 +74,6 @@ export function RegisteredLineupList({
   const [selectedOpponent, setSelectedOpponent] = useState<PublishedLineupRow | null>(null);
   const [myEntryId, setMyEntryId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [loginGateOpen, setLoginGateOpen] = useState(false);
   const [needPublishGateOpen, setNeedPublishGateOpen] = useState(false);
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
 
@@ -192,12 +192,9 @@ export function RegisteredLineupList({
     setPreviewTeam(built.team);
   };
 
-  // 도전 클릭 — 본인 공개 라인업 보유 여부 검증
+  // 도전 클릭 — 본인 공개 라인업 보유 여부만 검증.
+  // 익명 사용자도 도전 가능 (2026-06-04). 실제 익명 세션 lazy 생성은 startChallenge에서.
   const handleChallenge = (row: PublishedLineupRow) => {
-    if (!userId) {
-      setLoginGateOpen(true);
-      return;
-    }
     if (myPublishedEntries.length === 0) {
       setNeedPublishGateOpen(true);
       return;
@@ -211,13 +208,23 @@ export function RegisteredLineupList({
   // picker entry_id → bp_lineups.id를 미리 매핑해두는 게 효율적. 여기선 매치 시작 시 1회 조회.
   const startChallenge = useCallback(async () => {
     if (!selectedOpponent || !myEntry || starting) return;
-    if (!userId) {
-      setSelectedOpponent(null);
-      setLoginGateOpen(true);
-      return;
-    }
     setStarting(true);
     setError(null);
+
+    // DB 스냅샷 기반 시즌+최근 폼 블렌드. fetch 실패 시 baseline 폴백.
+    const client = createSupabaseBrowserClient();
+    // 익명 사용자도 도전 가능 — 세션 없으면 lazy 익명 계정 생성 (2026-06-04).
+    let effectiveUserId = userId;
+    if (!effectiveUserId) {
+      effectiveUserId = await ensureAnonymousClient(client);
+      if (effectiveUserId) setUserId(effectiveUserId);
+    }
+    if (!effectiveUserId) {
+      // 안전 폴백 — 익명 생성도 실패한 경우만 도달 (네트워크/RLS 이슈).
+      setStarting(false);
+      setError("계정 준비에 실패했어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
 
     const opponentValidIds = new Set(getRoster(selectedOpponent.team_id).map((p) => p.id));
     const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
@@ -238,8 +245,6 @@ export function RegisteredLineupList({
       return;
     }
 
-    // DB 스냅샷 기반 시즌+최근 폼 블렌드. fetch 실패 시 baseline 폴백.
-    const client = createSupabaseBrowserClient();
     const stats = await buildStatsDirectoryWithRecentForm(client, [myEntry.teamId, selectedOpponent.team_id]);
     const mine = buildSimTeamInput(myEntry.teamId, myEntry.batting, myPitching, stats, myEntry.name);
     if (!mine.ok) {
@@ -264,7 +269,7 @@ export function RegisteredLineupList({
     const myRow = await client
       .from("bp_lineups")
       .select("id")
-      .eq("owner_user_id", userId)
+      .eq("owner_user_id", effectiveUserId)
       .eq("entry_id", myEntry.entryId)
       .maybeSingle();
     const myLineupId = (myRow.data as { id: string } | null)?.id ?? null;
@@ -430,35 +435,6 @@ export function RegisteredLineupList({
               </button>
             </>
           ) : null}
-        </div>
-      </ModalShell>
-
-      {/* 로그인 게이트 */}
-      <ModalShell
-        open={loginGateOpen}
-        title="로그인이 필요해요"
-        onClose={() => setLoginGateOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            공개 라인업과 대결하려면 로그인이 필요해요.<br />
-            로그인하면 내 라인업도 공개해서 전적을 쌓을 수 있어요.
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setLoginGateOpen(false)}
-            >
-              나중에
-            </button>
-            <Link href="/login" className="lineup-confirm-primary" prefetch>
-              <LogIn size={14} />
-              로그인
-            </Link>
-          </div>
         </div>
       </ModalShell>
 

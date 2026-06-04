@@ -23,8 +23,12 @@ import {
   type Player,
   type Position
 } from "@/lib/types/lineup";
-import { createEmptyEntry } from "@/lib/storage/lineupEntries";
-import { hasSeenGuide, markGuideSeen } from "@/lib/storage/lineupGuides";
+import {
+  createEmptyEntry,
+  deleteLineupEntry as localDeleteEntry,
+  loadLineupEntries
+} from "@/lib/storage/lineupEntries";
+import { hasSeenGuide, hasSeenStep0, markGuideSeen, markStep0Seen } from "@/lib/storage/lineupGuides";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
@@ -53,6 +57,7 @@ import {
 } from "@/components/domain/lineup/modals/DeleteSlotModals";
 import { AutoFillPublishModal } from "@/components/domain/lineup/modals/AutoFillPublishModal";
 import {
+  GuideStep0Modal,
   GuideStep1Modal,
   GuideStep2Modal
 } from "@/components/domain/lineup/modals/LineupGuideModals";
@@ -114,8 +119,11 @@ export function LineupBuilderScreen() {
   // 새 슬롯 onboarding 안내 — 슬롯별 한 번씩만 노출.
   //   step1: 타순 9명 채우면 "선발 투수만 선택하면 공개 가능"
   //   step2: 선발 투수까지 고르면 "이제 공개해서 가상경기 가능 — 마무리/불펜은 자동"
+  const [guideStep0Open, setGuideStep0Open] = useState(false);
   const [guideStep1Open, setGuideStep1Open] = useState(false);
   const [guideStep2Open, setGuideStep2Open] = useState(false);
+  // 첫 진입에서 자동으로 만든 빈 슬롯 id — 사용자가 한 명도 안 넣고 떠나면 unmount 시 정리.
+  const autoCreatedEntryIdRef = useRef<string | null>(null);
   // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
@@ -138,6 +146,54 @@ export function LineupBuilderScreen() {
     if (selectedEntryId) return;
     if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
   }, [entries, selectedEntryId]);
+
+  // 첫 진입(슬롯 0개) 자동 빈 슬롯 생성 + step0 코치마크.
+  // - sync 완료(loading 외) + 진짜 entries 0개일 때만 작동.
+  // - 응원팀 개념이 없으므로 시드된 팀 중 무작위 선택.
+  // - autoCreatedEntryIdRef 에 기록 → 사용자가 선수 0명인 채로 떠나면 unmount 시 정리.
+  const autoCreateAttemptedRef = useRef(false);
+  useEffect(() => {
+    if (autoCreateAttemptedRef.current) return;
+    if (syncStatus === "loading") return; // sync 끝나기 전 race로 중복 생성 차단
+    if (entries.length > 0) {
+      autoCreateAttemptedRef.current = true; // 기존 슬롯이 있으면 자동 생성 안 함
+      return;
+    }
+    autoCreateAttemptedRef.current = true;
+    const ids = Array.from(seededTeamIds);
+    if (ids.length === 0) return;
+    const randomTeamId = ids[Math.floor(Math.random() * ids.length)];
+    const newEntry = createEmptyEntry(randomTeamId, "내 라인업 1", profile.nickname);
+    autoCreatedEntryIdRef.current = newEntry.entryId;
+    localUpsertEntry(newEntry);
+    setSelectedEntryId(newEntry.entryId);
+    if (!hasSeenStep0()) {
+      setGuideStep0Open(true);
+      markStep0Seen();
+    }
+  }, [syncStatus, entries.length, seededTeamIds, profile.nickname, localUpsertEntry]);
+
+  // 자동 생성한 빈 슬롯은 사용자가 아무 선수도 안 넣었으면 화면 unmount 시 삭제 — 빈 슬롯 누적 방지.
+  // 의존성 빈 배열 + localStorage 직접 read → React state staleness 회피.
+  // (자동 생성된 slot은 localUpsertEntry로만 저장됐고 9명 채우기 전엔 DB에 안 올라가니 안전.)
+  useEffect(() => {
+    return () => {
+      const autoId = autoCreatedEntryIdRef.current;
+      if (!autoId) return;
+      try {
+        const fresh = loadLineupEntries();
+        const current = fresh.find((e) => e.entryId === autoId);
+        if (!current) return;
+        const battingFilled = current.batting?.slots?.length ?? 0;
+        const pitchingFilled = current.pitching?.slots?.filter(Boolean).length ?? 0;
+        if (battingFilled === 0 && pitchingFilled === 0) {
+          localDeleteEntry(autoId);
+        }
+      } catch {
+        // 정리 실패는 무해 — 다음 진입에서 사용자가 처리.
+      }
+    };
+  }, []);
 
   const roster = useMemo(() => getRoster(selectedTeamId), [selectedTeamId]);
   const playersById = useMemo(() => {
@@ -932,6 +988,13 @@ export function LineupBuilderScreen() {
           setLockInfoOpen(false);
           setConfirmUnpublishOpen(true);
         }}
+      />
+
+      {/* 첫 진입 step0 — 무작위 팀 빈 슬롯 자동 생성 직후, 대기 풀/타순 안내 */}
+      <GuideStep0Modal
+        open={guideStep0Open}
+        teamShortName={selectedTeam.shortName}
+        onClose={() => setGuideStep0Open(false)}
       />
 
       {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 필수 투수" 안내 */}

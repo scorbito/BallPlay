@@ -2,6 +2,49 @@
 
 import { ModalShell } from "@/components/common/ModalShell";
 
+type GuideStep0ModalProps = {
+  open: boolean;
+  /** 자동 선택된 팀 이름 — "○○으로 빈 라인업을 만들어 뒀어요" 안내에 사용 */
+  teamShortName?: string;
+  onClose: () => void;
+};
+
+/** 라인업 빌더 첫 진입 안내 — 응원팀 개념이 없는 야구놀이터에서
+ *  무작위 팀으로 빈 슬롯을 자동 생성한 직후 "여기서 시작하세요" 코치마크. */
+export function GuideStep0Modal({ open, teamShortName, onClose }: GuideStep0ModalProps) {
+  return (
+    <ModalShell
+      open={open}
+      title="라인업을 짜 볼까요?"
+      onClose={onClose}
+      panelClassName="lineup-confirm-modal-panel"
+      closeOnBackdrop
+    >
+      <div className="lineup-confirm-body">
+        <p className="lineup-confirm-msg">
+          {teamShortName ? (
+            <>
+              <strong>{teamShortName}</strong>으로 빈 라인업을 하나 만들어 뒀어요.<br />
+              <br />
+            </>
+          ) : null}
+          아래 <strong>대기</strong> 풀에서 선수를 탭하면 <strong>타순</strong>에 한 명씩 들어가요.<br />
+          9명을 채우면 다음 단계로 안내해 드려요.
+        </p>
+        <div className="lineup-confirm-actions">
+          <button
+            type="button"
+            className="lineup-confirm-primary"
+            onClick={onClose}
+          >
+            시작하기
+          </button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
 type GuideStep1ModalProps = {
   open: boolean;
   onClose: () => void;
