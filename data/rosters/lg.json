@@ -172,6 +172,7 @@
       "name": "정우영",
       "jerseyNumber": 18,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -180,6 +181,7 @@
       "name": "우강훈",
       "jerseyNumber": 20,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 26
     },

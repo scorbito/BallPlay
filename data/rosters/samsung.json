@@ -181,6 +181,7 @@
       "name": "양현",
       "jerseyNumber": 19,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 1
     },
@@ -306,6 +307,7 @@
       "name": "최하늘",
       "jerseyNumber": 37,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -314,6 +316,7 @@
       "name": "임기영",
       "jerseyNumber": 38,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 14
     },

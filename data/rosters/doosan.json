@@ -10,6 +10,7 @@
       "name": "박치국",
       "jerseyNumber": 1,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 17
     },
@@ -135,6 +136,7 @@
       "name": "박정수",
       "jerseyNumber": 17,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "L",
       "seasonGames": 6
     },
@@ -485,6 +487,7 @@
       "name": "최원준",
       "jerseyNumber": 61,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 2
     },

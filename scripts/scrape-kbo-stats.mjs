@@ -19,6 +19,7 @@
  *   node scripts/scrape-kbo-stats.mjs                # 10팀 전부
  *   node scripts/scrape-kbo-stats.mjs --year=2026    # 시즌 지정
  *   node scripts/scrape-kbo-stats.mjs --no-futures   # 1군만
+ *   node scripts/scrape-kbo-stats.mjs --no-splits    # 좌/우투 split 수집 끄기 (빠른 재시드)
  *
  * 매너:
  *   - 페이지 사이 1.5s 딜레이 (KBO 사이트는 사용량 많은 곳이라 0.3s로도 무난할 듯하지만
@@ -41,6 +42,14 @@ const USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 BallPlay-Seed/0.1 (contact: dev@ballplay.local)";
 
 const FETCH_DELAY_MS = 1500;
+
+// 좌/우투 split 페이지(선수당 1요청) 수집 대상 최소 PA. 주전급만 수집해 비용 절감.
+const SPLIT_MIN_PA = 50;
+// split 표본 신뢰 가드: 해당 split AB가 이 미만이면 undefined (엔진 폴백 사용)
+const SPLIT_MIN_AB = 20;
+
+const HITTER_SPLIT_PAGE =
+  "https://www.koreabaseball.com/Record/Player/HitterDetail/Situation.aspx";
 
 // KBO 시스템 ddlTeam 코드 ↔ 우리 시스템 teamId
 // shortName: KBO 통계 페이지 td[2]에 들어가는 짧은 이름 (2군 필터 폴백용)
@@ -75,7 +84,8 @@ const flags = {
   probe: args.includes("--probe"),
   team: args.find((a) => a.startsWith("--team="))?.split("=")[1] ?? null,
   year: Number(args.find((a) => a.startsWith("--year="))?.split("=")[1] ?? 2026),
-  noFutures: args.includes("--no-futures")
+  noFutures: args.includes("--no-futures"),
+  noSplits: args.includes("--no-splits")
 };
 
 main().catch((err) => {
@@ -85,7 +95,7 @@ main().catch((err) => {
 
 async function main() {
   console.log(
-    `[scrape-kbo-stats] year=${flags.year} probe=${flags.probe} team=${flags.team ?? "ALL"} no-futures=${flags.noFutures}`
+    `[scrape-kbo-stats] year=${flags.year} probe=${flags.probe} team=${flags.team ?? "ALL"} no-futures=${flags.noFutures} no-splits=${flags.noSplits}`
   );
 
   if (flags.probe) {
@@ -136,6 +146,32 @@ async function main() {
     for (const row of merged1gHit) {
       const sim = makeSimBatter(row, roster);
       if (sim) collected.batters.push(sim);
+    }
+
+    // 좌/우투 split 수집 — 주전급(PA >= SPLIT_MIN_PA)만, 선수당 1요청 + 1.5s 딜레이
+    if (!flags.noSplits) {
+      const targets = merged1gHit.filter(
+        (row) => row._kboPlayerId && (row.pa || 0) >= SPLIT_MIN_PA
+      );
+      if (targets.length > 0) {
+        console.log(`  좌/우투 split 수집: ${targets.length}명 (PA>=${SPLIT_MIN_PA})`);
+        let okCount = 0;
+        // playerId → sim batter 매핑 (이름+팀으로 다시 찾기)
+        for (const row of targets) {
+          await sleep(FETCH_DELAY_MS);
+          const split = await fetchHitterSplit(row._kboPlayerId);
+          if (split.vsLhpOps == null && split.vsRhpOps == null) continue;
+          // 같은 행으로 만든 sim batter 찾기 (roster 매칭이 성공한 경우에만 존재)
+          const player = findPlayerInRoster(row.name, roster, "batter");
+          if (!player) continue;
+          const sim = collected.batters.find((b) => b.playerId === player.id);
+          if (!sim) continue;
+          if (split.vsLhpOps != null) sim.vsLhpOps = split.vsLhpOps;
+          if (split.vsRhpOps != null) sim.vsRhpOps = split.vsRhpOps;
+          okCount++;
+        }
+        console.log(`  ✓ split 적용: ${okCount}/${targets.length}명`);
+      }
     }
 
     await sleep(FETCH_DELAY_MS);
@@ -347,26 +383,109 @@ async function scrapeStatsPage(url, kboTeamCode, kboTeamShortName, year, parseRo
 
   const rows = [];
   $('table[class*="tData"] tbody tr, table.tEx tbody tr, table.tbl tbody tr').each((_, el) => {
-    const cells = $(el).find("td").map((__, td) => $(td).text().trim()).get();
+    const $row = $(el);
+    const cells = $row.find("td").map((__, td) => $(td).text().trim()).get();
     if (cells.length < 3) return;
     // 팀 필터를 못 건 경우 (2군) td[2]가 우리 팀 약칭이 아니면 skip
     if (!teamSelectName && kboTeamShortName && cells[2] !== kboTeamShortName) return;
-    const parsed = parseRow(cells);
+    // 선수명 셀의 <a href="...playerId=NNNN"> 에서 KBO playerId 캡처 (split 페이지 조회용)
+    const href = $row.find('a[href*="playerId="]').first().attr("href") || "";
+    const kboPlayerId = href.match(/playerId=(\d+)/)?.[1] ?? null;
+    const parsed = parseRow(cells, kboPlayerId);
     if (parsed) rows.push(parsed);
   });
   return rows;
 }
 
 // ============================================================
+// 좌/우투 split (vsLhpOps / vsRhpOps) 수집
+// ============================================================
+
+/**
+ * 선수별 상황별기록 페이지(HitterDetail/Situation.aspx)에서 "투수유형별" 테이블을 읽어
+ * 좌투수/우투수 상대 OPS를 계산해 반환.
+ *
+ *   컬럼 순서: 구분, AVG, AB, H, 2B, 3B, HR, RBI, BB, HBP, SO, GDP
+ *   OPS = OBP + SLG,  OBP=(H+BB+HBP)/(AB+BB+HBP) (SF 미제공 근사), SLG=TB/AB
+ *
+ * 표본 가드: 해당 split AB < SPLIT_MIN_AB(20) → undefined.
+ * 행 없음/파싱 실패/HTTP 에러 → 해당 값 undefined (throw 하지 않음).
+ *
+ * @returns {Promise<{vsLhpOps?: number, vsRhpOps?: number}>}
+ */
+async function fetchHitterSplit(playerId) {
+  const url = `${HITTER_SPLIT_PAGE}?playerId=${playerId}`;
+  let html;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT, "Accept-Language": "ko-KR,ko" }
+    });
+    if (!res.ok) {
+      console.warn(`      ! split GET playerId=${playerId} → ${res.status}`);
+      return {};
+    }
+    html = await res.text();
+  } catch (err) {
+    console.warn(`      ! split fetch playerId=${playerId} failed: ${err?.message ?? err}`);
+    return {};
+  }
+
+  try {
+    const $ = cheerioLoad(html);
+    // "투수유형별" 헤더 근처 테이블에서 좌투수/우투수 행을 찾는다.
+    // 페이지에 여러 상황별 테이블이 있어, 전체 tr 중 첫 셀이 좌/우투수인 행을 스캔.
+    const split = {};
+    $("table tbody tr").each((_, el) => {
+      const cells = $(el).find("td, th").map((__, td) => $(td).text().trim()).get();
+      if (cells.length < 12) return;
+      const label = cells[0];
+      if (label !== "좌투수" && label !== "우투수") return;
+      const ops = computeOpsFromSplitRow(cells);
+      if (ops == null) return;
+      if (label === "좌투수") split.vsLhpOps = ops;
+      else split.vsRhpOps = ops;
+    });
+    return split;
+  } catch (err) {
+    console.warn(`      ! split parse playerId=${playerId} failed: ${err?.message ?? err}`);
+    return {};
+  }
+}
+
+/** 투수유형별 한 행(구분,AVG,AB,H,2B,3B,HR,RBI,BB,HBP,SO,GDP)에서 OPS 계산.
+ *  AB < SPLIT_MIN_AB 면 표본 부족으로 null. */
+function computeOpsFromSplitRow(c) {
+  // c[0]=구분, c[1]=AVG, c[2]=AB, c[3]=H, c[4]=2B, c[5]=3B, c[6]=HR, ...
+  const ab = numOr0(c[2]);
+  if (ab < SPLIT_MIN_AB) return null;
+  const h = numOr0(c[3]);
+  const doubles = numOr0(c[4]);
+  const triples = numOr0(c[5]);
+  const hr = numOr0(c[6]);
+  const bb = numOr0(c[8]);
+  const hbp = numOr0(c[9]);
+  const singles = h - doubles - triples - hr;
+  const tb = singles + doubles * 2 + triples * 3 + hr * 4;
+  const slg = ab > 0 ? tb / ab : 0;
+  const obpDenom = ab + bb + hbp;
+  const obp = obpDenom > 0 ? (h + bb + hbp) / obpDenom : 0;
+  const ops = obp + slg;
+  if (!Number.isFinite(ops) || ops <= 0) return null;
+  return round3(ops);
+}
+
+// ============================================================
 // 행 파서 — KBO 페이지의 컬럼 순서에 맞춰 SimBatter/SimPitcher용 raw 객체 생성
 // ============================================================
 
-/** Basic1: 순위 / 선수명 / 팀명 / AVG / G / PA / AB / R / H / 2B / 3B / HR / TB / RBI / SAC / SF */
-function parseHitterBasic1Row(c) {
+/** Basic1: 순위 / 선수명 / 팀명 / AVG / G / PA / AB / R / H / 2B / 3B / HR / TB / RBI / SAC / SF
+ *  kboPlayerId: 선수명 셀 href의 playerId (split 페이지 조회용, 없으면 null) */
+function parseHitterBasic1Row(c, kboPlayerId) {
   if (c.length < 16) return null;
   return {
     name: c[1],
     teamName: c[2],
+    _kboPlayerId: kboPlayerId ?? null,
     avg: numOr0(c[3]),
     g: numOr0(c[4]),
     pa: numOr0(c[5]),

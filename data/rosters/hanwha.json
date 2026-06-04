@@ -154,6 +154,7 @@
       "name": "엄상백",
       "jerseyNumber": 11,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 1
     },
@@ -180,6 +181,7 @@
       "name": "김승일",
       "jerseyNumber": 14,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -413,6 +415,7 @@
       "name": "배민서",
       "jerseyNumber": 45,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -493,6 +496,7 @@
       "name": "강재민",
       "jerseyNumber": 55,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 3
     },
@@ -735,6 +739,7 @@
       "name": "김관우",
       "jerseyNumber": 112,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },

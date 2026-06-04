@@ -154,6 +154,7 @@
       "name": "윤중현",
       "jerseyNumber": 19,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -865,6 +866,7 @@
       "name": "김양수",
       "jerseyNumber": 145,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },

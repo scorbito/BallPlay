@@ -181,6 +181,7 @@
       "name": "윤태현",
       "jerseyNumber": 12,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -495,6 +496,7 @@
       "name": "박종훈",
       "jerseyNumber": 50,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },

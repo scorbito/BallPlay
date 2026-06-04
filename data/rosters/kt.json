@@ -10,6 +10,7 @@
       "name": "고영표",
       "jerseyNumber": 1,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 10
     },
@@ -108,6 +109,7 @@
       "name": "우규민",
       "jerseyNumber": 12,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 20
     },
@@ -152,6 +154,7 @@
       "name": "이채호",
       "jerseyNumber": 17,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -511,6 +514,7 @@
       "name": "김정운",
       "jerseyNumber": 61,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 4
     },

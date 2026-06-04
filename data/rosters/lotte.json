@@ -23,6 +23,7 @@
       "name": "한현희",
       "jerseyNumber": 1,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -769,6 +770,7 @@
       "name": "조경민",
       "jerseyNumber": 128,
       "primaryPosition": "P",
+      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
