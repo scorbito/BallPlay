@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Dices, Flame, Target } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, ChevronLeft, ChevronRight, Dices, Flame, Loader2, Lock, RefreshCw, Target } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_1000_VIEWED_KEY } from "@/components/domain/HomeCardPulse";
 import type { Sim1000AccuracyStats } from "@/lib/supabase/query-parts/bpSimResults";
@@ -42,6 +44,8 @@ type Props = {
   isAdmin?: boolean;
   /** 시즌 누적 적중률 (live 집계). undefined 또는 total 0 이면 안내 표시. */
   accuracyStats?: Sim1000AccuracyStats;
+  /** 소프트 게이트 — 비로그인/익명이면 true. 매치업·누적 적중률만 보이고 수치는 로그인 유도. */
+  locked?: boolean;
 };
 
 function formatDateLabel(dateISO: string): string {
@@ -99,10 +103,16 @@ export function Sim1000ListScreen({
   prevDate,
   nextDate,
   games,
-  accuracyStats
+  isAdmin = false,
+  accuracyStats,
+  locked = false
 }: Props) {
-  // 과거 날짜만 실제 결과 vs 시뮬 비교 표시 (오늘·미래는 점수 미존재).
-  const isPast = !isToday && !isFuture;
+  const router = useRouter();
+  const { showToast } = useAppState();
+  const [rerunning, setRerunning] = useState(false);
+
+  // 로그인 유도 링크 — 로그인 후 현재 날짜의 시뮬 결과로 복귀.
+  const loginHref = `/login?next=${encodeURIComponent(`/predict/sim-1000?date=${selectedDate}`)}`;
 
   // 홈 펄스 뱃지 해제 — 오늘자 시뮬 결과가 있는 페이지에 진입하면 viewed 마킹.
   useEffect(() => {
@@ -114,8 +124,70 @@ export function Sim1000ListScreen({
     }
   }, [isToday, games.length, selectedDate]);
 
+  // 운영자 "다시 돌리기" — 09:00 cron 이후 발표 라인업/선발 교체 등이 반영된 데이터로 다시 시뮬.
+  async function handleRerun() {
+    if (rerunning) return;
+    setRerunning(true);
+    showToast("다시 돌리는 중이에요. 수 초 걸려요…");
+    try {
+      const res = await fetch("/api/admin/sim-1000/rerun", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: selectedDate })
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        ran?: number;
+        failed?: number;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        showToast(`다시 돌리기 실패: ${json.error ?? res.statusText}`);
+        return;
+      }
+      const ran = json.ran ?? 0;
+      const failed = json.failed ?? 0;
+      showToast(
+        failed > 0
+          ? `다시 돌렸어요 (${ran}경기 성공, ${failed}경기 실패)`
+          : `다시 돌렸어요 (${ran}경기)`
+      );
+      router.refresh();
+    } catch (err) {
+      showToast(`다시 돌리기 실패: ${(err as Error).message}`);
+    } finally {
+      setRerunning(false);
+    }
+  }
+
+  const showRerun = isAdmin && isToday;
+
   return (
-    <AppShell activeTab="home" title="1000판 시뮬레이션" theme="light" backHref="/" wide>
+    <AppShell
+      activeTab="home"
+      title="1000판 시뮬레이션"
+      theme="light"
+      backHref="/"
+      wide
+      headerAction={
+        showRerun ? (
+          <button
+            type="button"
+            className="sim1000-admin-rerun"
+            onClick={handleRerun}
+            disabled={rerunning}
+            aria-label="시뮬 다시 돌리기 (운영자)"
+          >
+            {rerunning ? (
+              <Loader2 size={13} strokeWidth={2.5} className="sim1000-admin-spin" aria-hidden="true" />
+            ) : (
+              <RefreshCw size={13} strokeWidth={2.5} aria-hidden="true" />
+            )}
+            <span>{rerunning ? "돌리는 중…" : "다시 돌리기"}</span>
+          </button>
+        ) : null
+      }
+    >
       <section className="sim1000-screen">
         {/* ── 설명 (카드 없이 텍스트만) ── */}
         <p className="sim1000-intro-note">
@@ -141,6 +213,21 @@ export function Sim1000ListScreen({
             <span className="sim1000-accuracy-empty">아직 판정된 경기가 없어요</span>
           )}
         </div>
+
+        {/* ── 로그인 유도 배너 (비로그인/익명 한정). 위 누적 적중률은 미끼로 그대로 노출. ── */}
+        {locked ? (
+          <div className="sim1000-login-banner">
+            <Lock size={18} strokeWidth={2.5} aria-hidden="true" />
+            <div className="sim1000-login-banner-text">
+              <strong>1000판 시뮬 결과는 로그인 후 볼 수 있어요</strong>
+              <p>어느 팀이 우세할지 — 한 경기를 1000번 돌린 승률·평균점수를 확인하세요.</p>
+            </div>
+            <Link href={loginHref} className="sim1000-login-banner-cta" prefetch={false}>
+              로그인
+              <ArrowRight size={14} strokeWidth={2.5} />
+            </Link>
+          </div>
+        ) : null}
 
         {/* ── 날짜 네비게이션 (시뮬 결과 존재 날짜만 이동) ── */}
         <nav className="sim1000-date-nav" aria-label="날짜 선택">
@@ -192,9 +279,7 @@ export function Sim1000ListScreen({
                     ? "예정된 시뮬 결과가 없어요"
                     : "이날은 시뮬 결과가 없어요"}
               </p>
-              {isToday ? (
-                <p className="sim1000-empty-sub">09:00 KST에 자동 생성됩니다.</p>
-              ) : !isFuture ? (
+              {!isToday && !isFuture ? (
                 <p className="sim1000-empty-sub">
                   <Link href="/predict/sim-1000" className="sim1000-back-today">
                     오늘로 돌아가기
@@ -220,7 +305,8 @@ export function Sim1000ListScreen({
                   : undefined;
                 const timeLabel = formatGameTime(g.gameTime);
 
-                // ── 실제 결과 비교 (과거 카드 한정) ──
+                // ── 실제 결과 비교 ──
+                // 날짜 무관하게 "종료/취소"된 경기면 표시 (오늘 경기도 끝나면 즉시).
                 // - canceled: "🌧 취소" 라벨, 적중 판정 없음
                 // - finished + 양쪽 점수: 실제 점수 행 + 적중 배지 표시
                 // - 진행 중(in_progress)·미시작: 비교 행 미노출 (중간 스코어 = 미확정)
@@ -229,16 +315,15 @@ export function Sim1000ListScreen({
                   g.gameStatus === "finished" &&
                   g.actualHomeScore !== null &&
                   g.actualAwayScore !== null;
-                const showActualRow = isPast && (isCanceled || isFinished);
-                const verdict =
-                  isPast && isFinished
-                    ? judgeAccuracy(
-                        g.homeWins,
-                        g.awayWins,
-                        g.actualHomeScore as number,
-                        g.actualAwayScore as number
-                      )
-                    : null;
+                const showActualRow = isCanceled || isFinished;
+                const verdict = isFinished
+                  ? judgeAccuracy(
+                      g.homeWins,
+                      g.awayWins,
+                      g.actualHomeScore as number,
+                      g.actualAwayScore as number
+                    )
+                  : null;
 
                 return (
                   <li key={g.gameId} className="sim1000-game-card">
@@ -250,16 +335,23 @@ export function Sim1000ListScreen({
                           <span className="sim1000-game-stadium">{g.stadium}</span>
                         ) : null}
                       </span>
-                      <span className="sim1000-game-runs-label">평균 점수</span>
-                      <span
-                        className={`sim1000-game-summary ${
-                          dominantTeam ? "sim1000-game-summary-team" : "sim1000-game-summary-tie"
-                        }`}
-                        style={summaryStyle}
-                      >
-                        <Flame size={11} strokeWidth={2.5} aria-hidden="true" />
-                        {dominantTeamName} {dominantPct}%
-                      </span>
+                      <span className="sim1000-game-runs-label">{locked ? "" : "평균 점수"}</span>
+                      {locked ? (
+                        <span className="sim1000-game-summary sim1000-game-summary-locked">
+                          <Lock size={11} strokeWidth={2.5} aria-hidden="true" />
+                          우세팀 %
+                        </span>
+                      ) : (
+                        <span
+                          className={`sim1000-game-summary ${
+                            dominantTeam ? "sim1000-game-summary-team" : "sim1000-game-summary-tie"
+                          }`}
+                          style={summaryStyle}
+                        >
+                          <Flame size={11} strokeWidth={2.5} aria-hidden="true" />
+                          {dominantTeamName} {dominantPct}%
+                        </span>
+                      )}
                     </header>
 
                     {/* Row 2: 팀명+평균점수 인라인 매치업 */}
@@ -267,11 +359,15 @@ export function Sim1000ListScreen({
                       <div className="sim1000-team">
                         <TeamBadge teamId={g.homeTeamId} size="sm" />
                         <span className="sim1000-team-name">{home.shortName}</span>
-                        <span className="sim1000-team-score">{g.homeAvgRuns.toFixed(2)}</span>
+                        <span className={`sim1000-team-score${locked ? " sim1000-team-score-locked" : ""}`}>
+                          {locked ? "–" : g.homeAvgRuns.toFixed(2)}
+                        </span>
                       </div>
                       <span className="sim1000-vs">vs</span>
                       <div className="sim1000-team">
-                        <span className="sim1000-team-score">{g.awayAvgRuns.toFixed(2)}</span>
+                        <span className={`sim1000-team-score${locked ? " sim1000-team-score-locked" : ""}`}>
+                          {locked ? "–" : g.awayAvgRuns.toFixed(2)}
+                        </span>
                         <span className="sim1000-team-name">{away.shortName}</span>
                         <TeamBadge teamId={g.awayTeamId} size="sm" />
                       </div>
@@ -310,11 +406,18 @@ export function Sim1000ListScreen({
                       </div>
                     ) : null}
 
-                    {/* Row 3: 상세 보기 */}
-                    <Link href={`/predict/sim-1000/${g.gameId}`} className="sim1000-card-cta">
-                      상세 보기
-                      <ArrowRight size={12} strokeWidth={2.5} />
-                    </Link>
+                    {/* Row 3: 상세 보기 (잠금 시 로그인 유도) */}
+                    {locked ? (
+                      <Link href={loginHref} className="sim1000-card-cta" prefetch={false}>
+                        <Lock size={12} strokeWidth={2.5} />
+                        로그인하고 상세 보기
+                      </Link>
+                    ) : (
+                      <Link href={`/predict/sim-1000/${g.gameId}`} className="sim1000-card-cta">
+                        상세 보기
+                        <ArrowRight size={12} strokeWidth={2.5} />
+                      </Link>
+                    )}
                   </li>
                 );
               })}

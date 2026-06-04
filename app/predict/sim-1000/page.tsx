@@ -39,6 +39,10 @@ export default async function Sim1000ListPage({
   // 운영자(admin) 여부 — "다시 돌리기" 버튼 노출 분기용. 일반 사용자는 false.
   const userTier = await getUserTier(supabase);
   const isAdmin = userTier.tier === "admin";
+  // 소프트 게이트: 비로그인/익명(guest)은 시뮬 수치를 못 본다. 매치업·누적 적중률(미끼)만 노출.
+  // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 민감 수치를 서버에서 비워 보내
+  // 개발자도구로도 훔쳐볼 수 없게 한다. AI 예측 page 와 동일 기준 (userTier.tier === "guest").
+  const locked = userTier.tier === "guest";
 
   // 시뮬 결과 + 게임 부가 정보 병렬.
   // listGamesFromDb 는 admin client (선발 컬럼 포함) — 매치업 시각·구장 보강용.
@@ -62,6 +66,8 @@ export default async function Sim1000ListPage({
 
   const cards: Sim1000GameCard[] = simRows.map((row) => {
     const meta = gameMeta.get(row.game_id);
+    // 잠긴 사용자에겐 민감 수치(승/패 분포·평균점수·실제결과·결과성 status)를 서버에서 비워 전송.
+    // 노출 OK: 시각·구장·양팀 ID(매치업). AI 예측이 predictions=[] 로 보내는 것과 동형.
     return {
       gameId: row.game_id,
       gameDate: row.game_date,
@@ -69,23 +75,27 @@ export default async function Sim1000ListPage({
       stadium: meta?.stadium ?? "",
       homeTeamId: row.home_team_id,
       awayTeamId: row.away_team_id,
-      homeWins: row.home_wins,
-      awayWins: row.away_wins,
-      ties: row.ties,
-      n: row.n,
-      homeAvgRuns: row.home_avg_runs,
-      awayAvgRuns: row.away_avg_runs,
+      homeWins: locked ? 0 : row.home_wins,
+      awayWins: locked ? 0 : row.away_wins,
+      ties: locked ? 0 : row.ties,
+      n: locked ? 0 : row.n,
+      homeAvgRuns: locked ? 0 : row.home_avg_runs,
+      awayAvgRuns: locked ? 0 : row.away_avg_runs,
       // 실제 경기 결과 — 과거 카드에서 시뮬 vs 실제 비교 표시용.
       // listGamesFromDb 에 game meta 가 없으면 (예: 시즌 외 시뮬) null.
-      actualHomeScore: meta?.homeScore ?? null,
-      actualAwayScore: meta?.awayScore ?? null,
-      gameStatus: meta?.status ?? "scheduled"
+      actualHomeScore: locked ? null : meta?.homeScore ?? null,
+      actualAwayScore: locked ? null : meta?.awayScore ?? null,
+      // 결과성 정보(finished/canceled) 도 가림 — 잠금 상태에선 매치업만.
+      gameStatus: locked ? "scheduled" : meta?.status ?? "scheduled"
     };
   });
 
   // prev/next — 시뮬 결과가 있는 날짜 중 selectedDate 기준 인접.
+  // 단, "오늘" 은 결과 유무와 무관하게 next 후보에 포함 — 운영자가 임의 시간에
+  // 시뮬을 돌리는 워크플로우라 오늘 결과가 없어도 오늘 페이지로 이동 가능해야 함.
   const dates = datesResult.ok ? datesResult.dates : [];
-  const sorted = [...dates].sort();
+  const dateList = selectedDate < today && !dates.includes(today) ? [...dates, today] : dates;
+  const sorted = [...dateList].sort();
   let prevDate: string | null = null;
   let nextDate: string | null = null;
   for (const d of sorted) {
@@ -108,6 +118,7 @@ export default async function Sim1000ListPage({
       games={cards}
       isAdmin={isAdmin}
       accuracyStats={accuracyStats}
+      locked={locked}
     />
   );
 }

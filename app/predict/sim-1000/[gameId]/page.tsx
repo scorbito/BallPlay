@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getUserTier } from "@/lib/auth/userTier";
 import {
   getSimResultByGameId,
   type BpSimResultRow
@@ -19,6 +20,14 @@ export default async function Sim1000DetailPage({
   params: { gameId: string };
 }) {
   const supabase = createSupabaseServerClient();
+
+  // 시뮬 상세는 정식 로그인 전용. 비로그인/익명(guest)은 로그인으로 보낸다.
+  // (리스트는 소프트 게이트로 매치업만 노출하지만, 상세는 곧 전체 수치라 하드 게이트.)
+  // AI 예측 reveal 페이지와 동형 — userTier.tier === "guest" 기준.
+  const userTier = await getUserTier(supabase);
+  if (userTier.tier === "guest") {
+    redirect(`/login?next=${encodeURIComponent(`/predict/sim-1000/${params.gameId}`)}`);
+  }
 
   type GameRow = {
     id: string;

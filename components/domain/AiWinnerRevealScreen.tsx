@@ -43,15 +43,6 @@ const SUMMARY_DELAY_MS = 500;     // 마지막 AI 후 종합 결과 등장까지
 
 const SEEN_STORAGE_PREFIX = "ballplay:ai-predict-seen:";
 
-function hasSeenBefore(gameId: string): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(`${SEEN_STORAGE_PREFIX}${gameId}`) === "1";
-  } catch {
-    return false;
-  }
-}
-
 function markSeen(gameId: string): void {
   if (typeof window === "undefined") return;
   try {
@@ -92,11 +83,12 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
   const [visibleStage, setVisibleStage] = useState(0);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
-  // mount 직후 1회 — 이미 본 게임이거나 과거 경기면 4로 즉시 점프 (연출 스킵).
-  // (SSR-safe: useEffect에서만 localStorage 접근.)
+  // mount 직후 1회 — 과거 경기면 4로 즉시 점프 (연출 스킵).
+  // 오늘 경기는 재진입이라도 매번 애니메이션 재생 (사용자 영상 제작 워크플로우).
+  // 목록 화면의 미스터리 카드는 markSeen 으로 별도 관리 (한 번 본 픽은 가리지 않음).
   useEffect(() => {
-    if (!isToday || hasSeenBefore(gameId)) setVisibleStage(4);
-  }, [gameId, isToday]);
+    if (!isToday) setVisibleStage(4);
+  }, [isToday]);
 
   // 초기 reveal 트리거 — visibleStage가 0이면 800ms 후 1로.
   // Strict mode의 두 번 실행에 안전: cleanup이 timer를 비우고 두 번째 mount가 다시 set.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, ClipboardCheck, Crown, Dices, ListOrdered, Swords, Target, Trophy, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -42,7 +42,78 @@ type Props = {
   awayLineup?: Sim1000LineupBatter[] | null;
 };
 
-// (구) 정적 HOME/AWAY 색 상수 — 팀 컬러로 치환. 컴포넌트 안에서 home.color / away.color 사용.
+// ── 팀 컬러 대비 보정 ──────────────────────────────────────
+// 그래프(도넛·히스토그램·MVP)에서 홈/원정 팀 색이 너무 비슷하면(예: 삼성 vs NC, 둘 다 남색)
+// 구분이 안 됨. 두 색 거리가 임계 미만이면 원정 fill 색을 밝게/어둡게 자동 조정해 구분.
+// 텍스트(평균점수·우세 라벨)에는 적용 안 함 — 가독성 위해 원본 팀색 유지.
+function hexToRgb(hex: string): [number, number, number] {
+  const m = hex.replace("#", "");
+  const n = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
+  const int = parseInt(n, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const h = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+function colorDist(a: [number, number, number], b: [number, number, number]): number {
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+}
+function mix(c: [number, number, number], t: [number, number, number], amt: number): [number, number, number] {
+  return [c[0] + (t[0] - c[0]) * amt, c[1] + (t[1] - c[1]) * amt, c[2] + (t[2] - c[2]) * amt];
+}
+/** 원정 fill 색 — 홈 색과 너무 가까울 때:
+ *  1) 원정 팀의 실제 보조색(accent)이 있고 홈과 충분히 다르면 그걸 사용 (실제 팀컬러라 자연스러움).
+ *  2) 없거나 그것도 비슷하면 밝게/어둡게(홈에서 더 멀어지는 쪽) 알고리즘 조정. */
+function ensureAwayFill(homeHex: string, awayHex: string, awayAccent?: string): string {
+  const home = hexToRgb(homeHex);
+  const away = hexToRgb(awayHex);
+  if (colorDist(home, away) >= 110) return awayHex; // 충분히 다름
+
+  // 1) 팀 보조색 우선 — 예: NC(남색) 보조색 금색 → 삼성(파랑)과 확실히 구분.
+  if (awayAccent) {
+    const acc = hexToRgb(awayAccent);
+    if (colorDist(home, acc) >= 110) return awayAccent;
+  }
+
+  // 2) 알고리즘 폴백 — 밝게/어둡게.
+  const lighter = mix(away, [255, 255, 255], 0.55);
+  const darker = mix(away, [0, 0, 0], 0.5);
+  const chosen = colorDist(home, lighter) >= colorDist(home, darker) ? lighter : darker;
+  return rgbToHex(chosen[0], chosen[1], chosen[2]);
+}
+
+// ── 진입 애니메이션 훅 ──────────────────────────────────────
+// mount 직후 false→true 로 전환 — CSS transition 트리거용. force-dynamic 페이지라
+// 진입할 때마다 새 mount → 매번 재생.
+function useMountFlag(): boolean {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setOn(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return on;
+}
+
+// 0 → target 카운트업 (easeOutCubic, ~900ms).
+function useCountUp(target: number, durationMs = 900): number {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  useEffect(() => {
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(target * eased);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [target, durationMs]);
+  return value;
+}
 
 function formatTime(time: string | null): string {
   if (!time) return "";
@@ -82,6 +153,7 @@ function WinrateDonut({
   ties,
   homeColor,
   awayColor,
+  awayNoteColor,
   homeName,
   awayName
 }: {
@@ -89,7 +161,8 @@ function WinrateDonut({
   awayWins: number;
   ties: number;
   homeColor: string;
-  awayColor: string;
+  awayColor: string;       // 세그먼트 fill (대비 보정 적용)
+  awayNoteColor: string;   // 가운데 우세 텍스트용 (원본 팀색)
   homeName: string;
   awayName: string;
 }) {
@@ -120,6 +193,12 @@ function WinrateDonut({
   const homeDecPct = decisive > 0 ? Math.round((homeWins / decisive) * 1000) / 10 : 50;
   const homeDominant = homeWins > awayWins;
 
+  // 진입 애니메이션 — 세그먼트 채워지기 + 가운데 % 카운트업.
+  const drawn = useMountFlag();
+  const targetPct = decisive > 0 ? (homeDominant ? homeDecPct : 100 - homeDecPct) : 50;
+  const displayPct = useCountUp(targetPct);
+  const drawStyle = { transition: "stroke-dasharray 0.95s cubic-bezier(0.22, 1, 0.36, 1)" } as const;
+
   return (
     <div className="sim1000-donut">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="승률 도넛">
@@ -139,10 +218,11 @@ function WinrateDonut({
           fill="none"
           stroke={homeColor}
           strokeWidth={stroke}
-          strokeDasharray={`${homeLen} ${C - homeLen}`}
+          strokeDasharray={drawn ? `${homeLen} ${C - homeLen}` : `0 ${C}`}
           strokeDashoffset={-homeStart}
           transform={`rotate(-90 ${cx} ${cy})`}
           strokeLinecap="butt"
+          style={drawStyle}
         />
         {/* 원정 세그먼트 */}
         <circle
@@ -152,10 +232,11 @@ function WinrateDonut({
           fill="none"
           stroke={awayColor}
           strokeWidth={stroke}
-          strokeDasharray={`${awayLen} ${C - awayLen}`}
+          strokeDasharray={drawn ? `${awayLen} ${C - awayLen}` : `0 ${C}`}
           strokeDashoffset={-awayStart}
           transform={`rotate(-90 ${cx} ${cy})`}
           strokeLinecap="butt"
+          style={drawStyle}
         />
         {/* 무승부 세그먼트 (있을 때만) */}
         {ties > 0 ? (
@@ -166,22 +247,21 @@ function WinrateDonut({
             fill="none"
             stroke="var(--bp-line, #d6dae0)"
             strokeWidth={stroke}
-            strokeDasharray={`${tieLen} ${C - tieLen}`}
+            strokeDasharray={drawn ? `${tieLen} ${C - tieLen}` : `0 ${C}`}
             strokeDashoffset={-tieStart}
             transform={`rotate(-90 ${cx} ${cy})`}
             strokeLinecap="butt"
+            style={drawStyle}
           />
         ) : null}
       </svg>
       <div className="sim1000-donut-center">
-        <span className="sim1000-donut-center-pct">
-          {homeDominant ? homeDecPct.toFixed(1) : (100 - homeDecPct).toFixed(1)}%
-        </span>
+        <span className="sim1000-donut-center-pct">{displayPct.toFixed(1)}%</span>
         <span
           className="sim1000-donut-center-note"
           style={
             decisive > 0
-              ? { color: homeDominant ? homeColor : awayColor, fontWeight: 900 }
+              ? { color: homeDominant ? homeColor : awayNoteColor, fontWeight: 900 }
               : undefined
           }
         >
@@ -217,6 +297,7 @@ function DiffHistogram({
   const maxCount = entries.reduce((m, e) => Math.max(m, e.count), 0) || 1;
   // n 으로 비율 라벨링.
   const safeN = n > 0 ? n : 1000;
+  const grown = useMountFlag(); // 진입 시 막대 0 → 목표폭
 
   if (entries.length === 0) {
     return <p className="sim1000-empty-inline">분포 데이터가 없어요.</p>;
@@ -224,7 +305,7 @@ function DiffHistogram({
 
   return (
     <div className="sim1000-hist">
-      {entries.map((e) => {
+      {entries.map((e, i) => {
         const widthPct = (e.count / maxCount) * 100;
         const isHome = e.diff > 0;
         const isAway = e.diff < 0;
@@ -236,7 +317,12 @@ function DiffHistogram({
             <div className="sim1000-hist-bar-track">
               <div
                 className="sim1000-hist-bar-fill"
-                style={{ width: `${widthPct}%`, background: color }}
+                style={{
+                  width: grown ? `${widthPct}%` : "0%",
+                  background: color,
+                  transition: "width 0.7s cubic-bezier(0.22, 1, 0.36, 1)",
+                  transitionDelay: `${Math.min(i * 18, 360)}ms`
+                }}
               />
             </div>
             <span className="sim1000-hist-value">
@@ -300,8 +386,12 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
   // 차트·뱃지 색은 팀 컬러 기준. (이전 핑크/회색 정적 토큰 대체)
+  // homeColor/awayColor: 텍스트용 원본 팀색. awayFill: 그래프 채움용 대비 보정색
+  // (홈과 너무 비슷하면 자동으로 밝게/어둡게 — 삼성 vs NC 같은 동계열 구분).
   const homeColor = home.color;
   const awayColor = away.color;
+  const awayFill = ensureAwayFill(homeColor, awayColor, away.accent);
+  const mvpGrown = useMountFlag(); // MVP 막대 진입 애니메이션
 
   const timeLabel = formatTime(game.gameTime);
   const safeN = sim.n > 0 ? sim.n : 1000;
@@ -472,7 +562,8 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
               awayWins={sim.away_wins}
               ties={sim.ties}
               homeColor={homeColor}
-              awayColor={awayColor}
+              awayColor={awayFill}
+              awayNoteColor={awayColor}
               homeName={home.shortName}
               awayName={away.shortName}
             />
@@ -487,7 +578,7 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
               </div>
               <div className="sim1000-summary-row">
                 <span className="sim1000-summary-team">
-                  <span className="sim1000-color-dot" style={{ background: awayColor }} />
+                  <span className="sim1000-color-dot" style={{ background: awayFill }} />
                   {away.shortName}
                 </span>
                 <span className="sim1000-summary-wins">{sim.away_wins}승</span>
@@ -522,7 +613,7 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
             hist={sim.diff_hist ?? {}}
             n={safeN}
             homeColor={homeColor}
-            awayColor={awayColor}
+            awayColor={awayFill}
           />
         </section>
 
@@ -570,9 +661,9 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
                     <li key={playerId} className="sim1000-batter-row">
                       <span className="sim1000-batter-name">{b.name}</span>
                       <span className="sim1000-batter-stats">
-                        <span>PA {(b.pa / safeN).toFixed(1)}/G</span>
-                        <span>AVG {avg(b.hits, b.ab)}</span>
-                        <span>HR {(b.hr / safeN).toFixed(2)}/G</span>
+                        <span>타석 {(b.pa / safeN).toFixed(1)}</span>
+                        <span>타율 {avg(b.hits, b.ab)}</span>
+                        <span>홈런 {(b.hr / safeN).toFixed(2)}</span>
                       </span>
                     </li>
                   ))}
@@ -592,9 +683,9 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
                     <li key={playerId} className="sim1000-batter-row">
                       <span className="sim1000-batter-name">{b.name}</span>
                       <span className="sim1000-batter-stats">
-                        <span>PA {(b.pa / safeN).toFixed(1)}/G</span>
-                        <span>AVG {avg(b.hits, b.ab)}</span>
-                        <span>HR {(b.hr / safeN).toFixed(2)}/G</span>
+                        <span>타석 {(b.pa / safeN).toFixed(1)}</span>
+                        <span>타율 {avg(b.hits, b.ab)}</span>
+                        <span>홈런 {(b.hr / safeN).toFixed(2)}</span>
                       </span>
                     </li>
                   ))}
@@ -612,9 +703,10 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
             <Swords size={14} strokeWidth={2.5} />
             선발 vs 선발
           </h2>
+          <p className="sim1000-section-sub">경기당 평균 · 등판은 1000판 중 선발 등판 수</p>
           <div className="sim1000-starter-grid">
             <StarterCard team={home} side="home" row={homeStarterRow} n={safeN} color={homeColor} />
-            <StarterCard team={away} side="away" row={awayStarterRow} n={safeN} color={awayColor} />
+            <StarterCard team={away} side="away" row={awayStarterRow} n={safeN} color={awayFill} />
           </div>
         </section>
 
@@ -641,8 +733,10 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
                       <div
                         className="sim1000-mvp-bar-fill"
                         style={{
-                          width: `${widthPct}%`,
-                          background: isHomeSide ? homeColor : awayColor
+                          width: mvpGrown ? `${widthPct}%` : "0%",
+                          background: isHomeSide ? homeColor : awayFill,
+                          transition: "width 0.7s cubic-bezier(0.22, 1, 0.36, 1)",
+                          transitionDelay: `${i * 60}ms`
                         }}
                       />
                     </div>
@@ -757,23 +851,23 @@ function StarterCard({
       </div>
       <div className="sim1000-starter-stats">
         <div className="sim1000-starter-stat">
-          <span className="sim1000-starter-stat-label">IP/G</span>
+          <span className="sim1000-starter-stat-label">이닝</span>
           <span className="sim1000-starter-stat-value">{ipPerGame.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">
-          <span className="sim1000-starter-stat-label">ERA</span>
+          <span className="sim1000-starter-stat-label">평균자책</span>
           <span className="sim1000-starter-stat-value">{era.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">
-          <span className="sim1000-starter-stat-label">K/G</span>
+          <span className="sim1000-starter-stat-label">탈삼진</span>
           <span className="sim1000-starter-stat-value">{kPerGame.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">
-          <span className="sim1000-starter-stat-label">BB/G</span>
+          <span className="sim1000-starter-stat-label">볼넷</span>
           <span className="sim1000-starter-stat-value">{bbPerGame.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">
-          <span className="sim1000-starter-stat-label">HR/G</span>
+          <span className="sim1000-starter-stat-label">피홈런</span>
           <span className="sim1000-starter-stat-value">{hrPerGame.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">

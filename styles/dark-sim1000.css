@@ -607,6 +607,77 @@
 }
 
 /* ============================================================
+   소프트 게이트 — 비로그인 로그인 유도 (AI 예측 .ai-winner-login-banner 미러)
+   ============================================================ */
+.phone-frame-light .sim1000-login-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(232, 74, 138, 0.05));
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 14px;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .sim1000-login-banner-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-light .sim1000-login-banner-text strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text-primary);
+}
+
+.phone-frame-light .sim1000-login-banner-text p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.35;
+}
+
+.phone-frame-light .sim1000-login-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 9px 14px;
+  background: var(--bp-accent);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.phone-frame-light .sim1000-login-banner-cta:hover {
+  background: #d63a7c;
+}
+
+/* 카드 잠금 — 우세팀 배지 자리 / 평균점수 값을 회색 잠금 톤으로. */
+.phone-frame-light .sim1000-game-summary-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--bp-text-muted);
+  font-weight: 700;
+}
+
+.phone-frame-light .sim1000-team-score-locked {
+  color: var(--bp-text-muted);
+  letter-spacing: 1px;
+}
+
+/* ============================================================
    상세 페이지
    ============================================================ */
 
