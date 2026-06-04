@@ -3,7 +3,9 @@ import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   listSimResultsForDate,
   listSimResultDates,
-  type BpSimResultRow
+  getSim1000AccuracyStats,
+  type BpSimResultRow,
+  type Sim1000AccuracyStats
 } from "@/lib/supabase/query-parts/bpSimResults";
 import { getUserTier } from "@/lib/auth/userTier";
 import { Sim1000ListScreen, type Sim1000GameCard } from "@/components/domain/Sim1000ListScreen";
@@ -40,14 +42,19 @@ export default async function Sim1000ListPage({
 
   // 시뮬 결과 + 게임 부가 정보 병렬.
   // listGamesFromDb 는 admin client (선발 컬럼 포함) — 매치업 시각·구장 보강용.
-  const [simResult, gamesForDate, datesResult] = await Promise.all([
+  const [simResult, gamesForDate, datesResult, accuracyResult] = await Promise.all([
     listSimResultsForDate(supabase, selectedDate),
     listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
     // 시뮬 결과가 존재하는 날짜 목록 — prev/next 화살표 자동 스킵용. ±30일 윈도우.
-    listSimResultDates(supabase, { from: addDays(selectedDate, -30), to: addDays(selectedDate, 30) })
+    listSimResultDates(supabase, { from: addDays(selectedDate, -30), to: addDays(selectedDate, 30) }),
+    // 시즌 누적 적중률 (live 집계) — 상단 헤더 카드용.
+    getSim1000AccuracyStats(supabase)
   ]);
 
   const simRows: BpSimResultRow[] = simResult.ok ? simResult.rows : [];
+  const accuracyStats: Sim1000AccuracyStats | undefined = accuracyResult.ok
+    ? accuracyResult.stats
+    : undefined;
 
   // game_id → game meta 인덱스. 시뮬 행에 시각·구장 부가.
   const gameMeta = new Map<string, (typeof gamesForDate)[number]>();
@@ -67,7 +74,12 @@ export default async function Sim1000ListPage({
       ties: row.ties,
       n: row.n,
       homeAvgRuns: row.home_avg_runs,
-      awayAvgRuns: row.away_avg_runs
+      awayAvgRuns: row.away_avg_runs,
+      // 실제 경기 결과 — 과거 카드에서 시뮬 vs 실제 비교 표시용.
+      // listGamesFromDb 에 game meta 가 없으면 (예: 시즌 외 시뮬) null.
+      actualHomeScore: meta?.homeScore ?? null,
+      actualAwayScore: meta?.awayScore ?? null,
+      gameStatus: meta?.status ?? "scheduled"
     };
   });
 
@@ -95,6 +107,7 @@ export default async function Sim1000ListPage({
       nextDate={nextDate}
       games={cards}
       isAdmin={isAdmin}
+      accuracyStats={accuracyStats}
     />
   );
 }

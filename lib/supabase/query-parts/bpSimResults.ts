@@ -106,6 +106,96 @@ export async function getSimResultByGameId(
   return { ok: true, row: (data ?? null) as unknown as BpSimResultRow | null };
 }
 
+/** 1000판 시뮬 누적 적중률. live 계산 (저장 컬럼 없음). */
+export type Sim1000AccuracyStats = {
+  /** 판정 가능한(종료 + 양쪽 우열 있는) 경기 수 */
+  total: number;
+  /** 시뮬 우세팀 == 실제 승리팀 인 경기 수 */
+  correct: number;
+  /** total>0 이면 round(correct/total*100), 아니면 null */
+  accuracy: number | null;
+};
+
+/** .in() 한 번에 거는 game_id 개수 상한. supabase URL 길이/플래너 부담 회피용 청크 크기. */
+const ACCURACY_CHUNK = 500;
+
+/**
+ * 시즌 누적 1000판 시뮬 적중률 (페이지 로드 시 live 집계).
+ *
+ * 판정:
+ *  - 실제 점수 둘 다 존재 + status != 'canceled' 인 경기만 대상.
+ *  - 시뮬 우세: home_wins > away_wins → home / 반대 → away / 동률 → neutral.
+ *  - 실제 승리: home_score > away_score → home / 반대 → away / 무승부 → neutral.
+ *  - 시뮬·실제 중 하나라도 neutral 이면 집계 제외 (total 미증가).
+ *  - 둘 다 우열 있을 때만 total++, 우세팀==승리팀이면 correct++.
+ *
+ * 쿼리: bp_sim_results 는 필요 컬럼만(game_id,home_wins,away_wins) 전수 조회.
+ *       games 는 해당 game_id 들을 청크(.in) 로 나눠 id,home_score,away_score,status 만 조회.
+ */
+export async function getSim1000AccuracyStats(
+  client: SupabaseClient
+): Promise<{ ok: true; stats: Sim1000AccuracyStats } | { ok: false; error: string }> {
+  // 1) 시뮬 결과 전수 (필요 컬럼만)
+  const { data: simData, error: simErr } = await client
+    .from(TABLE)
+    .select("game_id,home_wins,away_wins");
+  if (simErr) return { ok: false, error: simErr.message };
+
+  const simRows = (simData ?? []) as Array<{
+    game_id: string;
+    home_wins: number;
+    away_wins: number;
+  }>;
+  if (simRows.length === 0) {
+    return { ok: true, stats: { total: 0, correct: 0, accuracy: null } };
+  }
+
+  // game_id → 시뮬 우세 ("home" | "away" | null=neutral)
+  const simSideById = new Map<string, "home" | "away" | null>();
+  for (const r of simRows) {
+    const side = r.home_wins > r.away_wins ? "home" : r.away_wins > r.home_wins ? "away" : null;
+    simSideById.set(r.game_id, side);
+  }
+
+  const gameIds = Array.from(simSideById.keys());
+
+  // 2) games 조회 — 청크 분할 .in()
+  type GameRow = {
+    id: string;
+    home_score: number | null;
+    away_score: number | null;
+    status: string | null;
+  };
+  const gameRows: GameRow[] = [];
+  for (let i = 0; i < gameIds.length; i += ACCURACY_CHUNK) {
+    const chunk = gameIds.slice(i, i + ACCURACY_CHUNK);
+    const { data, error } = await client
+      .from("games")
+      .select("id,home_score,away_score,status")
+      .in("id", chunk);
+    if (error) return { ok: false, error: error.message };
+    if (data) gameRows.push(...(data as GameRow[]));
+  }
+
+  // 3) 메모리 조인 + 판정
+  let total = 0;
+  let correct = 0;
+  for (const g of gameRows) {
+    if (g.status === "canceled") continue;
+    if (g.home_score === null || g.away_score === null) continue;
+    const simSide = simSideById.get(g.id);
+    if (!simSide) continue; // 시뮬 동률(neutral)
+    const actSide =
+      g.home_score > g.away_score ? "home" : g.away_score > g.home_score ? "away" : null;
+    if (!actSide) continue; // 실제 무승부(neutral)
+    total += 1;
+    if (simSide === actSide) correct += 1;
+  }
+
+  const accuracy = total > 0 ? Math.round((correct / total) * 100) : null;
+  return { ok: true, stats: { total, correct, accuracy } };
+}
+
 /** 시뮬 결과가 존재하는 날짜 목록 (prev/next 네비게이션용).
  *  opts.from / opts.to 가 주어지면 그 범위에서, opts.limit 만 주어지면 최신 N건.
  *  둘 다 없으면 최근 30일 윈도우. distinct 는 클라이언트 측 dedupe (supabase-js 미지원). */

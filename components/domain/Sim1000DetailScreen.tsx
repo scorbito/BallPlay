@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { BarChart3, Crown, Dices, Swords, Target, Trophy, Users } from "lucide-react";
+import { BarChart3, ClipboardCheck, Crown, Dices, Swords, Target, Trophy, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
@@ -32,8 +32,7 @@ type Props = {
   sim: BpSimResultRow;
 };
 
-const HOME_COLOR = "var(--bp-accent, #e84a8a)";
-const AWAY_COLOR = "var(--bp-text-muted, #6b7587)";
+// (구) 정적 HOME/AWAY 색 상수 — 팀 컬러로 치환. 컴포넌트 안에서 home.color / away.color 사용.
 
 function formatTime(time: string | null): string {
   if (!time) return "";
@@ -72,13 +71,17 @@ function WinrateDonut({
   awayWins,
   ties,
   homeColor,
-  awayColor
+  awayColor,
+  homeName,
+  awayName
 }: {
   homeWins: number;
   awayWins: number;
   ties: number;
   homeColor: string;
   awayColor: string;
+  homeName: string;
+  awayName: string;
 }) {
   const total = homeWins + awayWins + ties;
   const safeTotal = total > 0 ? total : 1;
@@ -161,9 +164,18 @@ function WinrateDonut({
         ) : null}
       </svg>
       <div className="sim1000-donut-center">
-        <span className="sim1000-donut-center-pct">{homeDominant ? homeDecPct : (100 - homeDecPct).toFixed(1)}%</span>
-        <span className="sim1000-donut-center-note">
-          {homeDominant ? "홈 우세" : decisive > 0 ? "원정 우세" : "박빙"}
+        <span className="sim1000-donut-center-pct">
+          {homeDominant ? homeDecPct.toFixed(1) : (100 - homeDecPct).toFixed(1)}%
+        </span>
+        <span
+          className="sim1000-donut-center-note"
+          style={
+            decisive > 0
+              ? { color: homeDominant ? homeColor : awayColor, fontWeight: 900 }
+              : undefined
+          }
+        >
+          {homeDominant ? `${homeName} 우세` : decisive > 0 ? `${awayName} 우세` : "박빙"}
         </span>
       </div>
     </div>
@@ -277,6 +289,9 @@ function findStarter(
 export function Sim1000DetailScreen({ game, sim }: Props) {
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
+  // 차트·뱃지 색은 팀 컬러 기준. (이전 핑크/회색 정적 토큰 대체)
+  const homeColor = home.color;
+  const awayColor = away.color;
 
   const timeLabel = formatTime(game.gameTime);
   const safeN = sim.n > 0 ? sim.n : 1000;
@@ -310,7 +325,89 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
       wide
     >
       <section className="sim1000-detail-screen">
-        {/* ── 매치업 헤더 ── */}
+        {/* 실제 경기 결과 — 시뮬 데이터보다 먼저 노출 (맨 위). 점수 있거나 우천취소일 때만.
+            시뮬 우세팀 vs 실제 승리팀 적중 판정. */}
+        {(() => {
+          const isCanceled = game.status === "canceled";
+          const hasScore = game.homeScore !== null && game.awayScore !== null;
+          if (!isCanceled && !hasScore) return null;
+
+          const simHomeUp = sim.home_wins > sim.away_wins;
+          const simAwayUp = sim.away_wins > sim.home_wins;
+          const actHomeUp = hasScore && (game.homeScore as number) > (game.awayScore as number);
+          const actAwayUp = hasScore && (game.awayScore as number) > (game.homeScore as number);
+          let verdict: "hit" | "miss" | "neutral" = "neutral";
+          if (hasScore) {
+            if (!simHomeUp && !simAwayUp) verdict = "neutral";
+            else if (!actHomeUp && !actAwayUp) verdict = "neutral";
+            else if (simHomeUp && actHomeUp) verdict = "hit";
+            else if (simAwayUp && actAwayUp) verdict = "hit";
+            else verdict = "miss";
+          }
+          const winnerName = actHomeUp ? home.shortName : actAwayUp ? away.shortName : null;
+
+          return (
+            <section className="sim1000-section sim1000-section-actual">
+              {/* 헤더 — 3분할: 타이틀(좌) · 승리팀 라벨(중앙) · 적중/빗나감(우) */}
+              <div className="sim1000-actual-detail-head">
+                <h2 className="sim1000-section-title sim1000-actual-detail-title">
+                  <ClipboardCheck size={14} strokeWidth={2.5} />
+                  실제 경기 결과
+                </h2>
+                <span className="sim1000-actual-detail-winner-inline">
+                  {isCanceled ? null : winnerName ? (
+                    <>
+                      <span style={{ color: actHomeUp ? homeColor : awayColor, fontWeight: 900 }}>
+                        {winnerName}
+                      </span>{" "}
+                      승
+                    </>
+                  ) : (
+                    "무승부"
+                  )}
+                </span>
+                {!isCanceled && verdict === "hit" ? (
+                  <span className="sim1000-actual-verdict sim1000-actual-verdict-hit">✓ 적중</span>
+                ) : !isCanceled && verdict === "miss" ? (
+                  <span className="sim1000-actual-verdict sim1000-actual-verdict-miss">✗ 빗나감</span>
+                ) : (
+                  <span className="sim1000-actual-verdict-placeholder" aria-hidden="true" />
+                )}
+              </div>
+              {isCanceled ? (
+                <p className="sim1000-actual-canceled-detail">🌧 우천취소 — 적중 판정 없음</p>
+              ) : (
+                <div className="sim1000-actual-detail">
+                  <div className="sim1000-actual-detail-grid">
+                    <span className="sim1000-actual-detail-side sim1000-actual-detail-side-left">
+                      <TeamBadge teamId={game.homeTeamId} size="sm" />
+                      <span className="sim1000-actual-detail-team">{home.shortName}</span>
+                      <span
+                        className="sim1000-actual-detail-num"
+                        style={{ color: actHomeUp ? homeColor : undefined }}
+                      >
+                        {game.homeScore}
+                      </span>
+                    </span>
+                    <span className="sim1000-actual-detail-vs">vs</span>
+                    <span className="sim1000-actual-detail-side sim1000-actual-detail-side-right">
+                      <span
+                        className="sim1000-actual-detail-num"
+                        style={{ color: actAwayUp ? awayColor : undefined }}
+                      >
+                        {game.awayScore}
+                      </span>
+                      <span className="sim1000-actual-detail-team">{away.shortName}</span>
+                      <TeamBadge teamId={game.awayTeamId} size="sm" />
+                    </span>
+                  </div>
+                </div>
+              )}
+            </section>
+          );
+        })()}
+
+        {/* ── 매치업 헤더 (시뮬 평균점수) ── */}
         <header className="sim1000-matchup">
           <div className="sim1000-matchup-meta">
             {timeLabel ? <span>{timeLabel}</span> : null}
@@ -327,7 +424,15 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
                 ) : null}
               </div>
             </div>
-            <span className="sim1000-matchup-vs">VS</span>
+            <div className="sim1000-matchup-center">
+              <span className="sim1000-matchup-avg" style={{ color: homeColor }}>
+                {sim.home_avg_runs.toFixed(2)}
+              </span>
+              <span className="sim1000-matchup-vs">VS</span>
+              <span className="sim1000-matchup-avg" style={{ color: awayColor }}>
+                {sim.away_avg_runs.toFixed(2)}
+              </span>
+            </div>
             <div className="sim1000-matchup-team">
               <div className="sim1000-matchup-team-info sim1000-matchup-team-info-right">
                 <span className="sim1000-matchup-team-name">{away.shortName}</span>
@@ -338,6 +443,7 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
               <TeamBadge teamId={game.awayTeamId} size="md" />
             </div>
           </div>
+          <p className="sim1000-matchup-avg-note">평균 점수 (1000판 기준)</p>
         </header>
 
         {/* 1. 종합 결과 */}
@@ -353,13 +459,15 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
               homeWins={sim.home_wins}
               awayWins={sim.away_wins}
               ties={sim.ties}
-              homeColor={HOME_COLOR}
-              awayColor={AWAY_COLOR}
+              homeColor={homeColor}
+              awayColor={awayColor}
+              homeName={home.shortName}
+              awayName={away.shortName}
             />
             <div className="sim1000-summary-stats">
               <div className="sim1000-summary-row">
                 <span className="sim1000-summary-team">
-                  <span className="sim1000-color-dot" style={{ background: HOME_COLOR }} />
+                  <span className="sim1000-color-dot" style={{ background: homeColor }} />
                   {home.shortName}
                 </span>
                 <span className="sim1000-summary-wins">{sim.home_wins}승</span>
@@ -367,7 +475,7 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
               </div>
               <div className="sim1000-summary-row">
                 <span className="sim1000-summary-team">
-                  <span className="sim1000-color-dot" style={{ background: AWAY_COLOR }} />
+                  <span className="sim1000-color-dot" style={{ background: awayColor }} />
                   {away.shortName}
                 </span>
                 <span className="sim1000-summary-wins">{sim.away_wins}승</span>
@@ -401,8 +509,8 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
           <DiffHistogram
             hist={sim.diff_hist ?? {}}
             n={safeN}
-            homeColor={HOME_COLOR}
-            awayColor={AWAY_COLOR}
+            homeColor={homeColor}
+            awayColor={awayColor}
           />
         </section>
 
@@ -468,8 +576,8 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
             선발 vs 선발
           </h2>
           <div className="sim1000-starter-grid">
-            <StarterCard team={home} side="home" row={homeStarterRow} n={safeN} />
-            <StarterCard team={away} side="away" row={awayStarterRow} n={safeN} />
+            <StarterCard team={home} side="home" row={homeStarterRow} n={safeN} color={homeColor} />
+            <StarterCard team={away} side="away" row={awayStarterRow} n={safeN} color={awayColor} />
           </div>
         </section>
 
@@ -497,7 +605,7 @@ export function Sim1000DetailScreen({ game, sim }: Props) {
                         className="sim1000-mvp-bar-fill"
                         style={{
                           width: `${widthPct}%`,
-                          background: isHomeSide ? HOME_COLOR : AWAY_COLOR
+                          background: isHomeSide ? homeColor : awayColor
                         }}
                       />
                     </div>
@@ -535,14 +643,15 @@ function StarterCard({
   team,
   side,
   row,
-  n
+  n,
+  color
 }: {
   team: { shortName: string };
   side: "home" | "away";
   row: SimPitcherAggregate | null;
   n: number;
+  color: string;
 }) {
-  const color = side === "home" ? HOME_COLOR : AWAY_COLOR;
   if (row === null) {
     return (
       <div className={`sim1000-starter-card sim1000-starter-card-${side}`}>

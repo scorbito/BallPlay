@@ -73,6 +73,7 @@ export async function runDailySimAndUpsert(
     try {
       const sim = await runBatchSim(adminClient, {
         gameId: game.id,
+        gameDate: game.game_date,
         homeTeamId: game.home_team_id,
         awayTeamId: game.away_team_id,
         homeStarter: game.home_starter,

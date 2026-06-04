@@ -1,9 +1,10 @@
 // 공용 1000판 시뮬 모듈 — scripts/sim-1000-sample.mts 의 시뮬+집계 로직을 server-side 함수로 추출.
 // /api/cron/sim-1000 핸들러가 경기별로 호출.
 //
-// 입력: gameId + 양팀 ID + 오늘 선발투수 이름.
+// 입력: gameId + gameDate + 양팀 ID + 오늘 선발투수 이름.
 // 동작:
-//   1. bp_team_recent_lineups 에서 양 팀 최신 타순(어제 라인업) 조회.
+//   1. bp_team_recent_lineups 에서 game_date <= simDate 범위의 최신 타순 조회.
+//      - 오늘 시뮬: 어제 라인업이 자동 매칭. 어제 시뮬: 그날 실제 라인업 매칭 → 사후 검증용.
 //   2. 오늘 선발투수 이름 → 로스터 ID 매칭 (실패 시 autoPitcherLineup 폴백).
 //   3. 나머지 투수 슬롯은 fillMissingPitcherSlots 자동.
 //   4. simulateGame × N(1000) seed 0..N-1.
@@ -28,6 +29,8 @@ const N_DEFAULT = 1000;
 
 export type BatchSimInput = {
   gameId: string;
+  /** 시뮬 대상 경기 날짜 (YYYY-MM-DD). 라인업 조회 시 이 날짜 이하 최신 행을 가져옴 — 과거 시뮬의 사후 검증용. */
+  gameDate: string;
   homeTeamId: string;
   awayTeamId: string;
   homeStarter: string | null;
@@ -112,12 +115,18 @@ type RecentLineupRow = {
 
 async function getLatestLineup(
   client: SupabaseClient,
-  teamId: string
+  teamId: string,
+  simDate: string
 ): Promise<RecentLineupRow> {
+  // .lte(game_date, simDate): 시뮬 날짜 이하의 최신 라인업.
+  //  - 오늘(예: 6/4) 시뮬 → 6/3 라인업(현재 latest) 자동 매칭.
+  //  - 어제(6/3) 시뮬 → 6/3 라인업(그날 실제) 사용 → 사후 검증 정확도 확보.
+  //  - 그 이전 → 해당 시점까지의 최신 라인업.
   const { data, error } = await client
     .from("bp_team_recent_lineups")
     .select("team_id, game_date, batting, starter_name")
     .eq("team_id", teamId)
+    .lte("game_date", simDate)
     .order("game_date", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -188,8 +197,8 @@ export async function runBatchSim(
   const N = input.n ?? N_DEFAULT;
   try {
     const [homeRecent, awayRecent] = await Promise.all([
-      getLatestLineup(client, input.homeTeamId),
-      getLatestLineup(client, input.awayTeamId)
+      getLatestLineup(client, input.homeTeamId, input.gameDate),
+      getLatestLineup(client, input.awayTeamId, input.gameDate)
     ]);
 
     const homeTeam = buildTeam(
