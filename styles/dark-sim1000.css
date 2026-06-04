@@ -11,6 +11,36 @@
   flex-direction: column;
   gap: 14px;
   padding: 12px 14px 28px;
+  /* 모바일 가로 오버플로우(스크롤 시 좌우 흔들림) 방지 — 내부 그리드가 화면보다
+     살짝 넓어지는 케이스 클립. 세로 스크롤은 영향 없음. */
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* 섹션·그리드 내부 텍스트가 셀을 밀어내지 않도록 min-width 0 보강 (오버플로우 근본 차단). */
+.phone-frame-light .sim1000-detail-screen .sim1000-section {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.phone-frame-light .sim1000-summary-grid,
+.phone-frame-light .sim1000-summary-row,
+.phone-frame-light .sim1000-matchup-teams,
+.phone-frame-light .sim1000-actual-detail-grid,
+.phone-frame-light .sim1000-batters-grid,
+.phone-frame-light .sim1000-lineup-grid,
+.phone-frame-light .sim1000-starter-grid {
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-summary-grid > *,
+.phone-frame-light .sim1000-summary-row > *,
+.phone-frame-light .sim1000-matchup-teams > *,
+.phone-frame-light .sim1000-actual-detail-grid > *,
+.phone-frame-light .sim1000-batters-grid > *,
+.phone-frame-light .sim1000-lineup-grid > *,
+.phone-frame-light .sim1000-starter-grid > * {
+  min-width: 0;
 }
 
 /* ── 설명 텍스트 (카드 없이) ─────────────────── */
@@ -1101,6 +1131,7 @@
   font-weight: 700;
   color: var(--bp-text-muted);
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .phone-frame-light .sim1000-starter-stat-value {

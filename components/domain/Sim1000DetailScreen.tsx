@@ -746,6 +746,7 @@ function StarterCard({
   const era = row.games > 0 && row.ipOuts > 0 ? (row.er * 27) / row.ipOuts : 0;
   const kPerGame = row.games > 0 ? row.k / row.games : 0;
   const bbPerGame = row.games > 0 ? row.bb / row.games : 0;
+  const hrPerGame = row.games > 0 ? row.hr / row.games : 0;
   return (
     <div className={`sim1000-starter-card sim1000-starter-card-${side}`}>
       <div className="sim1000-starter-head">
@@ -772,8 +773,8 @@ function StarterCard({
           <span className="sim1000-starter-stat-value">{bbPerGame.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">
-          <span className="sim1000-starter-stat-label">HR(누적)</span>
-          <span className="sim1000-starter-stat-value">{row.hr}</span>
+          <span className="sim1000-starter-stat-label">HR/G</span>
+          <span className="sim1000-starter-stat-value">{hrPerGame.toFixed(2)}</span>
         </div>
         <div className="sim1000-starter-stat">
           <span className="sim1000-starter-stat-label">등판</span>
