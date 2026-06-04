@@ -1,0 +1,854 @@
+/* ============================================================
+   1000판 시뮬레이션 — 목록 + 상세
+   prefix: .sim1000-*
+   톤: AI 승부예측(.ai-winner-*) 라이트 테마 따라가되 별도 prefix.
+   ============================================================ */
+
+/* ── 컨테이너 ─────────────────────────────── */
+.phone-frame-light .sim1000-screen,
+.phone-frame-light .sim1000-detail-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 14px 28px;
+}
+
+/* ── 헤더 설명 카드 (목록) ─────────────────── */
+.phone-frame-light .sim1000-intro-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(232, 74, 138, 0.04));
+  border: 1px solid rgba(232, 74, 138, 0.25);
+  border-radius: 14px;
+}
+
+.phone-frame-light .sim1000-intro-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(232, 74, 138, 0.16);
+  color: var(--bp-accent);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .sim1000-intro-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-intro-text strong {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-intro-text p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.4;
+}
+
+/* ── 날짜 네비 ──────────────────────────────── */
+.phone-frame-light .sim1000-date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.phone-frame-light .sim1000-date-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-light .sim1000-date-nav-btn:hover {
+  background: var(--bp-card);
+  color: var(--bp-accent);
+  border-color: rgba(232, 74, 138, 0.30);
+}
+
+.phone-frame-light .sim1000-date-nav-btn.is-disabled {
+  opacity: 0.30;
+  pointer-events: none;
+}
+
+.phone-frame-light .sim1000-date-nav-current {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.phone-frame-light .sim1000-date-nav-date {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .sim1000-date-nav-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .sim1000-back-today {
+  color: var(--bp-accent);
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+/* ── 빈 상태 ──────────────────────────────── */
+.phone-frame-light .sim1000-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px 16px;
+  text-align: center;
+  background: var(--bp-card-soft);
+  border: 1px dashed var(--bp-line);
+  border-radius: 14px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-empty svg {
+  color: var(--bp-text-muted);
+  opacity: 0.5;
+}
+
+.phone-frame-light .sim1000-empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .sim1000-empty-sub {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.phone-frame-light .sim1000-empty-inline {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  text-align: center;
+}
+
+/* ── 경기 카드 리스트 ──────────────────────── */
+.phone-frame-light .sim1000-game-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .sim1000-game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-light .sim1000-game-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-frame-light .sim1000-game-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  white-space: nowrap;
+}
+
+.phone-frame-light .sim1000-game-time {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .sim1000-game-stadium {
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-game-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-game-teams > .sim1000-team:first-child {
+  justify-self: end;
+}
+
+.phone-frame-light .sim1000-game-teams > .sim1000-team:last-child {
+  justify-self: start;
+}
+
+.phone-frame-light .sim1000-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-frame-light .sim1000-team-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-vs {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+  letter-spacing: 0.2px;
+}
+
+/* 우세팀 뱃지 — game-row 우측 */
+.phone-frame-light .sim1000-game-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  border-radius: 999px;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+
+.phone-frame-light .sim1000-game-summary-home {
+  background: rgba(232, 74, 138, 0.12);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .sim1000-game-summary-away {
+  background: rgba(107, 117, 135, 0.16);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .sim1000-game-summary-tie {
+  background: var(--bp-card-soft);
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-game-summary svg {
+  flex-shrink: 0;
+}
+
+/* 평균점수 라인 */
+.phone-frame-light .sim1000-game-runs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bp-card-soft);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  align-self: flex-start;
+}
+
+.phone-frame-light .sim1000-game-runs-team {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .sim1000-game-runs-sep {
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-game-runs-note {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--bp-card-soft);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  text-decoration: none;
+  align-self: flex-end;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-light .sim1000-card-cta:hover {
+  background: rgba(232, 74, 138, 0.10);
+  color: var(--bp-accent);
+  border-color: rgba(232, 74, 138, 0.30);
+}
+
+/* ============================================================
+   상세 페이지
+   ============================================================ */
+
+/* 매치업 카드 */
+.phone-frame-light .sim1000-matchup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-light .sim1000-matchup-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  text-align: center;
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .sim1000-matchup-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.phone-frame-light .sim1000-matchup-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-frame-light .sim1000-matchup-teams > .sim1000-matchup-team:first-child {
+  justify-self: end;
+}
+
+.phone-frame-light .sim1000-matchup-teams > .sim1000-matchup-team:last-child {
+  justify-self: start;
+}
+
+.phone-frame-light .sim1000-matchup-team-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-matchup-team-info-right {
+  align-items: flex-end;
+}
+
+.phone-frame-light .sim1000-matchup-team-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .sim1000-matchup-team-starter {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-matchup-vs {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--bp-text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* 섹션 공통 */
+.phone-frame-light .sim1000-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 16px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-light .sim1000-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-section-title svg {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .sim1000-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  margin-left: auto;
+}
+
+.phone-frame-light .sim1000-section-sub {
+  margin: -4px 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  line-height: 1.4;
+}
+
+/* ── 종합 결과 ── */
+.phone-frame-light .sim1000-summary-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.phone-frame-light .sim1000-donut {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .sim1000-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.phone-frame-light .sim1000-donut-center-pct {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.phone-frame-light .sim1000-donut-center-note {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-summary-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-summary-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bp-card-soft);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .sim1000-summary-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-summary-wins {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .sim1000-summary-runs {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .sim1000-summary-row-misc {
+  grid-template-columns: 1fr auto;
+}
+
+.phone-frame-light .sim1000-summary-misc-label {
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .sim1000-summary-misc-value {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .sim1000-color-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+/* ── 히스토그램 ── */
+.phone-frame-light .sim1000-hist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phone-frame-light .sim1000-hist-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .sim1000-hist-label {
+  font-weight: 800;
+  color: var(--bp-text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .sim1000-hist-bar-track {
+  height: 14px;
+  background: var(--bp-card-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.phone-frame-light .sim1000-hist-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s ease;
+  min-width: 2px;
+}
+
+.phone-frame-light .sim1000-hist-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.phone-frame-light .sim1000-hist-value-pct {
+  color: var(--bp-text-muted);
+  font-weight: 600;
+}
+
+/* ── 타자 TOP ── */
+.phone-frame-light .sim1000-batters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phone-frame-light .sim1000-batters-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: var(--bp-card-soft);
+  border-radius: 10px;
+}
+
+.phone-frame-light .sim1000-batters-col-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-batter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phone-frame-light .sim1000-batter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  background: var(--bp-card);
+  border-radius: 6px;
+  border: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .sim1000-batter-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-batter-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 선발 비교 ── */
+.phone-frame-light .sim1000-starter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phone-frame-light .sim1000-starter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bp-card-soft);
+  border-radius: 10px;
+}
+
+.phone-frame-light .sim1000-starter-head {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .sim1000-starter-team {
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .sim1000-starter-name {
+  font-weight: 800;
+  color: var(--bp-text);
+  font-size: 12px;
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .sim1000-starter-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.phone-frame-light .sim1000-starter-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 4px;
+  background: var(--bp-card);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.phone-frame-light .sim1000-starter-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  letter-spacing: 0;
+}
+
+.phone-frame-light .sim1000-starter-stat-value {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--bp-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+}
+
+/* ── MVP 빈도 ── */
+.phone-frame-light .sim1000-mvp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.phone-frame-light .sim1000-mvp-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bp-card-soft);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.phone-frame-light .sim1000-mvp-rank {
+  font-weight: 900;
+  color: var(--bp-text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .sim1000-mvp-name {
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.phone-frame-light .sim1000-mvp-team {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+  padding: 2px 6px;
+  background: var(--bp-card);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.phone-frame-light .sim1000-mvp-bar-track {
+  height: 10px;
+  background: var(--bp-card);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 40px;
+}
+
+.phone-frame-light .sim1000-mvp-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s ease;
+  min-width: 2px;
+}
+
+.phone-frame-light .sim1000-mvp-value {
+  font-weight: 800;
+  color: var(--bp-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.phone-frame-light .sim1000-mvp-value-pct {
+  color: var(--bp-text-muted);
+  font-weight: 600;
+}
+
+/* ── 푸터 (라인업 소스 메타) ── */
+.phone-frame-light .sim1000-footer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.1px;
+  line-height: 1.4;
+}
+
+.phone-frame-light .sim1000-footer-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--bp-text-muted);
+  opacity: 0.7;
+}
+
+/* ── 태블릿/PC 확장 ─────────────────────────── */
+@media (min-width: 768px) {
+  .phone-frame-light .sim1000-summary-grid {
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+  }
+
+  .phone-frame-light .sim1000-batters-grid {
+    gap: 14px;
+  }
+
+  .phone-frame-light .sim1000-starter-grid {
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .phone-frame-light .sim1000-screen,
+  .phone-frame-light .sim1000-detail-screen {
+    padding: 16px 18px 32px;
+  }
+
+  .phone-frame-light .sim1000-donut {
+    width: 180px;
+    height: 180px;
+  }
+}

@@ -151,10 +151,10 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "predict-ranking",
-        href: "/predict/ranking",
-        title: "적중률 랭킹",
-        description: "예측 적중률 순위",
+        id: "sim-1000",
+        href: "/predict/sim-1000",
+        title: "1000판 시뮬레이션",
+        description: "오늘 경기 1000판 결과",
         icon: BarChart3,
         iconImage: "/icons/menu/predict-ranking.png",
         available: true
