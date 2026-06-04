@@ -344,9 +344,13 @@ export function AiWinnerListScreen({
                 const away = getTeam(g.awayTeamId);
                 // status='finished' 이거나 양쪽 점수가 다 들어와 있으면 종료로 간주.
                 // KBO sync가 status 늦게 올리는 경우도 점수만으로 적중 판정 가능.
+                // 과거 날짜(어제 이전)는 sync 지연/누락과 무관하게 무조건 종료로 간주 — "지난 예측"
+                // 라벨 보이면 결과 카드(picks + 적중/실패) 항상 펼친 상태여야 함.
+                const isPastDate = !isToday && !isFuture;
                 const finished =
                   g.status === "finished" ||
-                  (g.homeScore !== null && g.awayScore !== null);
+                  (g.homeScore !== null && g.awayScore !== null) ||
+                  isPastDate;
                 const isCanceled = g.status === "canceled";
                 const hasPredictions = g.predictions.length > 0;
                 // AI 표시 순서 고정 (GPT → Gemini → Claude)
@@ -384,9 +388,9 @@ export function AiWinnerListScreen({
                 // 빈 종료 경기 (예측 없음 + finished) — 점수만 표시
                 const showFinishedNoPredict = finished && !hasPredictions;
 
-                // 점수는 KBO 공식 발표 정보라 종료된 경기는 항상 노출.
+                // 점수는 실제 점수가 있을 때만 표시 (과거 날짜라도 sync 누락이면 0-0 가짜 점수 방지).
                 // AI 예측의 적중 여부만 teaser 로 가린다.
-                const showScoreInline = finished;
+                const showScoreInline = g.homeScore !== null && g.awayScore !== null;
                 const timeLabel = formatGameTime(g.gameTime);
 
                 return (
