@@ -1,0 +1,456 @@
+/* ============================================================
+   야구 상식 퀴즈 (테스트용 단순 버전)
+   prefix: .quiz-*
+   톤: 1000판 시뮬(.sim1000-*) 라이트 테마 따라가되 별도 prefix.
+   ============================================================ */
+
+/* ── 컨테이너 ─────────────────────────────── */
+.phone-frame-light .quiz-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 28px;
+  /* 모바일 가로 오버플로우 방지 */
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* 내부 그리드/플렉스가 셀을 밀어내지 않도록 보강. */
+.phone-frame-light .quiz-screen > * {
+  min-width: 0;
+}
+
+/* ── 진행 헤더 ───────────────────────────── */
+.phone-frame-light .quiz-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .quiz-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-frame-light .quiz-progress-count {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .quiz-progress-track {
+  height: 8px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.phone-frame-light .quiz-progress-fill {
+  height: 100%;
+  background: var(--bp-accent);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+  min-width: 2px;
+}
+
+/* ── 난이도 뱃지 ─────────────────────────── */
+.phone-frame-light .quiz-tier {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  border-radius: 999px;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+
+.phone-frame-light .quiz-tier-easy {
+  background: rgba(34, 178, 110, 0.14);
+  color: #168d56;
+  border: 1px solid rgba(34, 178, 110, 0.32);
+}
+
+.phone-frame-light .quiz-tier-mid {
+  background: rgba(232, 152, 38, 0.16);
+  color: #b56c00;
+  border: 1px solid rgba(232, 152, 38, 0.34);
+}
+
+.phone-frame-light .quiz-tier-hard {
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
+  border: 1px solid rgba(232, 74, 138, 0.32);
+}
+
+/* ── 문제 카드 ───────────────────────────── */
+.phone-frame-light .quiz-question-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 16px 18px;
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.phone-frame-light .quiz-category {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 8px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .quiz-question {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--bp-text);
+  line-height: 1.45;
+  letter-spacing: -0.3px;
+  word-break: keep-all;
+}
+
+/* ── 보기 ────────────────────────────────── */
+.phone-frame-light .quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .quiz-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 15px 16px;
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .quiz-option:hover:not(:disabled) {
+  background: var(--bp-card-soft);
+  border-color: rgba(232, 74, 138, 0.30);
+}
+
+.phone-frame-light .quiz-option:disabled {
+  cursor: default;
+}
+
+.phone-frame-light .quiz-option-text {
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.phone-frame-light .quiz-option svg {
+  flex-shrink: 0;
+}
+
+/* 정답 — 초록 */
+.phone-frame-light .quiz-option-correct {
+  background: rgba(34, 178, 110, 0.12);
+  border-color: rgba(34, 178, 110, 0.55);
+  color: #168d56;
+}
+
+.phone-frame-light .quiz-option-correct svg {
+  color: #22b26e;
+}
+
+/* 내가 고른 오답 — 빨강 */
+.phone-frame-light .quiz-option-wrong {
+  background: rgba(220, 60, 70, 0.10);
+  border-color: rgba(220, 60, 70, 0.50);
+  color: #c0303c;
+}
+
+.phone-frame-light .quiz-option-wrong svg {
+  color: #dc3c46;
+}
+
+/* 선택하지 않은 나머지 — 흐리게 */
+.phone-frame-light .quiz-option-dim {
+  opacity: 0.55;
+}
+
+/* ── 해설 ────────────────────────────────── */
+.phone-frame-light .quiz-explain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .quiz-explain-correct {
+  background: rgba(34, 178, 110, 0.08);
+  border-color: rgba(34, 178, 110, 0.28);
+}
+
+.phone-frame-light .quiz-explain-wrong {
+  background: rgba(220, 60, 70, 0.07);
+  border-color: rgba(220, 60, 70, 0.26);
+}
+
+.phone-frame-light .quiz-explain-verdict {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .quiz-explain-correct .quiz-explain-verdict {
+  color: #168d56;
+}
+
+.phone-frame-light .quiz-explain-wrong .quiz-explain-verdict {
+  color: #c0303c;
+}
+
+.phone-frame-light .quiz-explain-text {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+/* ── 다음 버튼 ───────────────────────────── */
+.phone-frame-light .quiz-next {
+  width: 100%;
+  padding: 14px;
+  background: var(--bp-accent);
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.phone-frame-light .quiz-next:hover:not(:disabled) {
+  background: #d63a7c;
+}
+
+.phone-frame-light .quiz-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   결과 화면
+   ============================================================ */
+.phone-frame-light .quiz-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(232, 74, 138, 0.04));
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.phone-frame-light .quiz-result-icon {
+  display: inline-flex;
+  color: var(--bp-accent);
+  margin-bottom: 2px;
+}
+
+.phone-frame-light .quiz-result-score {
+  font-size: 44px;
+  font-weight: 900;
+  color: var(--bp-accent);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .quiz-result-score-total {
+  font-size: 24px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .quiz-result-comment {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+/* ── 오답 리뷰 ───────────────────────────── */
+.phone-frame-light .quiz-review {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .quiz-review-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .quiz-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .quiz-review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  border-radius: 12px;
+}
+
+.phone-frame-light .quiz-review-q {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+  line-height: 1.45;
+  letter-spacing: -0.2px;
+  word-break: keep-all;
+}
+
+.phone-frame-light .quiz-review-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  word-break: keep-all;
+}
+
+.phone-frame-light .quiz-review-label {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.phone-frame-light .quiz-review-mine {
+  color: #c0303c;
+}
+
+.phone-frame-light .quiz-review-mine .quiz-review-label {
+  background: rgba(220, 60, 70, 0.12);
+  color: #c0303c;
+}
+
+.phone-frame-light .quiz-review-answer {
+  color: #168d56;
+}
+
+.phone-frame-light .quiz-review-answer .quiz-review-label {
+  background: rgba(34, 178, 110, 0.14);
+  color: #168d56;
+}
+
+.phone-frame-light .quiz-review-explain {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.phone-frame-light .quiz-review-perfect {
+  margin: 0;
+  padding: 12px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+/* ── 결과 액션 ───────────────────────────── */
+.phone-frame-light .quiz-result-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.phone-frame-light .quiz-restart,
+.phone-frame-light .quiz-home {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 13px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .quiz-restart {
+  background: var(--bp-accent);
+  border: none;
+  color: #fff;
+}
+
+.phone-frame-light .quiz-restart:hover {
+  background: #d63a7c;
+}
+
+.phone-frame-light .quiz-home {
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .quiz-home:hover {
+  background: var(--bp-card-soft);
+  border-color: rgba(232, 74, 138, 0.30);
+  color: var(--bp-accent);
+}
+
+/* ── 태블릿/PC 확장 ─────────────────────────── */
+@media (min-width: 1025px) {
+  .phone-frame-light .quiz-screen {
+    padding: 18px 18px 32px;
+  }
+}

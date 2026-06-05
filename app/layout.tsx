@@ -51,6 +51,8 @@ import "@/styles/dark-videos.css";
 import "@/styles/dark-predict.css";
 import "@/styles/dark-ai-predict.css";
 import "@/styles/dark-sim1000.css";
+import "@/styles/dark-quiz.css";
+import "@/styles/admin-events.css";
 import "@/styles/light-bp-core.css";
 import "@/styles/light-tier-up.css";
 

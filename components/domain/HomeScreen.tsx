@@ -4,6 +4,7 @@ import Image from "next/image";
 import {
   BarChart3,
   Bot,
+  Brain,
   CalendarDays,
   ChevronRight,
   ClipboardCheck,
@@ -204,8 +205,7 @@ const sections: HomeSection[] = [
     variant: "standard",
     sectionIcon: Play,
     sectionIconImage: "/icons/sections/content.png",
-    // 카드 2개지만 3열 그리드에 배치 — 왼쪽 2칸 채우고 오른쪽 1칸은 비움.
-    // 다른 메뉴(3열)와 동일한 카드 크기·형식 유지.
+    // 영상·뉴스·퀴즈 3개로 3열 그리드를 모두 채움.
     gridCols: 3,
     cards: [
       {
@@ -224,6 +224,15 @@ const sections: HomeSection[] = [
         description: "KBO 헤드라인·트레이드",
         icon: FileText,
         iconImage: "/icons/menu/baseball-news.png",
+        available: true
+      },
+      {
+        id: "quiz",
+        href: "/quiz",
+        title: "야구 상식 퀴즈",
+        description: "랜덤 10문제 도전",
+        icon: Brain,
+        iconImage: "/icons/menu/baseball-quiz.png",
         available: true
       }
     ]
