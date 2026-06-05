@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -164,6 +165,16 @@ export function AiWinnerListScreen({
   // 클라이언트 hydration 후 시간 계산 (SSR 미스매치 회피)
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+
+  // 진입 시 서버 데이터(경기 status·점수) 강제 최신화.
+  // 홈에서 client 네비게이션으로 들어오면 Next 라우터 캐시가 오래된 RSC 를 재사용해,
+  // finished/적중·카드 open/close 가 어긋나고 "새로고침해야 열리는" 문제가 있었다.
+  // 이 페이지는 경기 진행에 따라 상태가 실시간으로 바뀌므로 진입 시 1회 refresh 로
+  // sim-1000 처럼 들어오자마자 최신 상태가 보이게 한다.
+  const router = useRouter();
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
 
   // 홈 펄스 뱃지용 — 오늘자 AI 예측 페이지 진입 시 viewed 마킹.
   // 09시 공개 전이거나 예측이 0건이면 마킹 안 함 (그땐 어차피 뱃지 안 떠야 함).
