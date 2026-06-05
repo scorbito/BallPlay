@@ -1,0 +1,223 @@
+.phone-frame-light .admin-events-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--bp-line);
+  border-radius: 16px;
+  background: var(--bp-card);
+  color: var(--bp-text);
+}
+
+.phone-frame-light .admin-events-hero h1 {
+  margin: 4px 0 2px;
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.phone-frame-light .admin-events-hero p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .admin-events-kicker {
+  font-size: 11px;
+  font-weight: 850;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .admin-events-hero > svg {
+  flex-shrink: 0;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .admin-events-error {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: var(--bp-danger-soft);
+  color: var(--bp-danger);
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.phone-frame-light .admin-events-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.phone-frame-light .admin-events-metrics article {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--bp-line);
+  border-radius: 14px;
+  background: var(--bp-card);
+}
+
+.phone-frame-light .admin-events-metrics svg {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .admin-events-metrics span,
+.phone-frame-light .admin-events-metrics small {
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .admin-events-metrics strong {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .admin-events-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.phone-frame-light .admin-events-panel {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--bp-line);
+  border-radius: 16px;
+  background: var(--bp-card);
+}
+
+.phone-frame-light .admin-events-grid .admin-events-panel {
+  margin-top: 0;
+}
+
+.phone-frame-light .admin-events-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.phone-frame-light .admin-events-panel h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .admin-events-panel header span {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .admin-events-count-list,
+.phone-frame-light .admin-events-conversion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .admin-events-count-list > div,
+.phone-frame-light .admin-events-conversion-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: rgba(20, 30, 50, 0.04);
+}
+
+.phone-frame-light .admin-events-count-list span,
+.phone-frame-light .admin-events-conversion-list span {
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .admin-events-count-list strong,
+.phone-frame-light .admin-events-conversion-list strong {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .admin-events-log {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .admin-events-log article {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: rgba(20, 30, 50, 0.04);
+}
+
+.phone-frame-light .admin-events-log-main,
+.phone-frame-light .admin-events-log-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.phone-frame-light .admin-events-log-main strong {
+  font-size: 12.5px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .admin-events-log-main span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .admin-events-log-meta span,
+.phone-frame-light .admin-events-log-meta time {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .admin-events-empty {
+  margin: 0;
+  padding: 16px 10px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+@media (min-width: 720px) {
+  .phone-frame-light .admin-events-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .phone-frame-light .admin-events-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

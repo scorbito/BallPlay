@@ -38,9 +38,10 @@ function formatAccountLabel(info: AuthAccountInfo | null | undefined): { label: 
 
 type SettingsScreenProps = {
   accountInfo?: AuthAccountInfo | null;
+  isAdmin?: boolean;
 };
 
-export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
+export function SettingsScreen({ accountInfo = null, isAdmin = false }: SettingsScreenProps) {
   const { isAnonymous, profile, showToast } = useAppState();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const accountLabel = formatAccountLabel(accountInfo);
@@ -245,6 +246,17 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
           <ChevronRight size={18} aria-hidden />
         </button>
       </section>
+
+      {isAdmin ? (
+        <section className="menu-list settings-list settings-list-secondary" aria-label="운영자">
+          <Link className="settings-row" href="/admin/events" prefetch>
+            <ShieldCheck size={18} />
+            <strong>운영자 이벤트 통계</strong>
+            <span className="settings-value" />
+            <ChevronRight size={18} />
+          </Link>
+        </section>
+      ) : null}
 
       <section className="menu-list settings-list settings-list-secondary">
         <Link className="settings-row" href="/my/help" prefetch>
