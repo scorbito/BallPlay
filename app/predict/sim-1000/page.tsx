@@ -61,8 +61,14 @@ export default async function Sim1000ListPage({
     : undefined;
 
   // game_id → game meta 인덱스. 시뮬 행에 시각·구장 부가.
+  // gameOrder: gamesForDate 의 등장 순서(=game_time 정렬) — AI 예측·승리팀 예측과 동일한
+  // listGamesFromDb 순서라, 이 인덱스로 시뮬 카드를 정렬하면 3개 페이지 경기 순서가 일치.
   const gameMeta = new Map<string, (typeof gamesForDate)[number]>();
-  for (const g of gamesForDate) gameMeta.set(g.id, g);
+  const gameOrder = new Map<string, number>();
+  gamesForDate.forEach((g, i) => {
+    gameMeta.set(g.id, g);
+    gameOrder.set(g.id, i);
+  });
 
   const cards: Sim1000GameCard[] = simRows.map((row) => {
     const meta = gameMeta.get(row.game_id);
@@ -88,6 +94,14 @@ export default async function Sim1000ListPage({
       // 결과성 정보(finished/canceled) 도 가림 — 잠금 상태에선 매치업만.
       gameStatus: locked ? "scheduled" : meta?.status ?? "scheduled"
     };
+  });
+
+  // AI 예측·승리팀 예측과 동일한 경기 순서로 정렬 (game_time 기준 = gamesForDate 순서).
+  // gamesForDate 에 없는 시뮬(시즌 외 등)은 뒤로.
+  cards.sort((a, b) => {
+    const ai = gameOrder.get(a.gameId) ?? Number.MAX_SAFE_INTEGER;
+    const bi = gameOrder.get(b.gameId) ?? Number.MAX_SAFE_INTEGER;
+    return ai - bi;
   });
 
   // prev/next — 시뮬 결과가 있는 날짜 중 selectedDate 기준 인접.

@@ -335,7 +335,7 @@ export function Sim1000ListScreen({
                           <span className="sim1000-game-stadium">{g.stadium}</span>
                         ) : null}
                       </span>
-                      <span className="sim1000-game-runs-label">{locked ? "" : "평균 점수"}</span>
+                      <span className="sim1000-game-runs-label">{locked ? "" : "승리 횟수"}</span>
                       {locked ? (
                         <span className="sim1000-game-summary sim1000-game-summary-locked">
                           <Lock size={11} strokeWidth={2.5} aria-hidden="true" />
@@ -354,19 +354,19 @@ export function Sim1000ListScreen({
                       )}
                     </header>
 
-                    {/* Row 2: 팀명+평균점수 인라인 매치업 */}
+                    {/* Row 2: 팀명+승리횟수 인라인 매치업 (평균점수보다 승패 직결 지표) */}
                     <div className="sim1000-game-teams">
                       <div className="sim1000-team">
                         <TeamBadge teamId={g.homeTeamId} size="sm" />
                         <span className="sim1000-team-name">{home.shortName}</span>
                         <span className={`sim1000-team-score${locked ? " sim1000-team-score-locked" : ""}`}>
-                          {locked ? "–" : g.homeAvgRuns.toFixed(2)}
+                          {locked ? "–" : `${g.homeWins}승`}
                         </span>
                       </div>
                       <span className="sim1000-vs">vs</span>
                       <div className="sim1000-team">
                         <span className={`sim1000-team-score${locked ? " sim1000-team-score-locked" : ""}`}>
-                          {locked ? "–" : g.awayAvgRuns.toFixed(2)}
+                          {locked ? "–" : `${g.awayWins}승`}
                         </span>
                         <span className="sim1000-team-name">{away.shortName}</span>
                         <TeamBadge teamId={g.awayTeamId} size="sm" />

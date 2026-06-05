@@ -574,7 +574,6 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
                   {home.shortName}
                 </span>
                 <span className="sim1000-summary-wins">{sim.home_wins}승</span>
-                <span className="sim1000-summary-runs">{sim.home_avg_runs.toFixed(2)} 점/경기</span>
               </div>
               <div className="sim1000-summary-row">
                 <span className="sim1000-summary-team">
@@ -582,7 +581,6 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
                   {away.shortName}
                 </span>
                 <span className="sim1000-summary-wins">{sim.away_wins}승</span>
-                <span className="sim1000-summary-runs">{sim.away_avg_runs.toFixed(2)} 점/경기</span>
               </div>
               <div className="sim1000-summary-row sim1000-summary-row-misc">
                 <span className="sim1000-summary-misc-label">무승부</span>
