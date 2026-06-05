@@ -107,7 +107,13 @@ export async function listGamesFromDb(params: { from: string; to: string; teamId
       .gte("game_date", params.from)
       .lte("game_date", params.to)
       .order("game_date", { ascending: true })
-      .order("game_time", { ascending: true });
+      .order("game_time", { ascending: true })
+      // 결정적 tiebreaker — 같은 날짜·시각(예: 전 경기 18:30) 동점일 때 매 쿼리마다
+      // 임의 순서로 반환되던 문제 해결. external_id(KBO 경기번호)는 공식 순서에 가깝고,
+      // null 이면 id 로 폴백. 이 함수를 쓰는 모든 페이지(AI예측·승리팀예측·1000판 시뮬)
+      // 경기 순서가 일치하게 됨.
+      .order("external_id", { ascending: true, nullsFirst: false })
+      .order("id", { ascending: true });
     if (params.teamId) {
       q = q.or(`home_team_id.eq.${params.teamId},away_team_id.eq.${params.teamId}`);
     }
