@@ -83,6 +83,13 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
   const teamPickerRef = useRef<HTMLDivElement | null>(null);
   const [weekStart, setWeekStartState] = useState<WeekStart>(0);
 
+  // 진입 시 서버 데이터(경기 status·점수) 강제 최신화. 홈에서 client 네비게이션으로
+  // 들어오면 Next 라우터 캐시가 오래된 RSC 를 재사용해, 이미 진행/종료된 경기가
+  // "경기전"으로 보이던 staleness 가 있었다. 진입 시 1회 refresh 로 최신 결과 반영.
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
+
   // SSR hydration mismatch 방지 — mount 후 localStorage 값을 한 번 적용.
   useEffect(() => {
     try {
