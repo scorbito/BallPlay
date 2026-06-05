@@ -9,6 +9,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_1000_VIEWED_KEY } from "@/components/domain/HomeCardPulse";
+import { trackEvent } from "@/lib/analytics/events";
 import type { Sim1000AccuracyStats } from "@/lib/supabase/query-parts/bpSimResults";
 
 /** /predict/sim-1000 목록 카드 1개 데이터. page 에서 row → card 매핑. */
@@ -117,12 +118,17 @@ export function Sim1000ListScreen({
   // 홈 펄스 뱃지 해제 — 오늘자 시뮬 결과가 있는 페이지에 진입하면 viewed 마킹.
   useEffect(() => {
     if (!isToday || games.length === 0) return;
+    void trackEvent("sim1000_viewed", {
+      gameDate: selectedDate,
+      gameCount: games.length,
+      locked
+    });
     try {
       window.localStorage.setItem(SIM_1000_VIEWED_KEY, selectedDate);
     } catch {
       // ignore storage errors
     }
-  }, [isToday, games.length, selectedDate]);
+  }, [isToday, games.length, locked, selectedDate]);
 
   // 운영자 "다시 돌리기" — 09:00 cron 이후 발표 라인업/선발 교체 등이 반영된 데이터로 다시 시뮬.
   async function handleRerun() {

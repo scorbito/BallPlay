@@ -6,6 +6,7 @@ import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from 
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
+import { trackEvent } from "@/lib/analytics/events";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type {
   AiOverallStats,
@@ -176,6 +177,16 @@ export function AiWinnerListScreen({
       // ignore storage errors
     }
   }, [isToday, countdown.isPast, games, selectedDate]);
+
+  useEffect(() => {
+    const predictionCount = games.reduce((sum, g) => sum + g.predictions.length, 0);
+    if (predictionCount === 0 || locked) return;
+    void trackEvent("ai_prediction_viewed", {
+      gameDate: selectedDate,
+      gameCount: games.length,
+      predictionCount
+    });
+  }, [games, locked, selectedDate]);
 
   // 한 번이라도 reveal 페이지에서 본 게임 id 집합. hydration 후에만 채움 (SSR 안전).
   // pageshow / visibilitychange 도 같이 감지 — reveal 다녀와서 뒤로가기로 돌아온 경우

@@ -22,6 +22,7 @@ import {
   lockPredictionsForDate,
   upsertPrediction
 } from "@/lib/supabase/query-parts/bpPredictions";
+import { trackEvent } from "@/lib/analytics/events";
 
 export type WinnerPredictGame = {
   id: string;
@@ -235,8 +236,13 @@ export function WinnerPredictScreen({
       return next;
     });
     showToast(`${result.locked}개 예측 완료!`);
+    void trackEvent("prediction_submitted", {
+      gameDate: selectedDateISO,
+      lockedCount: result.locked,
+      pickedCount
+    });
     router.refresh();
-  }, [editableGames, router, showToast, selectedDateISO]);
+  }, [editableGames, pickedCount, router, showToast, selectedDateISO]);
 
   // 선택 날짜 라벨 — "5.26 (화)"
   const dateLabel = useMemo(() => {

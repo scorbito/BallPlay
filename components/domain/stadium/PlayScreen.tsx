@@ -11,6 +11,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
 import { useAppState } from "@/lib/state/AppState";
 import { playMatchSound } from "@/lib/sound/matchSounds";
+import { trackEvent } from "@/lib/analytics/events";
 import { OUTCOME_LABEL } from "./play/types";
 import { buildLinescore } from "./play/eventHelpers";
 import { FlyingBall } from "./play/effects/FlyingBall";
@@ -114,6 +115,35 @@ export function PlayScreen() {
     setMode,
     setPlaying
   });
+  const matchStartedTrackedRef = useRef(false);
+  const matchCompletedTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hydrated || !session?.input || matchStartedTrackedRef.current) return;
+    matchStartedTrackedRef.current = true;
+    void trackEvent("match_started", {
+      source: session.source,
+      homeTeamId: session.input.home.teamId,
+      awayTeamId: session.input.away.teamId,
+      userSide: session.userSide ?? null,
+      isLive: Boolean(session.liveMatchId)
+    });
+  }, [hydrated, session]);
+
+  useEffect(() => {
+    if (phase !== "GAME_END") return;
+    if (!session?.input || !session.result || matchCompletedTrackedRef.current) return;
+    matchCompletedTrackedRef.current = true;
+    void trackEvent("match_completed", {
+      source: session.source,
+      homeTeamId: session.input.home.teamId,
+      awayTeamId: session.input.away.teamId,
+      homeScore: session.result.finalScore.home,
+      awayScore: session.result.finalScore.away,
+      userSide: session.userSide ?? null,
+      isLive: Boolean(session.liveMatchId)
+    });
+  }, [phase, session]);
 
   // 친구 매치 오프닝 스킵 — 한쪽이 스킵하면 broadcast 로 상대도 동기 스킵.
   // 채널은 PlayScreen 마운트 동안만 활성. opening 끝나면 더 안 씀.

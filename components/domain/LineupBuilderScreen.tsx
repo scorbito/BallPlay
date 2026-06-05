@@ -65,6 +65,7 @@ import { LineupActionRow } from "@/components/domain/lineup/LineupActionRow";
 import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
 import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
 import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
+import { trackEvent } from "@/lib/analytics/events";
 
 export function LineupBuilderScreen() {
   const { profile, showToast } = useAppState();
@@ -708,6 +709,13 @@ export function LineupBuilderScreen() {
     setPublishProcessing(true);
     const res = await togglePublished(currentEntry.entryId, true);
     setPublishProcessing(false);
+    if (res.ok) {
+      void trackEvent("lineup_published", {
+        entryId: currentEntry.entryId,
+        teamId: currentEntry.teamId,
+        source: "manual"
+      });
+    }
     if (!res.ok) showToast(res.error ?? "공개 전환 실패");
     else showToast("공개됐어요");
   };
@@ -738,6 +746,13 @@ export function LineupBuilderScreen() {
     const res = await togglePublished(currentEntry.entryId, true);
     setPublishProcessing(false);
     setConfirmAutoFillOpen(false);
+    if (res.ok) {
+      void trackEvent("lineup_published", {
+        entryId: currentEntry.entryId,
+        teamId: currentEntry.teamId,
+        source: "auto_fill"
+      });
+    }
     if (!res.ok) showToast(res.error ?? "공개 전환 실패");
     else showToast("공개됐어요");
   };
@@ -765,6 +780,13 @@ export function LineupBuilderScreen() {
     const res = await togglePublished(currentEntry.entryId, true);
     setPublishProcessing(false);
     setGuideStep2Open(false);
+    if (res.ok) {
+      void trackEvent("lineup_published", {
+        entryId: currentEntry.entryId,
+        teamId: currentEntry.teamId,
+        source: "guide"
+      });
+    }
     if (!res.ok) {
       showToast(res.error ?? "공개 전환 실패");
     } else {
@@ -1022,6 +1044,10 @@ export function LineupBuilderScreen() {
             profile.nickname
           );
           localUpsertEntry(newEntry);
+          void trackEvent("lineup_created", {
+            entryId: newEntry.entryId,
+            teamId: newEntry.teamId
+          });
           setSelectedEntryId(newEntry.entryId);
           setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
           setNewSlotOpen(false);

@@ -14,6 +14,7 @@ import {
   type BpVideoWithOwnerRow
 } from "@/lib/supabase/query-parts/bpVideos";
 import { parseVideoUrl, type ParsedVideo, type VideoPlatform } from "@/lib/utils/videoUrl";
+import { trackEvent } from "@/lib/analytics/events";
 
 const PLATFORM_ICON: Record<VideoPlatform, typeof Film> = {
   youtube: Film,
@@ -213,6 +214,11 @@ export function VideosScreen() {
       return;
     }
 
+    const parsed = parseVideoUrl(url);
+    void trackEvent("video_submitted", {
+      platform: parsed.platform,
+      orientation: parsed.orientation
+    });
     setRegisterUrl("");
     setRegisterError(null);
     setRegisterOpen(false);
