@@ -346,21 +346,24 @@ export function AiWinnerListScreen({
                 (g) =>
                   g.status === "finished" ||
                   g.status === "canceled" ||
-                  (g.homeScore !== null && g.awayScore !== null)
+                  // 진행 중(in_progress) 경기는 중간 스코어가 있어도 종료가 아님.
+                  (g.status !== "in_progress" && g.homeScore !== null && g.awayScore !== null)
               );
             return (
             <ul className="ai-winner-game-list">
               {games.map((g) => {
                 const home = getTeam(g.homeTeamId);
                 const away = getTeam(g.awayTeamId);
-                // status='finished' 이거나 양쪽 점수가 다 들어와 있으면 종료로 간주.
-                // KBO sync가 status 늦게 올리는 경우도 점수만으로 적중 판정 가능.
+                // status='finished' 이거나, (진행 중이 아니면서) 양쪽 점수가 들어와 있으면 종료로 간주.
+                // KBO sync가 status 늦게 올리는 경우도 점수만으로 적중 판정 가능하되,
+                // in_progress(라이브)는 중간 스코어가 있어도 종료가 아니므로 제외 — 그래야 경기 중에
+                // 적중/실패가 미리 떠버리는 버그가 없다.
                 // 과거 날짜(어제 이전)는 sync 지연/누락과 무관하게 무조건 종료로 간주 — "지난 예측"
                 // 라벨 보이면 결과 카드(picks + 적중/실패) 항상 펼친 상태여야 함.
                 const isPastDate = !isToday && !isFuture;
                 const finished =
                   g.status === "finished" ||
-                  (g.homeScore !== null && g.awayScore !== null) ||
+                  (g.status !== "in_progress" && g.homeScore !== null && g.awayScore !== null) ||
                   isPastDate;
                 const isCanceled = g.status === "canceled";
                 const hasPredictions = g.predictions.length > 0;
