@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ChevronRight, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, UserCircle } from "lucide-react";
+import { Bell, Check, ChevronRight, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, UserCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -12,6 +12,13 @@ import { updateProfileAction } from "@/lib/actions/profile";
 import { useAppState } from "@/lib/state/AppState";
 import type { AuthAccountInfo } from "@/lib/supabase/queries";
 import { getCustomCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor/customCursor";
+import {
+  isPushSupported,
+  isIos,
+  getCurrentSubscription,
+  subscribeToPush,
+  unsubscribeFromPush
+} from "@/lib/push/clientPush";
 
 const NICKNAME_MAX = 16;
 
@@ -34,9 +41,55 @@ type SettingsScreenProps = {
 };
 
 export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
-  const { isAnonymous, profile } = useAppState();
+  const { isAnonymous, profile, showToast } = useAppState();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const accountLabel = formatAccountLabel(accountInfo);
+
+  // 푸시 알림 토글 — 실제 구독 상태와 연동.
+  // pushSupported: false 면 토글 비활성 + 안내(iOS 는 홈 화면 추가 안내).
+  const [pushSupported, setPushSupported] = useState(true);
+  const [pushIsIos, setPushIsIos] = useState(false);
+  const [pushOn, setPushOn] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+
+  // 마운트 후 환경/현재 구독 상태 동기화 (hydration-safe).
+  useEffect(() => {
+    const supported = isPushSupported();
+    setPushSupported(supported);
+    setPushIsIos(isIos());
+    if (supported) {
+      void getCurrentSubscription().then((sub) => setPushOn(Boolean(sub)));
+    }
+  }, []);
+
+  const handleTogglePush = async () => {
+    if (pushBusy || !pushSupported) return;
+    setPushBusy(true);
+    try {
+      if (!pushOn) {
+        const result = await subscribeToPush();
+        if (result.ok) {
+          setPushOn(true);
+          showToast("알림을 켰어요. 오늘의 AI 예측을 받아보세요.");
+        } else if (result.reason === "denied") {
+          setPushOn(false);
+          showToast("알림 권한이 거부됐어요. 브라우저 설정에서 허용해주세요.");
+        } else if (result.reason === "unsupported") {
+          setPushOn(false);
+          setPushSupported(false);
+        } else {
+          setPushOn(false);
+          showToast("알림 설정에 실패했어요. 잠시 후 다시 시도해주세요.");
+        }
+      } else {
+        await unsubscribeFromPush();
+        setPushOn(false);
+        showToast("알림을 껐어요.");
+      }
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   // 닉네임 편집 — 라인업 등록 시 노출되는 식별자
   const [nicknameDraft, setNicknameDraft] = useState(profile?.nickname ?? "");
@@ -148,6 +201,33 @@ export function SettingsScreen({ accountInfo = null }: SettingsScreenProps) {
           <p className="settings-nickname-error">{nicknameError}</p>
         ) : (
           <p className="settings-nickname-hint">경기장 등록 라인업에 닉네임이 표시됩니다 (최대 {NICKNAME_MAX}자)</p>
+        )}
+      </section>
+
+      {/* 알림 — 웹 푸시 구독 토글. 오늘 AI 예측 발행 시 정오에 1건 발송. */}
+      <section className="menu-list settings-list settings-list-secondary" aria-label="알림">
+        <button
+          type="button"
+          className="settings-row"
+          onClick={handleTogglePush}
+          aria-pressed={pushOn}
+          disabled={!pushSupported || pushBusy}
+        >
+          {pushBusy ? <Loader2 size={18} className="settings-nickname-spin" /> : <Bell size={18} />}
+          <strong>알림 받기</strong>
+          <span className="settings-value">
+            {!pushSupported ? "지원 안 함" : pushOn ? "켜짐" : "꺼짐"}
+          </span>
+          <ChevronRight size={18} aria-hidden />
+        </button>
+        {!pushSupported ? (
+          <p className="settings-nickname-hint">
+            {pushIsIos
+              ? "홈 화면에 추가하면 알림을 받을 수 있어요"
+              : "이 브라우저는 푸시를 지원하지 않아요"}
+          </p>
+        ) : (
+          <p className="settings-nickname-hint">오늘의 AI 승부예측이 나오면 정오에 알려드려요</p>
         )}
       </section>
 
