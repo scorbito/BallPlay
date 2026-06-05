@@ -2890,6 +2890,26 @@
   font-weight: 800;
 }
 
+/* 비로그인 슬롯 한도 도달 — "로그인해서 슬롯 추가" (새 슬롯 버튼과 같은 모양 + 핑크 강조) */
+.phone-frame-light .lineup-slot-menu-login {
+  text-decoration: none;
+  background: rgba(232, 74, 138, 0.08);
+  flex-wrap: wrap;
+}
+
+.phone-frame-light .lineup-slot-menu-login:hover {
+  background: rgba(232, 74, 138, 0.14);
+}
+
+.phone-frame-light .lineup-slot-menu-login-hint {
+  flex-basis: 100%;
+  padding-left: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.1px;
+}
+
 .phone-frame-light .lineup-slot-menu-cap {
   padding: 6px 10px;
   font-size: 11px;

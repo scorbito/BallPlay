@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ChevronDown, Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, LogIn, Pencil, Plus, Trash2 } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { TIER_LABEL, type UserTier } from "@/lib/auth/userTier";
+import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
 import type { LineupEntry } from "@/lib/types/lineup";
 import type { LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 
@@ -129,6 +131,7 @@ export function LineupSlotPicker({
               </li>
             );
           })}
+          {/* 슬롯 여유 있으면 "새 라인업 슬롯" (정상 추가) */}
           {entries.length < lineupLimit ? (
             <li>
               <button
@@ -143,11 +146,30 @@ export function LineupSlotPicker({
                 <span>새 라인업 슬롯</span>
               </button>
             </li>
-          ) : (
+          ) : null}
+
+          {/* 비로그인/익명 — 슬롯 여유와 무관하게 항상 "로그인해서 슬롯 추가" 노출
+              (전환 유도). 로그인하면 5개까지. free/pro 가 한도 도달 시엔 캡 문구. */}
+          {tier === "guest" ? (
+            <li>
+              <Link
+                href={`/login?next=${encodeURIComponent("/play/lineup")}`}
+                className="lineup-slot-menu-item lineup-slot-menu-add lineup-slot-menu-login"
+                prefetch={false}
+                onClick={() => setOpen(false)}
+              >
+                <LogIn size={14} />
+                <span>로그인해서 슬롯 추가</span>
+                <span className="lineup-slot-menu-login-hint">
+                  로그인하면 {getLineupSlotLimit("free")}개까지
+                </span>
+              </Link>
+            </li>
+          ) : entries.length >= lineupLimit ? (
             <li className="lineup-slot-menu-cap">
               {TIER_LABEL[tier]} 등급은 최대 {lineupLimit}개까지 저장
             </li>
-          )}
+          ) : null}
         </ul>
       ) : null}
     </div>

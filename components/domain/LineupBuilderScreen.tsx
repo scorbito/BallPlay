@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Share2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
@@ -24,7 +25,7 @@ import {
   type Position
 } from "@/lib/types/lineup";
 import { createEmptyEntry } from "@/lib/storage/lineupEntries";
-import { hasSeenGuide, hasSeenStep0, markGuideSeen, markStep0Seen } from "@/lib/storage/lineupGuides";
+import { hasSeenGuide, markGuideSeen } from "@/lib/storage/lineupGuides";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
@@ -55,7 +56,8 @@ import { AutoFillPublishModal } from "@/components/domain/lineup/modals/AutoFill
 import {
   GuideStep0Modal,
   GuideStep1Modal,
-  GuideStep2Modal
+  GuideStep2Modal,
+  GuideGoStadiumModal
 } from "@/components/domain/lineup/modals/LineupGuideModals";
 import { LineupSyncBadge } from "@/components/domain/lineup/LineupSyncBadge";
 import { LineupSlotPicker } from "@/components/domain/lineup/LineupSlotPicker";
@@ -84,6 +86,7 @@ export function LineupBuilderScreen() {
     localUpsertEntry,
     togglePublished
   } = useLineupSync();
+  const router = useRouter();
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const currentEntry = useMemo(
     () => entries.find((e) => e.entryId === selectedEntryId) ?? null,
@@ -118,6 +121,8 @@ export function LineupBuilderScreen() {
   const [guideStep0Open, setGuideStep0Open] = useState(false);
   const [guideStep1Open, setGuideStep1Open] = useState(false);
   const [guideStep2Open, setGuideStep2Open] = useState(false);
+  // 공개 전환 성공 직후 "경기장 가기" 유도 모달
+  const [guideGoStadiumOpen, setGuideGoStadiumOpen] = useState(false);
   // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
@@ -760,8 +765,13 @@ export function LineupBuilderScreen() {
     const res = await togglePublished(currentEntry.entryId, true);
     setPublishProcessing(false);
     setGuideStep2Open(false);
-    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
-    else showToast("공개됐어요");
+    if (!res.ok) {
+      showToast(res.error ?? "공개 전환 실패");
+    } else {
+      showToast("공개됐어요");
+      // 공개 성공 직후 — 바로 "경기장 가기" 유도 (온보딩 마지막 단계).
+      setGuideGoStadiumOpen(true);
+    }
   };
 
   const isLocked = !!currentEntry?.isPublished;
@@ -955,11 +965,16 @@ export function LineupBuilderScreen() {
         }}
       />
 
-      {/* 첫 진입 step0 — 무작위 팀 빈 슬롯 자동 생성 직후, 대기 풀/타순 안내 */}
+      {/* 첫 진입 step0 — 빈 슬롯 자동 생성 직후. 처음 사용자는 직접 짜기 어려우니
+          "실제 경기 라인업 불러오기" 를 1순위로 유도 (누르면 최근 라인업 picker). */}
       <GuideStep0Modal
         open={guideStep0Open}
         teamShortName={selectedTeam.shortName}
         onClose={() => setGuideStep0Open(false)}
+        onLoadRealLineup={() => {
+          setGuideStep0Open(false);
+          setRecentPickerOpen(true);
+        }}
       />
 
       {/* 새 슬롯 onboarding step1 — 타순 9명 완성 직후, "다음은 필수 투수" 안내 */}
@@ -983,6 +998,16 @@ export function LineupBuilderScreen() {
         onAutoFillAndPublish={handleGuideStep2Confirm}
       />
 
+      {/* 공개 완료 직후 — 경기장 가기 유도 (온보딩 마지막) */}
+      <GuideGoStadiumModal
+        open={guideGoStadiumOpen}
+        onClose={() => setGuideGoStadiumOpen(false)}
+        onGoStadium={() => {
+          setGuideGoStadiumOpen(false);
+          router.push("/stadium/lobby");
+        }}
+      />
+
       <NewSlotModal
         open={newSlotOpen}
         initialTeamId={initialTeamId}
@@ -1000,12 +1025,9 @@ export function LineupBuilderScreen() {
           setSelectedEntryId(newEntry.entryId);
           setMode("batter"); // 새 슬롯은 타자부터 채우도록 토글 자동
           setNewSlotOpen(false);
-          // 첫 슬롯 생성 후 step0 코치마크 — 대기 풀/타순 사용법 안내.
-          // 이전에는 자동 생성 시점에 뜨던 흐름을 모달 onCreate 완료 시점으로 이동.
-          if (!hasSeenStep0()) {
-            setGuideStep0Open(true);
-            markStep0Seen();
-          }
+          // 슬롯 생성 직후 항상 step0 안내 — "실제 경기 라인업 불러오기" 로 유도.
+          // 빈 슬롯을 새로 만들 때마다(첫 진입 포함) 도움 되는 안내라 디바이스 1회 제한 없이 매번 노출.
+          setGuideStep0Open(true);
         }}
       />
 

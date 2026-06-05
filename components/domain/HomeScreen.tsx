@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { HomeCardPulse } from "@/components/domain/HomeCardPulse";
+import { HomeRecordBadge } from "@/components/domain/HomeRecordBadge";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { getLatestNoticePublishedAt } from "@/lib/supabase/query-parts/notices";
 import { getHomeBadgeServerData } from "@/lib/server/homeBadges";
@@ -45,7 +46,6 @@ function BaseballIcon({ size = 24 }: { size?: number }) {
   );
 }
 import { AppShell } from "@/components/layout/AppShell";
-import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { TierUpHost } from "@/components/common/TierUpHost";
 import { getAccountTierByWins } from "@/lib/tiers/accountTier";
 
@@ -422,19 +422,13 @@ export async function HomeScreen({
                             <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
                           ) : null}
                           {section.id === "lineup-play" ? (
-                            <Link href="/records" className="home-hero-record-badge" prefetch>
-                              {userRecord.total > 0 ? (
-                                <>
-                                  <AccountTierBadge wins={userRecord.wins} size={24} />
-                                  <span>
-                                    내 매치 기록: {userRecord.wins}승 {userRecord.losses}패
-                                    {myRank !== null ? ` · ${myRank}위` : ""}
-                                  </span>
-                                </>
-                              ) : (
-                                <span>첫 매치 도전!</span>
-                              )}
-                            </Link>
+                            // 클라이언트 island — 경기 후 라우터 캐시가 옛 전적을 보여줘도
+                            // mount/focus/pageshow 마다 bp_account_stats 재조회해 최신화.
+                            <HomeRecordBadge
+                              initialWins={userRecord.wins}
+                              initialLosses={userRecord.losses}
+                              initialRank={myRank}
+                            />
                           ) : null}
                         </div>
                       ) : null}

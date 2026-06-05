@@ -7,11 +7,15 @@ type GuideStep0ModalProps = {
   /** 자동 선택된 팀 이름 — "○○으로 빈 라인업을 만들어 뒀어요" 안내에 사용 */
   teamShortName?: string;
   onClose: () => void;
+  /** "실제 경기 라인업 불러오기" — 처음 사용자가 직접 짜기 어려우므로 실제 경기 라인업을
+   *  그대로 불러와 한 번에 완성하도록 유도. 누르면 최근 라인업 picker 를 연다. */
+  onLoadRealLineup: () => void;
 };
 
 /** 라인업 빌더 첫 진입 안내 — 응원팀 개념이 없는 야구놀이터에서
- *  무작위 팀으로 빈 슬롯을 자동 생성한 직후 "여기서 시작하세요" 코치마크. */
-export function GuideStep0Modal({ open, teamShortName, onClose }: GuideStep0ModalProps) {
+ *  무작위 팀으로 빈 슬롯을 자동 생성한 직후 "여기서 시작하세요" 코치마크.
+ *  처음 사용자는 직접 짜기 어려우니 "실제 경기 라인업 불러오기" 를 1순위로 유도. */
+export function GuideStep0Modal({ open, teamShortName, onClose, onLoadRealLineup }: GuideStep0ModalProps) {
   return (
     <ModalShell
       open={open}
@@ -28,16 +32,23 @@ export function GuideStep0Modal({ open, teamShortName, onClose }: GuideStep0Moda
               <br />
             </>
           ) : null}
-          아래 <strong>대기</strong> 풀에서 선수를 탭하면 <strong>타순</strong>에 한 명씩 들어가요.<br />
-          9명을 채우면 다음 단계로 안내해 드려요.
+          처음이라면 <strong>실제 경기 라인업 불러오기</strong>로 한 번에 완성해보세요.<br />
+          물론 아래 <strong>대기</strong> 풀에서 선수를 탭해 직접 짜도 돼요.
         </p>
         <div className="lineup-confirm-actions">
           <button
             type="button"
-            className="lineup-confirm-primary"
+            className="lineup-confirm-cancel"
             onClick={onClose}
           >
-            시작하기
+            직접 짤게요
+          </button>
+          <button
+            type="button"
+            className="lineup-confirm-primary"
+            onClick={onLoadRealLineup}
+          >
+            실제 경기 라인업 불러오기
           </button>
         </div>
       </div>
@@ -140,6 +151,40 @@ export function GuideStep2Modal({
             onClick={onAutoFillAndPublish}
           >
             확인
+          </button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+type GuideGoStadiumModalProps = {
+  open: boolean;
+  onClose: () => void;
+  /** "경기장 가기" — 공개 완료 직후 경기장(/stadium/lobby)으로 이동해 바로 대결 유도 */
+  onGoStadium: () => void;
+};
+
+/** 공개 전환 성공 직후 — "이제 경기장에서 대결해볼까요?" 다음 행동 유도. */
+export function GuideGoStadiumModal({ open, onClose, onGoStadium }: GuideGoStadiumModalProps) {
+  return (
+    <ModalShell
+      open={open}
+      title="공개 완료! 🎉"
+      onClose={onClose}
+      panelClassName="lineup-confirm-modal-panel"
+      closeOnBackdrop
+    >
+      <div className="lineup-confirm-body">
+        <p className="lineup-confirm-msg">
+          라인업이 공개됐어요. 이제 <strong>경기장</strong>에서 다른 사람 라인업과 가상경기를 해볼까요?
+        </p>
+        <div className="lineup-confirm-actions">
+          <button type="button" className="lineup-confirm-cancel" onClick={onClose}>
+            나중에
+          </button>
+          <button type="button" className="lineup-confirm-primary" onClick={onGoStadium}>
+            경기장 가기
           </button>
         </div>
       </div>
