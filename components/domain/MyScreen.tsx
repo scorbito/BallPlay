@@ -29,6 +29,14 @@ type MyScreenProps = {
   teamSummary: TeamSummary;
 };
 
+/** ISO 문자열 → "YYYY.MM.DD" (브라우저 로캘=KST 기준). 값 없으면 "-". */
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "-";
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
   const slotLimit = getLineupSlotLimit(tier);
   const { profile, isAnonymous, updateProfile, showToast } = useAppState();
@@ -128,27 +136,27 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
         </div>
         <div className="mypage-team-grid">
           <div className="mypage-team-cell">
+            <span className="mypage-team-label">운영 팀</span>
             <span className="mypage-team-num">
               {teamSummary.activeCount}
               <small>/{slotLimit}</small>
             </span>
-            <span className="mypage-team-label">운영 팀</span>
           </div>
           <div className="mypage-team-cell">
-            <span className="mypage-team-num">{teamSummary.archivedCount}</span>
             <span className="mypage-team-label">은퇴 팀</span>
+            <span className="mypage-team-num">{teamSummary.archivedCount}</span>
           </div>
           <div className="mypage-team-cell">
+            <span className="mypage-team-label">홈 전적</span>
             <span className="mypage-team-num">
               {teamSummary.home.wins}<small>승</small> {teamSummary.home.losses}<small>패</small>
             </span>
-            <span className="mypage-team-label">홈 전적</span>
           </div>
           <div className="mypage-team-cell">
+            <span className="mypage-team-label">원정 전적</span>
             <span className="mypage-team-num">
               {teamSummary.away.wins}<small>승</small> {teamSummary.away.losses}<small>패</small>
             </span>
-            <span className="mypage-team-label">원정 전적</span>
           </div>
         </div>
         {teamSummary.topTeam ? (
@@ -173,10 +181,17 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             {teamSummary.archivedTeams.map((t, i) => (
               <li className="mypage-archived-item" key={`${t.teamId}-${i}`}>
                 <TeamBadge teamId={t.teamId} size="sm" />
-                <span className="mypage-archived-name">{t.name}</span>
-                <span className="mypage-archived-rec">
-                  홈 {t.home.wins}·{t.home.losses} <em>/</em> 원정 {t.away.wins}·{t.away.losses}
-                </span>
+                <div className="mypage-archived-body">
+                  <div className="mypage-archived-top">
+                    <span className="mypage-archived-name">{t.name}</span>
+                    <span className="mypage-archived-rec">
+                      홈 {t.home.wins}·{t.home.losses} <em>/</em> 원정 {t.away.wins}·{t.away.losses}
+                    </span>
+                  </div>
+                  <div className="mypage-archived-dates">
+                    생성 {fmtDate(t.createdAt)} · 은퇴 {fmtDate(t.archivedAt)}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

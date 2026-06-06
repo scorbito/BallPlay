@@ -519,6 +519,7 @@ export type ArchivedTeamSummary = {
   teamId: string;
   home: { wins: number; losses: number };
   away: { wins: number; losses: number };
+  createdAt: string;
   archivedAt: string | null;
 };
 
@@ -588,6 +589,7 @@ export async function getMyTeamSummary(
       teamId: row.team_id,
       home: { wins: h?.wins ?? 0, losses: h?.losses ?? 0 },
       away: { wins: a?.wins ?? 0, losses: a?.losses ?? 0 },
+      createdAt: row.created_at,
       archivedAt: row.archived_at ?? null
     };
   });
