@@ -116,16 +116,17 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       </header>
 
       <Card className="playoff-matchup">
-        <div className="playoff-matchup-team">
-          <TeamLogo teamId={run.teamId} size="lg" />
-          <strong>{run.teamName}</strong>
-          <span className="playoff-seed">5위 · 나</span>
-        </div>
-        <span className="playoff-vs">VS</span>
+        {/* 왼쪽=상대(상대 라인업 보기 버튼), 오른쪽=내 팀(내 라인업 수정 버튼) — 버튼과 좌우 정렬 일치 */}
         <div className="playoff-matchup-team">
           <TeamLogo teamId={opp?.teamId ?? ""} size="lg" />
           <strong>{opp?.teamName ?? "-"}</strong>
           <span className="playoff-seed">{opp ? `${5 - round}위 · AI` : ""}</span>
+        </div>
+        <span className="playoff-vs">VS</span>
+        <div className="playoff-matchup-team">
+          <TeamLogo teamId={run.teamId} size="lg" />
+          <strong>{run.teamName}</strong>
+          <span className="playoff-seed">5위 · 나</span>
         </div>
       </Card>
 
