@@ -24,7 +24,7 @@ import {
   type Player,
   type Position
 } from "@/lib/types/lineup";
-import { createEmptyEntry } from "@/lib/storage/lineupEntries";
+import { createEmptyEntry, moveLineupEntryToTop } from "@/lib/storage/lineupEntries";
 import { hasSeenGuide, markGuideSeen } from "@/lib/storage/lineupGuides";
 import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
@@ -94,6 +94,7 @@ export function LineupBuilderScreen() {
     syncedDelete,
     syncedRename,
     localUpsertEntry,
+    replaceEntries,
     togglePublished
   } = useLineupSync();
   const router = useRouter();
@@ -942,7 +943,14 @@ export function LineupBuilderScreen() {
             setSlotMenuOpen(open);
             if (open) setPresetMenuOpen(false);
           }}
-          onSelect={(entryId) => setSelectedEntryId(entryId)}
+          onSelect={(entryId) => {
+            setSelectedEntryId(entryId);
+            // 선택한 팀을 목록 맨 위로 — 재진입 시 자동 선택 로직(entries[0])이 이 팀을 고른다.
+            // 표시 순서만 바꾸므로 전적/랭킹/대표팀/가을야구엔 영향 없음.
+            // localStorage 재정렬 + React 상태(replaceEntries)를 동시에 갱신해 드롭다운 순서 즉시 반영.
+            const reordered = moveLineupEntryToTop(entryId);
+            replaceEntries(reordered);
+          }}
           onAddNew={() => {
             const hasAvailableTeam = Array.from(seededTeamIds).some((teamId) => !usedTeamIds.has(teamId));
             if (!hasAvailableTeam) {

@@ -66,6 +66,19 @@ export function upsertLineupEntry(entry: LineupEntry): LineupEntry[] {
   return next;
 }
 
+// 선택한 팀(슬롯)을 목록 맨 앞으로 이동 — 표시 순서(localStorage 배열 순서)만 바꾼다.
+// 전적/랭킹/대표팀/가을야구는 entryId·teamId 기준이라 순서에 영향받지 않는다.
+// 재진입 시 자동 선택 로직이 entries[0]을 고르므로, 마지막 선택 팀이 자동 선택된다.
+// 없는 id면 무변경.
+export function moveLineupEntryToTop(entryId: string): LineupEntry[] {
+  const current = loadLineupEntries();
+  const idx = current.findIndex((e) => e.entryId === entryId);
+  if (idx <= 0) return current; // 없거나(-1) 이미 맨 앞(0)이면 무변경
+  const next = [current[idx], ...current.slice(0, idx), ...current.slice(idx + 1)];
+  saveLineupEntries(next);
+  return next;
+}
+
 export function deleteLineupEntry(entryId: string): LineupEntry[] {
   const next = loadLineupEntries().filter((e) => e.entryId !== entryId);
   saveLineupEntries(next);
