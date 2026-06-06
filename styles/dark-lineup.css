@@ -224,30 +224,34 @@
    배경 이미지가 해상도별로 깨져 보여 핑크 단색으로 대체. 일러스트는 absolute로 유지.
    헤더(텍스트만) + 카드들이 한 컨테이너.
    모바일: 카드가 비대칭 (1 big + 2 small). PC/태블릿: 3-col 균등. */
-/* 가을야구 모드 오픈 뱃지 — 히어로 카드 그리드 위 강조 배너 (탭 시 가을야구로) */
+/* 가을야구 모드 오픈 뱃지 — 경기장 들어가기 카드 상단에 겹쳐 강조 (탭 시 가을야구로) */
 .phone-frame-light .home-fall-badge {
-  display: block;
-  width: 100%;
-  max-width: 330px;
-  margin: 4px auto 12px;
-  transform-origin: center bottom;
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 86%;
+  max-width: 240px;
+  z-index: 5;
+  transform: translateX(-50%);
   animation: home-fall-badge-bob 2.6s ease-in-out infinite;
+  line-height: 0;
 }
 
 .phone-frame-light .home-fall-badge-img {
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 4px 10px rgba(232, 74, 138, 0.3));
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.32));
 }
 
+/* translateX(-50%)를 유지하면서 살짝 떠오르는 연출 */
 @keyframes home-fall-badge-bob {
   0%,
   100% {
-    transform: translateY(0) rotate(-0.6deg) scale(1);
+    transform: translateX(-50%) translateY(0) rotate(-1deg);
   }
   50% {
-    transform: translateY(-5px) rotate(0.6deg) scale(1.02);
+    transform: translateX(-50%) translateY(-4px) rotate(1deg);
   }
 }
 

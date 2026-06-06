@@ -402,6 +402,25 @@ export async function HomeScreen({
                 {card.available && !card.external ? (
                   <HomeCardPulse cardId={card.id} data={badgeData} />
                 ) : null}
+                {/* 가을야구 모드 오픈 — 경기장 카드 상단에 겹쳐 강조. 카드 링크와 별도(형제)
+                    Link 라 뱃지 탭은 가을야구, 카드 나머지 탭은 경기장 로비로. */}
+                {card.id === "stadium" ? (
+                  <Link
+                    href="/stadium/playoff"
+                    className="home-fall-badge"
+                    aria-label="가을야구 모드 오픈 — 도전하러 가기"
+                    prefetch
+                  >
+                    <Image
+                      src="/badges/fall-baseball-open.png"
+                      alt="가을야구 모드 오픈"
+                      width={1117}
+                      height={223}
+                      className="home-fall-badge-img"
+                      priority
+                    />
+                  </Link>
+                ) : null}
               </div>
             );
           };
@@ -462,23 +481,6 @@ export async function HomeScreen({
                       );
                     })() : null}
                   </div>
-                  {section.id === "lineup-play" ? (
-                    <Link
-                      href="/stadium/playoff"
-                      className="home-fall-badge"
-                      aria-label="가을야구 모드 오픈 — 도전하러 가기"
-                      prefetch
-                    >
-                      <Image
-                        src="/badges/fall-baseball-open.png"
-                        alt="가을야구 모드 오픈"
-                        width={1117}
-                        height={223}
-                        className="home-fall-badge-img"
-                        priority
-                      />
-                    </Link>
-                  ) : null}
                   {cardsGrid}
                 </div>
               </section>
