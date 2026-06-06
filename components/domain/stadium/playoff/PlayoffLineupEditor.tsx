@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
-import { Button } from "@/components/common/Button";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
 import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
@@ -333,7 +332,8 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
     <AppShell activeTab="stadium" title="가을야구 라인업" backHref="/stadium/playoff" theme="light" wide hideBottomTabs>
       <p className="playoff-edit-banner">상대를 보고 자유롭게 바꾸세요. 실제 팀 라인업에는 영향이 없어요.</p>
 
-      <div className="lineup-mode-toggle" role="tablist" aria-label="라인업 종류">
+      <div className="playoff-edit-toolbar">
+        <div className="lineup-mode-toggle" role="tablist" aria-label="라인업 종류">
         <button
           type="button"
           role="tab"
@@ -357,6 +357,15 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
           }}
         >
           투수
+        </button>
+        </div>
+        <button
+          type="button"
+          className="playoff-edit-save-btn"
+          disabled={saving}
+          onClick={handleSave}
+        >
+          {saving ? "저장 중" : "저장하기"}
         </button>
       </div>
 
@@ -409,12 +418,6 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
         )}
 
         <LineupPoolCard poolPlayers={poolPlayers} isLocked={false} onAddPlayer={handleAddPlayer} onLockedClick={noop} />
-      </div>
-
-      <div className="playoff-edit-save">
-        <Button disabled={saving} onClick={handleSave}>
-          {saving ? "저장 중" : "저장하기"}
-        </Button>
       </div>
 
       <ConfirmResetModal open={confirmResetOpen} onCancel={() => setConfirmResetOpen(false)} onConfirm={confirmReset} />

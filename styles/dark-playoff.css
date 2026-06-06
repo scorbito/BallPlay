@@ -789,10 +789,36 @@
   text-align: center;
 }
 
-.phone-frame-light .playoff-edit-save {
-  margin-top: 16px;
+/* 타자/투수 토글 + 저장 버튼 한 줄 — 좌우 절반씩(저장 = 타자+투수 합친 폭) */
+.phone-frame-light .playoff-edit-toolbar {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin: 0 0 12px;
 }
 
-.phone-frame-light .playoff-edit-save button {
-  width: 100%;
+.phone-frame-light .playoff-edit-toolbar .lineup-mode-toggle {
+  flex: 1;
+  display: flex;
+  margin: 0;
+}
+
+.phone-frame-light .playoff-edit-toolbar .lineup-mode-tab {
+  flex: 1;
+}
+
+.phone-frame-light .playoff-edit-save-btn {
+  flex: 1;
+  border: 0;
+  border-radius: 10px;
+  background: var(--bp-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.phone-frame-light .playoff-edit-save-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
