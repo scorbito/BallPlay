@@ -24,7 +24,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const round = run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
   const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
-  const ladder = [...run.state.opponents].sort((a, b) => a.round - b.round);
+  // 1위(한국시리즈)가 위, 현재(4·5위전)가 아래 — 바닥에서 위로 올라가는 연출.
+  const ladder = [...run.state.opponents].sort((a, b) => b.round - a.round);
 
   const startGame = () => {
     if (!opp) return;
@@ -90,10 +91,6 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         </div>
       </Card>
 
-      <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={startGame}>
-        경기 시작
-      </button>
-
       <div className="playoff-ladder-head">전체 대진</div>
       <ul className="playoff-ladder">
         {ladder.map((o) => {
@@ -113,6 +110,10 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
           );
         })}
       </ul>
+
+      <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={startGame}>
+        경기 시작
+      </button>
     </section>
   );
 }
