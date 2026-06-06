@@ -2891,44 +2891,58 @@
   animation: stadium-final-pop 0.45s cubic-bezier(0.22, 1.2, 0.4, 1) both;
 }
 
-/* 2) 이닝 점수판 — 1단계 후 카드 통째로 등장 (0.45~0.87s) */
+/* 2) 이닝 점수판 — 프레임/팀명·R 먼저(0.45s), 이닝 점수는 1→9 순차 페이드인(0.5~1.26s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore {
-  animation: stadium-final-rise 0.42s ease-out both;
+  animation: stadium-final-rise 0.3s ease-out both;
   animation-delay: 0.45s;
 }
+/* 이닝 칸(2~10번째 td = 1~9이닝)만 순차. both-fill 로 각자 delay 전엔 숨김.
+   team-cell(1)·R(11)은 프레임과 함께 등장. away/home 두 행의 같은 nth-child = 같은 이닝 → 함께. */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(n+2):nth-child(-n+10) {
+  animation: stadium-final-rise 0.28s ease-out both;
+}
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(2) { animation-delay: 0.5s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(3) { animation-delay: 0.56s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(4) { animation-delay: 0.62s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(5) { animation-delay: 0.68s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(6) { animation-delay: 0.74s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(7) { animation-delay: 0.8s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(8) { animation-delay: 0.86s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(9) { animation-delay: 0.92s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(10) { animation-delay: 0.98s; }
 
 /* 3) 팀 로고·팀명(스코어보드) — 점수판 후 등장. 점수(team-score)는 4단계에서 별도로
    나오므로 여기선 숨김 유지(아래 both-fill). (0.87~1.29s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard {
   animation: stadium-final-rise 0.42s ease-out both;
-  animation-delay: 0.87s;
+  animation-delay: 1.3s;
 }
 
 /* 4) 점수 — 로고·팀명 후 강조 pop. both-fill 로 그 전엔 숨겨져 있다 등장. (1.29~1.79s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-team-score {
   animation: stadium-final-score-pop 0.5s cubic-bezier(0.22, 1.1, 0.4, 1) both;
-  animation-delay: 1.29s;
+  animation-delay: 1.72s;
 }
 
 /* 5) 타자 리스트 — 점수 후 타순 순서대로 빠르게 (1.79s~) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row {
   animation: stadium-final-rise 0.35s ease-out both;
 }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(1) { animation-delay: 1.79s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(2) { animation-delay: 1.84s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(3) { animation-delay: 1.89s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(4) { animation-delay: 1.94s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(5) { animation-delay: 1.99s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(6) { animation-delay: 2.04s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(7) { animation-delay: 2.09s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(8) { animation-delay: 2.14s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(9) { animation-delay: 2.19s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(n+10) { animation-delay: 2.24s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(1) { animation-delay: 2.22s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(2) { animation-delay: 2.27s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(3) { animation-delay: 2.32s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(4) { animation-delay: 2.37s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(5) { animation-delay: 2.42s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(6) { animation-delay: 2.47s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(7) { animation-delay: 2.52s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(8) { animation-delay: 2.57s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(9) { animation-delay: 2.62s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(n+10) { animation-delay: 2.67s; }
 
-/* 6) "결과 보기" 버튼 — 맨 마지막 (2.55s~) */
+/* 6) "결과 보기" 버튼 — 맨 마지막 (3.0s~) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-controls .stadium-cta-primary {
   animation: stadium-final-rise 0.4s ease-out both;
-  animation-delay: 2.55s;
+  animation-delay: 3.0s;
 }
 
 /* 접근성 — 모션 최소화 설정 시 등장 애니메이션 끔(요소는 즉시 표시). */
