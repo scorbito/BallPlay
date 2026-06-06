@@ -97,7 +97,7 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
   };
 
   return (
-    <AppShell activeTab="play" title="라인업 랭킹" theme="light" backHref="/stadium/lobby" wide>
+    <AppShell activeTab="play" title="출전팀 랭킹" theme="light" backHref="/stadium/lobby" wide>
       {/* 탭 */}
       <div className="lineup-rank-tabs" role="tablist" aria-label="랭킹 기간">
         <button
