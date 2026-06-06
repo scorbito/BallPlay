@@ -858,42 +858,49 @@
   overflow: hidden;
 }
 
+/* 컨페티 조각 — 크기/색/모양은 인라인 style(입자별 랜덤). 여기선 공통 모션만.
+   --cf-* 커스텀 프로퍼티(인라인): rot-start(시작 회전), spin(누적 회전),
+   drift1/drift2(낙하 중 좌우 흔들림). 무한 반복으로 끊임없는 스트림. */
 .playoff-fx-confetti-piece {
   position: absolute;
-  top: -12vh;
-  width: 9px;
-  height: 13px;
-  border-radius: 2px;
-  opacity: 0.95;
+  top: -14vh;
+  opacity: 0;
+  will-change: transform, opacity;
   animation-name: playoff-fx-fall;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
 }
 
-/* champion 은 입자를 살짝 키워 더 화려하게. */
-.playoff-fx.is-champion .playoff-fx-confetti-piece {
-  width: 11px;
-  height: 16px;
-}
-
+/* 낙하 + 좌우 흔들림(sway) + 회전. translateX 가 단계별로 바뀌며 흔들리게. */
 @keyframes playoff-fx-fall {
   0% {
-    transform: translateY(0) rotate(var(--playoff-fx-rotate-start, 0deg));
+    transform: translate(0, 0) rotate(var(--cf-rot-start, 0deg));
     opacity: 0;
   }
-  10% {
+  8% {
+    opacity: 0.95;
+  }
+  30% {
+    transform: translate(var(--cf-drift1, 0px), 36vh)
+      rotate(calc(var(--cf-rot-start, 0deg) + var(--cf-spin, 540deg) * 0.3));
+  }
+  60% {
+    transform: translate(var(--cf-drift2, 0px), 72vh)
+      rotate(calc(var(--cf-rot-start, 0deg) + var(--cf-spin, 540deg) * 0.6));
+  }
+  92% {
     opacity: 0.95;
   }
   100% {
-    transform: translateY(120vh)
-      rotate(calc(var(--playoff-fx-rotate-start, 0deg) + 720deg));
+    transform: translate(var(--cf-drift1, 0px), 122vh)
+      rotate(calc(var(--cf-rot-start, 0deg) + var(--cf-spin, 540deg)));
     opacity: 0;
   }
 }
 
-/* ── 폭죽 (champion 전용, CSS-only) ──
-   각 firework 는 발사 지점에 절대위치. ring(확장+페이드) + star(터지는 빛). */
+/* ── 폭죽 (champion 전용, CSS-only) ── 방사형 입자 폭발 + 중심 플래시.
+   한 발 = 한 점에서 사방으로 퍼지는 spark 16개 + flash 1개. 무한 반복. */
 .playoff-fx-fireworks {
   position: absolute;
   inset: 0;
@@ -903,68 +910,96 @@
   position: absolute;
   width: 0;
   height: 0;
+  /* burst 주기를 타이밍으로만 쓰기 위한 더미 컨테이너. 자식이 inherit delay. */
 }
 
-.playoff-fx-firework-ring,
-.playoff-fx-firework-star {
+/* 터지는 순간 중심의 밝은 플래시 — 짧게 확 커졌다 사라짐. */
+.playoff-fx-flash {
   position: absolute;
   left: 0;
   top: 0;
-  transform: translate(-50%, -50%) scale(0);
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
   border-radius: 50%;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-  animation-delay: inherit;
-}
-
-/* 확장하는 링 — currentColor(=발사 색) 테두리. */
-.playoff-fx-firework-ring {
-  width: 120px;
-  height: 120px;
-  border: 3px solid currentColor;
-  opacity: 0;
-  animation-name: playoff-fx-burst-ring;
-  animation-duration: 900ms;
-  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-
-/* 중심에서 터지는 별빛 — radial 그라데이션 점. */
-.playoff-fx-firework-star {
-  width: 70px;
-  height: 70px;
   background: radial-gradient(
     circle,
-    currentColor 0%,
-    rgba(255, 255, 255, 0.9) 30%,
+    #fff 0%,
+    currentColor 35%,
     transparent 70%
   );
   opacity: 0;
-  animation-name: playoff-fx-burst-star;
-  animation-duration: 720ms;
+  will-change: transform, opacity;
+  animation-name: playoff-fx-flash;
+  animation-duration: var(--fw-cycle, 2800ms);
   animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+  animation-delay: inherit;
 }
 
-@keyframes playoff-fx-burst-ring {
-  0% {
-    transform: translate(-50%, -50%) scale(0.2);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.4);
-    opacity: 0;
-  }
+/* 사방으로 날아가는 불꽃 입자 — 짧은 streak. 바깥으로 멀어지며 작아지고 페이드,
+   끝에 살짝 중력 낙하(translateY 양수). */
+.playoff-fx-spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+  transform: rotate(var(--fw-angle, 0deg)) translateY(0);
+  animation-name: playoff-fx-spark;
+  animation-duration: var(--fw-cycle, 2800ms);
+  animation-timing-function: cubic-bezier(0.15, 0.6, 0.35, 1);
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  animation-delay: inherit;
 }
 
-@keyframes playoff-fx-burst-star {
+/* 폭죽 1발의 라이프사이클은 전체 주기(--fw-cycle)의 앞 ~28% 에서 터지고
+   나머지는 다음 발까지의 휴지. 발마다 delay 가 달라 staggered 반복. */
+@keyframes playoff-fx-flash {
   0% {
-    transform: translate(-50%, -50%) scale(0.2);
+    transform: scale(0.2);
     opacity: 0;
   }
-  25% {
+  3% {
+    transform: scale(1.1);
     opacity: 1;
   }
+  10% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
   100% {
-    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes playoff-fx-spark {
+  0% {
+    transform: rotate(var(--fw-angle, 0deg)) translateY(0) scale(0.4);
+    opacity: 0;
+  }
+  4% {
+    opacity: 1;
+  }
+  22% {
+    transform: rotate(var(--fw-angle, 0deg))
+      translateY(calc(-1 * var(--fw-dist, 80px))) scale(1);
+    opacity: 1;
+  }
+  30% {
+    /* 끝에 중력 낙하 — 살짝 더 멀리 + 아래로 처짐, 페이드 아웃. */
+    transform: rotate(var(--fw-angle, 0deg))
+      translateY(calc(-1 * var(--fw-dist, 80px) + 14px)) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(var(--fw-angle, 0deg))
+      translateY(calc(-1 * var(--fw-dist, 80px) + 14px)) scale(0.5);
     opacity: 0;
   }
 }
@@ -995,8 +1030,8 @@
 /* ── 모션 감소 선호 — 연출 정지/축소 ── */
 @media (prefers-reduced-motion: reduce) {
   .playoff-fx-confetti-piece,
-  .playoff-fx-firework-ring,
-  .playoff-fx-firework-star {
+  .playoff-fx-flash,
+  .playoff-fx-spark {
     animation: none;
     display: none;
   }
