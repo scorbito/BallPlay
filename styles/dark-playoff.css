@@ -336,3 +336,136 @@
   font-size: 13px;
   color: var(--bp-text-secondary);
 }
+
+/* 보조 버튼 (상대 라인업 보기 / 내 라인업 수정) */
+.phone-frame-light .playoff-secondary-btn {
+  width: 100%;
+  height: 44px;
+  margin-top: 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--bp-accent);
+  background: rgba(232, 74, 138, 0.06);
+  color: var(--bp-accent);
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.phone-frame-light .playoff-secondary-btn:hover {
+  background: rgba(232, 74, 138, 0.12);
+}
+
+.phone-frame-light .playoff-secondary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phone-frame-light .playoff-secondary-row .playoff-secondary-btn {
+  margin-top: 0;
+}
+
+/* 상대 라인업 모달 */
+.phone-frame-light .playoff-opp {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-frame-light .playoff-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-light .playoff-opp-head strong {
+  font-size: 15px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-opp-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .playoff-opp-starter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(20, 30, 50, 0.04);
+}
+
+.phone-frame-light .playoff-opp-starter-label {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 850;
+  color: #fff;
+  background: var(--bp-accent);
+}
+
+.phone-frame-light .playoff-opp-starter strong {
+  font-size: 14px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-opp-hand {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-opp-order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-frame-light .playoff-opp-batter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .playoff-opp-batter:last-child {
+  border-bottom: 0;
+}
+
+.phone-frame-light .playoff-opp-num {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .playoff-opp-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-light .playoff-opp-stat {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}

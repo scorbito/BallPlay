@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/common/Card";
 import { TeamLogo } from "@/components/common/TeamLogo";
+import { OpponentLineupModal } from "./OpponentLineupModal";
 import { useAppState } from "@/lib/state/AppState";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { getRoster } from "@/lib/rosters";
@@ -21,6 +23,7 @@ import {
 export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const router = useRouter();
   const { showToast } = useAppState();
+  const [oppOpen, setOppOpen] = useState(false);
   const round = run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
   const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
@@ -111,9 +114,25 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         </div>
       </Card>
 
+      {opp ? (
+        <button type="button" className="playoff-secondary-btn" onClick={() => setOppOpen(true)}>
+          상대 라인업 보기
+        </button>
+      ) : null}
+
       <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={startGame}>
         경기 시작
       </button>
+
+      {opp ? (
+        <OpponentLineupModal
+          open={oppOpen}
+          teamId={opp.teamId}
+          teamName={opp.teamName}
+          lineupSeed={opp.lineupSeed}
+          onClose={() => setOppOpen(false)}
+        />
+      ) : null}
     </section>
   );
 }
