@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/common/Card";
 import { TeamLogo } from "@/components/common/TeamLogo";
@@ -10,9 +10,11 @@ import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { getRoster } from "@/lib/rosters";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
-import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
+import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { saveMatchSession, generateSeed } from "@/lib/sim/matchSession";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   PLAYOFF_ROUND_LABEL,
   PLAYOFF_TOTAL_ROUNDS,
@@ -24,14 +26,42 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const router = useRouter();
   const { showToast } = useAppState();
   const [oppOpen, setOppOpen] = useState(false);
+  // 대진표 진입 시 4팀의 "타순 완성된 최신" 라인업을 실시간 로드 (오늘 경기 전 선발만 있는
+  // 행은 건너뛰고 어제 등 완성 라인업 사용). run 생성 시 박제 힌트(lineupHint)는 폴백.
+  const [liveHints, setLiveHints] = useState<Record<string, RecentLineupHint>>({});
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const client = createSupabaseBrowserClient();
+      const res = await listLatestBattingLineupsByTeam(client);
+      if (cancelled || !res.ok) return;
+      const map: Record<string, RecentLineupHint> = {};
+      for (const [tid, row] of Object.entries(res.byTeam)) {
+        map[tid] = {
+          batting: row.batting,
+          starter_roster_id: row.starter_roster_id,
+          starter_name: row.starter_name
+        };
+      }
+      setLiveHints(map);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const round = run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
-  // 상대 라인업(시드 박제) — 기존 LineupDetailModal 로 보여줌. 팀명 표시용 displayName 부여.
+  const hintFor = (teamId: string, frozen?: RecentLineupHint | null): RecentLineupHint | null =>
+    liveHints[teamId] ?? frozen ?? null;
+
+  // 상대 라인업 — 실시간 최신(타순 완성) 우선, 없으면 박제 힌트. LineupDetailModal 로 표시.
   const oppTeam = useMemo(() => {
     if (!opp) return null;
-    const t = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, opp.lineupHint ?? null);
+    const t = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, hintFor(opp.teamId, opp.lineupHint));
     return t ? { ...t, displayName: opp.teamName } : null;
-  }, [opp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opp, liveHints]);
   const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
   // 1위(한국시리즈)가 위, 현재(4·5위전)가 아래 — 바닥에서 위로 올라가는 연출.
   const ladder = [...run.state.opponents].sort((a, b) => b.round - a.round);
@@ -68,8 +98,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       showToast("내 라인업 구성에 실패했어요.");
       return;
     }
-    // 상대는 DB 최신 라인업(박제) 기준. 힌트 없으면 시즌 스탯 폴백. lineupSeed 로 결정적.
-    const opponent = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, opp.lineupHint ?? null);
+    // 상대는 실시간 최신(타순 완성) 라인업 우선, 없으면 박제 힌트, 그래도 없으면 시즌 스탯 폴백.
+    const opponent = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, hintFor(opp.teamId, opp.lineupHint));
     if (!opponent) {
       showToast("상대 팀 구성에 실패했어요.");
       return;

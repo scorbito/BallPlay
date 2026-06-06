@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { teams } from "@/lib/constants/teams";
-import { getLatestLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
+import { getLatestBattingLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 import {
@@ -56,7 +56,7 @@ export async function startPlayoffRun(input: {
   // 각 상대 팀의 DB 최신 실제 라인업을 가져와 박제(없으면 시즌 스탯 폴백).
   const opponents: PlayoffOpponent[] = await Promise.all(
     pool.slice(0, PLAYOFF_TOTAL_ROUNDS).map(async (t, idx) => {
-      const res = await getLatestLineupForTeam(client, t.teamId);
+      const res = await getLatestBattingLineupForTeam(client, t.teamId);
       const row = res.ok ? res.row : null;
       const lineupHint: RecentLineupHint | null = row
         ? {
