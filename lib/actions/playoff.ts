@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { teams } from "@/lib/constants/teams";
+import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 import {
   insertPlayoffRun,
   getActivePlayoffRun,
@@ -116,6 +117,24 @@ export async function recordPlayoffGame(input: {
     status,
     completed_at: completedAt
   });
+}
+
+/** 플레이오프 전용 임시 라인업 저장 — 실제 팀 무영향. */
+export async function updatePlayoffLineup(input: {
+  runId: string;
+  batting: SavedLineup;
+  pitching: SavedPitcherLineup;
+}): Promise<{ ok: true; run: PlayoffRun } | { ok: false; error: string }> {
+  const { client, userId } = await authed();
+  if (!userId) return { ok: false, error: "로그인이 필요해요." };
+  const run = await getPlayoffRunById(client, input.runId, userId);
+  if (!run) return { ok: false, error: "도전을 찾을 수 없어요." };
+  if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
+  const nextState: PlayoffRunState = {
+    ...run.state,
+    myLineup: { batting: input.batting, pitching: input.pitching }
+  };
+  return updatePlayoffRun(client, input.runId, userId, { state: nextState });
 }
 
 /** 도전 포기. */

@@ -469,3 +469,124 @@
   font-weight: 700;
   color: var(--bp-text-secondary);
 }
+
+/* 임시 라인업 편집 모달 */
+.phone-frame-light .playoff-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .playoff-edit-hint {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-edit-section-title {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-edit-section-title span {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .playoff-edit-order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phone-frame-light .playoff-edit-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: rgba(20, 30, 50, 0.04);
+  cursor: pointer;
+  text-align: left;
+}
+
+.phone-frame-light .playoff-edit-row.is-sel {
+  border-color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+}
+
+.phone-frame-light .playoff-edit-num {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .playoff-edit-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-light .playoff-edit-pos,
+.phone-frame-light .playoff-edit-hand {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-edit-starter {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(20, 30, 50, 0.04);
+  font-size: 14px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-edit-bullpen-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .playoff-edit-bullpen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phone-frame-light .playoff-edit-pitcher {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bp-line);
+  background: var(--bp-card);
+  color: var(--bp-text);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.phone-frame-light .playoff-edit-pitcher:hover {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}

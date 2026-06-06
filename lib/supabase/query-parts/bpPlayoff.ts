@@ -2,6 +2,7 @@
 // 공식 전적과 분리: 결과는 이 테이블에만 기록(기획서 §0).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 
 const TABLE = "bp_playoff_runs";
 
@@ -38,6 +39,9 @@ export type PlayoffRunState = {
   myEntryId: string;            // 선택한 팀 슬롯 (라인업은 경기 시작 시 사용)
   opponents: PlayoffOpponent[]; // 4팀, 라운드순
   games: PlayoffGame[];         // 진행된 경기 누적
+  // 플레이오프 전용 임시 라인업 — 편집 시에만 채워짐. 실제 팀과 분리.
+  // 없으면 경기 시작 시 선택 팀의 현재 라인업을 그대로 사용.
+  myLineup?: { batting: SavedLineup; pitching: SavedPitcherLineup };
 };
 
 export type PlayoffRun = {

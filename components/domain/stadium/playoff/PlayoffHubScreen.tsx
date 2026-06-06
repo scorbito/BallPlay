@@ -54,7 +54,7 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
   return (
     <AppShell activeTab="stadium" title="가을야구" backHref="/stadium/lobby" theme="light" wide>
       {showBracket && run ? (
-        <PlayoffBracket run={run} />
+        <PlayoffBracket run={run} onRunUpdate={setRun} />
       ) : showResult && run ? (
         <PlayoffResultCard run={run} onNew={() => setMode("select")} />
       ) : (

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/common/Card";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { OpponentLineupModal } from "./OpponentLineupModal";
+import { PlayoffLineupEditor } from "./PlayoffLineupEditor";
 import { useAppState } from "@/lib/state/AppState";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { getRoster } from "@/lib/rosters";
@@ -20,10 +21,17 @@ import {
 } from "@/lib/supabase/query-parts/bpPlayoff";
 
 /** 진행 중 run 의 대진표 — 현재 라운드 매치업 + 경기 시작 + 결과 히스토리. */
-export function PlayoffBracket({ run }: { run: PlayoffRun }) {
+export function PlayoffBracket({
+  run,
+  onRunUpdate
+}: {
+  run: PlayoffRun;
+  onRunUpdate: (run: PlayoffRun) => void;
+}) {
   const router = useRouter();
   const { showToast } = useAppState();
   const [oppOpen, setOppOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const round = run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
   const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
@@ -32,23 +40,32 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
 
   const startGame = () => {
     if (!opp) return;
-    const entry = loadLineupEntries().find((e) => e.entryId === run.state.myEntryId);
-    if (!entry) {
-      showToast("도전한 팀을 찾을 수 없어요. 팀 관리에서 확인해주세요.");
-      return;
+    // 임시 라인업(편집본)이 있으면 그걸로, 없으면 팀의 현재 라인업으로.
+    let batting = run.state.myLineup?.batting ?? null;
+    let pitchingSlots = run.state.myLineup?.pitching.slots ?? null;
+    let displayName = run.teamName;
+    if (!batting || !pitchingSlots) {
+      const entry = loadLineupEntries().find((e) => e.entryId === run.state.myEntryId);
+      if (!entry) {
+        showToast("도전한 팀을 찾을 수 없어요. 팀 관리에서 확인해주세요.");
+        return;
+      }
+      if (entry.batting.slots.length !== 9 || !entry.pitching?.slots?.[0]) {
+        showToast("이 팀의 라인업이 완성돼 있지 않아요.");
+        return;
+      }
+      batting = entry.batting;
+      pitchingSlots = entry.pitching.slots;
+      displayName = entry.name;
     }
-    if (entry.batting.slots.length !== 9 || !entry.pitching?.slots?.[0]) {
-      showToast("이 팀의 라인업이 완성돼 있지 않아요.");
-      return;
-    }
-    const validIds = new Set(getRoster(entry.teamId).map((p) => p.id));
-    const pitching = fillMissingPitcherSlots(entry.teamId, entry.pitching?.slots ?? [], validIds) ?? entry.pitching;
+    const validIds = new Set(getRoster(run.teamId).map((p) => p.id));
+    const pitching = fillMissingPitcherSlots(run.teamId, pitchingSlots, validIds);
     if (!pitching) {
       showToast("투수 구성에 실패했어요.");
       return;
     }
-    const dir = buildStatsDirectory([entry.teamId]);
-    const myAdapt = buildSimTeamInput(entry.teamId, entry.batting, pitching, dir, entry.name);
+    const dir = buildStatsDirectory([run.teamId]);
+    const myAdapt = buildSimTeamInput(run.teamId, batting, pitching, dir, displayName);
     if (!myAdapt.ok) {
       showToast("내 라인업 구성에 실패했어요.");
       return;
@@ -61,7 +78,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
     }
     const playSeed = generateSeed();
     saveMatchSession({
-      myTeamId: entry.teamId,
+      myTeamId: run.teamId,
       opponentTeamId: opp.teamId,
       seed: playSeed,
       input: { home: myAdapt.team, away: opponent, context: {} },
@@ -114,11 +131,16 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         </div>
       </Card>
 
-      {opp ? (
-        <button type="button" className="playoff-secondary-btn" onClick={() => setOppOpen(true)}>
-          상대 라인업 보기
+      <div className="playoff-secondary-row">
+        {opp ? (
+          <button type="button" className="playoff-secondary-btn" onClick={() => setOppOpen(true)}>
+            상대 라인업 보기
+          </button>
+        ) : null}
+        <button type="button" className="playoff-secondary-btn" onClick={() => setEditOpen(true)}>
+          내 라인업 수정
         </button>
-      ) : null}
+      </div>
 
       <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={startGame}>
         경기 시작
@@ -133,6 +155,13 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
           onClose={() => setOppOpen(false)}
         />
       ) : null}
+
+      <PlayoffLineupEditor
+        open={editOpen}
+        run={run}
+        onClose={() => setEditOpen(false)}
+        onSaved={onRunUpdate}
+      />
     </section>
   );
 }
