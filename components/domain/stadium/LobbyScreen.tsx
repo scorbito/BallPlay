@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { RegisteredLineupList } from "./RegisteredLineupList";
 import { StadiumLineupRankingPreview } from "./StadiumLineupRankingPreview";
+import { PlayoffHallOfFame } from "./PlayoffHallOfFame";
 import type { LineupRankingRow } from "@/lib/supabase/query-parts/bpLineupRankings";
 import type { AccountStatsRankingRow } from "@/lib/supabase/query-parts/bpAccountStats";
 
@@ -24,6 +25,9 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking }: Props) {
         lineupRows={topLineupRanking}
         accountRows={topAccountRanking}
       />
+
+      {/* 1.4 명예의 전당 — 전체 유저 공개 우승자 (가을야구 진입 카드 바로 위) */}
+      <PlayoffHallOfFame />
 
       {/* 1.5 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
       <Link href="/stadium/playoff" className="stadium-playoff-entry" prefetch>

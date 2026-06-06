@@ -14,6 +14,7 @@ import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOppo
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import { saveMatchSession, generateSeed } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { updatePlayoffLineup } from "@/lib/actions/playoff";
 import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   PLAYOFF_ROUND_LABEL,
@@ -66,9 +67,10 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   // 1위(한국시리즈)가 위, 현재(4·5위전)가 아래 — 바닥에서 위로 올라가는 연출.
   const ladder = [...run.state.opponents].sort((a, b) => b.round - a.round);
 
-  const startGame = () => {
+  const startGame = async () => {
     if (!opp) return;
     // 임시 라인업(편집본)이 있으면 그걸로, 없으면 팀의 현재 라인업으로.
+    const hadMyLineup = Boolean(run.state.myLineup?.batting && run.state.myLineup?.pitching);
     let batting = run.state.myLineup?.batting ?? null;
     let pitchingSlots = run.state.myLineup?.pitching.slots ?? null;
     let displayName = run.teamName;
@@ -91,6 +93,11 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
     if (!pitching) {
       showToast("투수 구성에 실패했어요.");
       return;
+    }
+    // 우승 라인업 스냅샷 단일 출처화: myLineup 이 비어있으면(편집 전) 이 도전에서 실제 사용한
+    // 라인업으로 영속화. 이미 편집본이 있으면 건드리지 않는다. 첫 경기 시점에 한 번만 박제됨.
+    if (!hadMyLineup && batting) {
+      await updatePlayoffLineup({ runId: run.id, batting, pitching });
     }
     const dir = buildStatsDirectory([run.teamId]);
     const myAdapt = buildSimTeamInput(run.teamId, batting, pitching, dir, displayName);
@@ -175,7 +182,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         </button>
       </div>
 
-      <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={startGame}>
+      <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={() => void startGame()}>
         경기 시작
       </button>
 

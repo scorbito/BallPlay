@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { teams } from "@/lib/constants/teams";
 import { getLatestBattingLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
@@ -20,6 +20,44 @@ import {
 
 function randomSeed(): number {
   return Math.floor(Math.random() * 2 ** 31);
+}
+
+/** 우승 시점 닉네임 조회 — 명예의 전당 박제용. 실패 시 "익명". */
+async function fetchNickname(userId: string): Promise<string> {
+  try {
+    const admin = createSupabaseAdminClient();
+    const { data } = await admin.from("profiles").select("nickname").eq("id", userId).maybeSingle();
+    const nick = (data as { nickname: string | null } | null)?.nickname?.trim();
+    return nick || "익명";
+  } catch {
+    return "익명";
+  }
+}
+
+/** 우승 확정 시 명예의 전당(bp_playoff_champions) 행 추가.
+ *  myLineup 이 없으면 batting/pitching 은 null 로 두되 행은 남긴다.
+ *  실패해도 우승 처리 자체는 진행해야 하므로 에러는 무시한다. */
+async function recordChampion(
+  run: PlayoffRun,
+  userId: string,
+  completedAt: string
+): Promise<void> {
+  try {
+    const client = createSupabaseServerClient();
+    const nickname = await fetchNickname(userId);
+    await client.from("bp_playoff_champions").insert({
+      user_id: userId,
+      nickname,
+      team_id: run.teamId,
+      team_name: run.teamName,
+      batting: run.state.myLineup?.batting ?? null,
+      pitching: run.state.myLineup?.pitching ?? null,
+      run_id: run.id,
+      completed_at: completedAt
+    });
+  } catch (e) {
+    console.warn("[playoff] recordChampion 실패(무시):", (e as Error).message);
+  }
 }
 
 async function authed() {
@@ -128,12 +166,19 @@ export async function recordPlayoffGame(input: {
     currentRound = input.round + 1;
   }
 
-  return updatePlayoffRun(client, input.runId, userId, {
+  const updated = await updatePlayoffRun(client, input.runId, userId, {
     state: nextState,
     current_round: currentRound,
     status,
     completed_at: completedAt
   });
+
+  // 우승 확정이면 명예의 전당에 박제. INSERT 실패해도 우승 처리는 유지(에러 무시).
+  if (updated.ok && status === "champion" && completedAt) {
+    await recordChampion(updated.run, userId, completedAt);
+  }
+
+  return updated;
 }
 
 /** 플레이오프 전용 임시 라인업 저장 — 실제 팀 무영향. */
