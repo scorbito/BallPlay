@@ -1,11 +1,10 @@
 // AI 상대 라인업 생성.
 //   - 최근 라인업(bp_team_recent_lineups)이 있으면 그걸 기준으로 실제 팀에 가깝게 구성.
-//   - 없으면 기존 폴백(시즌 스탯에서 랜덤 9명).
+//   - 없으면 시즌 스탯 OPS 상위 9명으로 합리적 베스트 라인업 구성.
 //
-// 시드 기반이라 같은 (teamId, seed) → 같은 결과 (재현 가능). 라인업 데이터 있으면 시드 영향 줄어듦.
+// 라인업이 결정적(최근 라인업 또는 시즌 스탯)이라 같은 teamId → 같은 결과.
 
 import { getRoster } from "@/lib/rosters";
-import { createRng } from "./rng";
 import { getTeamStats } from "./statsLoader";
 import type { SimBatter, SimPitcher, SimTeamInput } from "./types";
 
@@ -28,8 +27,6 @@ export function buildFakeOpponentTeam(
 
   const batterById = new Map(stats.batters.map((b) => [b.playerId, b]));
   const pitcherById = new Map(stats.pitchers.map((p) => [p.playerId, p]));
-
-  const rng = createRng(seed);
 
   // ── 타순 구성 ────────────────────────────────────────────
   let batters: SimBatter[];
@@ -55,10 +52,11 @@ export function buildFakeOpponentTeam(
       return fillPool[fillIdx++] ?? stats.batters[0];
     });
   } else {
-    // 폴백 — 시즌 stats에서 랜덤 9명
-    const batterStats = [...stats.batters];
-    shuffle(batterStats, rng);
-    batters = batterStats.slice(0, 9);
+    // 폴백 — 최근 라인업 없으면 OPS(출루율+장타율) 상위 9명.
+    // (랜덤 9명은 벤치 선수까지 섞여 "이상한 라인업"으로 보였던 문제 해결)
+    batters = [...stats.batters]
+      .sort((a, b) => (b.obp + b.slg) - (a.obp + a.slg))
+      .slice(0, 9);
   }
 
   // ── 선발투수 ────────────────────────────────────────────
@@ -95,11 +93,4 @@ export function buildFakeOpponentTeam(
     },
     bullpen: bullpen.map((p) => ({ ...p, role: p.saves > 20 ? "CL" : "RP" }))
   };
-}
-
-function shuffle<T>(arr: T[], rng: () => number): void {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
 }

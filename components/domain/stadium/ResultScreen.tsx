@@ -235,7 +235,7 @@ export function ResultScreen() {
 
   if (!hydrated || !session?.result || !session.input) {
     return (
-      <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide>
+      <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide hideBottomTabs={session?.source === "playoff"}>
         <p className="stadium-loading">결과를 불러오는 중...</p>
       </AppShell>
     );
