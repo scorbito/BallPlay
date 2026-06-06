@@ -1188,6 +1188,8 @@
 
 /* ── 라인업 페이지 헤더 — [< 뒤로] [팀 드롭다운 중앙] [타자/투수 토글] ── */
 .phone-frame-light .lineup-header {
+  position: relative;
+  z-index: 40;
   display: grid;
   grid-template-columns: 36px 1fr auto;
   align-items: center;
@@ -1239,6 +1241,7 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 41;
 }
 
 /* 전역 button:active { transform: scale(0.97) } 무효화 —
@@ -1373,7 +1376,11 @@
     "share   share";
 }
 
-.phone-frame-light .lineup-diamond-card { grid-area: diamond; }
+.phone-frame-light .lineup-diamond-card {
+  position: relative;
+  z-index: 1;
+  grid-area: diamond;
+}
 /* .lineup-action-hint는 .lineup-action-row 안으로 들어가므로 grid-area는 행에서 지정 */
 .phone-frame-light .lineup-slots-card { grid-area: slots; }
 .phone-frame-light .lineup-pool-card-side { grid-area: pool; }

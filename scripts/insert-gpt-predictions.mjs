@@ -25,7 +25,7 @@ const supabase = createClient(
 const GAME_DATE = "2026-05-29";
 const PUBLISHED_AT = "2026-05-29T09:00:00+09:00";
 const AI_PROVIDER = "gpt";
-const MODEL_NAME = "gpt-5-codex";
+const MODEL_NAME = "gpt-5.5-codex";
 
 const rows = [
   {

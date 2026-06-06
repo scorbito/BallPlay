@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { getTeam } from "@/lib/constants/teams";
 import { loadMatchSession, saveMatchSession, clearMatchSession } from "@/lib/sim/matchSession";
 import { PLAYOFF_ROUND_LABEL } from "@/lib/supabase/query-parts/bpPlayoff";
-import { forfeitPlayoffRun } from "@/lib/actions/playoff";
+import { forfeitPlayoffRun, recordPlayoffGame } from "@/lib/actions/playoff";
 import { ModalShell } from "@/components/common/ModalShell";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -58,6 +58,7 @@ export function PlayScreen() {
   // useState는 비동기 업데이트라 두 번째 effect 실행에서 stale 값이 보일 수 있음 →
   // useRef로 동기 가드. StrictMode/의존성 변경으로 effect가 두 번 실행돼도 INSERT 1회만.
   const recordSaveAttemptedRef = useRef(false);
+  const playoffSaveAttemptedRef = useRef(false);
   const [recordSaving, setRecordSaving] = useState(false);
   const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
   // 경기 종료 등장 연출 — GAME_END로 처음 전환되는 순간 1회만 reveal 클래스 부여.
@@ -656,6 +657,42 @@ export function PlayScreen() {
       cancelled = true;
     };
   }, [phase, session, recordSavedId, recordSaving, showToast]);
+
+  useEffect(() => {
+    if (phase !== "GAME_END") return;
+    if (session?.source !== "playoff") return;
+    if (!session.result || !session.playoffRunId || session.playoffRound == null) return;
+    if (playoffSaveAttemptedRef.current) return;
+    playoffSaveAttemptedRef.current = true;
+
+    let cancelled = false;
+    (async () => {
+      const fs = session.result!.finalScore;
+      const saved = await recordPlayoffGame({
+        runId: session.playoffRunId!,
+        round: session.playoffRound!,
+        win: fs.home > fs.away,
+        scoreMe: fs.home,
+        scoreOpp: fs.away,
+        playSeed: session.seed,
+        oppTeamId: session.opponentTeamId
+      });
+      if (cancelled) return;
+      if (!saved.ok) {
+        playoffSaveAttemptedRef.current = false;
+        showToast(saved.error);
+      }
+    })().catch(() => {
+      if (!cancelled) {
+        playoffSaveAttemptedRef.current = false;
+        showToast("\uAC00\uC744\uC57C\uAD6C \uACB0\uACFC \uC800\uC7A5 \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC5B4\uC694.");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, session, showToast]);
 
   // 뒤로가기 목적지 — public 매치(공식)는 경기장, 그 외(친구/AI/내 라인업)는 연습경기장.
   // 가을야구는 backHref 대신 onBack(포기 확인 모달)으로 가로챈다.

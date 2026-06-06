@@ -17,7 +17,12 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_A
   auth: { persistSession: false }
 });
 
-const KST_TODAY = "2026-05-31";
+const KST_TODAY = process.argv[2] ?? (() => {
+  const now = new Date();
+  const kst = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+})();
+
 
 // 1) 오늘 경기 (games)
 const { data: games, error: gErr } = await sb

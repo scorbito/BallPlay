@@ -11,15 +11,26 @@ import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
 import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
 import { ConfirmOverwriteRecentModal } from "@/components/domain/lineup/modals/ConfirmOverwriteRecentModal";
+import { ConfirmDeletePresetModal } from "@/components/domain/lineup/modals/ConfirmDeletePresetModal";
+import { LineupPresetBar } from "@/components/domain/lineup/LineupPresetBar";
+import { PresetNameModal } from "@/components/domain/lineup/modals/PresetNameModal";
 import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
 import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
+import {
+  deletePreset,
+  loadPresets,
+  renamePreset,
+  savePreset,
+  type LineupPreset
+} from "@/lib/storage/lineupPresets";
 import { updatePlayoffLineup } from "@/lib/actions/playoff";
 import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   POSITION_SHORT,
+  PITCHER_SLOTS_COUNT,
   PITCHER_STARTER_INDEX,
   normalizeKboPosition,
   type Player,
@@ -60,11 +71,21 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
   const [positionPickerForOrder, setPositionPickerForOrder] = useState<LineupOrder | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [presetMenuOpen, setPresetMenuOpen] = useState(false);
+  const [savePresetOpen, setSavePresetOpen] = useState(false);
+  const [renamingPreset, setRenamingPreset] = useState<LineupPreset | null>(null);
+  const [deletingPreset, setDeletingPreset] = useState<LineupPreset | null>(null);
   // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
   const swapTimerRef = useRef<number | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!run.state.pendingGame) return;
+    showToast("\uC9C4\uD589 \uC911\uC778 \uACBD\uAE30\uAC00 \uC788\uC5B4 \uB77C\uC778\uC5C5\uC744 \uC218\uC815\uD560 \uC218 \uC5C6\uC5B4\uC694.");
+    router.replace("/stadium/playoff");
+  }, [router, run.state.pendingGame, showToast]);
 
   // 초기화: state.myLineup(편집본) 또는 팀 현재 라인업.
   useEffect(() => {
@@ -121,6 +142,69 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
   const pitcherFilled = pitcherSlots.filter((id) => id !== null && playersById.has(id)).length;
 
   // ── 핸들러 (빌더 편집 코어 복제) ──
+  const buildCurrentSnapshot = () => {
+    const now = new Date().toISOString();
+    const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
+    const hasAnyPitcher = pitcherSlots.some(Boolean);
+    return {
+      batting: {
+        teamId,
+        slots: filledSlots,
+        useDH: true,
+        updatedAt: now
+      },
+      pitching: hasAnyPitcher
+        ? { teamId, slots: pitcherSlots, updatedAt: now }
+        : null
+    };
+  };
+
+  const applyPreset = (preset: LineupPreset) => {
+    const nextSlots: SlotState[] = Array.from({ length: 9 }, () => null);
+    preset.batting.slots.forEach((s) => {
+      if (s.order >= 1 && s.order <= 9) {
+        nextSlots[s.order - 1] = s;
+      }
+    });
+    const nextPitcherSlots = Array.from(
+      { length: PITCHER_SLOTS_COUNT },
+      (_, i) => preset.pitching?.slots[i] ?? null
+    );
+    setSlots(nextSlots);
+    setPitcherSlots(nextPitcherSlots);
+    setSwapOrderSourceIdx(null);
+    setSwapSource(null);
+    setMode("batter");
+    return { slots: nextSlots, pitcherSlots: nextPitcherSlots };
+  };
+
+  const handleApplyPreset = (preset: LineupPreset) => {
+    const applied = applyPreset(preset);
+    if (applied.slots.filter((s) => s !== null).length !== 9 || !applied.pitcherSlots[PITCHER_STARTER_INDEX]) {
+      showToast(`"${preset.name}" 프리셋을 적용했어요. 저장하려면 타자 9명과 선발 투수가 필요해요.`);
+      return;
+    }
+    showToast(`"${preset.name}" 프리셋을 적용했어요.`);
+  };
+
+  const handleOpenSavePreset = () => {
+    if (loadPresets(teamId).length >= 3) {
+      showToast("프리셋은 팀당 최대 3개까지 저장할 수 있어요.");
+      return;
+    }
+    setSavePresetOpen(true);
+  };
+
+  const handleSavePresetSubmit = (name: string) => {
+    const snapshot = buildCurrentSnapshot();
+    const res = savePreset(teamId, { name, ...snapshot });
+    if (!res.ok) {
+      showToast("프리셋은 팀당 최대 3개까지 저장할 수 있어요.");
+      return;
+    }
+    showToast(`"${name}" 프리셋을 저장했어요.`);
+  };
+
   const handleAddPlayer = (player: Player) => {
     if (placedPlayerIds.has(player.id)) {
       showToast("이미 라인업에 있어요.");
@@ -423,6 +507,18 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
         {/* 그라운드 ↔ 타순 사이 액션 행 — 팀 관리 빌더와 동일 배치.
             좌: 실제 경기 라인업 불러오기(넓게) / 타자·투수 토글 / 저장하기 */}
         <div className="lineup-action-row playoff-edit-actionrow">
+          <div className="playoff-edit-preset">
+            <LineupPresetBar
+              teamId={teamId}
+              canSaveCurrent={filledCount > 0 || pitcherSlots.some(Boolean)}
+              open={presetMenuOpen}
+              setOpen={setPresetMenuOpen}
+              onSaveCurrent={handleOpenSavePreset}
+              onApply={handleApplyPreset}
+              onRename={(preset) => setRenamingPreset(preset)}
+              onDelete={(preset) => setDeletingPreset(preset)}
+            />
+          </div>
           <button
             type="button"
             className="lineup-recent-load-btn"
@@ -527,6 +623,39 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
         onConfirm={() => {
           if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
           setPendingRecentLineup(null);
+        }}
+      />
+
+      <PresetNameModal
+        open={savePresetOpen}
+        intent="save"
+        placeholder={`${team.shortName} 프리셋`}
+        onClose={() => setSavePresetOpen(false)}
+        onSubmit={handleSavePresetSubmit}
+      />
+
+      <PresetNameModal
+        open={renamingPreset !== null}
+        intent="rename"
+        initialName={renamingPreset?.name ?? ""}
+        onClose={() => setRenamingPreset(null)}
+        onSubmit={(name) => {
+          if (renamingPreset) renamePreset(renamingPreset.presetId, name);
+          showToast("프리셋 이름을 변경했어요.");
+          setRenamingPreset(null);
+        }}
+      />
+
+      <ConfirmDeletePresetModal
+        open={deletingPreset !== null}
+        presetName={deletingPreset?.name ?? ""}
+        onCancel={() => setDeletingPreset(null)}
+        onConfirm={() => {
+          if (deletingPreset) {
+            deletePreset(deletingPreset.presetId);
+            showToast("프리셋을 삭제했어요.");
+          }
+          setDeletingPreset(null);
         }}
       />
     </AppShell>

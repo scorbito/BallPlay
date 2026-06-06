@@ -1,0 +1,590 @@
+{
+  "gameId": "8cb78a90-c348-442e-9100-55ee2bc55804",
+  "gameDate": "2026-06-04",
+  "gameTime": "18:30:00",
+  "homeTeamId": "doosan",
+  "awayTeamId": "hanwha",
+  "homeStarter": "잭로그",
+  "awayStarter": "화이트",
+  "lineupSource": {
+    "home": "2026-06-03",
+    "away": "2026-06-03"
+  },
+  "N": 1000,
+  "elapsedMs": 76,
+  "summary": {
+    "homeWins": 363,
+    "awayWins": 568,
+    "ties": 69,
+    "homeAvgRuns": 2.292,
+    "awayAvgRuns": 3.277,
+    "extraInningCount": 143
+  },
+  "diffHist": {
+    "0": 69,
+    "1": 160,
+    "2": 91,
+    "3": 58,
+    "4": 22,
+    "5": 12,
+    "6": 11,
+    "7": 5,
+    "8": 3,
+    "9": 1,
+    "-1": 162,
+    "-3": 108,
+    "-2": 108,
+    "-4": 57,
+    "-7": 23,
+    "-6": 36,
+    "-5": 46,
+    "-8": 17,
+    "-13": 1,
+    "-9": 5,
+    "-10": 3,
+    "-11": 2
+  },
+  "batters": {
+    "doosan-7": {
+      "name": "박찬호",
+      "team": "doosan",
+      "pa": 4373,
+      "ab": 3942,
+      "hits": 775,
+      "hr": 60,
+      "rbi": 224,
+      "runs": 60,
+      "bb": 430,
+      "k": 972
+    },
+    "doosan-8": {
+      "name": "손아섭",
+      "team": "doosan",
+      "pa": 4276,
+      "ab": 3906,
+      "hits": 739,
+      "hr": 38,
+      "rbi": 212,
+      "runs": 38,
+      "bb": 370,
+      "k": 944
+    },
+    "doosan-37": {
+      "name": "박지훈",
+      "team": "doosan",
+      "pa": 4191,
+      "ab": 3823,
+      "hits": 748,
+      "hr": 42,
+      "rbi": 231,
+      "runs": 42,
+      "bb": 368,
+      "k": 996
+    },
+    "doosan-24": {
+      "name": "카메론",
+      "team": "doosan",
+      "pa": 4093,
+      "ab": 3740,
+      "hits": 863,
+      "hr": 134,
+      "rbi": 412,
+      "runs": 134,
+      "bb": 351,
+      "k": 874
+    },
+    "doosan-62": {
+      "name": "안재석",
+      "team": "doosan",
+      "pa": 3978,
+      "ab": 3711,
+      "hits": 593,
+      "hr": 108,
+      "rbi": 320,
+      "runs": 108,
+      "bb": 266,
+      "k": 1005
+    },
+    "doosan-25": {
+      "name": "양의지",
+      "team": "doosan",
+      "pa": 3851,
+      "ab": 3471,
+      "hits": 607,
+      "hr": 70,
+      "rbi": 224,
+      "runs": 70,
+      "bb": 380,
+      "k": 876
+    },
+    "doosan-23": {
+      "name": "강승호",
+      "team": "doosan",
+      "pa": 3709,
+      "ab": 3492,
+      "hits": 721,
+      "hr": 49,
+      "rbi": 221,
+      "runs": 49,
+      "bb": 216,
+      "k": 764
+    },
+    "doosan-27": {
+      "name": "윤준호",
+      "team": "doosan",
+      "pa": 3576,
+      "ab": 3172,
+      "hits": 619,
+      "hr": 99,
+      "rbi": 286,
+      "runs": 99,
+      "bb": 404,
+      "k": 709
+    },
+    "doosan-51": {
+      "name": "조수행",
+      "team": "doosan",
+      "pa": 3480,
+      "ab": 3068,
+      "hits": 525,
+      "hr": 33,
+      "rbi": 162,
+      "runs": 33,
+      "bb": 412,
+      "k": 801
+    },
+    "hanwha-25": {
+      "name": "김태연",
+      "team": "hanwha",
+      "pa": 4752,
+      "ab": 4284,
+      "hits": 908,
+      "hr": 64,
+      "rbi": 292,
+      "runs": 64,
+      "bb": 468,
+      "k": 1194
+    },
+    "hanwha-30": {
+      "name": "페라자",
+      "team": "hanwha",
+      "pa": 4627,
+      "ab": 4095,
+      "hits": 999,
+      "hr": 136,
+      "rbi": 407,
+      "runs": 136,
+      "bb": 532,
+      "k": 1078
+    },
+    "hanwha-51": {
+      "name": "문현빈",
+      "team": "hanwha",
+      "pa": 4507,
+      "ab": 3968,
+      "hits": 823,
+      "hr": 131,
+      "rbi": 384,
+      "runs": 131,
+      "bb": 538,
+      "k": 1089
+    },
+    "hanwha-50": {
+      "name": "강백호",
+      "team": "hanwha",
+      "pa": 4402,
+      "ab": 3981,
+      "hits": 1000,
+      "hr": 115,
+      "rbi": 460,
+      "runs": 115,
+      "bb": 417,
+      "k": 976
+    },
+    "hanwha-8": {
+      "name": "노시환",
+      "team": "hanwha",
+      "pa": 4306,
+      "ab": 3983,
+      "hits": 977,
+      "hr": 103,
+      "rbi": 427,
+      "runs": 103,
+      "bb": 323,
+      "k": 911
+    },
+    "hanwha-59": {
+      "name": "허인서",
+      "team": "hanwha",
+      "pa": 4204,
+      "ab": 3897,
+      "hits": 1027,
+      "hr": 105,
+      "rbi": 426,
+      "runs": 105,
+      "bb": 306,
+      "k": 902
+    },
+    "hanwha-5": {
+      "name": "이도윤",
+      "team": "hanwha",
+      "pa": 4094,
+      "ab": 3844,
+      "hits": 829,
+      "hr": 44,
+      "rbi": 281,
+      "runs": 44,
+      "bb": 250,
+      "k": 1058
+    },
+    "hanwha-37": {
+      "name": "이원석",
+      "team": "hanwha",
+      "pa": 3994,
+      "ab": 3698,
+      "hits": 811,
+      "hr": 66,
+      "rbi": 301,
+      "runs": 66,
+      "bb": 294,
+      "k": 978
+    },
+    "hanwha-7": {
+      "name": "심우준",
+      "team": "hanwha",
+      "pa": 3872,
+      "ab": 3389,
+      "hits": 705,
+      "hr": 63,
+      "rbi": 299,
+      "runs": 63,
+      "bb": 481,
+      "k": 918
+    }
+  },
+  "pitchers": {
+    "doosan-39": {
+      "name": "잭로그",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 17458,
+      "hits": 5979,
+      "runs": 2212,
+      "er": 2212,
+      "bb": 1684,
+      "k": 5546,
+      "hr": 543
+    },
+    "doosan-50": {
+      "name": "이영하",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 568,
+      "hits": 121,
+      "runs": 62,
+      "er": 62,
+      "bb": 104,
+      "k": 214,
+      "hr": 19
+    },
+    "doosan-63": {
+      "name": "김택연",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 3522,
+      "hits": 587,
+      "runs": 316,
+      "er": 316,
+      "bb": 761,
+      "k": 1332,
+      "hr": 110
+    },
+    "doosan-65": {
+      "name": "윤태호",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 3119,
+      "hits": 711,
+      "runs": 329,
+      "er": 329,
+      "bb": 627,
+      "k": 999,
+      "hr": 79
+    },
+    "doosan-16": {
+      "name": "김정우",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 2114,
+      "hits": 407,
+      "runs": 190,
+      "er": 190,
+      "bb": 308,
+      "k": 739,
+      "hr": 35
+    },
+    "doosan-119": {
+      "name": "정성헌",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 950,
+      "hits": 272,
+      "runs": 168,
+      "er": 168,
+      "bb": 124,
+      "k": 273,
+      "hr": 41
+    },
+    "doosan-46": {
+      "name": "김명신",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 2,
+      "hits": 2,
+      "runs": 0,
+      "er": 0,
+      "bb": 1,
+      "k": 1,
+      "hr": 0
+    },
+    "doosan-1": {
+      "name": "박치국",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 2,
+      "hits": 0,
+      "runs": 0,
+      "er": 0,
+      "bb": 0,
+      "k": 0,
+      "hr": 0
+    },
+    "doosan-59": {
+      "name": "최준호",
+      "team": "doosan",
+      "games": 1000,
+      "ipOuts": 0,
+      "hits": 0,
+      "runs": 0,
+      "er": 0,
+      "bb": 0,
+      "k": 0,
+      "hr": 0
+    },
+    "hanwha-24": {
+      "name": "화이트",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 15889,
+      "hits": 3616,
+      "runs": 1132,
+      "er": 1132,
+      "bb": 1640,
+      "k": 4543,
+      "hr": 336
+    },
+    "hanwha-27": {
+      "name": "이민우",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 910,
+      "hits": 264,
+      "runs": 105,
+      "er": 105,
+      "bb": 91,
+      "k": 194,
+      "hr": 22
+    },
+    "hanwha-28": {
+      "name": "장유호",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 9177,
+      "hits": 2115,
+      "runs": 959,
+      "er": 959,
+      "bb": 1359,
+      "k": 2944,
+      "hr": 258
+    },
+    "hanwha-103": {
+      "name": "양경모",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 762,
+      "hits": 194,
+      "runs": 95,
+      "er": 95,
+      "bb": 105,
+      "k": 259,
+      "hr": 17
+    },
+    "hanwha-101": {
+      "name": "양선률",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 2,
+      "hits": 1,
+      "runs": 1,
+      "er": 1,
+      "bb": 2,
+      "k": 1,
+      "hr": 0
+    },
+    "hanwha-47": {
+      "name": "양수호",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 0,
+      "hits": 0,
+      "runs": 0,
+      "er": 0,
+      "bb": 0,
+      "k": 0,
+      "hr": 0
+    },
+    "hanwha-18": {
+      "name": "이상규",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 0,
+      "hits": 0,
+      "runs": 0,
+      "er": 0,
+      "bb": 0,
+      "k": 0,
+      "hr": 0
+    },
+    "hanwha-108": {
+      "name": "엄요셉",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 0,
+      "hits": 0,
+      "runs": 0,
+      "er": 0,
+      "bb": 0,
+      "k": 0,
+      "hr": 0
+    },
+    "hanwha-68": {
+      "name": "박준영",
+      "team": "hanwha",
+      "games": 1000,
+      "ipOuts": 0,
+      "hits": 0,
+      "runs": 0,
+      "er": 0,
+      "bb": 0,
+      "k": 0,
+      "hr": 0
+    }
+  },
+  "mvpFreq": {
+    "hanwha-24": {
+      "name": "화이트",
+      "team": "hanwha",
+      "count": 459
+    },
+    "doosan-25": {
+      "name": "양의지",
+      "team": "doosan",
+      "count": 6
+    },
+    "doosan-39": {
+      "name": "잭로그",
+      "team": "doosan",
+      "count": 370
+    },
+    "doosan-8": {
+      "name": "손아섭",
+      "team": "doosan",
+      "count": 4
+    },
+    "hanwha-28": {
+      "name": "장유호",
+      "team": "hanwha",
+      "count": 36
+    },
+    "doosan-27": {
+      "name": "윤준호",
+      "team": "doosan",
+      "count": 11
+    },
+    "doosan-7": {
+      "name": "박찬호",
+      "team": "doosan",
+      "count": 5
+    },
+    "hanwha-59": {
+      "name": "허인서",
+      "team": "hanwha",
+      "count": 11
+    },
+    "doosan-23": {
+      "name": "강승호",
+      "team": "doosan",
+      "count": 6
+    },
+    "hanwha-30": {
+      "name": "페라자",
+      "team": "hanwha",
+      "count": 12
+    },
+    "doosan-37": {
+      "name": "박지훈",
+      "team": "doosan",
+      "count": 5
+    },
+    "doosan-62": {
+      "name": "안재석",
+      "team": "doosan",
+      "count": 9
+    },
+    "hanwha-7": {
+      "name": "심우준",
+      "team": "hanwha",
+      "count": 6
+    },
+    "hanwha-25": {
+      "name": "김태연",
+      "team": "hanwha",
+      "count": 5
+    },
+    "hanwha-50": {
+      "name": "강백호",
+      "team": "hanwha",
+      "count": 13
+    },
+    "hanwha-51": {
+      "name": "문현빈",
+      "team": "hanwha",
+      "count": 6
+    },
+    "doosan-24": {
+      "name": "카메론",
+      "team": "doosan",
+      "count": 15
+    },
+    "hanwha-8": {
+      "name": "노시환",
+      "team": "hanwha",
+      "count": 12
+    },
+    "hanwha-5": {
+      "name": "이도윤",
+      "team": "hanwha",
+      "count": 4
+    },
+    "hanwha-37": {
+      "name": "이원석",
+      "team": "hanwha",
+      "count": 4
+    },
+    "doosan-51": {
+      "name": "조수행",
+      "team": "doosan",
+      "count": 1
+    }
+  }
+}

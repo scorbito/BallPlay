@@ -2881,6 +2881,33 @@
   }
 }
 
+@keyframes stadium-final-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes stadium-final-slide-from-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes stadium-final-slide-from-right {
+  0% {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* 1) "경기 종료" 텍스트 — 강조 pop. 종료 모드 narration(=is-walkoff)에 적용.
    진행 중에는 reveal 클래스가 없어 영향 0. */
 /* === 순차 등장: 경기종료 → 이닝점수 → 팀로고·팀명 → 점수 → 선수리스트 → 결과보기.
@@ -2914,11 +2941,21 @@
 /* 3) 팀 로고·팀명(스코어보드) — 점수판 후 등장. 점수(team-score)는 4단계에서 별도로
    나오므로 여기선 숨김 유지(아래 both-fill). (0.87~1.29s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard {
-  animation: stadium-final-rise 0.42s ease-out both;
+  animation: stadium-final-fade 0.18s ease-out both;
   animation-delay: 1.3s;
 }
 
 /* 4) 점수 — 로고·팀명 후 강조 pop. both-fill 로 그 전엔 숨겨져 있다 등장. (1.29~1.79s) */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard > .stadium-play-team:first-child {
+  animation: stadium-final-slide-from-left 0.46s cubic-bezier(0.16, 0.84, 0.3, 1) both;
+  animation-delay: 1.3s;
+}
+
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard > .stadium-play-team-right {
+  animation: stadium-final-slide-from-right 0.46s cubic-bezier(0.16, 0.84, 0.3, 1) both;
+  animation-delay: 1.3s;
+}
+
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-team-score {
   animation: stadium-final-score-pop 0.5s cubic-bezier(0.22, 1.1, 0.4, 1) both;
   animation-delay: 1.72s;
@@ -2951,6 +2988,8 @@
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore,
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td,
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard > .stadium-play-team:first-child,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard > .stadium-play-team-right,
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-team-score,
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row,
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-controls .stadium-cta-primary {

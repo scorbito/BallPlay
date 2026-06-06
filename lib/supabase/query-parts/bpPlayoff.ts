@@ -38,7 +38,17 @@ export type PlayoffGame = {
   playedAt: string;
 };
 
+export type PlayoffPendingGame = {
+  round: number;
+  oppTeamId: string;
+  playSeed: number;
+  startedAt: string;
+  myDisplayName?: string;
+  oppLineupHint?: RecentLineupHint | null;
+};
+
 export type PlayoffRunState = {
+  pendingGame?: PlayoffPendingGame;
   myEntryId: string;            // 선택한 팀 슬롯 (라인업은 경기 시작 시 사용)
   opponents: PlayoffOpponent[]; // 4팀, 라운드순
   games: PlayoffGame[];         // 진행된 경기 누적

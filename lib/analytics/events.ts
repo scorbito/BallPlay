@@ -12,6 +12,8 @@ export type AnalyticsEventName =
   | "prediction_correct"
   | "ai_prediction_viewed"
   | "sim1000_viewed"
+  | "quiz_started"
+  | "quiz_completed"
   | "video_submitted"
   | "point_earned"
   | "point_spent";

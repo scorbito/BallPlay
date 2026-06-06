@@ -124,6 +124,47 @@ export async function startPlayoffRun(input: {
 }
 
 /** 경기 결과 기록 — 승: 다음 라운드(4R승=우승) / 패: 탈락. */
+export async function beginPlayoffGame(input: {
+  runId: string;
+  round: number;
+  oppTeamId: string;
+  batting: SavedLineup;
+  pitching: SavedPitcherLineup;
+  myDisplayName?: string;
+  oppLineupHint?: RecentLineupHint | null;
+}): Promise<{ ok: true; run: PlayoffRun } | { ok: false; error: string }> {
+  const { client, userId } = await authed();
+  if (!userId) return { ok: false, error: "로그인이 필요해요." };
+
+  const run = await getPlayoffRunById(client, input.runId, userId);
+  if (!run) return { ok: false, error: "가을야구 도전을 찾을 수 없어요." };
+  if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
+  if (run.state.pendingGame) return { ok: true, run };
+  if (run.state.games.some((g) => g.round === input.round)) return { ok: true, run };
+  if (input.round !== run.currentRound) return { ok: false, error: "현재 라운드와 맞지 않아요." };
+
+  const opp = run.state.opponents.find((o) => o.round === input.round);
+  if (!opp || opp.teamId !== input.oppTeamId) {
+    return { ok: false, error: "상대 팀 정보가 맞지 않아요." };
+  }
+
+  const nextState: PlayoffRunState = {
+    ...run.state,
+    myLineup: { batting: input.batting, pitching: input.pitching },
+    pendingGame: {
+      round: input.round,
+      oppTeamId: input.oppTeamId,
+      playSeed: randomSeed(),
+      startedAt: new Date().toISOString(),
+      myDisplayName: input.myDisplayName?.trim() || run.teamName,
+      oppLineupHint: input.oppLineupHint ?? null
+    }
+  };
+  const updated = await updatePlayoffRun(client, input.runId, userId, { state: nextState });
+  revalidatePath("/stadium/playoff");
+  return updated;
+}
+
 export async function recordPlayoffGame(input: {
   runId: string;
   round: number;
@@ -143,6 +184,16 @@ export async function recordPlayoffGame(input: {
   if (run.state.games.some((g) => g.round === input.round)) {
     return { ok: true, run };
   }
+  const pending = run.state.pendingGame;
+  if (pending) {
+    if (
+      pending.round !== input.round ||
+      pending.oppTeamId !== input.oppTeamId ||
+      pending.playSeed !== input.playSeed
+    ) {
+      return { ok: false, error: "진행 중인 경기 정보와 결과가 맞지 않아요." };
+    }
+  }
 
   const game: PlayoffGame = {
     round: input.round,
@@ -153,6 +204,7 @@ export async function recordPlayoffGame(input: {
     playedAt: new Date().toISOString()
   };
   const nextState: PlayoffRunState = { ...run.state, games: [...run.state.games, game] };
+  delete nextState.pendingGame;
 
   let status: PlayoffStatus = run.status;
   let currentRound = run.currentRound;
@@ -195,6 +247,9 @@ export async function updatePlayoffLineup(input: {
   const run = await getPlayoffRunById(client, input.runId, userId);
   if (!run) return { ok: false, error: "도전을 찾을 수 없어요." };
   if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
+  if (run.state.pendingGame) {
+    return { ok: false, error: "\uC9C4\uD589 \uC911\uC778 \uACBD\uAE30\uAC00 \uC788\uC5B4 \uB77C\uC778\uC5C5\uC744 \uC218\uC815\uD560 \uC218 \uC5C6\uC5B4\uC694." };
+  }
   const nextState: PlayoffRunState = {
     ...run.state,
     myLineup: { batting: input.batting, pitching: input.pitching }

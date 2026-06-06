@@ -12,9 +12,9 @@ import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
-import { saveMatchSession, generateSeed } from "@/lib/sim/matchSession";
+import { saveMatchSession } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { updatePlayoffLineup } from "@/lib/actions/playoff";
+import { beginPlayoffGame } from "@/lib/actions/playoff";
 import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   PLAYOFF_ROUND_LABEL,
@@ -51,7 +51,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
     };
   }, []);
 
-  const round = run.currentRound;
+  const pendingGame = run.state.pendingGame ?? null;
+  const round = pendingGame?.round ?? run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
   const hintFor = (teamId: string, frozen?: RecentLineupHint | null): RecentLineupHint | null =>
     liveHints[teamId] ?? frozen ?? null;
@@ -69,19 +70,80 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
 
   const startGame = async () => {
     if (!opp) return;
-    // 임시 라인업(편집본)이 있으면 그걸로, 없으면 팀의 현재 라인업으로.
-    const hadMyLineup = Boolean(run.state.myLineup?.batting && run.state.myLineup?.pitching);
+
+    const openSavedGame = (runForGame: PlayoffRun): boolean => {
+      const pending = runForGame.state.pendingGame;
+      const savedLineup = runForGame.state.myLineup;
+      if (!pending || !savedLineup) {
+        showToast("\uC9C4\uD589 \uC911\uC778 \uACBD\uAE30 \uC815\uBCF4\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC5B4\uC694.");
+        return false;
+      }
+      const savedOpp = runForGame.state.opponents.find((o) => o.round === pending.round);
+      if (!savedOpp) {
+        showToast("\uC0C1\uB300 \uD300 \uC815\uBCF4\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC5B4\uC694.");
+        return false;
+      }
+      const validIds = new Set(getRoster(runForGame.teamId).map((p) => p.id));
+      const pitching = fillMissingPitcherSlots(
+        runForGame.teamId,
+        savedLineup.pitching.slots,
+        validIds
+      );
+      if (!pitching) {
+        showToast("\uD22C\uC218 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
+        return false;
+      }
+      const dir = buildStatsDirectory([runForGame.teamId]);
+      const myAdapt = buildSimTeamInput(
+        runForGame.teamId,
+        savedLineup.batting,
+        pitching,
+        dir,
+        pending.myDisplayName ?? runForGame.teamName
+      );
+      if (!myAdapt.ok) {
+        showToast("\uB0B4 \uB77C\uC778\uC5C5 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
+        return false;
+      }
+      const opponent = buildFakeOpponentTeam(
+        savedOpp.teamId,
+        savedOpp.lineupSeed,
+        pending.oppLineupHint ?? savedOpp.lineupHint ?? null
+      );
+      if (!opponent) {
+        showToast("\uC0C1\uB300 \uD300 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
+        return false;
+      }
+      saveMatchSession({
+        myTeamId: runForGame.teamId,
+        opponentTeamId: savedOpp.teamId,
+        seed: pending.playSeed,
+        input: { home: myAdapt.team, away: opponent, context: {} },
+        startedAt: pending.startedAt,
+        source: "playoff",
+        playoffRunId: runForGame.id,
+        playoffRound: pending.round
+      });
+      router.push("/stadium/play");
+      return true;
+    };
+
+    if (run.state.pendingGame) {
+      openSavedGame(run);
+      return;
+    }
+
     let batting = run.state.myLineup?.batting ?? null;
     let pitchingSlots = run.state.myLineup?.pitching.slots ?? null;
     let displayName = run.teamName;
     if (!batting || !pitchingSlots) {
       const entry = loadLineupEntries().find((e) => e.entryId === run.state.myEntryId);
       if (!entry) {
-        showToast("도전한 팀을 찾을 수 없어요. 팀 관리에서 확인해주세요.");
+        showToast("\uAC00\uC744\uC57C\uAD6C \uD300\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC5B4\uC694. \uD300 \uAD00\uB9AC\uC5D0\uC11C \uD655\uC778\uD574\uC8FC\uC138\uC694.");
         return;
       }
       if (entry.batting.slots.length !== 9 || !entry.pitching?.slots?.[0]) {
-        showToast("이 팀의 라인업이 완성돼 있지 않아요.");
+        showToast("\uCD9C\uC804 \uB77C\uC778\uC5C5\uC774 \uC644\uC131\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
         return;
       }
       batting = entry.batting;
@@ -91,38 +153,24 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
     const validIds = new Set(getRoster(run.teamId).map((p) => p.id));
     const pitching = fillMissingPitcherSlots(run.teamId, pitchingSlots, validIds);
     if (!pitching) {
-      showToast("투수 구성에 실패했어요.");
+      showToast("\uD22C\uC218 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
       return;
     }
-    // 우승 라인업 스냅샷 단일 출처화: myLineup 이 비어있으면(편집 전) 이 도전에서 실제 사용한
-    // 라인업으로 영속화. 이미 편집본이 있으면 건드리지 않는다. 첫 경기 시점에 한 번만 박제됨.
-    if (!hadMyLineup && batting) {
-      await updatePlayoffLineup({ runId: run.id, batting, pitching });
-    }
-    const dir = buildStatsDirectory([run.teamId]);
-    const myAdapt = buildSimTeamInput(run.teamId, batting, pitching, dir, displayName);
-    if (!myAdapt.ok) {
-      showToast("내 라인업 구성에 실패했어요.");
-      return;
-    }
-    // 상대는 실시간 최신(타순 완성) 라인업 우선, 없으면 박제 힌트, 그래도 없으면 시즌 스탯 폴백.
-    const opponent = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, hintFor(opp.teamId, opp.lineupHint));
-    if (!opponent) {
-      showToast("상대 팀 구성에 실패했어요.");
-      return;
-    }
-    const playSeed = generateSeed();
-    saveMatchSession({
-      myTeamId: run.teamId,
-      opponentTeamId: opp.teamId,
-      seed: playSeed,
-      input: { home: myAdapt.team, away: opponent, context: {} },
-      startedAt: new Date().toISOString(),
-      source: "playoff",
-      playoffRunId: run.id,
-      playoffRound: round
+    const oppLineupHint = hintFor(opp.teamId, opp.lineupHint);
+    const result = await beginPlayoffGame({
+      runId: run.id,
+      round,
+      oppTeamId: opp.teamId,
+      batting,
+      pitching,
+      myDisplayName: displayName,
+      oppLineupHint
     });
-    router.push("/stadium/play");
+    if (!result.ok) {
+      showToast(result.error);
+      return;
+    }
+    openSavedGame(result.run);
   };
 
   return (
@@ -152,6 +200,13 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         <span className="playoff-round-progress">{round} / {PLAYOFF_TOTAL_ROUNDS}</span>
       </header>
 
+      {pendingGame ? (
+        <div className="playoff-pending-card">
+          <strong>{"\uC9C4\uD589 \uC911\uC778 \uACBD\uAE30\uAC00 \uC788\uC5B4\uC694"}</strong>
+          <span>{"\uC800\uC7A5\uB41C \uB77C\uC778\uC5C5\uACFC \uAC19\uC740 \uC2DC\uB4DC\uB85C \uB2E4\uC2DC \uC2DC\uC791\uD569\uB2C8\uB2E4."}</span>
+        </div>
+      ) : null}
+
       <Card className="playoff-matchup">
         {/* 왼쪽=상대(상대 라인업 보기 버튼), 오른쪽=내 팀(내 라인업 수정 버튼) — 버튼과 좌우 정렬 일치 */}
         <div className="playoff-matchup-team">
@@ -173,17 +228,19 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
             상대 라인업 보기
           </button>
         ) : null}
-        <button
-          type="button"
-          className="playoff-secondary-btn"
-          onClick={() => router.push("/stadium/playoff/edit")}
-        >
-          내 라인업 수정
-        </button>
+        {!pendingGame ? (
+          <button
+            type="button"
+            className="playoff-secondary-btn"
+            onClick={() => router.push("/stadium/playoff/edit")}
+          >
+            {"\uB0B4 \uB77C\uC778\uC5C5 \uC218\uC815"}
+          </button>
+        ) : null}
       </div>
 
       <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={() => void startGame()}>
-        경기 시작
+        {pendingGame ? "\uACBD\uAE30 \uC774\uC5B4\uBCF4\uAE30" : "\uACBD\uAE30 \uC2DC\uC791"}
       </button>
 
       <LineupDetailModal open={oppOpen} team={oppTeam} onClose={() => setOppOpen(false)} />

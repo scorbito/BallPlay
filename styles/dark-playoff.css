@@ -351,6 +351,29 @@
   color: var(--bp-text-muted);
 }
 
+.phone-frame-light .playoff-pending-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0 0 12px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  background: rgba(232, 74, 138, 0.08);
+}
+
+.phone-frame-light .playoff-pending-card strong {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .playoff-pending-card span {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--bp-text-secondary);
+}
+
 .phone-frame-light .playoff-matchup {
   display: flex;
   align-items: center;
@@ -797,6 +820,27 @@
   margin: 0 0 8px;
 }
 
+.phone-frame-light .playoff-edit-preset {
+  display: flex;
+  align-items: center;
+  min-width: 132px;
+}
+
+.phone-frame-light .playoff-edit-preset .lineup-preset-picker {
+  width: 100%;
+}
+
+.phone-frame-light .playoff-edit-preset .lineup-preset-trigger {
+  width: 100%;
+  justify-content: center;
+}
+
+.phone-frame-light .playoff-edit-preset .lineup-preset-menu {
+  left: 0;
+  right: auto;
+  max-width: min(300px, calc(100vw - 48px));
+}
+
 /* 저장 버튼 — 토글 옆에 붙는 강조 버튼 */
 .phone-frame-light .playoff-edit-save-btn {
   display: inline-flex;
@@ -830,6 +874,12 @@
 @media (min-width: 1025px) {
   .phone-frame-wide .playoff-edit-actionrow {
     flex-wrap: nowrap;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "preset hint buttons";
+  }
+  .phone-frame-wide .playoff-edit-actionrow .playoff-edit-preset {
+    grid-area: preset;
+    justify-self: start;
   }
   .phone-frame-wide .playoff-edit-actionrow .lineup-recent-load-btn {
     grid-area: hint;

@@ -153,6 +153,40 @@
   color: var(--bp-text);
 }
 
+.phone-frame-light .admin-events-reach-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.phone-frame-light .admin-events-reach-list > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px 6px;
+  border-radius: 10px;
+  background: rgba(232, 74, 138, 0.08);
+}
+
+.phone-frame-light .admin-events-reach-list span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .admin-events-reach-list strong {
+  font-size: 15px;
+  font-weight: 950;
+  color: var(--bp-accent);
+}
+
 .phone-frame-light .admin-events-log {
   display: flex;
   flex-direction: column;

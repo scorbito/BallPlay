@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Brain, CheckCircle2, XCircle, RefreshCw, Home } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { trackEvent } from "@/lib/analytics/events";
 import quizData from "@/data/quiz/baseball-quiz.json";
 
 // ── 데이터 타입 (baseball-quiz.json 구조) ──
@@ -86,6 +87,7 @@ export function QuizScreen() {
   const [selected, setSelected] = useState<string | null>(null); // 이번 문제에서 고른 보기
   const [records, setRecords] = useState<AnswerRecord[]>([]); // 누적 정오 기록
   const [finished, setFinished] = useState(false);
+  const completionTrackedRef = useRef(false);
 
   const total = questions.length;
   const q = questions[current];
@@ -122,6 +124,22 @@ export function QuizScreen() {
 
   const score = records.filter((r) => r.correct).length;
   const wrong = records.filter((r) => !r.correct);
+
+  useEffect(() => {
+    completionTrackedRef.current = false;
+    void trackEvent("quiz_started", { total });
+  }, [round, total]);
+
+  useEffect(() => {
+    if (!finished || completionTrackedRef.current) return;
+    completionTrackedRef.current = true;
+    void trackEvent("quiz_completed", {
+      score,
+      total,
+      wrong: total - score,
+      accuracy: total > 0 ? Math.round((score / total) * 100) : null
+    });
+  }, [finished, score, total]);
 
   return (
     <AppShell activeTab="home" title="야구 상식 퀴즈" theme="light" backHref="/">

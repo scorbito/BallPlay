@@ -17,7 +17,11 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
   auth: { persistSession: false }
 });
 
-const GAME_DATE = "2026-05-31";
+const GAME_DATE = process.argv[2] ?? (() => {
+  const now = new Date();
+  const kst = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+})();
 
 console.log(`Checking predictions for ${GAME_DATE}...`);
 const { data, error } = await sb
