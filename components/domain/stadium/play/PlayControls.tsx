@@ -76,15 +76,8 @@ export function PlayControls({
               {playing ? <Pause size={16} /> : <Play size={16} />}
             </button>
             <div className="stadium-play-mode" role="radiogroup" aria-label="진행 모드">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={mode === "normal"}
-                className={`stadium-play-mode-btn ${mode === "normal" ? "is-active" : ""}`}
-                onClick={() => onChangeMode("normal")}
-              >
-                일반
-              </button>
+              {/* 표시 라벨만 변경 — '일반'=실제 fast, '빠른'=실제 superfast. 속도값은 그대로.
+                  실제 느린 normal 모드는 UI에서 제외(버튼 2개 → 소리 버튼이 다음 줄로 안 내려감). */}
               <button
                 type="button"
                 role="radio"
@@ -92,7 +85,7 @@ export function PlayControls({
                 className={`stadium-play-mode-btn ${mode === "fast" ? "is-active" : ""}`}
                 onClick={() => onChangeMode("fast")}
               >
-                빠른
+                일반
               </button>
               <button
                 type="button"
@@ -101,7 +94,7 @@ export function PlayControls({
                 className={`stadium-play-mode-btn ${mode === "superfast" ? "is-active" : ""}`}
                 onClick={() => onChangeMode("superfast")}
               >
-                빠른×2
+                빠른
               </button>
             </div>
             {/* 건너뛰기 — 6회 진입 이후만 동작 (5회 = KBO 정식경기 성립 기준).
