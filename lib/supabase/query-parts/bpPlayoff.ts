@@ -187,13 +187,22 @@ export type PlayoffSummary = {
   bestRound: number;            // 도달한 최고 라운드(우승=5로 표기, 1~4 진행)
   totalRuns: number;
   champions: PlayoffChampion[]; // 명예의 전당 (최신순)
+  // ── 가을야구 도전 기록(누적/깔때기형). 종료된 도전(champion/eliminated)만 집계. ──
+  totalChallenges: number;      // champion + eliminated run 수
+  beat4: number;                // wins >= 1 (4위 격파 이상)
+  beat3: number;                // wins >= 2 (3위 격파 이상)
+  beat2: number;                // wins >= 3 (2위 격파 이상)
 };
 
 export const EMPTY_PLAYOFF_SUMMARY: PlayoffSummary = {
   championCount: 0,
   bestRound: 0,
   totalRuns: 0,
-  champions: []
+  champions: [],
+  totalChallenges: 0,
+  beat4: 0,
+  beat3: 0,
+  beat2: 0
 };
 
 export async function getPlayoffSummary(
@@ -215,6 +224,22 @@ export async function getPlayoffSummary(
     const reached = r.status === "champion" ? PLAYOFF_TOTAL_ROUNDS + 1 : r.current_round;
     if (reached > bestRound) bestRound = reached;
   }
+
+  // ── 도전 기록(누적/깔때기형) — 종료된 도전만(champion/eliminated). active/abandoned 제외. ──
+  // 승수: 우승=4. eliminated 는 current_round=패배 라운드=이긴 수+1 이므로 current_round-1.
+  let totalChallenges = 0;
+  let beat4 = 0;
+  let beat3 = 0;
+  let beat2 = 0;
+  for (const r of rows) {
+    if (r.status !== "champion" && r.status !== "eliminated") continue;
+    totalChallenges += 1;
+    const wins = r.status === "champion" ? PLAYOFF_TOTAL_ROUNDS : Math.max(0, r.current_round - 1);
+    if (wins >= 1) beat4 += 1;
+    if (wins >= 2) beat3 += 1;
+    if (wins >= 3) beat2 += 1;
+  }
+
   return {
     championCount: champions.length,
     bestRound,
@@ -224,6 +249,10 @@ export async function getPlayoffSummary(
       teamId: r.team_id,
       teamName: r.team_name,
       completedAt: r.completed_at
-    }))
+    })),
+    totalChallenges,
+    beat4,
+    beat3,
+    beat2
   };
 }

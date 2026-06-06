@@ -18,6 +18,7 @@ import { TIER_LABEL, type UserTier } from "@/lib/auth/userTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
 import type { AccountStats } from "@/lib/supabase/query-parts/bpAccountStats";
 import type { TeamSummary } from "@/lib/supabase/query-parts/bpLineups";
+import type { PlayoffSummary } from "@/lib/supabase/query-parts/bpPlayoff";
 
 const menuItems = [
   { label: "내 기록", href: "/records", icon: ClipboardList },
@@ -28,6 +29,7 @@ type MyScreenProps = {
   accountStats: AccountStats;
   tier: UserTier;
   teamSummary: TeamSummary;
+  playoffSummary: PlayoffSummary;
 };
 
 /** ISO 문자열 → "YYYY.MM.DD" (브라우저 로캘=KST 기준). 값 없으면 "-". */
@@ -38,7 +40,7 @@ function fmtDate(iso: string | null | undefined): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
+export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: MyScreenProps) {
   const slotLimit = getLineupSlotLimit(tier);
   const { profile, isAnonymous, updateProfile, showToast } = useAppState();
   const router = useRouter();
@@ -169,6 +171,38 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             </span>
           </div>
         ) : null}
+      </Card>
+
+      {/* 가을야구(플레이오프) 도전 기록 — 누적/깔때기형 */}
+      <Card className="mypage-stat-card my-playoff-card">
+        <div className="mypage-stat-head">
+          <strong>🍁 가을야구</strong>
+          <span className="mypage-stat-link">
+            총 도전 {playoffSummary.totalChallenges}회
+          </span>
+        </div>
+        {playoffSummary.totalChallenges > 0 ? (
+          <div className="my-playoff-grid">
+            <div className="my-playoff-cell">
+              <span className="my-playoff-num">{playoffSummary.beat4}</span>
+              <span className="my-playoff-label">4위 격파</span>
+            </div>
+            <div className="my-playoff-cell">
+              <span className="my-playoff-num">{playoffSummary.beat3}</span>
+              <span className="my-playoff-label">3위 격파</span>
+            </div>
+            <div className="my-playoff-cell">
+              <span className="my-playoff-num">{playoffSummary.beat2}</span>
+              <span className="my-playoff-label">2위 격파</span>
+            </div>
+            <div className="my-playoff-cell is-champion">
+              <span className="my-playoff-num">{playoffSummary.championCount}</span>
+              <span className="my-playoff-label">🏆 우승</span>
+            </div>
+          </div>
+        ) : (
+          <p className="my-playoff-empty">아직 가을야구 도전 기록이 없어요.</p>
+        )}
       </Card>
 
       {/* 은퇴한 팀 — 보관된 팀의 최종 홈/원정 전적 */}

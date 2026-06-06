@@ -730,6 +730,53 @@
   color: var(--bp-accent);
 }
 
+/* ── 가을야구(플레이오프) 도전 기록 카드 (라이트) ── */
+.phone-frame-light .my-playoff-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.phone-frame-light .my-playoff-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  border-radius: 10px;
+  background: rgba(20, 30, 50, 0.04);
+}
+
+.phone-frame-light .my-playoff-cell.is-champion {
+  background: rgba(232, 74, 138, 0.1);
+  border: 1px solid rgba(232, 74, 138, 0.32);
+}
+
+.phone-frame-light .my-playoff-num {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--bp-text);
+  line-height: 1;
+}
+
+.phone-frame-light .my-playoff-cell.is-champion .my-playoff-num {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .my-playoff-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  white-space: nowrap;
+}
+
+.phone-frame-light .my-playoff-empty {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+}
+
 /* ── 프로필 편집 모달 — 아바타 편집 영역 (라이트) ──
    입력/라벨/힌트/저장버튼은 modals-core-review.css·Button 의 라이트 base 가 처리하고,
    여기서는 다크 전용이던 아바타 미리보기/변경 버튼만 라이트로 보강한다. */
