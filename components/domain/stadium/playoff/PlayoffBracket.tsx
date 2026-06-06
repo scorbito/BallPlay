@@ -72,25 +72,6 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
 
   return (
     <section className="playoff-bracket">
-      <header className="playoff-bracket-head">
-        <span className="playoff-round-chip">{PLAYOFF_ROUND_LABEL[round]}</span>
-        <span className="playoff-round-progress">{round} / {PLAYOFF_TOTAL_ROUNDS}</span>
-      </header>
-
-      <Card className="playoff-matchup">
-        <div className="playoff-matchup-team">
-          <TeamLogo teamId={run.teamId} size="lg" />
-          <strong>{run.teamName}</strong>
-          <span className="playoff-seed">5위 · 나</span>
-        </div>
-        <span className="playoff-vs">VS</span>
-        <div className="playoff-matchup-team">
-          <TeamLogo teamId={opp?.teamId ?? ""} size="lg" />
-          <strong>{opp?.teamName ?? "-"}</strong>
-          <span className="playoff-seed">{opp ? `${5 - round}위 · AI` : ""}</span>
-        </div>
-      </Card>
-
       <div className="playoff-ladder-head">전체 대진</div>
       <ul className="playoff-ladder">
         {ladder.map((o) => {
@@ -110,6 +91,25 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
           );
         })}
       </ul>
+
+      <header className="playoff-bracket-head">
+        <span className="playoff-round-chip">{PLAYOFF_ROUND_LABEL[round]}</span>
+        <span className="playoff-round-progress">{round} / {PLAYOFF_TOTAL_ROUNDS}</span>
+      </header>
+
+      <Card className="playoff-matchup">
+        <div className="playoff-matchup-team">
+          <TeamLogo teamId={run.teamId} size="lg" />
+          <strong>{run.teamName}</strong>
+          <span className="playoff-seed">5위 · 나</span>
+        </div>
+        <span className="playoff-vs">VS</span>
+        <div className="playoff-matchup-team">
+          <TeamLogo teamId={opp?.teamId ?? ""} size="lg" />
+          <strong>{opp?.teamName ?? "-"}</strong>
+          <span className="playoff-seed">{opp ? `${5 - round}위 · AI` : ""}</span>
+        </div>
+      </Card>
 
       <button type="button" className="stadium-cta-primary playoff-start-btn" onClick={startGame}>
         경기 시작
