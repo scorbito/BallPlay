@@ -6,7 +6,7 @@ import {
   hydrateAccountStatsNicknames
 } from "@/lib/supabase/query-parts/bpAccountStats";
 
-// 랭킹 TOP5 위젯이 60초 캐시 데이터를 쓰므로 ISR(60s)로 전환.
+// 랭킹 TOP3 위젯이 60초 캐시 데이터를 쓰므로 ISR(60s)로 전환.
 export const revalidate = 60;
 
 export const metadata: Metadata = {
@@ -17,10 +17,10 @@ export const metadata: Metadata = {
 
 export default async function StadiumLobbyPage() {
   const [lineupTop, accountFull] = await Promise.all([
-    getCachedSeasonLineupRanking(5),
+    getCachedSeasonLineupRanking(3),
     getCachedFullAccountStatsRanking()
   ]);
-  const accountTop = await hydrateAccountStatsNicknames(accountFull.slice(0, 5));
+  const accountTop = await hydrateAccountStatsNicknames(accountFull.slice(0, 3));
 
   return <LobbyScreen topLineupRanking={lineupTop} topAccountRanking={accountTop} />;
 }

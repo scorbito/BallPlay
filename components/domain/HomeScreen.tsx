@@ -462,6 +462,23 @@ export async function HomeScreen({
                       );
                     })() : null}
                   </div>
+                  {section.id === "lineup-play" ? (
+                    <Link
+                      href="/stadium/playoff"
+                      className="home-fall-badge"
+                      aria-label="가을야구 모드 오픈 — 도전하러 가기"
+                      prefetch
+                    >
+                      <Image
+                        src="/badges/fall-baseball-open.png"
+                        alt="가을야구 모드 오픈"
+                        width={1117}
+                        height={223}
+                        className="home-fall-badge-img"
+                        priority
+                      />
+                    </Link>
+                  ) : null}
                   {cardsGrid}
                 </div>
               </section>

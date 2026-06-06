@@ -19,7 +19,7 @@ import type { SimTeamInput } from "@/lib/sim/types";
 import type { LineupRankingRow } from "@/lib/supabase/query-parts/bpLineupRankings";
 import type { AccountStatsRankingRow } from "@/lib/supabase/query-parts/bpAccountStats";
 
-// 경기장 상단 랭킹 TOP5 위젯 — 라인업/계정 누적 탭 전환.
+// 경기장 상단 랭킹 TOP3 위젯 — 라인업/계정 누적 탭 전환.
 // 라인업: 메달 + 팀배지 + 라인업명/닉네임 + 승패 + 라인업 미리보기/도전 버튼.
 // 계정 누적: 메달 + 닉네임 + 승패 (도전 X — 라인업이 아니라 사용자라).
 
@@ -80,7 +80,7 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
           onClick={() => setTab("lineup")}
         >
           <Trophy size={14} aria-hidden />
-          <span>라인업 랭킹 TOP5</span>
+          <span>라인업 랭킹 TOP3</span>
         </button>
         <button
           type="button"
@@ -90,7 +90,7 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
           onClick={() => setTab("account")}
         >
           <Trophy size={14} aria-hidden />
-          <span>계정 누적 랭킹 TOP5</span>
+          <span>계정 누적 랭킹 TOP3</span>
         </button>
       </div>
 
@@ -104,7 +104,7 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
           </div>
         ) : (
           <ol className="stadium-lobby-rank-preview-list">
-            {lineupRows.map((row) => {
+            {lineupRows.slice(0, 3).map((row) => {
               const team = row.teamId ? getTeam(row.teamId) : null;
               const isLoading = previewLoadingId === row.lineupId;
               return (
@@ -157,7 +157,7 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
         </div>
       ) : (
         <ol className="stadium-lobby-rank-preview-list">
-          {accountRows.map((row) => (
+          {accountRows.slice(0, 3).map((row) => (
             <li key={row.ownerUserId} className="stadium-lobby-rank-preview-item">
               <span
                 className={`stadium-lobby-rank-preview-pos ${row.rank <= 3 ? `is-top is-top-${row.rank}` : ""}`}
