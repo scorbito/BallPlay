@@ -75,18 +75,19 @@
   display: inline-block;
   font-size: 26px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(232, 74, 138, 0.35));
-  animation: playoff-entry-leaf 3.2s ease-in-out infinite;
-  transform-origin: 50% 20%;
+  filter: drop-shadow(0 2px 5px rgba(212, 175, 55, 0.5));
+  animation: playoff-entry-trophy 2.4s ease-in-out infinite;
+  transform-origin: 50% 80%;
 }
 
-@keyframes playoff-entry-leaf {
+/* 트로피 — 살짝 커졌다 작아지는 펄스 + 미세한 흔들림 */
+@keyframes playoff-entry-trophy {
   0%,
   100% {
-    transform: rotate(-8deg);
+    transform: scale(1) rotate(-2deg);
   }
   50% {
-    transform: rotate(8deg);
+    transform: scale(1.12) rotate(2deg);
   }
 }
 

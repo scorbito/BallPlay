@@ -26,7 +26,7 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking }: Props) {
 
       {/* 2. 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
       <Link href="/stadium/playoff" className="stadium-playoff-entry" prefetch>
-        <span className="stadium-playoff-entry-emoji" aria-hidden="true">🍁</span>
+        <span className="stadium-playoff-entry-emoji" aria-hidden="true">🏆</span>
         <span className="stadium-playoff-entry-text">
           <strong>가을야구 도전</strong>
           <span>5위에서 시작해 한국시리즈 우승까지</span>
