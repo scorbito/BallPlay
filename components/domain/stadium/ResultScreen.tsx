@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RotateCcw, Share2, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamLogo } from "@/components/common/TeamLogo";
@@ -26,6 +26,7 @@ import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
 
 export function ResultScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useAppState();
   const [session, setSession] = useState<MatchSession | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -39,7 +40,19 @@ export function ResultScreen() {
   // 매치 종료 직후 승급 모달 트리거용 — 본인 누적 승수.
   const [accountWins, setAccountWins] = useState<number>(0);
 
+  // dev 전용 연출 프리뷰 — /stadium/result?fxpreview=win|champion.
+  // 경기 세션 없이도 PlayoffWinFx 만 강제 재생. side effect 없음.
+  // 프로덕션 배포본에서는 무시(평소처럼 세션 없으면 lobby redirect).
+  const fxPreview = searchParams.get("fxpreview");
+  const previewVariant =
+    process.env.NODE_ENV !== "production" &&
+    (fxPreview === "win" || fxPreview === "champion")
+      ? fxPreview
+      : null;
+
   useEffect(() => {
+    // 프리뷰 모드에서는 세션 로드/리다이렉트를 건너뛴다(세션 없이도 연출만 표시).
+    if (previewVariant) return;
     const s = loadMatchSession();
     if (!s?.result || !s.input) {
       router.replace("/stadium/lobby");
@@ -47,7 +60,7 @@ export function ResultScreen() {
     }
     setSession(s);
     setHydrated(true);
-  }, [router]);
+  }, [router, previewVariant]);
 
   // 마운트 + 저장 완료 후 본인 누적 승수 조회 → 승급 모달 트리거.
   // PlayScreen이 GAME_END 시점에 이미 저장했으면 mount 시점에 바로 최신값 잡힘.
@@ -234,6 +247,18 @@ export function ResultScreen() {
     clearMatchSession();
     router.push("/stadium/playoff");
   };
+
+  // dev 연출 프리뷰 — 세션 로드/리다이렉트보다 먼저 분기해 연출만 표시.
+  if (previewVariant) {
+    return (
+      <AppShell activeTab="stadium" title="결과" theme="light" wide>
+        <PlayoffWinFx variant={previewVariant} />
+        <section className="stadium-result">
+          <p className="stadium-loading">연출 프리뷰 (dev)</p>
+        </section>
+      </AppShell>
+    );
+  }
 
   if (!hydrated || !session?.result || !session.input) {
     return (
