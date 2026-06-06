@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { History } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
@@ -9,14 +10,18 @@ import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
 import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
 import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
+import { ConfirmOverwriteRecentModal } from "@/components/domain/lineup/modals/ConfirmOverwriteRecentModal";
+import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
 import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { updatePlayoffLineup } from "@/lib/actions/playoff";
+import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   POSITION_SHORT,
   PITCHER_STARTER_INDEX,
+  normalizeKboPosition,
   type Player,
   type Position,
   type LineupSlot,
@@ -42,6 +47,8 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
   const team = getTeam(teamId);
   const roster = useMemo(() => getRoster(teamId), [teamId]);
   const playersById = useMemo(() => new Map(roster.map((p) => [p.id, p])), [roster]);
+  // 이름 → 로스터 매핑 — 최근 라인업의 rosterId 매칭 실패 시 이름으로 fallback.
+  const playersByName = useMemo(() => new Map(roster.map((p) => [p.name, p])), [roster]);
 
   const [mode, setMode] = useState<LineupMode>("batter");
   const [slots, setSlots] = useState<SlotState[]>(EMPTY_SLOTS);
@@ -53,6 +60,9 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
   const [positionPickerForOrder, setPositionPickerForOrder] = useState<LineupOrder | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
+  const [recentPickerOpen, setRecentPickerOpen] = useState(false);
+  const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
   const swapTimerRef = useRef<number | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
 
@@ -280,6 +290,64 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
     }, 650);
   };
 
+  /** 팀의 실제 최근 경기 라인업(한 행)을 편집기 임시 slots/pitcherSlots에 적용.
+   *  - 타순 9명: rosterId 우선, 없으면 이름으로 매칭. 매칭 실패 자리는 비워두고 토스트 알림.
+   *  - 선발 투수: starter 매칭되면 pitcherSlots[0]에 세팅(나머지 불펜은 유지).
+   *  실제 팀 라인업에는 영향 없음 — run.state.myLineup 편집본에만 반영(저장 시). */
+  const applyRecentLineup = (row: RecentLineupRow) => {
+    const sorted = [...row.batting].sort((a, b) => a.order - b.order);
+    const nextSlots: SlotState[] = Array.from({ length: 9 }, () => null);
+    let missed = 0;
+    sorted.forEach((b, idx) => {
+      if (idx >= 9) return;
+      const player =
+        (b.rosterId && playersById.get(b.rosterId)) ||
+        (b.name ? playersByName.get(b.name) : undefined);
+      if (player) {
+        const pos: Position = normalizeKboPosition(b.position) ?? player.primaryPosition;
+        nextSlots[idx] = {
+          order: (idx + 1) as LineupOrder,
+          playerId: player.id,
+          position: pos
+        };
+      } else {
+        missed += 1;
+      }
+    });
+    setSlots(nextSlots);
+    setSwapOrderSourceIdx(null);
+    setSwapSource(null);
+
+    const resolvedStarter =
+      (row.starter_roster_id && playersById.get(row.starter_roster_id)) ||
+      (row.starter_name ? playersByName.get(row.starter_name) : undefined);
+    if (resolvedStarter) {
+      setPitcherSlots((current) =>
+        current.map((id, i) => (i === PITCHER_STARTER_INDEX ? resolvedStarter.id : id))
+      );
+    }
+
+    setMode("batter");
+
+    if (missed > 0) {
+      showToast(`${9 - missed}명 적용. ${missed}자리는 로스터 변경으로 비워뒀어요.`);
+    } else {
+      showToast("최근 라인업을 불러왔어요.");
+    }
+  };
+
+  /** 모달에서 행 선택 — 기존 슬롯이 차 있으면 덮어쓰기 확인 후 적용. */
+  const handleRecentLineupPick = (row: RecentLineupRow) => {
+    const hasFilledBatter = slots.some((s) => s !== null);
+    const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] !== null;
+    setRecentPickerOpen(false);
+    if (hasFilledBatter || hasStarter) {
+      setPendingRecentLineup(row);
+    } else {
+      applyRecentLineup(row);
+    }
+  };
+
   const handleReset = () => {
     if (mode === "batter") {
       if (slots.every((s) => s === null)) return;
@@ -332,43 +400,6 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
     <AppShell activeTab="stadium" title="가을야구 라인업" backHref="/stadium/playoff" theme="light" wide hideBottomTabs>
       <p className="playoff-edit-banner">상대를 보고 자유롭게 바꾸세요. 실제 팀 라인업에는 영향이 없어요.</p>
 
-      <div className="playoff-edit-toolbar">
-        <div className="lineup-mode-toggle" role="tablist" aria-label="라인업 종류">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === "batter"}
-          className={mode === "batter" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
-          onClick={() => {
-            setMode("batter");
-            setSwapSource(null);
-          }}
-        >
-          타자
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === "pitcher"}
-          className={mode === "pitcher" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
-          onClick={() => {
-            setMode("pitcher");
-            setSwapSource(null);
-          }}
-        >
-          투수
-        </button>
-        </div>
-        <button
-          type="button"
-          className="playoff-edit-save-btn"
-          disabled={saving}
-          onClick={handleSave}
-        >
-          {saving ? "저장 중" : "저장하기"}
-        </button>
-      </div>
-
       <div className="lineup-layout">
         <section className="lineup-diamond-card" aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}>
           <LineupDiamond
@@ -388,6 +419,60 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
             </div>
           ) : null}
         </section>
+
+        {/* 그라운드 ↔ 타순 사이 액션 행 — 팀 관리 빌더와 동일 배치.
+            좌: 실제 경기 라인업 불러오기(넓게) / 타자·투수 토글 / 저장하기 */}
+        <div className="lineup-action-row playoff-edit-actionrow">
+          <button
+            type="button"
+            className="lineup-recent-load-btn"
+            onClick={() => setRecentPickerOpen(true)}
+            title={`${team.shortName}이(가) 최근 경기에서 실제로 쓴 선발 라인업으로 자동 세팅`}
+          >
+            <History size={12} />
+            <span>실제 경기 라인업 불러오기</span>
+          </button>
+          <div className="lineup-action-buttons">
+            <div
+              className="lineup-mode-toggle lineup-mode-toggle-inline"
+              role="tablist"
+              aria-label="라인업 종류"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "batter"}
+                className={mode === "batter" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
+                onClick={() => {
+                  setMode("batter");
+                  setSwapSource(null);
+                }}
+              >
+                타자
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "pitcher"}
+                className={mode === "pitcher" ? "lineup-mode-tab lineup-mode-tab-active" : "lineup-mode-tab"}
+                onClick={() => {
+                  setMode("pitcher");
+                  setSwapSource(null);
+                }}
+              >
+                투수
+              </button>
+            </div>
+            <button
+              type="button"
+              className="playoff-edit-save-btn"
+              disabled={saving}
+              onClick={handleSave}
+            >
+              {saving ? "저장 중" : "저장하기"}
+            </button>
+          </div>
+        </div>
 
         {mode === "batter" ? (
           <BatterSlotList
@@ -426,6 +511,23 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
         slots={slots}
         onClose={() => setPositionPickerForOrder(null)}
         onPick={handleChangePosition}
+      />
+
+      {/* 팀 최근 라인업 불러오기 — bp_team_recent_lineups의 최근 경기 표시. 편집기 임시 라인업에만 적용. */}
+      <RecentLineupPickerModal
+        open={recentPickerOpen}
+        teamId={teamId}
+        onClose={() => setRecentPickerOpen(false)}
+        onPick={handleRecentLineupPick}
+      />
+
+      <ConfirmOverwriteRecentModal
+        open={pendingRecentLineup !== null}
+        onCancel={() => setPendingRecentLineup(null)}
+        onConfirm={() => {
+          if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
+          setPendingRecentLineup(null);
+        }}
       />
     </AppShell>
   );

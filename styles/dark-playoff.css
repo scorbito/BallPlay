@@ -789,38 +789,56 @@
   text-align: center;
 }
 
-/* 타자/투수 토글 + 저장 버튼 한 줄 — 좌우 절반씩(저장 = 타자+투수 합친 폭) */
-.phone-frame-light .playoff-edit-toolbar {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  margin: 0 0 12px;
+/* 그라운드 ↔ 타순 사이 액션 행 — 팀 관리 빌더와 동일 배치.
+   [실제 경기 라인업 불러오기](넓게) · [타자/투수 토글] · [저장하기].
+   .lineup-action-row(flex) 위에 얹어, 좁은 화면에서는 자연스럽게 줄바꿈. */
+.phone-frame-light .playoff-edit-actionrow {
+  flex-wrap: wrap;
+  margin: 0 0 8px;
 }
 
-.phone-frame-light .playoff-edit-toolbar .lineup-mode-toggle {
-  flex: 1;
-  display: flex;
-  margin: 0;
-}
-
-.phone-frame-light .playoff-edit-toolbar .lineup-mode-tab {
-  flex: 1;
-}
-
+/* 저장 버튼 — 토글 옆에 붙는 강조 버튼 */
 .phone-frame-light .playoff-edit-save-btn {
-  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--bp-accent);
   color: #fff;
-  font-size: 14px;
+  font: inherit;
+  font-size: 12px;
   font-weight: 850;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
   cursor: pointer;
+  transition: filter 0.12s ease;
+}
+
+.phone-frame-light .playoff-edit-save-btn:hover {
+  filter: brightness(1.05);
 }
 
 .phone-frame-light .playoff-edit-save-btn:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+/* PC 와이드 — 액션 행이 그리드(hint 영역)일 때 불러오기 버튼을 hint 칸으로,
+   토글+저장 버튼 묶음을 buttons 칸으로 배치 (빌더와 동일한 2줄 그리드 활용). */
+@media (min-width: 1025px) {
+  .phone-frame-wide .playoff-edit-actionrow {
+    flex-wrap: nowrap;
+  }
+  .phone-frame-wide .playoff-edit-actionrow .lineup-recent-load-btn {
+    grid-area: hint;
+    justify-self: stretch;
+  }
+  .phone-frame-wide .playoff-edit-actionrow .lineup-action-buttons {
+    grid-area: buttons;
+    justify-self: end;
+  }
 }
 
 /* ── 가을야구 승리/우승 축하 연출 (PlayoffWinFx) ──
