@@ -822,3 +822,167 @@
   opacity: 0.6;
   cursor: wait;
 }
+
+/* ── 가을야구 승리/우승 축하 연출 (PlayoffWinFx) ──
+   결과 화면 위 풀스크린 오버레이. pointer-events:none 라 버튼 클릭을 막지 않음.
+   win: 컨페티 버스트(중간). champion: 컨페티 풀(진하게) + CSS 폭죽 여러 발. */
+.playoff-fx {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60; /* AppShell 콘텐츠 위. 토스트/모달보다는 아래. */
+  overflow: hidden;
+}
+
+.playoff-fx-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.playoff-fx-confetti-piece {
+  position: absolute;
+  top: -12vh;
+  width: 9px;
+  height: 13px;
+  border-radius: 2px;
+  opacity: 0.95;
+  animation-name: playoff-fx-fall;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* champion 은 입자를 살짝 키워 더 화려하게. */
+.playoff-fx.is-champion .playoff-fx-confetti-piece {
+  width: 11px;
+  height: 16px;
+}
+
+@keyframes playoff-fx-fall {
+  0% {
+    transform: translateY(0) rotate(var(--playoff-fx-rotate-start, 0deg));
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(120vh)
+      rotate(calc(var(--playoff-fx-rotate-start, 0deg) + 720deg));
+    opacity: 0;
+  }
+}
+
+/* ── 폭죽 (champion 전용, CSS-only) ──
+   각 firework 는 발사 지점에 절대위치. ring(확장+페이드) + star(터지는 빛). */
+.playoff-fx-fireworks {
+  position: absolute;
+  inset: 0;
+}
+
+.playoff-fx-firework {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.playoff-fx-firework-ring,
+.playoff-fx-firework-star {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  animation-delay: inherit;
+}
+
+/* 확장하는 링 — currentColor(=발사 색) 테두리. */
+.playoff-fx-firework-ring {
+  width: 120px;
+  height: 120px;
+  border: 3px solid currentColor;
+  opacity: 0;
+  animation-name: playoff-fx-burst-ring;
+  animation-duration: 900ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* 중심에서 터지는 별빛 — radial 그라데이션 점. */
+.playoff-fx-firework-star {
+  width: 70px;
+  height: 70px;
+  background: radial-gradient(
+    circle,
+    currentColor 0%,
+    rgba(255, 255, 255, 0.9) 30%,
+    transparent 70%
+  );
+  opacity: 0;
+  animation-name: playoff-fx-burst-star;
+  animation-duration: 720ms;
+  animation-timing-function: ease-out;
+}
+
+@keyframes playoff-fx-burst-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes playoff-fx-burst-star {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* ── 결과 배너 강조 — 승리/우승 시 글로우 ── */
+.phone-frame-light .stadium-result-banner.is-playoff-win {
+  box-shadow: 0 0 0 1px rgba(232, 74, 138, 0.4),
+    0 6px 22px rgba(232, 74, 138, 0.28);
+}
+
+.phone-frame-light .stadium-result-banner.is-champion {
+  box-shadow: 0 0 0 1px rgba(244, 180, 0, 0.55),
+    0 8px 30px rgba(244, 180, 0, 0.4);
+  animation: playoff-fx-banner-glow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes playoff-fx-banner-glow {
+  0% {
+    box-shadow: 0 0 0 1px rgba(244, 180, 0, 0.5),
+      0 6px 22px rgba(244, 180, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 1px rgba(244, 180, 0, 0.7),
+      0 10px 36px rgba(244, 180, 0, 0.55);
+  }
+}
+
+/* ── 모션 감소 선호 — 연출 정지/축소 ── */
+@media (prefers-reduced-motion: reduce) {
+  .playoff-fx-confetti-piece,
+  .playoff-fx-firework-ring,
+  .playoff-fx-firework-star {
+    animation: none;
+    display: none;
+  }
+  .phone-frame-light .stadium-result-banner.is-champion {
+    animation: none;
+  }
+}

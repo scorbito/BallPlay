@@ -20,7 +20,9 @@ import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
+import { PLAYOFF_TOTAL_ROUNDS } from "@/lib/supabase/query-parts/bpPlayoff";
 import { TierUpHost } from "@/components/common/TierUpHost";
+import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
 
 export function ResultScreen() {
   const router = useRouter();
@@ -251,6 +253,11 @@ export function ResultScreen() {
   const homeWin = finalScore.home > finalScore.away;
   const draw = finalScore.home === finalScore.away;
 
+  // 가을야구 축하 연출 — 사용자는 항상 home. 승리(homeWin)일 때만 연출.
+  // round 4 승리 = 한국시리즈 우승(champion), 그 외 라운드 승리 = win.
+  const isPlayoffWin = session.source === "playoff" && homeWin;
+  const isChampion = isPlayoffWin && session.playoffRound === PLAYOFF_TOTAL_ROUNDS;
+
   const winnerLabel = draw
     ? "무승부"
     : homeWin
@@ -314,10 +321,20 @@ export function ResultScreen() {
     <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide hideBottomTabs={session?.source === "playoff"}>
       {/* 승급 감지 + 모달 — 매치 결과 직후 즉시 알림. */}
       <TierUpHost wins={accountWins} />
+      {/* 가을야구 승리/우승 축하 연출 — 승리 시에만 마운트 1회 자동 재생. */}
+      {isPlayoffWin ? <PlayoffWinFx variant={isChampion ? "champion" : "win"} /> : null}
       <section className="stadium-result">
-        <div className="stadium-result-banner">
+        <div
+          className={`stadium-result-banner${
+            isChampion
+              ? " is-champion"
+              : isPlayoffWin
+                ? " is-playoff-win"
+                : ""
+          }`}
+        >
           <Trophy size={24} />
-          <strong>{winnerLabel}</strong>
+          <strong>{isChampion ? "🏆 한국시리즈 우승!" : winnerLabel}</strong>
         </div>
 
         <div className="stadium-result-scoreboard">
