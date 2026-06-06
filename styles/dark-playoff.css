@@ -961,6 +961,8 @@
 /* 폭죽 1발의 라이프사이클은 전체 주기(--fw-cycle)의 앞 ~28% 에서 터지고
    나머지는 다음 발까지의 휴지. 발마다 delay 가 달라 staggered 반복. */
 @keyframes playoff-fx-flash {
+  /* 터질 때만 잠깐 확 켜졌다 사라지고 다음 발까지 투명 대기.
+     사라진 뒤(10%~100%)는 transform 고정 + opacity 0 유지 → 되돌아오는 모션 없음. */
   0% {
     transform: scale(0.2);
     opacity: 0;
@@ -974,32 +976,43 @@
     opacity: 0;
   }
   100% {
+    transform: scale(0.4);
     opacity: 0;
   }
 }
 
 @keyframes playoff-fx-spark {
+  /* 0% 중심에서 투명하게 출발 → 바깥으로만 발사되며 잠깐 보였다가,
+     바깥 위치에서 완전히 사라진 뒤 다음 발까지 투명 대기.
+     ⚠ 절대 중심(translateY 0)으로 되돌아오지 않는다.
+     opacity 는 22% 에서 0 이 되어 100% 까지 0 유지 → 다음 사이클 0%(중심)로
+     점프해도 보이지 않아 "다시 모이는" 잔상이 사라진다. */
   0% {
-    transform: rotate(var(--fw-angle, 0deg)) translateY(0) scale(0.4);
+    transform: rotate(var(--fw-angle, 0deg)) translateY(0) scale(0.5);
     opacity: 0;
   }
-  4% {
+  3% {
+    /* 중심을 막 벗어나며 켜짐 — 발사 시작점. */
+    transform: rotate(var(--fw-angle, 0deg))
+      translateY(calc(-0.12 * var(--fw-dist, 80px))) scale(0.9);
     opacity: 1;
   }
-  22% {
+  16% {
+    /* 최대 사거리 도달 — 가장 밝고 또렷한 지점. */
     transform: rotate(var(--fw-angle, 0deg))
       translateY(calc(-1 * var(--fw-dist, 80px))) scale(1);
     opacity: 1;
   }
-  30% {
-    /* 끝에 중력 낙하 — 살짝 더 멀리 + 아래로 처짐, 페이드 아웃. */
+  22% {
+    /* 바깥에서 중력으로 살짝 더 처지며 완전히 사라짐. */
     transform: rotate(var(--fw-angle, 0deg))
-      translateY(calc(-1 * var(--fw-dist, 80px) + 14px)) scale(0.5);
+      translateY(calc(-1 * var(--fw-dist, 80px) + 16px)) scale(0.45);
     opacity: 0;
   }
   100% {
+    /* 끝까지 바깥(처진) 위치에 투명하게 머문다 — 중심 복귀 없음. */
     transform: rotate(var(--fw-angle, 0deg))
-      translateY(calc(-1 * var(--fw-dist, 80px) + 14px)) scale(0.5);
+      translateY(calc(-1 * var(--fw-dist, 80px) + 16px)) scale(0.45);
     opacity: 0;
   }
 }
