@@ -76,7 +76,7 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
   };
 
   return (
-    <AppShell activeTab="my" title="마이" theme="dark" hideHeader>
+    <AppShell activeTab="my" title="마이" theme="light" hideHeader>
       <Card className="profile-card">
         <div className="profile-card-bg" aria-hidden="true" />
         <div className="profile-hero">

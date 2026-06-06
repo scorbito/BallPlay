@@ -469,134 +469,319 @@
   background: rgba(255, 90, 100, 0.14);
 }
 
-/* ── 마이페이지 요약 카드 (누적 전적 / 내 팀) ── */
-.phone-frame-dark .mypage-stat-card {
+/* ════════════════════════════════════════════════════════
+ * 마이페이지 — 라이트 테마 (BallPlay 라이트 톤 통일)
+ *   /my 가 다크 레거시였으나 주요 탭이 되며 라이트로 전환(theme="light").
+ *   profile-card 는 profile-ticket.css 의 다크 그라디언트 기본값을 덮어쓴다.
+ *   menu-list / menu-row-button 은 dark-contact-settings.css·dark-install.css 의
+ *   .phone-frame-light 규칙이 이미 처리하므로 여기서 다루지 않는다.
+ * ════════════════════════════════════════════════════════ */
+
+.phone-frame-light .profile-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+  color: var(--bp-text);
+}
+
+/* 다크 스타디움 배경 이미지는 라이트에서 숨김 */
+.phone-frame-light .profile-card-bg {
+  display: none;
+}
+
+.phone-frame-light .profile-card .profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.phone-frame-light .profile-card .profile-hero > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-frame-light .profile-card .profile-hero-avatar {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bp-bg);
+  border: 1px solid var(--bp-line);
+  flex-shrink: 0;
+}
+
+.phone-frame-light .profile-card .profile-hero h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--bp-text);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .profile-card .profile-hero-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+}
+
+.phone-frame-light .profile-card .profile-hero-team-text {
+  font-size: 12px;
+  color: var(--bp-text-secondary);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.phone-frame-light .profile-card .profile-hero-team .team-badge {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* 편집 미니 버튼 — .profile-card button 글로벌(width:100%/42px) 강제 리셋 */
+.phone-frame-light .profile-card .profile-edit-mini-btn {
+  flex: 0 0 auto;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: var(--bp-accent);
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.18s ease, transform 0.08s ease;
+}
+
+.phone-frame-light .profile-card .profile-edit-mini-btn:hover { filter: brightness(1.04); }
+.phone-frame-light .profile-card .profile-edit-mini-btn:active { transform: scale(0.96); }
+
+.phone-frame-light .profile-card .profile-bio {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--bp-text);
+  text-align: left;
+  word-break: break-word;
+}
+
+.phone-frame-light .profile-card .profile-bio-empty {
+  display: block;
+  width: 100%;
+  margin: 10px 0 0;
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px dashed var(--bp-line);
+  border-radius: 999px;
+  color: var(--bp-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.phone-frame-light .profile-card .profile-bio-empty:hover {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+
+/* ── 요약 카드 (누적 전적 / 내 팀) ── */
+.phone-frame-light .mypage-stat-card {
   margin-top: 10px;
   padding: 14px 16px;
 }
 
-.phone-frame-dark .mypage-stat-head {
+.phone-frame-light .mypage-stat-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.phone-frame-dark .mypage-stat-head > strong {
+.phone-frame-light .mypage-stat-head > strong {
   font-size: 13px;
   font-weight: 850;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .mypage-tier-badge {
+.phone-frame-light .mypage-tier-badge {
   display: inline-flex;
   align-items: center;
   padding: 2px 9px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 850;
-  color: var(--hd-accent-orange);
-  background: rgba(255, 106, 43, 0.12);
-  border: 1px solid rgba(255, 106, 43, 0.4);
+  color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.12);
+  border: 1px solid rgba(232, 74, 138, 0.4);
 }
 
-.phone-frame-dark .mypage-stat-link {
+.phone-frame-light .mypage-stat-link {
   display: inline-flex;
   align-items: center;
   gap: 1px;
   font-size: 11px;
   font-weight: 800;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
   text-decoration: none;
 }
 
-.phone-frame-dark .mypage-stat-link:hover {
-  color: var(--hd-accent-orange);
-}
+.phone-frame-light .mypage-stat-link:hover { color: var(--bp-accent); }
 
-/* 누적 전적 행 */
-.phone-frame-dark .mypage-record-row {
+.phone-frame-light .mypage-record-row {
   display: flex;
   align-items: baseline;
   gap: 10px;
 }
 
-.phone-frame-dark .mypage-record-wl {
+.phone-frame-light .mypage-record-wl {
   font-size: 20px;
   font-weight: 900;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
 }
 
-.phone-frame-dark .mypage-record-rate {
+.phone-frame-light .mypage-record-rate {
   font-size: 12px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .mypage-record-row .mypage-stat-link {
-  margin-left: auto;
-}
+.phone-frame-light .mypage-record-row .mypage-stat-link { margin-left: auto; }
 
-/* 팀 요약 그리드 */
-.phone-frame-dark .mypage-team-grid {
+.phone-frame-light .mypage-team-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
-.phone-frame-dark .mypage-team-cell {
+.phone-frame-light .mypage-team-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
   padding: 8px 4px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(20, 30, 50, 0.04);
 }
 
-.phone-frame-dark .mypage-team-num {
+.phone-frame-light .mypage-team-num {
   font-size: 15px;
   font-weight: 900;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   white-space: nowrap;
 }
 
-.phone-frame-dark .mypage-team-num small {
+.phone-frame-light .mypage-team-num small {
   font-size: 10px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-.phone-frame-dark .mypage-team-label {
+.phone-frame-light .mypage-team-label {
   font-size: 10px;
   font-weight: 700;
-  color: var(--hd-text-secondary);
+  color: var(--bp-text-secondary);
 }
 
-/* 최고 승률 팀 */
-.phone-frame-dark .mypage-best-team {
+.phone-frame-light .mypage-best-team {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--bp-line-soft);
 }
 
-.phone-frame-dark .mypage-best-name {
+.phone-frame-light .mypage-best-name {
   font-size: 13px;
   font-weight: 800;
-  color: var(--hd-text-primary);
+  color: var(--bp-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
 }
 
-.phone-frame-dark .mypage-best-record {
+.phone-frame-light .mypage-best-record {
   margin-left: auto;
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
-  color: var(--hd-accent-orange);
+  color: var(--bp-accent);
 }
+
+/* ── 프로필 편집 모달 — 아바타 편집 영역 (라이트) ──
+   입력/라벨/힌트/저장버튼은 modals-core-review.css·Button 의 라이트 base 가 처리하고,
+   여기서는 다크 전용이던 아바타 미리보기/변경 버튼만 라이트로 보강한다. */
+.phone-frame-light .profile-avatar-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-frame-light .profile-avatar-preview {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bp-bg);
+  border: 2px solid var(--bp-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-frame-light .profile-avatar-placeholder {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  text-transform: uppercase;
+}
+
+.phone-frame-light .profile-avatar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1px solid var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+  color: var(--bp-accent);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.phone-frame-light .profile-avatar-button:hover {
+  background: rgba(232, 74, 138, 0.16);
+}
+
+.phone-frame-light .profile-avatar-button.is-uploading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.phone-frame-light .profile-avatar-button input { display: none; }
