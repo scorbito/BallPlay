@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Check, ChevronRight, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, UserCircle } from "lucide-react";
+import { Bell, Check, ChevronRight, Download, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, UserCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
+import { InstallAppModal } from "@/components/domain/InstallAppModal";
+import { useInstallPrompt } from "@/lib/hooks/useInstallPrompt";
 import { TierBadge } from "@/components/common/TierBadge";
 import { signOutAction } from "@/lib/actions/auth";
 import { updateProfileAction } from "@/lib/actions/profile";
@@ -43,7 +45,9 @@ type SettingsScreenProps = {
 
 export function SettingsScreen({ accountInfo = null, isAdmin = false }: SettingsScreenProps) {
   const { isAnonymous, profile, showToast } = useAppState();
+  const { isStandalone } = useInstallPrompt();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [installModalOpen, setInstallModalOpen] = useState(false);
   const accountLabel = formatAccountLabel(accountInfo);
 
   // 푸시 알림 토글 — 실제 구독 상태와 연동.
@@ -247,6 +251,18 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false }: Settings
         </button>
       </section>
 
+      {/* 앱 설치 — 이미 PWA로 설치된 사용자에겐 숨김 */}
+      {!isStandalone ? (
+        <section className="menu-list settings-list settings-list-secondary" aria-label="앱">
+          <button type="button" className="settings-row" onClick={() => setInstallModalOpen(true)}>
+            <Download size={18} />
+            <strong>앱으로 설치</strong>
+            <span className="settings-value" />
+            <ChevronRight size={18} aria-hidden />
+          </button>
+        </section>
+      ) : null}
+
       {isAdmin ? (
         <section className="menu-list settings-list settings-list-secondary" aria-label="운영자">
           <Link className="settings-row" href="/admin/events" prefetch>
@@ -304,6 +320,7 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false }: Settings
           </div>
         </form>
       </ModalShell>
+      <InstallAppModal open={installModalOpen} onClose={() => setInstallModalOpen(false)} />
     </AppShell>
   );
 }

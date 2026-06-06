@@ -4,16 +4,13 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ChevronRight, ClipboardList, Download, Settings } from "lucide-react";
+import { Camera, ChevronRight, ClipboardList, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { Card } from "@/components/common/Card";
 import { ModalShell } from "@/components/common/ModalShell";
 import { Button } from "@/components/common/Button";
-import { InstallAppModal } from "@/components/domain/InstallAppModal";
-import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
-import { useInstallPrompt } from "@/lib/hooks/useInstallPrompt";
 import { updateAvatarAction, updateProfileAction } from "@/lib/actions/profile";
 import { uploadUserFile } from "@/lib/supabase/storage-client";
 import { TIER_LABEL, type UserTier } from "@/lib/auth/userTier";
@@ -35,23 +32,18 @@ type MyScreenProps = {
 export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
   const slotLimit = getLineupSlotLimit(tier);
   const { profile, isAnonymous, updateProfile, showToast } = useAppState();
-  const { isStandalone } = useInstallPrompt();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
-  const [installModalOpen, setInstallModalOpen] = useState(false);
   const [nickname, setNickname] = useState(profile.nickname);
   const [avatarUrl, setAvatarUrl] = useState<string | null | undefined>(profile.avatarUrl);
-  const [bio, setBio] = useState(profile.bio ?? "");
   const [uploading, startUpload] = useTransition();
   const [savingProfile, startSaveProfile] = useTransition();
-  const profileTeam = getTeam(profile.mainTeamId);
 
   useEffect(() => {
     if (!editing) return;
     setNickname(profile.nickname);
     setAvatarUrl(profile.avatarUrl);
-    setBio(profile.bio ?? "");
-  }, [editing, profile.nickname, profile.avatarUrl, profile.bio]);
+  }, [editing, profile.nickname, profile.avatarUrl]);
 
   const handleAvatarPick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -88,10 +80,9 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             <TeamBadge teamId={profile.mainTeamId} size="lg" />
           )}
           <div>
-            <h1>{profile.nickname}</h1>
-            <span className="profile-hero-team">
-              <span className="profile-hero-team-text">응원팀 {profileTeam.name}</span>
-              <TeamBadge teamId={profile.mainTeamId} size="sm" />
+            <span className="profile-name-row">
+              <h1>{profile.nickname}</h1>
+              <span className="profile-tier-badge">{TIER_LABEL[tier]}</span>
             </span>
           </div>
           <button
@@ -102,13 +93,6 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             편집
           </button>
         </div>
-        {profile.bio ? (
-          <p className="profile-bio">{profile.bio}</p>
-        ) : (
-          <button type="button" className="profile-bio profile-bio-empty" onClick={() => setEditing(true)}>
-            + 자기소개 추가하기
-          </button>
-        )}
         {isAnonymous ? (
           <Link className="profile-anon-cta" href="/login" prefetch>
             정식 계정으로 전환하면 다른 기기에서도 볼 수 있어요 →
@@ -120,7 +104,6 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
       <Card className="mypage-stat-card">
         <div className="mypage-stat-head">
           <strong>누적 전적</strong>
-          <span className="mypage-tier-badge">{TIER_LABEL[tier]}</span>
         </div>
         <div className="mypage-record-row">
           <span className="mypage-record-wl">
@@ -168,16 +151,37 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             <span className="mypage-team-label">원정 전적</span>
           </div>
         </div>
-        {teamSummary.bestTeam ? (
+        {teamSummary.topTeam ? (
           <div className="mypage-best-team">
-            <TeamBadge teamId={teamSummary.bestTeam.teamId} size="sm" />
-            <span className="mypage-best-name">{teamSummary.bestTeam.name}</span>
+            <TeamBadge teamId={teamSummary.topTeam.teamId} size="sm" />
+            <span className="mypage-best-name">{teamSummary.topTeam.name}</span>
             <span className="mypage-best-record">
-              {teamSummary.bestTeam.wins}승 {teamSummary.bestTeam.losses}패 · 최고 승률
+              {teamSummary.topTeam.matches}경기 · 주력 팀
             </span>
           </div>
         ) : null}
       </Card>
+
+      {/* 은퇴한 팀 — 보관된 팀의 최종 홈/원정 전적 */}
+      {teamSummary.archivedTeams.length > 0 ? (
+        <Card className="mypage-stat-card">
+          <div className="mypage-stat-head">
+            <strong>은퇴한 팀</strong>
+            <span className="mypage-stat-link">{teamSummary.archivedTeams.length}팀</span>
+          </div>
+          <ul className="mypage-archived-list">
+            {teamSummary.archivedTeams.map((t, i) => (
+              <li className="mypage-archived-item" key={`${t.teamId}-${i}`}>
+                <TeamBadge teamId={t.teamId} size="sm" />
+                <span className="mypage-archived-name">{t.name}</span>
+                <span className="mypage-archived-rec">
+                  홈 {t.home.wins}·{t.home.losses} <em>/</em> 원정 {t.away.wins}·{t.away.losses}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
 
       <section className="menu-list">
         {menuItems.map((item) => {
@@ -191,15 +195,6 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             </Link>
           );
         })}
-        {/* 이미 PWA로 설치된 사용자에겐 메뉴 숨김 — 설치 권유 의미 없음 */}
-        {!isStandalone ? (
-          <button type="button" className="menu-row-button" onClick={() => setInstallModalOpen(true)}>
-            <Download size={18} />
-            <strong>앱으로 설치</strong>
-            <span className="menu-count" />
-            <ChevronRight size={18} />
-          </button>
-        ) : null}
       </section>
       <ModalShell
         open={editing}
@@ -227,34 +222,18 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
             <input
               className="plain-input"
               value={nickname}
-              maxLength={15}
-              placeholder="닉네임 (최대 15자)"
+              maxLength={16}
+              placeholder="닉네임 (최대 16자)"
               onChange={(event) => setNickname(event.target.value)}
             />
+            <p className="field-hint">경기장 등록 라인업에 닉네임이 표시됩니다.</p>
           </label>
-          <label className="field-row">
-            <span>자기소개</span>
-            <input
-              className="plain-input"
-              value={bio}
-              maxLength={150}
-              placeholder="한 줄로 나를 소개해보세요 (선택)"
-              onChange={(event) => {
-                const next = event.target.value.replace(/[\r\n]+/g, " ");
-                setBio(next);
-              }}
-            />
-            <p className="field-hint">{bio.length}/150</p>
-          </label>
-          <p className="field-hint">응원팀 변경은 &lsquo;오늘은 승요&rsquo; 앱에서 할 수 있어요.</p>
           <Button disabled={savingProfile} onClick={() => {
             const nextNickname = nickname.trim() || profile.nickname;
-            const trimmedBio = bio.replace(/[\r\n]+/g, " ").trim().slice(0, 150);
-            const nextBio = trimmedBio.length > 0 ? trimmedBio : null;
             startSaveProfile(async () => {
               try {
-                await updateProfileAction({ nickname: nextNickname, bio: nextBio });
-                updateProfile({ nickname: nextNickname, bio: nextBio });
+                await updateProfileAction({ nickname: nextNickname, bio: profile.bio ?? null });
+                updateProfile({ nickname: nextNickname });
                 setEditing(false);
                 router.refresh();
               } catch (err) {
@@ -266,7 +245,6 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
           </Button>
         </div>
       </ModalShell>
-      <InstallAppModal open={installModalOpen} onClose={() => setInstallModalOpen(false)} />
     </AppShell>
   );
 }

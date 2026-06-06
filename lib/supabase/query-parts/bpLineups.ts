@@ -514,12 +514,22 @@ export async function fetchLineupAwayStatsBulk(
 // 마이페이지 팀 요약 — 서버에서 집계 (무거운 sync 훅 없이 read-only).
 // ============================================================
 
+export type ArchivedTeamSummary = {
+  name: string;
+  teamId: string;
+  home: { wins: number; losses: number };
+  away: { wins: number; losses: number };
+  archivedAt: string | null;
+};
+
 export type TeamSummary = {
   activeCount: number;
   archivedCount: number;
   home: { wins: number; losses: number };
   away: { wins: number; losses: number };
-  bestTeam: { name: string; teamId: string; wins: number; losses: number; winRate: number } | null;
+  /** 가장 많이 사용한 팀 — 홈경기(직접 플레이) 수가 가장 많은 운영 팀. */
+  topTeam: { name: string; teamId: string; wins: number; losses: number; matches: number } | null;
+  archivedTeams: ArchivedTeamSummary[];
 };
 
 export const EMPTY_TEAM_SUMMARY: TeamSummary = {
@@ -527,10 +537,11 @@ export const EMPTY_TEAM_SUMMARY: TeamSummary = {
   archivedCount: 0,
   home: { wins: 0, losses: 0 },
   away: { wins: 0, losses: 0 },
-  bestTeam: null
+  topTeam: null,
+  archivedTeams: []
 };
 
-/** 본인 팀 요약 — 운영/은퇴 팀 수, 전체 홈·원정 전적, 최고 승률 팀.
+/** 본인 팀 요약 — 운영/은퇴 팀 수, 전체 홈·원정 전적, 가장 많이 사용한 팀, 은퇴 팀 목록.
  *  admin client 권장(RLS 우회). 원정 뷰는 본인 mirror row만 id로 매칭되어 안전. */
 export async function getMyTeamSummary(
   client: SupabaseClient,
@@ -541,17 +552,19 @@ export async function getMyTeamSummary(
     listMyArchivedLineups(client, userId)
   ]);
   const activeRows = activeRes.ok ? activeRes.rows : [];
-  const archivedCount = archivedRes.ok ? archivedRes.rows.length : 0;
-  const ids = activeRows.map((r) => r.id);
+  const archivedRows = archivedRes.ok ? archivedRes.rows : [];
+  // 활성 + 은퇴 라인업 모두의 전적을 한 번에 조회.
+  const allIds = [...activeRows.map((r) => r.id), ...archivedRows.map((r) => r.id)];
 
   const [homeStats, awayStats] = await Promise.all([
-    fetchLineupStatsBulk(client, ids),
-    fetchLineupAwayStatsBulk(client, ids)
+    fetchLineupStatsBulk(client, allIds),
+    fetchLineupAwayStatsBulk(client, allIds)
   ]);
 
   let homeW = 0, homeL = 0, awayW = 0, awayL = 0;
-  let best:
-    | { name: string; teamId: string; wins: number; losses: number; winRate: number; matches: number }
+  // 가장 많이 사용한 팀 — 홈경기 수(직접 플레이) 최대. 동률이면 승이 많은 쪽.
+  let top:
+    | { name: string; teamId: string; wins: number; losses: number; matches: number }
     | null = null;
 
   for (const row of activeRows) {
@@ -559,22 +572,32 @@ export async function getMyTeamSummary(
     if (h) { homeW += h.wins; homeL += h.losses; }
     const a = awayStats[row.id];
     if (a) { awayW += a.wins; awayL += a.losses; }
-    // 최고 승률 팀 — 홈 전적(대표 전적) 기준. 동률이면 경기 많은 쪽.
-    if (h && h.matches > 0) {
-      const winRate = h.wins / h.matches;
-      if (!best || winRate > best.winRate || (winRate === best.winRate && h.matches > best.matches)) {
-        best = { name: row.name, teamId: row.team_id, wins: h.wins, losses: h.losses, winRate, matches: h.matches };
+    const matches = h?.matches ?? 0;
+    if (matches > 0) {
+      if (!top || matches > top.matches || (matches === top.matches && (h?.wins ?? 0) > top.wins)) {
+        top = { name: row.name, teamId: row.team_id, wins: h!.wins, losses: h!.losses, matches };
       }
     }
   }
 
+  const archivedTeams: ArchivedTeamSummary[] = archivedRows.map((row) => {
+    const h = homeStats[row.id];
+    const a = awayStats[row.id];
+    return {
+      name: row.name,
+      teamId: row.team_id,
+      home: { wins: h?.wins ?? 0, losses: h?.losses ?? 0 },
+      away: { wins: a?.wins ?? 0, losses: a?.losses ?? 0 },
+      archivedAt: row.archived_at ?? null
+    };
+  });
+
   return {
     activeCount: activeRows.length,
-    archivedCount,
+    archivedCount: archivedRows.length,
     home: { wins: homeW, losses: homeL },
     away: { wins: awayW, losses: awayL },
-    bestTeam: best
-      ? { name: best.name, teamId: best.teamId, wins: best.wins, losses: best.losses, winRate: best.winRate }
-      : null
+    topTeam: top,
+    archivedTeams
   };
 }
