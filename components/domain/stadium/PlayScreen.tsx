@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { getTeam } from "@/lib/constants/teams";
 import { loadMatchSession, saveMatchSession } from "@/lib/sim/matchSession";
+import { PLAYOFF_ROUND_LABEL } from "@/lib/supabase/query-parts/bpPlayoff";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
@@ -641,8 +642,13 @@ export function PlayScreen() {
   }, [phase, session, recordSavedId, recordSaving, showToast]);
 
   // 뒤로가기 목적지 — public 매치(공식)는 경기장, 그 외(친구/AI/내 라인업)는 연습경기장.
-  const backHrefForSource =
-    session?.source === "public" ? "/stadium/lobby" : "/play/practice";
+  // 가을야구는 경기 중 이탈을 막아 결과까지 가도록 뒤로가기 숨김(undefined).
+  const backHrefForSource: string | undefined =
+    session?.source === "public"
+      ? "/stadium/lobby"
+      : session?.source === "playoff"
+        ? undefined
+        : "/play/practice";
 
   if (!hydrated || !session?.result) {
     return (
@@ -693,12 +699,18 @@ export function PlayScreen() {
   // 상단 헤더 타이틀 — 진행 중엔 이닝 정보, 종료 시엔 "경기 종료"
   const headerTitle = deriveHeaderTitle(isDone, latest);
 
-  // 매치 종류 뱃지
+  // 매치 종류 뱃지 — 가을야구는 라운드 라벨(4·5위전/준PO/PO/한국시리즈), 그 외는 정식/연습.
   const isOfficial = deriveIsOfficial(session);
   const matchTierBadge = session ? (
-    <span className={`stadium-play-tier-badge ${isOfficial ? "is-official" : "is-practice"}`}>
-      {isOfficial ? "정식 매치" : "연습 매치"}
-    </span>
+    session.source === "playoff" ? (
+      <span className="stadium-play-tier-badge is-playoff">
+        {PLAYOFF_ROUND_LABEL[session.playoffRound ?? 1] ?? "가을야구"}
+      </span>
+    ) : (
+      <span className={`stadium-play-tier-badge ${isOfficial ? "is-official" : "is-practice"}`}>
+        {isOfficial ? "정식 매치" : "연습 매치"}
+      </span>
+    )
   ) : null;
 
   // 오프닝 시퀀스용 — 라인업명 폴백: displayName > 팀 shortName.

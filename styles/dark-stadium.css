@@ -1074,6 +1074,11 @@
   background: rgba(20, 30, 50, 0.06);
   color: var(--bp-text-secondary);
 }
+.phone-frame-light .stadium-play-tier-badge.is-playoff {
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.16), rgba(255, 150, 80, 0.16));
+  color: #c2410c;
+  border: 1px solid rgba(232, 74, 138, 0.3);
+}
 
 .phone-frame-light .stadium-live-dot {
   width: 8px;
