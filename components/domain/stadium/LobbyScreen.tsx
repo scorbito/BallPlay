@@ -20,16 +20,11 @@ type Props = {
 export function LobbyScreen({ topLineupRanking, topAccountRanking }: Props) {
   return (
     <AppShell activeTab="stadium" title="경기장" backHref="/" theme="light" wide>
-      {/* 1. 랭킹 TOP 5 — 라인업/계정 누적 탭 전환 */}
-      <StadiumLineupRankingPreview
-        lineupRows={topLineupRanking}
-        accountRows={topAccountRanking}
-      />
-
-      {/* 1.4 명예의 전당 — 전체 유저 공개 우승자 (가을야구 진입 카드 바로 위) */}
+      {/* === 가을야구(특별 이벤트) — 명예의 전당 → 도전, 상단 강조 === */}
+      {/* 1. 명예의 전당 — 전체 유저 공개 우승자 */}
       <PlayoffHallOfFame />
 
-      {/* 1.5 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
+      {/* 2. 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
       <Link href="/stadium/playoff" className="stadium-playoff-entry" prefetch>
         <span className="stadium-playoff-entry-emoji" aria-hidden="true">🍁</span>
         <span className="stadium-playoff-entry-text">
@@ -39,7 +34,14 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking }: Props) {
         <ChevronRight size={20} aria-hidden="true" />
       </Link>
 
-      {/* 2. 출전 팀 풀 — 전체 리스트 (추가 진입 불필요) */}
+      {/* === 출전팀(상시) — 랭킹 → 리스트 묶음 === */}
+      {/* 3. 출전팀 랭킹 TOP3 — 라인업/계정 누적 탭 전환 */}
+      <StadiumLineupRankingPreview
+        lineupRows={topLineupRanking}
+        accountRows={topAccountRanking}
+      />
+
+      {/* 4. 출전 팀 풀 — 전체 리스트 (추가 진입 불필요) */}
       <section className="stadium-lobby-section stadium-lobby-section-main">
         <header className="stadium-lobby-section-head">
           <h2 className="stadium-lobby-section-title">출전 팀</h2>
