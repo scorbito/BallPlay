@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { teams } from "@/lib/constants/teams";
 import { getLatestBattingLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
@@ -178,6 +179,8 @@ export async function recordPlayoffGame(input: {
     await recordChampion(updated.run, userId, completedAt);
   }
 
+  // 허브 캐시 무효화 — 결과 후 대진표 진입 시 갱신된 run(라운드/탈락/우승) 반영.
+  revalidatePath("/stadium/playoff");
   return updated;
 }
 
@@ -196,7 +199,11 @@ export async function updatePlayoffLineup(input: {
     ...run.state,
     myLineup: { batting: input.batting, pitching: input.pitching }
   };
-  return updatePlayoffRun(client, input.runId, userId, { state: nextState });
+  const updated = await updatePlayoffRun(client, input.runId, userId, { state: nextState });
+  // 허브 캐시 무효화 — 편집 저장 후 대진표로 돌아갈 때 갱신된 myLineup 반영
+  // (안 하면 stale run 으로 startGame 이 편집을 기본 라인업으로 덮어씀).
+  revalidatePath("/stadium/playoff");
+  return updated;
 }
 
 /** 도전 포기. */

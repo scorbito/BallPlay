@@ -311,7 +311,7 @@ export function ResultScreen() {
   };
 
   return (
-    <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide>
+    <AppShell activeTab="stadium" title="결과" backHref={backHrefForSource} theme="light" wide hideBottomTabs={session?.source === "playoff"}>
       {/* 승급 감지 + 모달 — 매치 결과 직후 즉시 알림. */}
       <TierUpHost wins={accountWins} />
       <section className="stadium-result">
