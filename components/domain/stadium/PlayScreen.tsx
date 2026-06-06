@@ -5,8 +5,10 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { getTeam } from "@/lib/constants/teams";
-import { loadMatchSession, saveMatchSession } from "@/lib/sim/matchSession";
+import { loadMatchSession, saveMatchSession, clearMatchSession } from "@/lib/sim/matchSession";
 import { PLAYOFF_ROUND_LABEL } from "@/lib/supabase/query-parts/bpPlayoff";
+import { forfeitPlayoffRun } from "@/lib/actions/playoff";
+import { ModalShell } from "@/components/common/ModalShell";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
@@ -60,6 +62,9 @@ export function PlayScreen() {
   const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
   // 6회 전에 건너뛰기 시도 시 안내 모달. 5회까지 진행해야 전적 누적되는 정식경기 인정.
   const [skipBlockedOpen, setSkipBlockedOpen] = useState(false);
+  // 가을야구 경기 중 뒤로가기 = 포기(패배) 확인 모달.
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   // 진행 모드 — fast(기본) / normal / superfast / live(실시간 중계, SITUATION phase + 단계 narration)
   const [mode, setMode] = useState<"normal" | "fast" | "superfast" | "live">("fast");
   // 진행 단계 — live에선 SITUATION → BATTER → OUTCOME → … / normal·fast는 SITUATION 스킵
@@ -642,13 +647,25 @@ export function PlayScreen() {
   }, [phase, session, recordSavedId, recordSaving, showToast]);
 
   // 뒤로가기 목적지 — public 매치(공식)는 경기장, 그 외(친구/AI/내 라인업)는 연습경기장.
-  // 가을야구는 경기 중 이탈을 막아 결과까지 가도록 뒤로가기 숨김(undefined).
+  // 가을야구는 backHref 대신 onBack(포기 확인 모달)으로 가로챈다.
   const backHrefForSource: string | undefined =
     session?.source === "public"
       ? "/stadium/lobby"
       : session?.source === "playoff"
         ? undefined
         : "/play/practice";
+
+  // 가을야구 경기 중 뒤로가기 = 포기(패배). 모달 확인 후 forfeit → 대진표(탈락 화면)로.
+  const handleLeavePlayoff = () => {
+    if (leaving) return;
+    const runId = session?.playoffRunId;
+    setLeaving(true);
+    void (async () => {
+      if (runId) await forfeitPlayoffRun(runId);
+      clearMatchSession();
+      router.push("/stadium/playoff");
+    })();
+  };
 
   if (!hydrated || !session?.result) {
     return (
@@ -742,7 +759,7 @@ export function PlayScreen() {
   const showOpening = !openingDone;
 
   return (
-    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref={backHrefForSource} theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
+    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref={backHrefForSource} onBack={session.source === "playoff" ? () => setLeaveOpen(true) : undefined} theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>
@@ -903,6 +920,41 @@ export function PlayScreen() {
         : null}
 
       <SkipBlockedModal open={skipBlockedOpen} onClose={() => setSkipBlockedOpen(false)} />
+
+      {/* 가을야구 경기 중 뒤로가기 = 포기(패배) 확인 */}
+      <ModalShell
+        open={leaveOpen}
+        title="가을야구 포기"
+        onClose={() => (leaving ? undefined : setLeaveOpen(false))}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            지금 나가면 이 경기는 <strong>패배(탈락)</strong>로 처리돼요.
+            <br />
+            그래도 포기하고 나가시겠어요?
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={() => setLeaveOpen(false)}
+              disabled={leaving}
+            >
+              계속하기
+            </button>
+            <button
+              type="button"
+              className="lineup-confirm-destruct"
+              onClick={handleLeavePlayoff}
+              disabled={leaving}
+            >
+              {leaving ? "처리 중..." : "포기하고 나가기"}
+            </button>
+          </div>
+        </div>
+      </ModalShell>
 
       {/* 경기 시작 전 오프닝 오버레이 — fixed inset:0 풀스크린.
           친구 라이브 매치는 양쪽 동기화를 위해 스킵 버튼 숨김 — 둘 다 풀 시퀀스 시청.
