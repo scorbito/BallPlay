@@ -23,6 +23,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const { showToast } = useAppState();
   const round = run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
+  const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
+  const ladder = [...run.state.opponents].sort((a, b) => a.round - b.round);
 
   const startGame = () => {
     if (!opp) return;
@@ -92,17 +94,25 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         경기 시작
       </button>
 
-      {run.state.games.length > 0 ? (
-        <ul className="playoff-history">
-          {run.state.games.map((g) => (
-            <li key={g.round} className={`playoff-history-item ${g.win ? "is-win" : "is-loss"}`}>
-              <span className="playoff-history-round">{PLAYOFF_ROUND_LABEL[g.round]}</span>
-              <span className="playoff-history-score">{g.score.me} : {g.score.opp}</span>
-              <span className="playoff-history-badge">{g.win ? "승" : "패"}</span>
+      <div className="playoff-ladder-head">전체 대진</div>
+      <ul className="playoff-ladder">
+        {ladder.map((o) => {
+          const g = gameByRound.get(o.round);
+          const isCurrent = o.round === round;
+          const cls = g ? (g.win ? "is-win" : "is-loss") : isCurrent ? "is-current" : "is-upcoming";
+          return (
+            <li key={o.round} className={`playoff-ladder-row ${cls}`}>
+              <span className="playoff-ladder-round">{PLAYOFF_ROUND_LABEL[o.round]}</span>
+              <TeamLogo teamId={o.teamId} size="sm" />
+              <span className="playoff-ladder-name">{o.teamName}</span>
+              <span className="playoff-ladder-seed">{5 - o.round}위</span>
+              <span className="playoff-ladder-status">
+                {g ? `${g.score.me}:${g.score.opp} ${g.win ? "승" : "패"}` : isCurrent ? "현재" : "예정"}
+              </span>
             </li>
-          ))}
-        </ul>
-      ) : null}
+          );
+        })}
+      </ul>
     </section>
   );
 }

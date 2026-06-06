@@ -68,29 +68,31 @@
   color: var(--bp-text-secondary);
 }
 
-.phone-frame-light .playoff-team-list {
+.phone-frame-light .playoff-team-grid {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.phone-frame-light .playoff-team-item {
+.phone-frame-light .playoff-team-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 14px 10px;
   border-radius: 14px;
   background: var(--bp-card);
   border: 1px solid var(--bp-line);
+  min-width: 0;
 }
 
 .phone-frame-light .playoff-team-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 14px;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
   font-weight: 800;
   color: var(--bp-text);
   overflow: hidden;
@@ -99,10 +101,20 @@
 }
 
 .phone-frame-light .playoff-team-go {
-  flex-shrink: 0;
-  width: auto;
-  padding: 8px 16px;
+  width: 100%;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--bp-accent);
+  color: #fff;
   font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.phone-frame-light .playoff-team-go:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .phone-frame-light .playoff-empty {
@@ -202,49 +214,86 @@
   font-size: 15px;
 }
 
-.phone-frame-light .playoff-history {
+.phone-frame-light .playoff-ladder-head {
+  margin: 18px 2px 8px;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .playoff-ladder {
   list-style: none;
-  margin: 16px 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.phone-frame-light .playoff-history-item {
+.phone-frame-light .playoff-ladder-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: 10px;
   background: rgba(20, 30, 50, 0.04);
-  font-size: 12.5px;
-  font-weight: 700;
+  border: 1px solid transparent;
 }
 
-.phone-frame-light .playoff-history-round {
-  flex: 1;
+.phone-frame-light .playoff-ladder-row.is-current {
+  background: rgba(232, 74, 138, 0.08);
+  border-color: rgba(232, 74, 138, 0.4);
+}
+
+.phone-frame-light .playoff-ladder-row.is-upcoming {
+  opacity: 0.6;
+}
+
+.phone-frame-light .playoff-ladder-round {
+  width: 64px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
   color: var(--bp-text-secondary);
 }
 
-.phone-frame-light .playoff-history-score {
+.phone-frame-light .playoff-ladder-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
   font-weight: 800;
   color: var(--bp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.phone-frame-light .playoff-history-badge {
+.phone-frame-light .playoff-ladder-seed {
   flex-shrink: 0;
-  width: 22px;
-  text-align: center;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
 }
 
-.phone-frame-light .playoff-history-item.is-win .playoff-history-badge {
+.phone-frame-light .playoff-ladder-status {
+  flex-shrink: 0;
+  width: 66px;
+  text-align: right;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-ladder-row.is-win .playoff-ladder-status {
   color: #2563eb;
 }
 
-.phone-frame-light .playoff-history-item.is-loss .playoff-history-badge {
+.phone-frame-light .playoff-ladder-row.is-loss .playoff-ladder-status {
   color: var(--bp-danger);
+}
+
+.phone-frame-light .playoff-ladder-row.is-current .playoff-ladder-status {
+  color: var(--bp-accent);
 }
 
 /* 결과(우승/탈락) 카드 */

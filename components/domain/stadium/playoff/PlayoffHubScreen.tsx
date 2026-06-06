@@ -97,14 +97,14 @@ function PlayoffTeamSelect({
           </Link>
         </Card>
       ) : (
-        <ul className="playoff-team-list">
+        <ul className="playoff-team-grid">
           {entries.map((e) => (
-            <li key={e.entryId} className="playoff-team-item">
+            <li key={e.entryId} className="playoff-team-card">
               <TeamLogo teamId={e.teamId} size="md" />
               <span className="playoff-team-name">{e.name}</span>
               <button
                 type="button"
-                className="stadium-cta-primary playoff-team-go"
+                className="playoff-team-go"
                 disabled={starting}
                 onClick={() => onStart(e)}
               >
