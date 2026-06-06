@@ -1,26 +1,99 @@
 /* 가을야구(플레이오프) — 라이트 테마 (.phone-frame-light) */
 
-/* 경기장 로비 진입 카드 */
+/* 경기장 로비 진입 카드 — 특별 연출(흐르는 그라데이션 외곽선 + 빛 스윕 + 글로우) */
 .phone-frame-light .stadium-playoff-entry {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 12px 0;
-  padding: 14px 16px;
+  margin: 14px 0;
+  padding: 15px 16px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(255, 150, 80, 0.10));
-  border: 1px solid var(--bp-line);
+  /* 이중 배경: 안쪽(padding-box)은 가을빛 카드, 바깥(border-box)은 흐르는 그라데이션 테두리 */
+  border: 2px solid transparent;
+  background:
+    linear-gradient(135deg, #fff6f1, #fffaf2) padding-box,
+    linear-gradient(120deg, #e84a8a, #ff9650, #ffc94d, #ff7a59, #e84a8a) border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: playoff-entry-border 6s linear infinite;
+  box-shadow: 0 4px 18px rgba(232, 74, 138, 0.14);
+  overflow: hidden;
   text-decoration: none;
   color: var(--bp-text);
 }
 
+/* 외곽선 그라데이션이 흐르는 연출 */
+@keyframes playoff-entry-border {
+  to {
+    background-position: 0% 0%, 300% 0%;
+  }
+}
+
+/* 카드 위를 지나가는 은은한 빛 */
+.phone-frame-light .stadium-playoff-entry::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+  animation: playoff-entry-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes playoff-entry-shine {
+  0%,
+  62% {
+    transform: translateX(-130%);
+  }
+  82%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+
 .phone-frame-light .stadium-playoff-entry:hover {
-  border-color: var(--bp-accent);
+  box-shadow: 0 6px 26px rgba(232, 74, 138, 0.28);
+}
+
+/* 모션 최소화 선호 시 애니메이션 정지 */
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-light .stadium-playoff-entry {
+    animation: none;
+  }
+  .phone-frame-light .stadium-playoff-entry::after {
+    animation: none;
+    display: none;
+  }
 }
 
 .phone-frame-light .stadium-playoff-entry-emoji {
+  display: inline-block;
   font-size: 26px;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(232, 74, 138, 0.35));
+  animation: playoff-entry-leaf 3.2s ease-in-out infinite;
+  transform-origin: 50% 20%;
+}
+
+@keyframes playoff-entry-leaf {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-light .stadium-playoff-entry-emoji {
+    animation: none;
+  }
 }
 
 .phone-frame-light .stadium-playoff-entry-text {
