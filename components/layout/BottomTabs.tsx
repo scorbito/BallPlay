@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type TabId = "home" | "play" | "stadium" | "records";
+type TabId = "home" | "play" | "stadium" | "my";
 
 type BottomTabsProps = {
   activeTab: TabId | (string & {});
@@ -24,7 +24,9 @@ const tabs: readonly TabDef[] = [
   { id: "home", label: "홈", iconSrc: "/icons/tabs/home.png", href: "/" },
   { id: "play", label: "팀 관리", iconSrc: "/icons/tabs/play.png", href: "/play/lineup" },
   { id: "stadium", label: "경기장", iconSrc: "/icons/tabs/stadium.png", href: "/stadium/lobby" },
-  { id: "records", label: "내 기록", iconSrc: "/icons/tabs/records.png", href: "/records" }
+  // 내 기록 자리를 마이페이지로 교체. 내 기록은 마이페이지 안에서 진입.
+  // 전용 프로필 아이콘이 아직 없어 records.png 재사용(추후 교체 가능).
+  { id: "my", label: "마이", iconSrc: "/icons/tabs/records.png", href: "/my" }
 ] as const;
 
 export function BottomTabs({ activeTab }: BottomTabsProps) {

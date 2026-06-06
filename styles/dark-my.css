@@ -468,3 +468,135 @@
 .phone-frame-dark .settings-account-logout:hover {
   background: rgba(255, 90, 100, 0.14);
 }
+
+/* ── 마이페이지 요약 카드 (누적 전적 / 내 팀) ── */
+.phone-frame-dark .mypage-stat-card {
+  margin-top: 10px;
+  padding: 14px 16px;
+}
+
+.phone-frame-dark .mypage-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.phone-frame-dark .mypage-stat-head > strong {
+  font-size: 13px;
+  font-weight: 850;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .mypage-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 850;
+  color: var(--hd-accent-orange);
+  background: rgba(255, 106, 43, 0.12);
+  border: 1px solid rgba(255, 106, 43, 0.4);
+}
+
+.phone-frame-dark .mypage-stat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--hd-text-secondary);
+  text-decoration: none;
+}
+
+.phone-frame-dark .mypage-stat-link:hover {
+  color: var(--hd-accent-orange);
+}
+
+/* 누적 전적 행 */
+.phone-frame-dark .mypage-record-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.phone-frame-dark .mypage-record-wl {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .mypage-record-rate {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .mypage-record-row .mypage-stat-link {
+  margin-left: auto;
+}
+
+/* 팀 요약 그리드 */
+.phone-frame-dark .mypage-team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.phone-frame-dark .mypage-team-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.phone-frame-dark .mypage-team-num {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--hd-text-primary);
+  white-space: nowrap;
+}
+
+.phone-frame-dark .mypage-team-num small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+.phone-frame-dark .mypage-team-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--hd-text-secondary);
+}
+
+/* 최고 승률 팀 */
+.phone-frame-dark .mypage-best-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.phone-frame-dark .mypage-best-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--hd-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.phone-frame-dark .mypage-best-record {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--hd-accent-orange);
+}

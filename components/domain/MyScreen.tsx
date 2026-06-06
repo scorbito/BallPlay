@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ChevronRight, Download, Settings } from "lucide-react";
+import { Camera, ChevronRight, ClipboardList, Download, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { Card } from "@/components/common/Card";
@@ -16,12 +16,24 @@ import { useAppState } from "@/lib/state/AppState";
 import { useInstallPrompt } from "@/lib/hooks/useInstallPrompt";
 import { updateAvatarAction, updateProfileAction } from "@/lib/actions/profile";
 import { uploadUserFile } from "@/lib/supabase/storage-client";
+import { TIER_LABEL, type UserTier } from "@/lib/auth/userTier";
+import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
+import type { AccountStats } from "@/lib/supabase/query-parts/bpAccountStats";
+import type { TeamSummary } from "@/lib/supabase/query-parts/bpLineups";
 
 const menuItems = [
+  { label: "내 기록", href: "/records", icon: ClipboardList },
   { label: "설정", href: "/my/settings", icon: Settings }
 ];
 
-export function MyScreen() {
+type MyScreenProps = {
+  accountStats: AccountStats;
+  tier: UserTier;
+  teamSummary: TeamSummary;
+};
+
+export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
+  const slotLimit = getLineupSlotLimit(tier);
   const { profile, isAnonymous, updateProfile, showToast } = useAppState();
   const { isStandalone } = useInstallPrompt();
   const router = useRouter();
@@ -103,6 +115,70 @@ export function MyScreen() {
           </Link>
         ) : null}
       </Card>
+
+      {/* 누적 전적 — 내가 직접 실행한 공식 경기 누적 */}
+      <Card className="mypage-stat-card">
+        <div className="mypage-stat-head">
+          <strong>누적 전적</strong>
+          <span className="mypage-tier-badge">{TIER_LABEL[tier]}</span>
+        </div>
+        <div className="mypage-record-row">
+          <span className="mypage-record-wl">
+            {accountStats.wins}승 {accountStats.losses}패
+          </span>
+          <span className="mypage-record-rate">
+            {accountStats.total > 0 ? `승률 ${Math.round(accountStats.winRate * 100)}%` : "아직 경기 없음"}
+          </span>
+          <Link href="/play/account-ranking" className="mypage-stat-link" prefetch>
+            랭킹 <ChevronRight size={14} />
+          </Link>
+        </div>
+      </Card>
+
+      {/* 내 팀 요약 — 운영/은퇴 팀 수 + 홈/원정 전적 + 최고 승률 팀 */}
+      <Card className="mypage-stat-card">
+        <div className="mypage-stat-head">
+          <strong>내 팀</strong>
+          <Link href="/play/lineup" className="mypage-stat-link" prefetch>
+            팀 관리 <ChevronRight size={14} />
+          </Link>
+        </div>
+        <div className="mypage-team-grid">
+          <div className="mypage-team-cell">
+            <span className="mypage-team-num">
+              {teamSummary.activeCount}
+              <small>/{slotLimit}</small>
+            </span>
+            <span className="mypage-team-label">운영 팀</span>
+          </div>
+          <div className="mypage-team-cell">
+            <span className="mypage-team-num">{teamSummary.archivedCount}</span>
+            <span className="mypage-team-label">은퇴 팀</span>
+          </div>
+          <div className="mypage-team-cell">
+            <span className="mypage-team-num">
+              {teamSummary.home.wins}<small>승</small> {teamSummary.home.losses}<small>패</small>
+            </span>
+            <span className="mypage-team-label">홈 전적</span>
+          </div>
+          <div className="mypage-team-cell">
+            <span className="mypage-team-num">
+              {teamSummary.away.wins}<small>승</small> {teamSummary.away.losses}<small>패</small>
+            </span>
+            <span className="mypage-team-label">원정 전적</span>
+          </div>
+        </div>
+        {teamSummary.bestTeam ? (
+          <div className="mypage-best-team">
+            <TeamBadge teamId={teamSummary.bestTeam.teamId} size="sm" />
+            <span className="mypage-best-name">{teamSummary.bestTeam.name}</span>
+            <span className="mypage-best-record">
+              {teamSummary.bestTeam.wins}승 {teamSummary.bestTeam.losses}패 · 최고 승률
+            </span>
+          </div>
+        ) : null}
+      </Card>
+
       <section className="menu-list">
         {menuItems.map((item) => {
           const Icon = item.icon;

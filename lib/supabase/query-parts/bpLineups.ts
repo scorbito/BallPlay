@@ -509,3 +509,72 @@ export async function fetchLineupAwayStatsBulk(
   }
   return result;
 }
+
+// ============================================================
+// 마이페이지 팀 요약 — 서버에서 집계 (무거운 sync 훅 없이 read-only).
+// ============================================================
+
+export type TeamSummary = {
+  activeCount: number;
+  archivedCount: number;
+  home: { wins: number; losses: number };
+  away: { wins: number; losses: number };
+  bestTeam: { name: string; teamId: string; wins: number; losses: number; winRate: number } | null;
+};
+
+export const EMPTY_TEAM_SUMMARY: TeamSummary = {
+  activeCount: 0,
+  archivedCount: 0,
+  home: { wins: 0, losses: 0 },
+  away: { wins: 0, losses: 0 },
+  bestTeam: null
+};
+
+/** 본인 팀 요약 — 운영/은퇴 팀 수, 전체 홈·원정 전적, 최고 승률 팀.
+ *  admin client 권장(RLS 우회). 원정 뷰는 본인 mirror row만 id로 매칭되어 안전. */
+export async function getMyTeamSummary(
+  client: SupabaseClient,
+  userId: string
+): Promise<TeamSummary> {
+  const [activeRes, archivedRes] = await Promise.all([
+    listMyLineups(client, userId),
+    listMyArchivedLineups(client, userId)
+  ]);
+  const activeRows = activeRes.ok ? activeRes.rows : [];
+  const archivedCount = archivedRes.ok ? archivedRes.rows.length : 0;
+  const ids = activeRows.map((r) => r.id);
+
+  const [homeStats, awayStats] = await Promise.all([
+    fetchLineupStatsBulk(client, ids),
+    fetchLineupAwayStatsBulk(client, ids)
+  ]);
+
+  let homeW = 0, homeL = 0, awayW = 0, awayL = 0;
+  let best:
+    | { name: string; teamId: string; wins: number; losses: number; winRate: number; matches: number }
+    | null = null;
+
+  for (const row of activeRows) {
+    const h = homeStats[row.id];
+    if (h) { homeW += h.wins; homeL += h.losses; }
+    const a = awayStats[row.id];
+    if (a) { awayW += a.wins; awayL += a.losses; }
+    // 최고 승률 팀 — 홈 전적(대표 전적) 기준. 동률이면 경기 많은 쪽.
+    if (h && h.matches > 0) {
+      const winRate = h.wins / h.matches;
+      if (!best || winRate > best.winRate || (winRate === best.winRate && h.matches > best.matches)) {
+        best = { name: row.name, teamId: row.team_id, wins: h.wins, losses: h.losses, winRate, matches: h.matches };
+      }
+    }
+  }
+
+  return {
+    activeCount: activeRows.length,
+    archivedCount,
+    home: { wins: homeW, losses: homeL },
+    away: { wins: awayW, losses: awayL },
+    bestTeam: best
+      ? { name: best.name, teamId: best.teamId, wins: best.wins, losses: best.losses, winRate: best.winRate }
+      : null
+  };
+}

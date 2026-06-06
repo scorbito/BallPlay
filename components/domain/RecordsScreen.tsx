@@ -361,7 +361,7 @@ export function RecordsScreen({
 
   if (authState === "loading") {
     return (
-      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
         <p className="stadium-loading">불러오는 중...</p>
       </AppShell>
     );
@@ -369,7 +369,7 @@ export function RecordsScreen({
 
   if (authState === "loggedOut") {
     return (
-      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
         <section className="records-empty">
           <span className="records-empty-icon">
             <Lock size={28} />
@@ -386,7 +386,7 @@ export function RecordsScreen({
 
   if (loadError) {
     return (
-      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
         <section className="records-empty">
           <strong>불러오기 실패</strong>
           <p>{loadError}</p>
@@ -404,7 +404,7 @@ export function RecordsScreen({
 
   if (rows && rows.length === 0) {
     return (
-      <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
         <section className="records-empty">
           <span className="records-empty-icon">
             <History size={28} />
@@ -429,7 +429,7 @@ export function RecordsScreen({
   const rematchOpponentTeam = rematchRecord?.input?.[getOpponentSide(rematchRecord)] ?? null;
 
   return (
-    <AppShell activeTab="records" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/" wide>
+    <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
       {/* 누적 공개 매치 요약 카드 — 서버에서 집계해 props로 받은 값.
           0전 0승 0패도 카드 노출(빈 메시지 분기). 익명 사용자에겐 로그인 CTA 추가.
           우측 상단에 "랭킹 보기" 보조 버튼 — 계정 누적 랭킹 페이지로 진입. */}
