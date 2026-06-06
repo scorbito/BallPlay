@@ -60,6 +60,9 @@ export function PlayScreen() {
   const recordSaveAttemptedRef = useRef(false);
   const [recordSaving, setRecordSaving] = useState(false);
   const [recordSavedId, setRecordSavedId] = useState<string | null>(null);
+  // 경기 종료 등장 연출 — GAME_END로 처음 전환되는 순간 1회만 reveal 클래스 부여.
+  // 이후 재렌더로 애니메이션이 반복되지 않도록 state로 한 번만 true 고정.
+  const [finalRevealed, setFinalRevealed] = useState(false);
   // 6회 전에 건너뛰기 시도 시 안내 모달. 5회까지 진행해야 전적 누적되는 정식경기 인정.
   const [skipBlockedOpen, setSkipBlockedOpen] = useState(false);
   // 가을야구 경기 중 뒤로가기 = 포기(패배) 확인 모달.
@@ -150,6 +153,14 @@ export function PlayScreen() {
       isLive: Boolean(session.liveMatchId)
     });
   }, [phase, session]);
+
+  // 경기 종료 등장 연출 트리거 — GAME_END 진입 시 reveal을 한 번만 켬.
+  // finalRevealed 가드로 재렌더/effect 재실행에도 애니메이션은 1회만 재생.
+  useEffect(() => {
+    if (phase !== "GAME_END") return;
+    if (finalRevealed) return;
+    setFinalRevealed(true);
+  }, [phase, finalRevealed]);
 
   // 친구 매치 오프닝 스킵 — 한쪽이 스킵하면 broadcast 로 상대도 동기 스킵.
   // 채널은 PlayScreen 마운트 동안만 활성. opening 끝나면 더 안 씀.
@@ -766,7 +777,7 @@ export function PlayScreen() {
           <strong>{liveCountdown}</strong>
         </div>
       ) : null}
-      <section className="stadium-play-v2">
+      <section className={`stadium-play-v2${finalRevealed ? " is-final-reveal" : ""}`}>
         {/* 1. 라인스코어 */}
         <Linescore
           linescore={linescore}

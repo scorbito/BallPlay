@@ -2830,6 +2830,129 @@
 }
 
 /* ============================================================
+ * 경기 종료 등장 연출 (is-final-reveal)
+ *   GAME_END 진입 시 1회만 재생. 레이아웃은 그대로 두고 기존 요소들이
+ *   위→아래로 순차 등장(staggered). 전체 ~1초 안팎의 경쾌한 연출.
+ *   순서: 1) "경기 종료" 텍스트 → 2) 라인스코어 → 3) 스코어보드(점수 강조)
+ *        → 4) 타자 리스트(타순 stagger) → 5) "결과 보기" 버튼.
+ *   reveal 클래스는 한 번만 부여되므로 애니메이션은 1회만 재생됨.
+ * ============================================================ */
+@keyframes stadium-final-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes stadium-final-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stadium-final-score-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.55);
+  }
+  78% {
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 1) "경기 종료" 텍스트 — 강조 pop. 종료 모드 narration(=is-walkoff)에 적용.
+   진행 중에는 reveal 클래스가 없어 영향 0. */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-narration {
+  animation: stadium-final-pop 0.42s cubic-bezier(0.22, 1.2, 0.4, 1) both;
+}
+
+/* 2) 라인스코어 — 살짝 늦게 rise. (행/칸 개별 stagger 대신 카드 단위로 깔끔하게) */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore {
+  animation: stadium-final-rise 0.34s ease-out both;
+  animation-delay: 0.12s;
+}
+
+/* 라인스코어 내부 칸 — 좌→우 빠른 페이드 stagger (가벼운 디테일) */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td {
+  animation: stadium-final-rise 0.26s ease-out both;
+}
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(1) { animation-delay: 0.14s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(2) { animation-delay: 0.17s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(3) { animation-delay: 0.2s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(4) { animation-delay: 0.23s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(5) { animation-delay: 0.26s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(6) { animation-delay: 0.29s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(7) { animation-delay: 0.32s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(8) { animation-delay: 0.35s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(9) { animation-delay: 0.38s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(n+10) { animation-delay: 0.41s; }
+
+/* 3) 스코어보드 — 등장(rise). 점수는 큰 scale에서 정상으로 pop 강조. */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard {
+  animation: stadium-final-rise 0.34s ease-out both;
+  animation-delay: 0.22s;
+}
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-team-score {
+  animation: stadium-final-score-pop 0.55s cubic-bezier(0.22, 1.1, 0.4, 1) both;
+  animation-delay: 0.34s;
+}
+
+/* 4) 타자 리스트 — 타순 순서대로 빠르게 rise. 행마다 stagger. */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row {
+  animation: stadium-final-rise 0.28s ease-out both;
+}
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(1) { animation-delay: 0.4s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(2) { animation-delay: 0.45s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(3) { animation-delay: 0.5s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(4) { animation-delay: 0.55s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(5) { animation-delay: 0.6s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(6) { animation-delay: 0.65s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(7) { animation-delay: 0.7s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(8) { animation-delay: 0.75s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(9) { animation-delay: 0.8s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(n+10) { animation-delay: 0.85s; }
+
+/* 5) "결과 보기" 버튼 — 마지막에 살짝 fade in. */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-controls .stadium-cta-primary {
+  animation: stadium-final-rise 0.3s ease-out both;
+  animation-delay: 0.9s;
+}
+
+/* 접근성 — 모션 최소화 설정 시 등장 애니메이션 끔(요소는 즉시 표시). */
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-narration,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-team-score,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row,
+  .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-controls .stadium-cta-primary {
+    animation: none;
+  }
+}
+
+/* ============================================================
  * MatchOpeningSequence — 경기 시작 전 풀스크린 오프닝 (4 phase)
  *   phase 1: title (어웨이 vs 홈)
  *   phase 2: lineups (양팀 1~9번 fade-in)
