@@ -66,15 +66,7 @@ import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
 import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
 import { trackEvent } from "@/lib/analytics/events";
 
-export function LineupBuilderScreen({
-  initialEntryId = null,
-  backHref = null
-}: {
-  /** 딥링크로 특정 팀을 바로 열 때 (예: 가을야구 → 내 라인업 수정). */
-  initialEntryId?: string | null;
-  /** 뒤로가기 목적지 override (예: /stadium/playoff). 기본 "/". */
-  backHref?: string | null;
-} = {}) {
+export function LineupBuilderScreen() {
   const { profile, showToast } = useAppState();
   const { tier } = useUserTier();
   const lineupLimit = getLineupSlotLimit(tier);
@@ -152,17 +144,11 @@ export function LineupBuilderScreen({
   const [swapOrderAnimation, setSwapOrderAnimation] = useState<{ a: number; b: number } | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
 
-  // entries가 로드되면 entry 자동 선택 (이미 선택된 게 있으면 유지).
-  // 딥링크로 initialEntryId 가 지정됐고 존재하면 그걸 우선 선택.
+  // entries가 로드되면 첫 entry 자동 선택 (이미 선택된 게 있으면 유지)
   useEffect(() => {
     if (selectedEntryId) return;
-    if (entries.length === 0) return;
-    const preferred =
-      initialEntryId && entries.some((e) => e.entryId === initialEntryId)
-        ? initialEntryId
-        : entries[0].entryId;
-    setSelectedEntryId(preferred);
-  }, [entries, selectedEntryId, initialEntryId]);
+    if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
+  }, [entries, selectedEntryId]);
 
   // 첫 진입(슬롯 0개) 시 "새 팀 슬롯" 모달 자동 오픈.
   // - sync 완료(loading 외) + 진짜 entries 0개일 때만.
@@ -841,7 +827,7 @@ export function LineupBuilderScreen({
   const usedTeamIds = useMemo(() => new Set(entries.map((entry) => entry.teamId)), [entries]);
 
   return (
-    <AppShell activeTab="play" title="팀 관리" theme="light" backHref={backHref ?? "/"} wide>
+    <AppShell activeTab="play" title="팀 관리" theme="light" backHref="/" wide>
       <header className="lineup-header lineup-header-no-back">
         {/* 헤더 좌측: 동기화 상태 배지 */}
         <LineupSyncBadge syncStatus={syncStatus} />

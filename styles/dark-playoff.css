@@ -590,3 +590,24 @@
   border-color: var(--bp-accent);
   color: var(--bp-accent);
 }
+
+/* 격리 편집기 — 배너 + 저장 */
+.phone-frame-light .playoff-edit-banner {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.3);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-accent);
+  text-align: center;
+}
+
+.phone-frame-light .playoff-edit-save {
+  margin-top: 16px;
+}
+
+.phone-frame-light .playoff-edit-save button {
+  width: 100%;
+}

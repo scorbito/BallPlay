@@ -138,13 +138,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         <button
           type="button"
           className="playoff-secondary-btn"
-          onClick={() =>
-            router.push(
-              `/play/lineup?entry=${encodeURIComponent(run.state.myEntryId)}&back=${encodeURIComponent(
-                "/stadium/playoff"
-              )}`
-            )
-          }
+          onClick={() => router.push("/stadium/playoff/edit")}
         >
           내 라인업 수정
         </button>
