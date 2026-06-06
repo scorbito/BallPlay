@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/play/lineup" }
 };
 
-export default function LineupPage() {
-  return <LineupBuilderScreen />;
+export default function LineupPage({
+  searchParams
+}: {
+  searchParams?: { entry?: string; back?: string };
+}) {
+  return (
+    <LineupBuilderScreen
+      initialEntryId={searchParams?.entry ?? null}
+      backHref={searchParams?.back ?? null}
+    />
+  );
 }

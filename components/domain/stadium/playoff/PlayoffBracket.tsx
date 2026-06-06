@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/common/Card";
 import { TeamLogo } from "@/components/common/TeamLogo";
-import { OpponentLineupModal } from "./OpponentLineupModal";
-import { PlayoffLineupEditor } from "./PlayoffLineupEditor";
+import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { useAppState } from "@/lib/state/AppState";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { getRoster } from "@/lib/rosters";
@@ -21,19 +20,18 @@ import {
 } from "@/lib/supabase/query-parts/bpPlayoff";
 
 /** 진행 중 run 의 대진표 — 현재 라운드 매치업 + 경기 시작 + 결과 히스토리. */
-export function PlayoffBracket({
-  run,
-  onRunUpdate
-}: {
-  run: PlayoffRun;
-  onRunUpdate: (run: PlayoffRun) => void;
-}) {
+export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const router = useRouter();
   const { showToast } = useAppState();
   const [oppOpen, setOppOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const round = run.currentRound;
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
+  // 상대 라인업(시드 박제) — 기존 LineupDetailModal 로 보여줌. 팀명 표시용 displayName 부여.
+  const oppTeam = useMemo(() => {
+    if (!opp) return null;
+    const t = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, null);
+    return t ? { ...t, displayName: opp.teamName } : null;
+  }, [opp]);
   const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
   // 1위(한국시리즈)가 위, 현재(4·5위전)가 아래 — 바닥에서 위로 올라가는 연출.
   const ladder = [...run.state.opponents].sort((a, b) => b.round - a.round);
@@ -137,7 +135,17 @@ export function PlayoffBracket({
             상대 라인업 보기
           </button>
         ) : null}
-        <button type="button" className="playoff-secondary-btn" onClick={() => setEditOpen(true)}>
+        <button
+          type="button"
+          className="playoff-secondary-btn"
+          onClick={() =>
+            router.push(
+              `/play/lineup?entry=${encodeURIComponent(run.state.myEntryId)}&back=${encodeURIComponent(
+                "/stadium/playoff"
+              )}`
+            )
+          }
+        >
           내 라인업 수정
         </button>
       </div>
@@ -146,22 +154,7 @@ export function PlayoffBracket({
         경기 시작
       </button>
 
-      {opp ? (
-        <OpponentLineupModal
-          open={oppOpen}
-          teamId={opp.teamId}
-          teamName={opp.teamName}
-          lineupSeed={opp.lineupSeed}
-          onClose={() => setOppOpen(false)}
-        />
-      ) : null}
-
-      <PlayoffLineupEditor
-        open={editOpen}
-        run={run}
-        onClose={() => setEditOpen(false)}
-        onSaved={onRunUpdate}
-      />
+      <LineupDetailModal open={oppOpen} team={oppTeam} onClose={() => setOppOpen(false)} />
     </section>
   );
 }
