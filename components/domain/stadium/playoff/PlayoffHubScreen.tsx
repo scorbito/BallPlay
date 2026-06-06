@@ -2,15 +2,13 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/common/Card";
-import { ModalShell } from "@/components/common/ModalShell";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { useAppState } from "@/lib/state/AppState";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { PITCHER_STARTER_INDEX, type LineupEntry } from "@/lib/types/lineup";
-import { startPlayoffRun, forfeitPlayoffRun } from "@/lib/actions/playoff";
+import { startPlayoffRun } from "@/lib/actions/playoff";
 import { PLAYOFF_ROUND_LABEL, type PlayoffRun } from "@/lib/supabase/query-parts/bpPlayoff";
 import { PlayoffBracket } from "./PlayoffBracket";
 
@@ -22,15 +20,11 @@ function isComplete(e: LineupEntry): boolean {
 type Props = { initialRun: PlayoffRun | null; loggedIn: boolean };
 
 export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
-  const router = useRouter();
   const { showToast } = useAppState();
   const [run, setRun] = useState<PlayoffRun | null>(initialRun);
   // "auto": 최신 run 따라감 / "select": 새 도전 팀 선택
   const [mode, setMode] = useState<"auto" | "select">("auto");
   const [starting, startTransition] = useTransition();
-  // 진행 중 이탈 = 패배 확인 모달
-  const [leaveOpen, setLeaveOpen] = useState(false);
-  const [leaving, setLeaving] = useState(false);
 
   // localStorage 읽기는 마운트 후 — 서버/초기 클라이언트 렌더 일치(hydration-safe).
   const [entries, setEntries] = useState<LineupEntry[]>([]);
@@ -40,17 +34,6 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
 
   const showBracket = mode === "auto" && run?.status === "active";
   const showResult = mode === "auto" && (run?.status === "champion" || run?.status === "eliminated");
-  // 진행 중(대진표)일 때만 뒤로가기를 가로채 패배 확인 → 나가면 탈락 처리.
-  const isActive = run?.status === "active";
-
-  const handleLeave = () => {
-    if (!run || leaving) return;
-    setLeaving(true);
-    void (async () => {
-      await forfeitPlayoffRun(run.id);
-      router.push("/stadium/lobby");
-    })();
-  };
 
   const handleStart = (entry: LineupEntry) => {
     startTransition(async () => {
@@ -69,15 +52,7 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
   };
 
   return (
-    <AppShell
-      activeTab="stadium"
-      title="가을야구"
-      backHref="/stadium/lobby"
-      onBack={isActive ? () => setLeaveOpen(true) : undefined}
-      hideBottomTabs={isActive}
-      theme="light"
-      wide
-    >
+    <AppShell activeTab="stadium" title="가을야구" backHref="/stadium/lobby" theme="light" wide>
       {showBracket && run ? (
         <PlayoffBracket run={run} />
       ) : showResult && run ? (
@@ -85,41 +60,6 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
       ) : (
         <PlayoffTeamSelect entries={entries} loggedIn={loggedIn} starting={starting} onStart={handleStart} />
       )}
-
-      {/* 진행 중 이탈 = 패배 확인 */}
-      <ModalShell
-        open={leaveOpen}
-        title="가을야구 이탈"
-        onClose={() => (leaving ? undefined : setLeaveOpen(false))}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            지금 나가면 이번 가을야구는 <strong>패배(탈락)</strong>로 처리돼요.
-            <br />
-            그래도 나가시겠어요?
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setLeaveOpen(false)}
-              disabled={leaving}
-            >
-              계속하기
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              onClick={handleLeave}
-              disabled={leaving}
-            >
-              {leaving ? "처리 중..." : "나가기(패배)"}
-            </button>
-          </div>
-        </div>
-      </ModalShell>
     </AppShell>
   );
 }

@@ -212,6 +212,12 @@
   color: var(--bp-accent);
 }
 
+/* 뒤로가기가 <button>(onBack)일 때 전역 button:active{transform:scale} 가 translateY(-50%)를
+   덮어써 위치가 튀던 문제 — 더 높은 특이도로 고정. */
+.phone-frame-light button.header-back:active {
+  transform: translateY(-50%);
+}
+
 /* 라이트 테마용 헤더 뒤로가기 */
 .app-header .header-back {
   position: absolute;
