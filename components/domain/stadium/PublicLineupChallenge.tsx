@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LogIn, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { ModalShell } from "@/components/common/ModalShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
@@ -326,7 +327,7 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
             <div className="stadium-enter-vs">
               <div className="stadium-enter-team">
                 <span className="stadium-enter-team-label">{formatOwnerLabel(opponent)}</span>
-                <TeamBadge teamId={opponent.team_id} size="lg" />
+                <TeamLogo teamId={opponent.team_id} size="lg" />
                 <strong>{opponent.name}</strong>
               </div>
               <span className="stadium-enter-vs-label">VS</span>
@@ -334,7 +335,7 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
                 <span className="stadium-enter-team-label">내 팀</span>
                 {myEntry ? (
                   <>
-                    <TeamBadge teamId={myEntry.teamId} size="lg" />
+                    <TeamLogo teamId={myEntry.teamId} size="lg" />
                     <strong>{myEntry.name}</strong>
                   </>
                 ) : (

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bot, KeyRound, List, Lock, Swords, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { teams } from "@/lib/constants/teams";
 import { MyLineupList } from "@/components/domain/stadium/MyLineupList";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
@@ -97,7 +97,7 @@ export function PracticeStadiumScreen() {
                 style={{ background: team.color }}
                 aria-hidden="true"
               />
-              <TeamBadge teamId={team.id} size="md" />
+              <TeamLogo teamId={team.id} size="md" />
               <div className="stadium-lobby-card-body">
                 <strong>{team.name}</strong>
                 <span>자동 생성 라인업</span>

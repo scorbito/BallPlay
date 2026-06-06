@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import type { BaseState } from "@/lib/sim/types";
 import { Diamond, OutDots } from "./Diamond";
 
@@ -106,7 +106,7 @@ export function Scoreboard({
           {awayNickname ? (
             <span className="stadium-play-team-nickname" title={awayNickname}>{awayNickname}</span>
           ) : null}
-          <TeamBadge teamId={awayTeamId} size="lg" />
+          <TeamLogo teamId={awayTeamId} size="lg" />
         </div>
         <div className="stadium-play-team-info">
           <span className="stadium-play-team-name">{awayLabel}</span>
@@ -126,7 +126,7 @@ export function Scoreboard({
           {homeNickname ? (
             <span className="stadium-play-team-nickname" title={homeNickname}>{homeNickname}</span>
           ) : null}
-          <TeamBadge teamId={homeTeamId} size="lg" />
+          <TeamLogo teamId={homeTeamId} size="lg" />
         </div>
       </div>
     </header>

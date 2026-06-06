@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Camera, ChevronRight, ClipboardList, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { Card } from "@/components/common/Card";
 import { ModalShell } from "@/components/common/ModalShell";
 import { Button } from "@/components/common/Button";
@@ -85,7 +86,7 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
               <Image alt="프로필 사진" src={profile.avatarUrl} fill sizes="48px" style={{ objectFit: "cover" }} />
             </span>
           ) : (
-            <TeamBadge teamId={profile.mainTeamId} size="lg" />
+            <TeamLogo teamId={profile.mainTeamId} size="lg" />
           )}
           <div>
             <span className="profile-name-row">
@@ -161,7 +162,7 @@ export function MyScreen({ accountStats, tier, teamSummary }: MyScreenProps) {
         </div>
         {teamSummary.topTeam ? (
           <div className="mypage-best-team">
-            <TeamBadge teamId={teamSummary.topTeam.teamId} size="sm" />
+            <TeamLogo teamId={teamSummary.topTeam.teamId} size="sm" />
             <span className="mypage-best-name">{teamSummary.topTeam.name}</span>
             <span className="mypage-best-record">
               {teamSummary.topTeam.matches}경기 · 주력 팀

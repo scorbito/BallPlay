@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Bot, Sparkles } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam, teams as ALL_TEAMS } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
 import type { LineupEntry } from "@/lib/types/lineup";
@@ -251,7 +252,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
           <span className="stadium-enter-team-label">내 팀</span>
           {selectedEntry ? (
             <>
-              <TeamBadge teamId={selectedEntry.teamId} size="lg" />
+              <TeamLogo teamId={selectedEntry.teamId} size="lg" />
               <strong>{selectedEntry.name}</strong>
             </>
           ) : (
@@ -261,7 +262,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
         <span className="stadium-enter-vs-label">VS</span>
         <div className="stadium-enter-team">
           <span className="stadium-enter-team-label">상대</span>
-          <TeamBadge teamId={opponentTeam.id} size="lg" />
+          <TeamLogo teamId={opponentTeam.id} size="lg" />
           <strong>{opponentTeam.name}</strong>
         </div>
       </div>

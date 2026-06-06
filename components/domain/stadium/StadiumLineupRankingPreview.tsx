@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Crown, Medal, Award, Trophy, ChevronRight, List } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { PublicLineupChallenge } from "@/components/domain/stadium/PublicLineupChallenge";
@@ -114,7 +115,9 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
                   >
                     {renderRankBadge(row.rank)}
                   </span>
-                  {team ? <TeamBadge teamId={team.id} size="sm" /> : null}
+                  {team ? (
+                    row.rank <= 3 ? <TeamLogo teamId={team.id} size="sm" /> : <TeamBadge teamId={team.id} size="sm" />
+                  ) : null}
                   <div className="stadium-lobby-rank-preview-body">
                     <span className="stadium-lobby-rank-preview-name">{row.lineupName}</span>
                     <span className="stadium-lobby-rank-preview-nick">{row.nickname}</span>

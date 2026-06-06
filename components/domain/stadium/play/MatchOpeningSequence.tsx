@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { SkipForward } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { playBgm, playMatchSound, preloadBgm, preloadMatchSounds } from "@/lib/sound/matchSounds";
 
 type Batter = {
@@ -176,14 +176,14 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
           <p className="match-opening-title-eyebrow">대결 시작</p>
           <div className="match-opening-title-teams">
             <div className="match-opening-title-side match-opening-title-side--away">
-              <TeamBadge teamId={away.teamId} size="lg" />
+              <TeamLogo teamId={away.teamId} size="lg" />
               <strong className="match-opening-title-name">{away.lineupName}</strong>
             </div>
             <span className="match-opening-title-vs" aria-hidden>
               VS
             </span>
             <div className="match-opening-title-side match-opening-title-side--home">
-              <TeamBadge teamId={home.teamId} size="lg" />
+              <TeamLogo teamId={home.teamId} size="lg" />
               <strong className="match-opening-title-name">{home.lineupName}</strong>
             </div>
           </div>
@@ -194,7 +194,7 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
         <div className="match-opening-lineups">
           <div className="match-opening-lineups-col match-opening-lineups-col--away">
             <header className="match-opening-lineups-head">
-              <TeamBadge teamId={away.teamId} size="md" />
+              <TeamLogo teamId={away.teamId} size="md" />
               <strong>{away.lineupName}</strong>
             </header>
             <div
@@ -230,7 +230,7 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
           </div>
           <div className="match-opening-lineups-col match-opening-lineups-col--home">
             <header className="match-opening-lineups-head">
-              <TeamBadge teamId={home.teamId} size="md" />
+              <TeamLogo teamId={home.teamId} size="md" />
               <strong>{home.lineupName}</strong>
             </header>
             <div

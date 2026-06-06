@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List, RefreshCw, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
@@ -325,7 +326,7 @@ export function RegisteredLineupList({
           const stats = statsByLineupId[row.id];
           return (
             <div key={row.id} className="stadium-discover-card stadium-registered-card">
-              <TeamBadge teamId={row.team_id} size="md" />
+              <TeamLogo teamId={row.team_id} size="md" />
               <div className="stadium-discover-card-body">
                 <strong>{row.name}</strong>
                 <span className="stadium-registered-meta">
@@ -381,7 +382,7 @@ export function RegisteredLineupList({
               <div className="stadium-enter-vs">
                 <div className="stadium-enter-team">
                   <span className="stadium-enter-team-label">{formatOwnerLabel(selectedOpponent)}</span>
-                  <TeamBadge teamId={selectedOpponent.team_id} size="lg" />
+                  <TeamLogo teamId={selectedOpponent.team_id} size="lg" />
                   <strong>{selectedOpponent.name}</strong>
                 </div>
                 <span className="stadium-enter-vs-label">VS</span>
@@ -389,7 +390,7 @@ export function RegisteredLineupList({
                   <span className="stadium-enter-team-label">내 팀</span>
                   {myEntry ? (
                     <>
-                      <TeamBadge teamId={myEntry.teamId} size="lg" />
+                      <TeamLogo teamId={myEntry.teamId} size="lg" />
                       <strong>{myEntry.name}</strong>
                     </>
                   ) : (

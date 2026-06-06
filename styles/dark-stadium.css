@@ -2636,7 +2636,12 @@
   font-size: 24px;
 }
 
-.phone-frame-light .stadium-result-team > span:not(.team-badge-wrap) {
+.phone-frame-light .stadium-result-team .team-logo-lg {
+  width: 44px;
+  height: 44px;
+}
+
+.phone-frame-light .stadium-result-team > span:not(.team-badge-wrap):not(.team-logo-wrap) {
   font-size: 13px;
   color: var(--bp-text-secondary);
   font-weight: 700;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RotateCcw, Share2, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam } from "@/lib/constants/teams";
 import {
   generateSeed,
@@ -287,13 +287,13 @@ export function ResultScreen() {
 
         <div className="stadium-result-scoreboard">
           <div className="stadium-result-team">
-            <TeamBadge teamId={awayTeam.id} size="lg" />
+            <TeamLogo teamId={awayTeam.id} size="lg" />
             <span>{awayLabel}</span>
             <strong>{finalScore.away}</strong>
           </div>
           <span className="stadium-result-divider">:</span>
           <div className="stadium-result-team is-right">
-            <TeamBadge teamId={homeTeam.id} size="lg" />
+            <TeamLogo teamId={homeTeam.id} size="lg" />
             <span>{homeLabel}</span>
             <strong>{finalScore.home}</strong>
           </div>

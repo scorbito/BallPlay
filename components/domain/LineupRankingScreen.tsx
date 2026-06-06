@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Trophy, Crown, Medal, Award, ChevronDown, List } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { PublicLineupChallenge } from "@/components/domain/stadium/PublicLineupChallenge";
 import { getTeam, teams } from "@/lib/constants/teams";
@@ -219,7 +220,9 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
                 >
                   {renderRankBadge(row.rank)}
                 </span>
-                {team ? <TeamBadge teamId={team.id} size="md" /> : null}
+                {team ? (
+                  row.rank <= 3 ? <TeamLogo teamId={team.id} size="md" /> : <TeamBadge teamId={team.id} size="md" />
+                ) : null}
                 <div className="lineup-rank-body">
                   <span className="lineup-rank-lineup-name">{row.lineupName}</span>
                   <span className="lineup-rank-nickname">{row.nickname}</span>

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List, Plus, Swords } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
@@ -238,7 +239,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
           const team = getTeam(entry.teamId);
           return (
             <div key={entry.entryId} className="stadium-discover-card">
-              <TeamBadge teamId={entry.teamId} size="md" />
+              <TeamLogo teamId={entry.teamId} size="md" />
               <div className="stadium-discover-card-body">
                 <strong>{entry.name}</strong>
                 <span>{team.shortName} · {formatRelativeDate(entry.updatedAt)}</span>
@@ -288,7 +289,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
               <div className="stadium-enter-vs">
                 <div className="stadium-enter-team">
                   <span className="stadium-enter-team-label">내 팀</span>
-                  <TeamBadge teamId={myEntry.teamId} size="lg" />
+                  <TeamLogo teamId={myEntry.teamId} size="lg" />
                   <strong>{myEntry.name}</strong>
                 </div>
                 <span className="stadium-enter-vs-label">VS</span>
@@ -296,7 +297,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
                   <span className="stadium-enter-team-label">상대</span>
                   {opponentEntry ? (
                     <>
-                      <TeamBadge teamId={opponentEntry.teamId} size="lg" />
+                      <TeamLogo teamId={opponentEntry.teamId} size="lg" />
                       <strong>{opponentEntry.name}</strong>
                     </>
                   ) : (
