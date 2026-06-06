@@ -989,26 +989,25 @@
      opacity 는 22% 에서 0 이 되어 100% 까지 0 유지 → 다음 사이클 0%(중심)로
      점프해도 보이지 않아 "다시 모이는" 잔상이 사라진다. */
   0% {
-    /* 중심에서 밝게 출발(이 순간이 터지는 시점 — 중심 플래시와 겹침). */
-    transform: rotate(var(--fw-angle, 0deg)) translateY(0) scale(0.85);
+    /* 중심에서 밝게 출발(터지는 시점 — 중심 플래시와 겹침). */
+    transform: rotate(var(--fw-angle, 0deg)) translateY(0) scale(0.9);
     opacity: 1;
   }
-  20% {
-    /* 0%~20% 단일 구간을 linear 로 → 중심→최대 사거리까지 등속 발사(주춤 없음). */
-    transform: rotate(var(--fw-angle, 0deg))
-      translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.7);
+  12% {
+    /* opacity 만 지정 — transform 은 0%~24% 단일 linear 구간 유지(등속). */
     opacity: 1;
   }
-  28% {
-    /* 도달 후 그 자리에서 페이드 — 안으로 되돌아오지 않음. */
+  24% {
+    /* 바깥으로 퍼져나가는 '동안' 동시에 페이드 → 사거리 도달과 함께 자연스럽게 소멸.
+       (멈췄다 사라지지 않게: 이동과 페이드가 겹침) */
     transform: rotate(var(--fw-angle, 0deg))
-      translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.45);
+      translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.5);
     opacity: 0;
   }
   100% {
-    /* 다음 발까지 바깥 위치에 투명하게 대기. */
+    /* 다음 발까지 바깥 위치에 투명하게 대기 — 중심 복귀 없음. */
     transform: rotate(var(--fw-angle, 0deg))
-      translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.45);
+      translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.5);
     opacity: 0;
   }
 }
