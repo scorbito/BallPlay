@@ -105,6 +105,8 @@ export function LineupBuilderScreen() {
   const selectedTeamId = currentEntry?.teamId ?? initialTeamId;
 
   const [slotMenuOpen, setSlotMenuOpen] = useState(false);
+  // 프리셋 드롭다운 — 팀 선택 드롭다운과 동시에 안 열리도록 하나만 연다.
+  const [presetMenuOpen, setPresetMenuOpen] = useState(false);
   const [newSlotOpen, setNewSlotOpen] = useState(false);
   const [renamingEntryId, setRenamingEntryId] = useState<string | null>(null);
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<string | null>(null);
@@ -936,7 +938,10 @@ export function LineupBuilderScreen() {
           lineupLimit={lineupLimit}
           tier={tier}
           open={slotMenuOpen}
-          setOpen={setSlotMenuOpen}
+          setOpen={(open) => {
+            setSlotMenuOpen(open);
+            if (open) setPresetMenuOpen(false);
+          }}
           onSelect={(entryId) => setSelectedEntryId(entryId)}
           onAddNew={() => {
             const hasAvailableTeam = Array.from(seededTeamIds).some((teamId) => !usedTeamIds.has(teamId));
@@ -949,6 +954,22 @@ export function LineupBuilderScreen() {
           onRename={(entryId) => setRenamingEntryId(entryId)}
           onDelete={(entryId) => setConfirmDeleteEntryId(entryId)}
         />
+        {/* 팀 선택 옆 라인업 프리셋 드롭다운 — 현재 팀의 스냅샷(최대 3)을 적용/저장. */}
+        {currentEntry ? (
+          <LineupPresetBar
+            teamId={selectedTeamId}
+            canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
+            open={presetMenuOpen}
+            setOpen={(open) => {
+              setPresetMenuOpen(open);
+              if (open) setSlotMenuOpen(false);
+            }}
+            onSaveCurrent={handleOpenSavePreset}
+            onApply={handleApplyPreset}
+            onRename={(preset) => setRenamingPreset(preset)}
+            onDelete={(preset) => setDeletingPreset(preset)}
+          />
+        ) : null}
         {/* 헤더 우측: 공유 버튼 (이전 동기화 배지 자리) */}
         <button
           type="button"
@@ -1006,18 +1027,6 @@ export function LineupBuilderScreen() {
           onPublishRequest={handlePublishRequest}
           onWithdraw={handleWithdraw}
         />
-
-        {/* 라인업 프리셋 바 — 현재 팀의 스냅샷 3칸. 탭하면 현재 편집본에 적용. */}
-        {currentEntry ? (
-          <LineupPresetBar
-            teamId={selectedTeamId}
-            canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
-            onSaveCurrent={handleOpenSavePreset}
-            onApply={handleApplyPreset}
-            onRename={(preset) => setRenamingPreset(preset)}
-            onDelete={(preset) => setDeletingPreset(preset)}
-          />
-        ) : null}
 
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 마무리 + 불펜 1~7 */}
         {mode === "batter" ? (

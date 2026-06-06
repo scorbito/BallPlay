@@ -3399,121 +3399,195 @@
   background: rgba(232, 74, 138, 0.22);
 }
 
-/* ── 라인업 프리셋 바 ───────────────────────────────────────────
-   현재 팀의 라인업 스냅샷 3칸을 칩으로 노출. 액션 행 바로 아래에 배치. */
-.phone-frame-light .lineup-preset-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 2px 0 0;
-  padding: 0 2px;
-  flex-wrap: wrap;
-}
-
-.phone-frame-light .lineup-preset-bar-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--bp-text-secondary);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: -0.2px;
+/* ── 라인업 프리셋 드롭다운 ─────────────────────────────────────
+   헤더의 팀 선택 드롭다운 옆 칩. 팀 선택 드롭다운과 같은 톤/패턴. */
+.phone-frame-light .lineup-preset-picker {
+  position: relative;
   flex-shrink: 0;
 }
 
-.phone-frame-light .lineup-preset-chips {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.phone-frame-light .lineup-preset-chip {
-  display: inline-flex;
-  align-items: stretch;
-  border: 1px solid rgba(232, 74, 138, 0.35);
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(232, 74, 138, 0.08);
-  max-width: 100%;
-}
-
-.phone-frame-light .lineup-preset-chip-apply {
+.phone-frame-light .lineup-preset-trigger {
   display: inline-flex;
   align-items: center;
-  min-width: 0;
-  padding: 5px 9px;
-  background: transparent;
-  border: none;
-  color: var(--bp-accent);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: -0.1px;
+  gap: 5px;
+  padding: 9px 10px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 10px;
+  color: var(--bp-text);
   cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.phone-frame-light .lineup-preset-chip-apply:hover {
-  background: rgba(232, 74, 138, 0.16);
-}
-
-.phone-frame-light .lineup-preset-chip-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font: inherit;
   white-space: nowrap;
-  max-width: 96px;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.phone-frame-light .lineup-preset-chip-icon {
+.phone-frame-light .lineup-preset-trigger:hover {
+  background: rgba(20, 30, 50, 0.04);
+}
+
+.phone-frame-light .lineup-preset-trigger-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .lineup-preset-trigger-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
-  background: transparent;
-  border: none;
-  border-left: 1px solid rgba(232, 74, 138, 0.2);
-  color: var(--bp-text-muted);
-  cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.14);
+  color: var(--bp-accent);
+  font-size: 10px;
+  font-weight: 800;
 }
 
-.phone-frame-light .lineup-preset-chip-icon:hover {
-  background: rgba(232, 74, 138, 0.14);
+.phone-frame-light .lineup-preset-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 240px;
+  max-width: 300px;
+  padding: 6px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-light .lineup-preset-empty {
+  margin: 0;
+  padding: 8px 10px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.2px;
+}
+
+.phone-frame-light .lineup-preset-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-light .lineup-preset-item-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-frame-light .lineup-preset-item {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--bp-text);
+  cursor: pointer;
+  min-width: 0;
+  font: inherit;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.phone-frame-light .lineup-preset-item:hover {
+  background: rgba(232, 74, 138, 0.10);
+}
+
+.phone-frame-light .lineup-preset-item-icon {
+  flex-shrink: 0;
   color: var(--bp-accent);
 }
 
-.phone-frame-light .lineup-preset-chip-del:hover {
-  background: rgba(220, 53, 69, 0.14);
-  color: #dc3545;
+.phone-frame-light .lineup-preset-item-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
-.phone-frame-light .lineup-preset-chip-add {
+.phone-frame-light .lineup-preset-item-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .lineup-preset-item-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-light .lineup-preset-item-btn:hover {
+  background: rgba(20, 30, 50, 0.05);
+  color: var(--bp-text);
+}
+
+.phone-frame-light .lineup-preset-item-btn-danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+  color: var(--bp-danger);
+}
+
+.phone-frame-light .lineup-preset-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 9px 10px;
+  background: rgba(232, 74, 138, 0.08);
   border: 1px dashed rgba(232, 74, 138, 0.45);
   border-radius: 8px;
   color: var(--bp-accent);
   font: inherit;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: -0.1px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
 }
 
-.phone-frame-light .lineup-preset-chip-add:hover:not(:disabled) {
-  background: rgba(232, 74, 138, 0.14);
+.phone-frame-light .lineup-preset-save:hover:not(:disabled) {
+  background: rgba(232, 74, 138, 0.16);
   border-color: rgba(232, 74, 138, 0.7);
 }
 
-.phone-frame-light .lineup-preset-chip-add:disabled {
+.phone-frame-light .lineup-preset-save:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.phone-frame-light .lineup-preset-cap {
+  margin: 4px 0 2px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--bp-text-muted);
+  text-align: center;
 }
 
 /* 타순/투수 카드 하단에 작게 표시되는 사용법 힌트 — 슬롯이 1개 이상일 때만 노출 */
