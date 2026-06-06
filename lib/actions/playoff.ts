@@ -2,6 +2,8 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { teams } from "@/lib/constants/teams";
+import { getLatestLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
+import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 import {
   insertPlayoffRun,
@@ -51,12 +53,27 @@ export async function startPlayoffRun(input: {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  const opponents: PlayoffOpponent[] = pool.slice(0, PLAYOFF_TOTAL_ROUNDS).map((t, idx) => ({
-    round: idx + 1,
-    teamId: t.teamId,
-    teamName: t.teamName,
-    lineupSeed: randomSeed()
-  }));
+  // 각 상대 팀의 DB 최신 실제 라인업을 가져와 박제(없으면 시즌 스탯 폴백).
+  const opponents: PlayoffOpponent[] = await Promise.all(
+    pool.slice(0, PLAYOFF_TOTAL_ROUNDS).map(async (t, idx) => {
+      const res = await getLatestLineupForTeam(client, t.teamId);
+      const row = res.ok ? res.row : null;
+      const lineupHint: RecentLineupHint | null = row
+        ? {
+            batting: row.batting,
+            starter_roster_id: row.starter_roster_id,
+            starter_name: row.starter_name
+          }
+        : null;
+      return {
+        round: idx + 1,
+        teamId: t.teamId,
+        teamName: t.teamName,
+        lineupSeed: randomSeed(),
+        lineupHint
+      };
+    })
+  );
 
   const state: PlayoffRunState = { myEntryId: input.entryId, opponents, games: [] };
   return insertPlayoffRun(client, {

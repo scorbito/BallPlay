@@ -3,6 +3,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
+import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
 
 const TABLE = "bp_playoff_runs";
 
@@ -23,6 +24,8 @@ export type PlayoffOpponent = {
   teamId: string;
   teamName: string;
   lineupSeed: number;   // buildFakeOpponentTeam 결정성 → 상대 라인업 박제
+  // run 생성 시 DB에서 가져온 해당 팀 최신 실제 라인업. 없으면 시즌 스탯 폴백.
+  lineupHint?: RecentLineupHint | null;
 };
 
 /** 끝난 경기 1건. */

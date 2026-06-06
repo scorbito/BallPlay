@@ -29,7 +29,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   // 상대 라인업(시드 박제) — 기존 LineupDetailModal 로 보여줌. 팀명 표시용 displayName 부여.
   const oppTeam = useMemo(() => {
     if (!opp) return null;
-    const t = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, null);
+    const t = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, opp.lineupHint ?? null);
     return t ? { ...t, displayName: opp.teamName } : null;
   }, [opp]);
   const gameByRound = new Map(run.state.games.map((g) => [g.round, g]));
@@ -68,8 +68,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       showToast("내 라인업 구성에 실패했어요.");
       return;
     }
-    // 상대는 lineupSeed 로 박제(결정적) — 매번 같은 상대 라인업.
-    const opponent = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, null);
+    // 상대는 DB 최신 라인업(박제) 기준. 힌트 없으면 시즌 스탯 폴백. lineupSeed 로 결정적.
+    const opponent = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, opp.lineupHint ?? null);
     if (!opponent) {
       showToast("상대 팀 구성에 실패했어요.");
       return;
