@@ -61,6 +61,16 @@ import {
 import { LineupSyncBadge } from "@/components/domain/lineup/LineupSyncBadge";
 import { LineupSlotPicker } from "@/components/domain/lineup/LineupSlotPicker";
 import { LineupActionRow } from "@/components/domain/lineup/LineupActionRow";
+import { LineupPresetBar } from "@/components/domain/lineup/LineupPresetBar";
+import { PresetNameModal } from "@/components/domain/lineup/modals/PresetNameModal";
+import { ConfirmDeletePresetModal } from "@/components/domain/lineup/modals/ConfirmDeletePresetModal";
+import {
+  loadPresets,
+  savePreset,
+  renamePreset,
+  deletePreset,
+  type LineupPreset
+} from "@/lib/storage/lineupPresets";
 import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
 import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
 import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
@@ -128,6 +138,12 @@ export function LineupBuilderScreen() {
   const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
   // 출전 등록 시 마무리/불펜 빈 자리 자동 채움 안내 모달
   const [confirmAutoFillOpen, setConfirmAutoFillOpen] = useState(false);
+  // 라인업 프리셋 — 저장(이름 입력) / 적용(덮어쓰기 확인) / 이름변경 / 삭제 모달 상태.
+  const [savePresetOpen, setSavePresetOpen] = useState(false);
+  const [renamingPreset, setRenamingPreset] = useState<LineupPreset | null>(null);
+  const [deletingPreset, setDeletingPreset] = useState<LineupPreset | null>(null);
+  // 프리셋 적용 — 현재 편집본이 차 있으면 덮어쓰기 확인 후 적용.
+  const [pendingApplyPreset, setPendingApplyPreset] = useState<LineupPreset | null>(null);
   // 본인 팀별 전적 (entry_id → stats). 출전 등록된 팀만 매칭되는 stats 있음.
   const statsByEntryId = useEntryStats(entries, syncStatus);
   // 원정/방어 전적 (entry_id → stats) — 다른 유저가 내 팀을 도전한 경기.
@@ -498,6 +514,85 @@ export function LineupBuilderScreen() {
     } else {
       applyRecentLineup(row);
     }
+  };
+
+  // ── 라인업 프리셋 ───────────────────────────────────────────────
+  // 프리셋 = 현재 편집 중인 라인업(slots/pitcherSlots) 스냅샷. localStorage 전용.
+  // 적용은 빌더의 기존 라인업 저장 흐름(slots/pitcherSlots setState → 저장 effect)을 그대로 탄다.
+
+  /** 현재 편집본을 SavedLineup/SavedPitcherLineup 스냅샷으로 변환. */
+  const buildCurrentSnapshot = () => {
+    const now = new Date().toISOString();
+    const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
+    const hasAnyPitcher = pitcherSlots.some(Boolean);
+    return {
+      batting: {
+        teamId: selectedTeamId,
+        slots: filledSlots,
+        useDH,
+        updatedAt: now
+      },
+      pitching: hasAnyPitcher
+        ? { teamId: selectedTeamId, slots: pitcherSlots, updatedAt: now }
+        : null
+    };
+  };
+
+  /** 저장된 프리셋 스냅샷을 현재 편집본(slots/pitcherSlots)에 적용.
+   *  hydration effect와 동일한 매핑으로 채운 뒤, 빌더의 저장 effect가 entry에 반영하게 한다. */
+  const applyPreset = (preset: LineupPreset) => {
+    if (!currentEntry) return;
+    const nextSlots: SlotState[] = Array.from({ length: 9 }, () => null);
+    preset.batting.slots.forEach((s) => {
+      if (s.order >= 1 && s.order <= 9) {
+        nextSlots[s.order - 1] = s;
+      }
+    });
+    setSlots(nextSlots);
+
+    const nextPitcher = Array.from(
+      { length: PITCHER_SLOTS_COUNT },
+      (_, i) => preset.pitching?.slots[i] ?? null
+    );
+    setPitcherSlots(nextPitcher);
+
+    setSwapOrderSourceIdx(null);
+    setSwapSource(null);
+    setMode("batter");
+    showToast(`"${preset.name}" 프리셋을 적용했어요.`);
+  };
+
+  /** 프리셋 칩 탭 → 현재 편집본이 차 있으면 덮어쓰기 확인, 비어 있으면 즉시 적용. */
+  const handleApplyPreset = (preset: LineupPreset) => {
+    const hasFilledBatter = slots.some((s) => s !== null);
+    const hasAnyPitcher = pitcherSlots.some(Boolean);
+    if (hasFilledBatter || hasAnyPitcher) {
+      setPendingApplyPreset(preset);
+    } else {
+      applyPreset(preset);
+    }
+  };
+
+  /** "+ 저장" → 현재 라인업을 새 프리셋으로 저장 (이름 입력 모달 오픈). */
+  const handleOpenSavePreset = () => {
+    if (!currentEntry) return;
+    const existing = loadPresets(selectedTeamId);
+    if (existing.length >= 3) {
+      showToast("프리셋은 팀당 최대 3개까지 저장할 수 있어요.");
+      return;
+    }
+    setSavePresetOpen(true);
+  };
+
+  const handleSavePresetSubmit = (name: string) => {
+    if (!currentEntry) return;
+    const snapshot = buildCurrentSnapshot();
+    const res = savePreset(selectedTeamId, { name, ...snapshot });
+    if (!res.ok) {
+      showToast("프리셋은 팀당 최대 3개까지 저장할 수 있어요.");
+      return;
+    }
+    showToast(`"${name}" 프리셋을 저장했어요.`);
   };
 
   /** 슬롯의 포지션 변경. 다른 슬롯이 이미 그 포지션을 쓰고 있으면 자동으로 swap.
@@ -912,6 +1007,18 @@ export function LineupBuilderScreen() {
           onWithdraw={handleWithdraw}
         />
 
+        {/* 라인업 프리셋 바 — 현재 팀의 스냅샷 3칸. 탭하면 현재 편집본에 적용. */}
+        {currentEntry ? (
+          <LineupPresetBar
+            teamId={selectedTeamId}
+            canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
+            onSaveCurrent={handleOpenSavePreset}
+            onApply={handleApplyPreset}
+            onRename={(preset) => setRenamingPreset(preset)}
+            onDelete={(preset) => setDeletingPreset(preset)}
+          />
+        ) : null}
+
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 마무리 + 불펜 1~7 */}
         {mode === "batter" ? (
           <BatterSlotList
@@ -994,6 +1101,50 @@ export function LineupBuilderScreen() {
         onConfirm={() => {
           if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
           setPendingRecentLineup(null);
+        }}
+      />
+
+      {/* 프리셋 적용 — 현재 편집본이 차 있을 때 덮어쓰기 확인 (최근 라인업과 동일 모달 재사용) */}
+      <ConfirmOverwriteRecentModal
+        open={pendingApplyPreset !== null}
+        onCancel={() => setPendingApplyPreset(null)}
+        onConfirm={() => {
+          if (pendingApplyPreset) applyPreset(pendingApplyPreset);
+          setPendingApplyPreset(null);
+        }}
+      />
+
+      {/* 프리셋 저장 — 현재 라인업 스냅샷에 이름 붙여 저장 */}
+      <PresetNameModal
+        open={savePresetOpen}
+        intent="save"
+        placeholder={`${selectedTeam.shortName} 프리셋`}
+        onClose={() => setSavePresetOpen(false)}
+        onSubmit={handleSavePresetSubmit}
+      />
+
+      {/* 프리셋 이름 변경 */}
+      <PresetNameModal
+        open={renamingPreset !== null}
+        intent="rename"
+        initialName={renamingPreset?.name ?? ""}
+        onClose={() => setRenamingPreset(null)}
+        onSubmit={(name) => {
+          if (renamingPreset) renamePreset(renamingPreset.presetId, name);
+        }}
+      />
+
+      {/* 프리셋 삭제 확인 */}
+      <ConfirmDeletePresetModal
+        open={deletingPreset !== null}
+        presetName={deletingPreset?.name ?? ""}
+        onCancel={() => setDeletingPreset(null)}
+        onConfirm={() => {
+          if (deletingPreset) {
+            deletePreset(deletingPreset.presetId);
+            showToast("프리셋을 삭제했어요.");
+          }
+          setDeletingPreset(null);
         }}
       />
 
