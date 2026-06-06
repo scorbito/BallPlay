@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Eye, History } from "lucide-react";
 import type { LineupEntry, LineupMode } from "@/lib/types/lineup";
 import type { SyncStatus } from "@/lib/storage/useLineupSync";
@@ -22,6 +23,8 @@ type LineupActionRowProps = {
   currentEntryAwayStats: LineupStats | undefined;
   /** "실제 경기 라인업 불러오기" 버튼 hint에 보여줄 팀 약칭 */
   selectedTeamShortName: string;
+  /** lead 영역 우측 절반에 들어갈 프리셋 드롭다운 (없으면 null) */
+  presetSlot?: ReactNode;
   onModeChange: (mode: LineupMode) => void;
   onRecentOpen: () => void;
   /** 출전 요청 — 마무리/불펜이 비어있으면 자동 채움 모달, 아니면 즉시 출전 등록 */
@@ -43,6 +46,7 @@ export function LineupActionRow({
   currentEntryStats,
   currentEntryAwayStats,
   selectedTeamShortName,
+  presetSlot,
   onModeChange,
   onRecentOpen,
   onPublishRequest,
@@ -50,31 +54,35 @@ export function LineupActionRow({
 }: LineupActionRowProps) {
   return (
     <div className="lineup-action-row">
-      {currentEntry?.isPublished ? (() => {
-        const wins = currentEntryStats?.wins ?? 0;
-        const losses = currentEntryStats?.losses ?? 0;
-        // 원정/방어 전적은 도전받은 적 있을 때(matches>0)만 노출 — 평소엔 간결하게.
-        const away = currentEntryAwayStats;
-        const hasAway = !!away && away.matches > 0;
-        return (
-          <p className="lineup-action-hint lineup-action-hint-published">
-            출전 중 · {hasAway ? "홈 " : ""}{wins}승 {losses}패
-            {hasAway ? (
-              <span className="lineup-action-hint-away"> · 원정 {away!.wins}승 {away!.losses}패</span>
-            ) : null}
-          </p>
-        );
-      })() : currentEntry ? (
-        <button
-          type="button"
-          className="lineup-recent-load-btn"
-          onClick={onRecentOpen}
-          title={`${selectedTeamShortName}이(가) 최근 경기에서 실제로 쓴 선발 라인업으로 자동 세팅`}
-        >
-          <History size={12} />
-          <span>실제 경기 라인업 불러오기</span>
-        </button>
-      ) : null}
+      {/* lead 영역 — 좌우 반반: [불러오기/출전중 hint] [프리셋 드롭다운] */}
+      <div className="lineup-action-lead">
+        {currentEntry?.isPublished ? (() => {
+          const wins = currentEntryStats?.wins ?? 0;
+          const losses = currentEntryStats?.losses ?? 0;
+          // 원정/방어 전적은 도전받은 적 있을 때(matches>0)만 노출 — 평소엔 간결하게.
+          const away = currentEntryAwayStats;
+          const hasAway = !!away && away.matches > 0;
+          return (
+            <p className="lineup-action-hint lineup-action-hint-published">
+              출전 중 · {hasAway ? "홈 " : ""}{wins}승 {losses}패
+              {hasAway ? (
+                <span className="lineup-action-hint-away"> · 원정 {away!.wins}승 {away!.losses}패</span>
+              ) : null}
+            </p>
+          );
+        })() : currentEntry ? (
+          <button
+            type="button"
+            className="lineup-recent-load-btn"
+            onClick={onRecentOpen}
+            title={`${selectedTeamShortName}이(가) 최근 경기에서 실제로 쓴 선발 라인업으로 자동 세팅`}
+          >
+            <History size={12} />
+            <span>실제 경기 라인업 불러오기</span>
+          </button>
+        ) : null}
+        {presetSlot}
+      </div>
       <div className="lineup-action-buttons">
         {/* 타자/투수 토글 — 공유 옆에 배치 */}
         <div className="lineup-mode-toggle lineup-mode-toggle-inline" role="tablist" aria-label="라인업 종류">

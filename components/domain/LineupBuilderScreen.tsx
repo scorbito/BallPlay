@@ -954,22 +954,6 @@ export function LineupBuilderScreen() {
           onRename={(entryId) => setRenamingEntryId(entryId)}
           onDelete={(entryId) => setConfirmDeleteEntryId(entryId)}
         />
-        {/* 팀 선택 옆 라인업 프리셋 드롭다운 — 현재 팀의 스냅샷(최대 3)을 적용/저장. */}
-        {currentEntry ? (
-          <LineupPresetBar
-            teamId={selectedTeamId}
-            canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
-            open={presetMenuOpen}
-            setOpen={(open) => {
-              setPresetMenuOpen(open);
-              if (open) setSlotMenuOpen(false);
-            }}
-            onSaveCurrent={handleOpenSavePreset}
-            onApply={handleApplyPreset}
-            onRename={(preset) => setRenamingPreset(preset)}
-            onDelete={(preset) => setDeletingPreset(preset)}
-          />
-        ) : null}
         {/* 헤더 우측: 공유 버튼 (이전 동기화 배지 자리) */}
         <button
           type="button"
@@ -1019,6 +1003,21 @@ export function LineupBuilderScreen() {
           currentEntryStats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
           currentEntryAwayStats={currentEntry ? awayStatsByEntryId[currentEntry.entryId] : undefined}
           selectedTeamShortName={selectedTeam.shortName}
+          presetSlot={currentEntry ? (
+            <LineupPresetBar
+              teamId={selectedTeamId}
+              canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
+              open={presetMenuOpen}
+              setOpen={(open) => {
+                setPresetMenuOpen(open);
+                if (open) setSlotMenuOpen(false);
+              }}
+              onSaveCurrent={handleOpenSavePreset}
+              onApply={handleApplyPreset}
+              onRename={(preset) => setRenamingPreset(preset)}
+              onDelete={(preset) => setDeletingPreset(preset)}
+            />
+          ) : null}
           onModeChange={(nextMode) => {
             setMode(nextMode);
             setSwapSource(null);

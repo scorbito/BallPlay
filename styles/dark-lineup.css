@@ -1388,6 +1388,22 @@
   min-width: 0;
 }
 
+/* lead 영역 — [불러오기/출전중 hint] [프리셋 드롭다운] 좌우 반반 */
+.phone-frame-light .lineup-action-lead {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 좌측 절반(불러오기 버튼 / 출전중 hint)과 우측 절반(프리셋)을 50/50 으로 */
+.phone-frame-light .lineup-action-lead > .lineup-recent-load-btn,
+.phone-frame-light .lineup-action-lead > .lineup-action-hint,
+.phone-frame-light .lineup-action-lead > .lineup-preset-picker {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .phone-frame-light .lineup-action-hint {
   flex: 1;
   min-width: 0;
@@ -1519,7 +1535,7 @@
     row-gap: 6px;
     padding: 0 2px;
   }
-  .phone-frame-wide .lineup-action-hint { grid-area: hint; }
+  .phone-frame-wide .lineup-action-lead { grid-area: hint; }
   .phone-frame-wide .lineup-action-pool-badge { grid-area: badge; justify-self: start; }
   .phone-frame-wide .lineup-action-buttons { grid-area: buttons; justify-self: end; }
 
@@ -3400,24 +3416,28 @@
 }
 
 /* ── 라인업 프리셋 드롭다운 ─────────────────────────────────────
-   헤더의 팀 선택 드롭다운 옆 칩. 팀 선택 드롭다운과 같은 톤/패턴. */
+   액션 행 lead 영역 우측 절반. "실제 라인업 불러오기" 버튼과 50/50.
+   트리거는 셀 폭을 꽉 채우는 컴팩트 버튼. */
 .phone-frame-light .lineup-preset-picker {
   position: relative;
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .phone-frame-light .lineup-preset-trigger {
+  width: 100%;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  padding: 9px 10px;
+  padding: 6px 10px;
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--bp-text);
   cursor: pointer;
   font: inherit;
   white-space: nowrap;
+  overflow: hidden;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -3429,6 +3449,8 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .phone-frame-light .lineup-preset-trigger-count {
