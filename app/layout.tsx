@@ -41,6 +41,7 @@ import "@/styles/dark-contact-settings.css";
 import "@/styles/interactions-loading.css";
 import "@/styles/live-result.css";
 import "@/styles/dark-install.css";
+import "@/styles/dark-playoff.css";
 import "@/styles/dark-profile-popover.css";
 import "@/styles/dark-season-level.css";
 import "@/styles/dark-lineup.css";

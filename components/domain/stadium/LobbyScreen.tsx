@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { RegisteredLineupList } from "./RegisteredLineupList";
 import { StadiumLineupRankingPreview } from "./StadiumLineupRankingPreview";
@@ -22,6 +24,16 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking }: Props) {
         lineupRows={topLineupRanking}
         accountRows={topAccountRanking}
       />
+
+      {/* 1.5 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
+      <Link href="/stadium/playoff" className="stadium-playoff-entry" prefetch>
+        <span className="stadium-playoff-entry-emoji" aria-hidden="true">🍁</span>
+        <span className="stadium-playoff-entry-text">
+          <strong>가을야구 도전</strong>
+          <span>5위에서 시작해 한국시리즈 우승까지</span>
+        </span>
+        <ChevronRight size={20} aria-hidden="true" />
+      </Link>
 
       {/* 2. 출전 팀 풀 — 전체 리스트 (추가 진입 불필요) */}
       <section className="stadium-lobby-section stadium-lobby-section-main">

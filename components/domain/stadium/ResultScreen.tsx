@@ -11,8 +11,10 @@ import {
   generateSeed,
   loadMatchSession,
   saveMatchSession,
+  clearMatchSession,
   type MatchSession
 } from "@/lib/sim/matchSession";
+import { recordPlayoffGame } from "@/lib/actions/playoff";
 import { buildShareUrl } from "@/lib/sim/matchShare";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { useAppState } from "@/lib/state/AppState";
@@ -30,6 +32,8 @@ export function ResultScreen() {
   const [savedId, setSavedId] = useState<string | null>(null);
   // 동기 ref 가드 — useEffect가 두 번 실행돼도 INSERT 1회만 시도하도록 차단.
   const saveAttemptedRef = useRef(false);
+  // 플레이오프 결과 기록 1회 가드.
+  const playoffRecordedRef = useRef(false);
   // 매치 종료 직후 승급 모달 트리거용 — 본인 누적 승수.
   const [accountWins, setAccountWins] = useState<number>(0);
 
@@ -66,6 +70,26 @@ export function ResultScreen() {
       }
     })();
   }, [hydrated, savedId]);
+
+  // 플레이오프 매치 — 결과 화면 도달 즉시 대진표에 자동 기록(1회). 버튼은 이동만.
+  // 액션 내부에서 같은 라운드 중복 기록은 막으므로 effect 재실행에도 안전.
+  useEffect(() => {
+    if (!hydrated || !session?.result) return;
+    if (session.source !== "playoff") return;
+    if (playoffRecordedRef.current) return;
+    if (!session.playoffRunId || session.playoffRound == null) return;
+    playoffRecordedRef.current = true;
+    const fs = session.result.finalScore;
+    void recordPlayoffGame({
+      runId: session.playoffRunId,
+      round: session.playoffRound,
+      win: fs.home > fs.away,
+      scoreMe: fs.home,
+      scoreOpp: fs.away,
+      playSeed: session.seed,
+      oppTeamId: session.opponentTeamId
+    }).catch(() => {});
+  }, [hydrated, session]);
 
   const mvpPlayer = useMemo(() => {
     if (!session?.result || !session.input) return null;
@@ -194,9 +218,13 @@ export function ResultScreen() {
     };
   }, [hydrated, canSave, session, mvpPlayer, savedId, saving, showToast]);
 
-  // 뒤로가기 — public 매치는 경기장, 그 외는 연습경기장.
+  // 뒤로가기 — public 매치는 경기장, 플레이오프는 대진표, 그 외는 연습경기장.
   const backHrefForSource =
-    session?.source === "public" ? "/stadium/lobby" : "/play/practice";
+    session?.source === "public"
+      ? "/stadium/lobby"
+      : session?.source === "playoff"
+        ? "/stadium/playoff"
+        : "/play/practice";
 
   if (!hydrated || !session?.result || !session.input) {
     return (
@@ -342,24 +370,40 @@ export function ResultScreen() {
           </div>
         ) : null}
 
-        <footer className="stadium-result-actions">
-          <button type="button" className="stadium-cta-primary" onClick={handleRematch}>
-            <RotateCcw size={16} />
-            <span>다시 대결</span>
-          </button>
-          <button
-            type="button"
-            className="stadium-cta-secondary"
-            onClick={handleShare}
-            disabled={sharing}
-          >
-            <Share2 size={16} />
-            <span>{sharing ? "공유 중..." : "결과 공유"}</span>
-          </button>
-          <Link className="stadium-cta-secondary" href="/stadium/lobby" prefetch>
-            매칭풀로
-          </Link>
-        </footer>
+        {session.source === "playoff" ? (
+          <footer className="stadium-result-actions">
+            <button
+              type="button"
+              className="stadium-cta-primary"
+              onClick={() => {
+                clearMatchSession();
+                router.push("/stadium/playoff");
+              }}
+            >
+              <Trophy size={16} />
+              <span>대진표로</span>
+            </button>
+          </footer>
+        ) : (
+          <footer className="stadium-result-actions">
+            <button type="button" className="stadium-cta-primary" onClick={handleRematch}>
+              <RotateCcw size={16} />
+              <span>다시 대결</span>
+            </button>
+            <button
+              type="button"
+              className="stadium-cta-secondary"
+              onClick={handleShare}
+              disabled={sharing}
+            >
+              <Share2 size={16} />
+              <span>{sharing ? "공유 중..." : "결과 공유"}</span>
+            </button>
+            <Link className="stadium-cta-secondary" href="/stadium/lobby" prefetch>
+              매칭풀로
+            </Link>
+          </footer>
+        )}
       </section>
     </AppShell>
   );

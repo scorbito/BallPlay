@@ -1,0 +1,289 @@
+/* 가을야구(플레이오프) — 라이트 테마 (.phone-frame-light) */
+
+/* 경기장 로비 진입 카드 */
+.phone-frame-light .stadium-playoff-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(255, 150, 80, 0.10));
+  border: 1px solid var(--bp-line);
+  text-decoration: none;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .stadium-playoff-entry:hover {
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .stadium-playoff-entry-emoji {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .stadium-playoff-entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-frame-light .stadium-playoff-entry-text strong {
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.phone-frame-light .stadium-playoff-entry-text span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .stadium-playoff-entry > svg {
+  color: var(--bp-text-muted);
+  flex-shrink: 0;
+}
+
+/* 인트로 / 팀 선택 */
+.phone-frame-light .playoff-intro {
+  text-align: center;
+  margin: 8px 0 16px;
+}
+
+.phone-frame-light .playoff-intro-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-intro-desc {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-team-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .playoff-team-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line);
+}
+
+.phone-frame-light .playoff-team-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-light .playoff-team-go {
+  flex-shrink: 0;
+  width: auto;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.phone-frame-light .playoff-empty {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.phone-frame-light .playoff-empty-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-empty-sub {
+  margin: 2px 0;
+  font-size: 12.5px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-empty-cta {
+  display: inline-flex;
+  margin-top: 14px;
+  width: auto;
+  padding: 10px 20px;
+}
+
+/* 대진표 */
+.phone-frame-light .playoff-bracket-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 2px 12px;
+}
+
+.phone-frame-light .playoff-round-chip {
+  display: inline-flex;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  background: var(--bp-accent);
+}
+
+.phone-frame-light .playoff-round-progress {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .playoff-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px;
+  padding: 20px 12px;
+}
+
+.phone-frame-light .playoff-matchup-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-frame-light .playoff-matchup-team strong {
+  font-size: 13px;
+  font-weight: 850;
+  color: var(--bp-text);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.phone-frame-light .playoff-seed {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-vs {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text-muted);
+  flex-shrink: 0;
+}
+
+.phone-frame-light .playoff-start-btn {
+  width: 100%;
+  margin-top: 14px;
+  height: 48px;
+  font-size: 15px;
+}
+
+.phone-frame-light .playoff-history {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.phone-frame-light .playoff-history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(20, 30, 50, 0.04);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.phone-frame-light .playoff-history-round {
+  flex: 1;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-history-score {
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-history-badge {
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.phone-frame-light .playoff-history-item.is-win .playoff-history-badge {
+  color: #2563eb;
+}
+
+.phone-frame-light .playoff-history-item.is-loss .playoff-history-badge {
+  color: var(--bp-danger);
+}
+
+/* 결과(우승/탈락) 카드 */
+.phone-frame-light .playoff-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 18px;
+  text-align: center;
+}
+
+.phone-frame-light .playoff-result-card.is-champion {
+  background: linear-gradient(135deg, rgba(255, 196, 0, 0.12), rgba(232, 74, 138, 0.10));
+  border: 1px solid rgba(255, 196, 0, 0.5);
+}
+
+.phone-frame-light .playoff-result-emoji {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.phone-frame-light .playoff-result-title {
+  font-size: 20px;
+  font-weight: 950;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-result-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .playoff-result-sub {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--bp-text-secondary);
+}

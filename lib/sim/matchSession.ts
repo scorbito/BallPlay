@@ -13,10 +13,14 @@ export type MatchSession = {
   input?: SimGameInput;
   result?: SimGameResult;
   startedAt: string;
-  // 매치 출처 — 기록 저장 가능 여부 판단. "ai"/"self"는 저장 X, "public"/"friend"만 저장.
+  // 매치 출처 — 기록 저장 가능 여부 판단. "ai"/"self"/"playoff"는 저장 X, "public"/"friend"만 저장.
   // 미설정(undefined)이면 AI로 간주 (백워드 호환).
   // "self": 본인이 만든 라인업끼리 대결 (양쪽 다 본인이라 공개 기록 의미 약해 저장 X).
-  source?: "ai" | "public" | "friend" | "self";
+  // "playoff": 가을야구 솔로 PvE — 공식 전적 미집계, 결과는 bp_playoff_runs 에만 기록.
+  source?: "ai" | "public" | "friend" | "self" | "playoff";
+  // 플레이오프 매치일 때 — 결과 화면에서 어느 run/라운드 결과인지 식별해 대진표에 기록.
+  playoffRunId?: string;
+  playoffRound?: number;
   // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
   liveMatchId?: string;
   liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행
