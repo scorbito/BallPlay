@@ -11,6 +11,7 @@ type NewSlotModalProps = {
   open: boolean;
   initialTeamId: string;
   seededTeamIds: Set<string>;
+  usedTeamIds: Set<string>;
   /** 미리보기 placeholder/hint에 사용할 닉네임 */
   nickname: string | null | undefined;
   onClose: () => void;
@@ -22,6 +23,7 @@ export function NewSlotModal({
   open,
   initialTeamId,
   seededTeamIds,
+  usedTeamIds,
   nickname,
   onClose,
   onCreate
@@ -32,10 +34,13 @@ export function NewSlotModal({
   // 모달 열릴 때 초기값 리셋
   useEffect(() => {
     if (open) {
-      setNewSlotTeamId(initialTeamId);
+      const firstAvailable =
+        teams.find((team) => seededTeamIds.has(team.id) && !usedTeamIds.has(team.id))?.id ??
+        initialTeamId;
+      setNewSlotTeamId(firstAvailable);
       setNewSlotName("");
     }
-  }, [open, initialTeamId]);
+  }, [open, initialTeamId, seededTeamIds, usedTeamIds]);
 
   // 한글 IME composition 등 비정상 경로로 상태가 12자 초과되면 강제 트림.
   useEffect(() => {
@@ -44,31 +49,36 @@ export function NewSlotModal({
     }
   }, [newSlotName]);
 
+  const selectedUnavailable = !seededTeamIds.has(newSlotTeamId) || usedTeamIds.has(newSlotTeamId);
+
   return (
     /* 새 슬롯 만들기 모달 */
     <ModalShell
       open={open}
-      title="새 라인업 슬롯"
+      title="새 팀 슬롯"
       onClose={onClose}
       panelClassName="lineup-confirm-modal-panel"
       closeOnBackdrop
     >
       <div className="lineup-confirm-body">
-        <p className="lineup-confirm-msg">선수 풀로 사용할 팀과 우리 팀명을 정해주세요.</p>
+        <p className="lineup-confirm-msg">운영할 팀과 우리 팀명을 정해주세요.</p>
         <div className="lineup-slot-team-grid">
           {teams.map((team) => {
             const seeded = seededTeamIds.has(team.id);
+            const used = usedTeamIds.has(team.id);
             const active = team.id === newSlotTeamId;
             return (
               <button
                 key={team.id}
                 type="button"
-                className={`lineup-slot-team-choice ${active ? "is-active" : ""} ${!seeded ? "is-disabled" : ""}`}
-                disabled={!seeded}
+                className={`lineup-slot-team-choice ${active ? "is-active" : ""} ${!seeded || used ? "is-disabled" : ""}`}
+                disabled={!seeded || used}
+                title={used ? "이미 운영 중인 팀입니다" : undefined}
                 onClick={() => setNewSlotTeamId(team.id)}
               >
                 <TeamBadge teamId={team.id} size="sm" />
                 <span>{team.shortName}</span>
+                {used ? <small>운영 중</small> : null}
               </button>
             );
           })}
@@ -90,7 +100,7 @@ export function NewSlotModal({
           {nickname?.trim()
             ? `${nickname.trim()}의 ${getTeam(newSlotTeamId).shortName}`
             : getTeam(newSlotTeamId).name}
-          &rsquo;으로 저장됩니다. 경기 화면에도 표시되는 이름입니다.
+          &rsquo;으로 저장됩니다. 경기 화면에도 표시되는 팀명입니다.
         </p>
         <div className="lineup-confirm-actions">
           <button
@@ -103,6 +113,7 @@ export function NewSlotModal({
           <button
             type="button"
             className="lineup-confirm-primary"
+            disabled={selectedUnavailable}
             onClick={() => {
               // 새 슬롯은 빈 라인업이므로 localStorage만 — 9명 채울 때 DB로 첫 commit.
               // 이름은 12자 한도 강제 (비정상 입력 방어).

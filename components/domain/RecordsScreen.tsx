@@ -375,7 +375,7 @@ export function RecordsScreen({
             <Lock size={28} />
           </span>
           <strong>로그인이 필요해요</strong>
-          <p>공개 라인업 매칭이나 친구 대전 결과는 로그인한 계정에 저장돼요.</p>
+          <p>출전 팀 매칭이나 친구 대전 결과는 로그인한 계정에 저장돼요.</p>
           <Link className="records-empty-cta" href="/login" prefetch>
             로그인하러 가기
           </Link>
@@ -410,7 +410,7 @@ export function RecordsScreen({
             <History size={28} />
           </span>
           <strong>아직 저장된 경기가 없어요</strong>
-          <p>공개 라인업 매칭이나 친구 대전을 한 판 해보세요. 결과가 자동으로 여기 저장돼요. (AI 대전은 저장 X)</p>
+          <p>출전 팀 매칭이나 친구 대전을 한 판 해보세요. 결과가 자동으로 여기 저장돼요. (AI 대전은 저장 X)</p>
           <Link className="records-empty-cta" href="/stadium/lobby" prefetch>
             경기장으로 가기
           </Link>
@@ -433,7 +433,7 @@ export function RecordsScreen({
       {/* 누적 공개 매치 요약 카드 — 서버에서 집계해 props로 받은 값.
           0전 0승 0패도 카드 노출(빈 메시지 분기). 익명 사용자에겐 로그인 CTA 추가.
           우측 상단에 "랭킹 보기" 보조 버튼 — 계정 누적 랭킹 페이지로 진입. */}
-      <section className="records-summary-card" aria-label="누적 공개 매치 전적">
+      <section className="records-summary-card" aria-label="누적 공식 경기 전적">
         <div className="records-summary-row">
           {userRecord.total > 0 ? (
             <div className="records-summary-stats">
@@ -444,7 +444,7 @@ export function RecordsScreen({
                 <span className="records-summary-icon" aria-hidden="true">📊</span>
               )}
               <div className="records-summary-text">
-                <span className="records-summary-label">내 공개 매치 누적</span>
+                <span className="records-summary-label">내 공식 경기 누적</span>
                 <strong className="records-summary-numbers">
                   {userRecord.wins}승 {userRecord.losses}패
                   <span className="records-summary-rate">· 승률 {formatWinRate(userRecord.winRate)}</span>
@@ -455,7 +455,7 @@ export function RecordsScreen({
             <div className="records-summary-stats">
               <span className="records-summary-icon" aria-hidden="true">📊</span>
               <div className="records-summary-text">
-                <span className="records-summary-label">내 공개 매치 누적</span>
+                <span className="records-summary-label">내 공식 경기 누적</span>
                 <strong className="records-summary-numbers">아직 기록이 없어요</strong>
               </div>
             </div>

@@ -8,11 +8,13 @@ import { TIER_LABEL, type UserTier } from "@/lib/auth/userTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
 import type { LineupEntry } from "@/lib/types/lineup";
 import type { LineupStats } from "@/lib/supabase/query-parts/bpLineups";
+import type { ArchivedTeam } from "@/lib/lineup/useArchivedTeams";
 
 type LineupSlotPickerProps = {
   entries: LineupEntry[];
   selectedEntryId: string | null;
   statsByEntryId: Record<string, LineupStats>;
+  archivedTeams: ArchivedTeam[];
   lineupLimit: number;
   tier: UserTier;
   open: boolean;
@@ -23,11 +25,12 @@ type LineupSlotPickerProps = {
   onDelete: (entryId: string) => void;
 };
 
-/** 라인업 슬롯 picker — 현재 슬롯 + 드롭다운으로 다른 슬롯 / 새 슬롯 / 이름 편집 / 삭제 */
+/** 팀 슬롯 picker — 현재 팀 + 드롭다운으로 다른 팀 / 새 팀 / 이름 편집 / 삭제 */
 export function LineupSlotPicker({
   entries,
   selectedEntryId,
   statsByEntryId,
+  archivedTeams,
   lineupLimit,
   tier,
   open,
@@ -68,12 +71,12 @@ export function LineupSlotPicker({
             <strong className="lineup-slot-trigger-name">{currentEntry.name}</strong>
           </>
         ) : (
-          <strong className="lineup-slot-trigger-empty">슬롯을 만드세요</strong>
+          <strong className="lineup-slot-trigger-empty">팀을 만드세요</strong>
         )}
         <ChevronDown size={16} className={open ? "lineup-slot-chevron-open" : ""} />
       </button>
       {open ? (
-        <ul className="lineup-slot-menu" role="listbox" aria-label="라인업 슬롯">
+        <ul className="lineup-slot-menu" role="listbox" aria-label="팀 슬롯">
           {entries.map((entry) => {
             const active = entry.entryId === selectedEntryId;
             const stats = statsByEntryId[entry.entryId];
@@ -97,9 +100,9 @@ export function LineupSlotPicker({
                       : "0승 0패"}
                   </span>
                   {entry.isPublished ? (
-                    <span className="lineup-slot-menu-badge is-public" title="공개 중">공개</span>
+                    <span className="lineup-slot-menu-badge is-public" title="경기장 출전 중">출전</span>
                   ) : (
-                    <span className="lineup-slot-menu-badge" title="비공개">비공개</span>
+                    <span className="lineup-slot-menu-badge" title="필수 라인업 완성 후 출전할 수 있습니다">출전 준비</span>
                   )}
                 </button>
                 <div className="lineup-slot-menu-actions">
@@ -118,7 +121,7 @@ export function LineupSlotPicker({
                   <button
                     type="button"
                     className="lineup-slot-action-btn lineup-slot-action-btn-danger"
-                    aria-label="삭제"
+                    aria-label={stats && stats.matches > 0 ? "은퇴" : "삭제"}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(entry.entryId);
@@ -131,7 +134,7 @@ export function LineupSlotPicker({
               </li>
             );
           })}
-          {/* 슬롯 여유 있으면 "새 라인업 슬롯" (정상 추가) */}
+          {/* 슬롯 여유 있으면 "새 팀 슬롯" (정상 추가) */}
           {entries.length < lineupLimit ? (
             <li>
               <button
@@ -143,12 +146,12 @@ export function LineupSlotPicker({
                 }}
               >
                 <Plus size={14} />
-                <span>새 라인업 슬롯</span>
+                <span>새 팀 슬롯</span>
               </button>
             </li>
           ) : null}
 
-          {/* 비로그인/익명 — 슬롯 여유와 무관하게 항상 "로그인해서 슬롯 추가" 노출
+          {/* 비로그인/익명 — 슬롯 여유와 무관하게 항상 "로그인해서 팀 추가" 노출
               (전환 유도). 로그인하면 5개까지. free/pro 가 한도 도달 시엔 캡 문구. */}
           {tier === "guest" ? (
             <li>
@@ -159,16 +162,38 @@ export function LineupSlotPicker({
                 onClick={() => setOpen(false)}
               >
                 <LogIn size={14} />
-                <span>로그인해서 슬롯 추가</span>
+                <span>로그인해서 팀 추가</span>
                 <span className="lineup-slot-menu-login-hint">
-                  로그인하면 {getLineupSlotLimit("free")}개까지
+                  로그인하면 {getLineupSlotLimit("free")}팀까지
                 </span>
               </Link>
             </li>
           ) : entries.length >= lineupLimit ? (
             <li className="lineup-slot-menu-cap">
-              {TIER_LABEL[tier]} 등급은 최대 {lineupLimit}개까지 저장
+              {TIER_LABEL[tier]} 등급은 최대 {lineupLimit}팀까지 운영
             </li>
+          ) : null}
+
+          {/* 은퇴한 팀 — 읽기 전용. 전적은 보존되지만 편집/출전 불가. 슬롯 한도엔 미포함. */}
+          {archivedTeams.length > 0 ? (
+            <>
+              <li className="lineup-slot-archived-head">은퇴한 팀</li>
+              {archivedTeams.map((t) => {
+                const s = t.stats;
+                return (
+                  <li key={t.entry.entryId} className="lineup-slot-archived-item">
+                    <TeamBadge teamId={t.entry.teamId} size="sm" />
+                    <span className="lineup-slot-menu-name">{t.entry.name}</span>
+                    <span className="lineup-slot-menu-record">
+                      {s && s.matches > 0 ? `${s.wins}승 ${s.losses}패` : "기록 없음"}
+                    </span>
+                    <span className="lineup-slot-menu-badge is-retired" title="은퇴한 팀">
+                      은퇴
+                    </span>
+                  </li>
+                );
+              })}
+            </>
           ) : null}
         </ul>
       ) : null}

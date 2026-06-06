@@ -95,20 +95,18 @@ export function newEntryId(): string {
 export function createEmptyEntry(teamId: string, nameSuggestion?: string, nicknameForDefault?: string): LineupEntry {
   const team = getTeam(teamId);
   const now = new Date().toISOString();
-  const sameTeamCount = loadLineupEntries().filter((e) => e.teamId === teamId).length;
-  // 기본 라인업명: "{닉네임}의 {팀 약칭}" (예: "야구노리의 두산").
-  // 닉네임 없으면 KBO 정식 팀명으로 폴백. 동일 팀 중복은 #2, #3 식으로 분기.
+  // 기본 팀명: "{닉네임}의 {팀 약칭}" (예: "야구노리의 두산").
+  // 신규 생성에서는 같은 팀 중복을 막으므로 별도 번호를 붙이지 않는다.
   const trimmedNick = nicknameForDefault?.trim();
   const base = trimmedNick ? `${trimmedNick}의 ${team.shortName}` : team.name;
-  const defaultName = sameTeamCount > 0 ? `${base} #${sameTeamCount + 1}` : base;
   return {
     entryId: newEntryId(),
-    name: nameSuggestion?.trim() || defaultName,
+    name: nameSuggestion?.trim() || base,
     teamId,
     batting: { teamId, slots: [], useDH: true, updatedAt: now },
     pitching: null,
     updatedAt: now,
-    isPublished: false // 비공개로 시작 — 9명 채우면 공개 유도 모달이 뜸
+    isPublished: false // 경기장 노출은 라인업 완성 후 등록한다. 팀 자체는 슬롯 생성 즉시 운영 시작.
   };
 }
 

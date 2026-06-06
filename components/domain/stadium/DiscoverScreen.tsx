@@ -11,9 +11,9 @@ export function DiscoverScreen() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
-    <AppShell activeTab="stadium" title="공개 라인업 도전" backHref="/stadium" theme="light" wide>
+    <AppShell activeTab="stadium" title="출전 팀 도전" backHref="/stadium" theme="light" wide>
       <header className="stadium-discover-head">
-        <p className="stadium-discover-sub">다른 플레이어가 공개한 라인업과 매칭해서 시뮬</p>
+        <p className="stadium-discover-sub">다른 플레이어가 출전 등록한 팀과 매칭해서 시뮬</p>
         <button
           type="button"
           className="stadium-discover-refresh"

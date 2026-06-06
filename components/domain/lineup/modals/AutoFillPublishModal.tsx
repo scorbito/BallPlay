@@ -9,7 +9,7 @@ type AutoFillPublishModalProps = {
   onClose: () => void;
 };
 
-/** 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 공개.
+/** 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 출전 등록.
  *  실제 채움 + DB upsert + togglePublished는 부모의 onConfirm에서 처리. */
 export function AutoFillPublishModal({
   open,
@@ -27,7 +27,7 @@ export function AutoFillPublishModal({
     >
       <div className="lineup-confirm-body">
         <p className="lineup-confirm-msg">
-          마무리·불펜 빈 자리를 <strong>자동으로 채워서 공개</strong>합니다.<br />
+          마무리·불펜 빈 자리를 <strong>자동으로 채워서 출전 등록</strong>합니다.<br />
           <br />
           · 마무리 — 세이브 많은 선수<br />
           · 불펜 — 평균자책점 좋은 선수<br />
@@ -49,7 +49,7 @@ export function AutoFillPublishModal({
             disabled={publishProcessing}
             onClick={onConfirm}
           >
-            자동 채움 + 공개
+            자동 채움 + 출전
           </button>
         </div>
       </div>

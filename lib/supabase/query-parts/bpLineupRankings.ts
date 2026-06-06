@@ -1,8 +1,9 @@
-// 라인업 전적 랭킹 — bp_records(source='public') 집계.
+// 팀 전적 랭킹 — bp_records(source='public') 중 사용자가 직접 실행한 홈경기만 집계.
 //   - 시즌: 전체 기간 누적
 //   - 주간: 이번 주 (월요일 00:00 KST ~ 일요일 23:59 KST)
 // admin 클라이언트로 RLS 우회 → 다른 사용자 라인업/프로필 join 필요.
 // 라인업이 등록된 매치(home_lineup_id/away_lineup_id non-null)만 집계 대상.
+// 다른 유저가 내 팀을 상대로 실행한 mirror/원정 기록은 대표 전적에서 제외한다.
 
 import { unstable_cache } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
@@ -88,17 +89,18 @@ async function fetchRecordsSince(sinceIso: string | null, max = 10000): Promise<
   return all;
 }
 
-/** 레코드 배열을 (lineup_id, owner) 단위로 집계. 라인업 ID 없는 row는 스킵. */
+/** 레코드 배열을 (lineup_id, owner) 단위로 집계. 홈경기와 라인업 ID 없는 row만 사용. */
 function aggregate(records: RecordRowSlim[]): Aggregate[] {
   const map = new Map<string, Aggregate>();
 
   for (const r of records) {
     if (!r.final_score) continue;
-    const userLineupId = r.user_side === "home" ? r.home_lineup_id : r.away_lineup_id;
+    if (r.user_side !== "home") continue;
+    const userLineupId = r.home_lineup_id;
     if (!userLineupId) continue;
 
-    const userScore = r.user_side === "home" ? r.final_score.home : r.final_score.away;
-    const oppScore = r.user_side === "home" ? r.final_score.away : r.final_score.home;
+    const userScore = r.final_score.home;
+    const oppScore = r.final_score.away;
     const isWin = userScore > oppScore;
     const isTie = userScore === oppScore;
     if (isTie) continue; // 무승부는 양쪽 다 제외 (랭킹 노이즈)
@@ -206,13 +208,13 @@ const RANKING_REVALIDATE_SECONDS = 60;
 /** 시즌 라인업 랭킹 — 60초 캐시. */
 export const getCachedSeasonLineupRanking = unstable_cache(
   async (limit = 100): Promise<LineupRankingRow[]> => listSeasonLineupRanking(limit),
-  ["lineup-ranking-season-v1"],
+  ["lineup-ranking-season-v2-home-only"],
   { tags: ["ranking", "lineup-ranking-season"], revalidate: RANKING_REVALIDATE_SECONDS }
 );
 
 /** 이번 주 라인업 랭킹 — 60초 캐시. */
 export const getCachedWeeklyLineupRanking = unstable_cache(
   async (limit = 100): Promise<LineupRankingRow[]> => listWeeklyLineupRanking(limit),
-  ["lineup-ranking-weekly-v1"],
+  ["lineup-ranking-weekly-v2-home-only"],
   { tags: ["ranking", "lineup-ranking-weekly"], revalidate: RANKING_REVALIDATE_SECONDS }
 );

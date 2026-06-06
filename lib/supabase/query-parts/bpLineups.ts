@@ -24,6 +24,9 @@ export type BpLineupRow = {
   // status / description은 레거시 컬럼 — 새 모델에선 미사용.
   status?: string | null;
   description?: string | null;
+  // 팀 은퇴(보관). true 면 활성 목록/슬롯 한도/매치 풀에서 제외하되 전적은 보존.
+  is_archived?: boolean;
+  archived_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -80,7 +83,32 @@ export async function listMyLineups(
     .eq("owner_user_id", userId)
     .order("updated_at", { ascending: false });
   if (error) return { ok: false, error: error.message };
-  return { ok: true, rows: (data ?? []) as BpLineupRow[] };
+  // 은퇴(is_archived=true) 팀은 활성 목록에서 제외 — 슬롯 한도/피커/동기화에 안 잡힘.
+  // JS에서 필터: is_archived 컬럼이 아직 없을 수 있어(SQL 미적용) 쿼리 .eq 대신
+  // 후처리. 컬럼 없으면 undefined → !undefined=true → 모두 활성으로 취급.
+  const rows = ((data ?? []) as BpLineupRow[]).filter((r) => !r.is_archived);
+  return { ok: true, rows };
+}
+
+// ============================================================
+// Read — 본인 은퇴 팀 (마이페이지/팀 히스토리용)
+// ============================================================
+
+export async function listMyArchivedLineups(
+  client: SupabaseClient,
+  userId: string
+): Promise<{ ok: true; rows: BpLineupRow[] } | { ok: false; error: string }> {
+  const { data, error } = await client
+    .from(TABLE)
+    .select("*")
+    .eq("owner_user_id", userId)
+    .order("updated_at", { ascending: false });
+  if (error) return { ok: false, error: error.message };
+  // 은퇴 컬럼 미적용 환경에서도 안전하도록 JS에서 필터/정렬(은퇴일 desc).
+  const rows = ((data ?? []) as BpLineupRow[])
+    .filter((r) => r.is_archived === true)
+    .sort((a, b) => (b.archived_at ?? "").localeCompare(a.archived_at ?? ""));
+  return { ok: true, rows };
 }
 
 // ============================================================
@@ -131,6 +159,31 @@ export async function deleteLineupByEntryId(
   const { error } = await client
     .from(TABLE)
     .delete()
+    .eq("owner_user_id", userId)
+    .eq("entry_id", entryId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+// ============================================================
+// 은퇴 (archive) — 전적 있는 팀은 삭제 대신 보관.
+//   is_archived=true + archived_at 기록 + is_published=false(매치 풀에서 제외).
+//   bp_records 는 건드리지 않음 → 전적 보존 (비공개 전환과 다른 점).
+//   team_id 는 그대로라 immutable 트리거(구단 변경 차단)에도 안 걸림.
+// ============================================================
+
+export async function archiveLineupByEntryId(
+  client: SupabaseClient,
+  entryId: string,
+  userId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await client
+    .from(TABLE)
+    .update({
+      is_archived: true,
+      archived_at: new Date().toISOString(),
+      is_published: false
+    })
     .eq("owner_user_id", userId)
     .eq("entry_id", entryId);
   if (error) return { ok: false, error: error.message };

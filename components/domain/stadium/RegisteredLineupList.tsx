@@ -299,8 +299,8 @@ export function RegisteredLineupList({
   if (rows.length === 0) {
     return (
       <section className="stadium-discover-empty">
-        <strong>아직 공개된 라인업이 없어요</strong>
-        <p>라인업 짜기에서 9명 채운 뒤 &lsquo;공개하기&rsquo;를 눌러보세요.</p>
+        <strong>아직 출전 등록된 팀이 없어요</strong>
+        <p>팀 관리에서 타자 9명과 선발 투수를 채운 뒤 &lsquo;출전 등록&rsquo;을 눌러보세요.</p>
       </section>
     );
   }
@@ -343,7 +343,7 @@ export function RegisteredLineupList({
                   <span>라인업</span>
                 </button>
                 {isMine ? (
-                  <span className="stadium-mine-tag" aria-label="내 공개 라인업">내 라인업</span>
+                  <span className="stadium-mine-tag" aria-label="내 출전 팀">내 팀</span>
                 ) : (
                   <button
                     type="button"
@@ -367,7 +367,7 @@ export function RegisteredLineupList({
         onClose={() => setPreviewTeam(null)}
       />
 
-      {/* 도전 모달 — 본인 공개 라인업 picker */}
+      {/* 도전 모달 — 본인 출전 팀 picker */}
       <ModalShell
         open={selectedOpponent !== null}
         title="도전 시작"
@@ -393,14 +393,14 @@ export function RegisteredLineupList({
                       <strong>{myEntry.name}</strong>
                     </>
                   ) : (
-                    <span className="stadium-enter-empty">공개 라인업이 없음</span>
+                    <span className="stadium-enter-empty">출전 팀이 없음</span>
                   )}
                 </div>
               </div>
 
               {myPublishedEntries.length > 1 ? (
                 <div className="stadium-discover-my-picker">
-                  <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
+                  <span className="stadium-discover-my-picker-label">내 출전 팀 선택</span>
                   <div className="stadium-discover-my-picker-list">
                     {myPublishedEntries.map((entry) => {
                       const s = myStatsByEntryId[entry.entryId];
@@ -438,18 +438,18 @@ export function RegisteredLineupList({
         </div>
       </ModalShell>
 
-      {/* 본인이 공개 라인업이 없을 때 안내 */}
+      {/* 본인이 출전 팀이 없을 때 안내 */}
       <ModalShell
         open={needPublishGateOpen}
-        title="공개 라인업이 필요해요"
+        title="출전 팀이 필요해요"
         onClose={() => setNeedPublishGateOpen(false)}
         panelClassName="lineup-confirm-modal-panel"
         closeOnBackdrop
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            다른 공개 라인업과 도전하려면 본인도 공개 라인업이 있어야 해요.<br />
-            라인업 짜기에서 9명을 채운 뒤 &lsquo;공개하기&rsquo;를 눌러주세요.
+            다른 출전 팀과 도전하려면 본인도 출전 등록된 팀이 있어야 해요.<br />
+            팀 관리에서 타자 9명과 선발 투수를 채운 뒤 &lsquo;출전 등록&rsquo;을 눌러주세요.
           </p>
           <div className="lineup-confirm-actions">
             <button
@@ -460,7 +460,7 @@ export function RegisteredLineupList({
               닫기
             </button>
             <Link href="/play" className="lineup-confirm-primary" prefetch>
-              라인업 짜기
+              팀 관리
             </Link>
           </div>
         </div>

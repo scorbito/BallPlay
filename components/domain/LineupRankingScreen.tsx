@@ -123,8 +123,8 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
       <div className="lineup-rank-hint-row">
         <p className="lineup-rank-hint">
           {tab === "season"
-            ? "공개 매치에서 누적된 라인업 전적 순위입니다."
-            : "이번 주(월요일 ~ 일요일) 공개 매치 전적 순위입니다."}
+            ? "공식 경기에서 누적된 팀 전적 순위입니다."
+            : "이번 주(월요일 ~ 일요일) 공식 경기 전적 순위입니다."}
         </p>
         <div className="lineup-rank-team-dropdown" ref={ddRef}>
           <button
@@ -180,11 +180,11 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
           <Trophy size={28} aria-hidden />
           <p>
             {tab === "season"
-              ? "아직 집계된 공개 매치가 없어요."
-              : "이번 주 집계된 공개 매치가 없어요."}
+              ? "아직 집계된 공식 경기가 없어요."
+              : "이번 주 집계된 공식 경기가 없어요."}
           </p>
           <p className="lineup-rank-empty-sub">
-            경기장에서 공개 매치를 진행하면 라인업이 랭킹에 등록됩니다.
+            경기장에서 공식 경기를 진행하면 팀이 랭킹에 등록됩니다.
           </p>
         </div>
       ) : filteredRows.length === 0 ? (

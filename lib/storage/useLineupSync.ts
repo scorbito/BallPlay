@@ -31,6 +31,7 @@ import type { LineupEntry } from "@/lib/types/lineup";
 import {
   bulkUpsertLineups,
   deleteLineupByEntryId,
+  archiveLineupByEntryId,
   existsOwnerPublishedHash,
   listMyLineups,
   publishLineup as dbPublishLineup,
@@ -353,8 +354,13 @@ export function useLineupSync() {
   const syncedDelete = useCallback(
     (
       entryId: string,
-      opts?: { onSyncResult?: (res: { ok: boolean; error?: string }) => void }
+      opts?: {
+        onSyncResult?: (res: { ok: boolean; error?: string }) => void;
+        // true 면 하드 삭제 대신 은퇴(보관). 전적 있는 팀에 사용 — 전적/스냅샷 보존.
+        archive?: boolean;
+      }
     ): LineupEntry[] => {
+      // 로컬 활성 목록에서는 둘 다 제거. DB만 삭제 vs 은퇴로 분기.
       const next = localDelete(entryId);
       setState((s) => ({ ...s, entries: next }));
 
@@ -384,7 +390,9 @@ export function useLineupSync() {
             return;
           }
 
-          const res = await deleteLineupByEntryId(clientRef.current, entryId, liveUserId);
+          const res = opts?.archive
+            ? await archiveLineupByEntryId(clientRef.current, entryId, liveUserId)
+            : await deleteLineupByEntryId(clientRef.current, entryId, liveUserId);
           if (resolved) return;
           resolved = true;
           clearTimeout(timer);

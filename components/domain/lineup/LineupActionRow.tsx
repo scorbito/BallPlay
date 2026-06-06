@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff, History } from "lucide-react";
+import { Eye, History } from "lucide-react";
 import type { LineupEntry, LineupMode } from "@/lib/types/lineup";
 import type { SyncStatus } from "@/lib/storage/useLineupSync";
 import type { LineupStats } from "@/lib/supabase/query-parts/bpLineups";
@@ -16,19 +16,17 @@ type LineupActionRowProps = {
   poolCount: number;
   filledCount: number;
   pitcherFilled: number;
-  /** 현재 entry의 stats (없으면 undefined) — 공개 상태 hint에서 사용 */
+  /** 현재 entry의 stats (없으면 undefined) — 출전 상태 hint에서 사용 */
   currentEntryStats: LineupStats | undefined;
   /** "실제 경기 라인업 불러오기" 버튼 hint에 보여줄 팀 약칭 */
   selectedTeamShortName: string;
   onModeChange: (mode: LineupMode) => void;
   onRecentOpen: () => void;
-  /** 공개 요청 — 마무리/불펜이 비어있으면 자동 채움 모달, 아니면 즉시 공개 */
+  /** 출전 요청 — 마무리/불펜이 비어있으면 자동 채움 모달, 아니면 즉시 출전 등록 */
   onPublishRequest: () => void;
-  /** 비공개 요청 — 확인 모달 띄움 */
-  onUnpublishRequest: () => void;
 };
 
-/** 액션 행 — 최근 라인업 불러오기 + 타자/투수 토글 + 공개 버튼 + 대기 풀 뱃지 (PC 와이드) */
+/** 액션 행 — 최근 라인업 불러오기 + 타자/투수 토글 + 출전 버튼 + 대기 풀 뱃지 (PC 와이드) */
 export function LineupActionRow({
   mode,
   currentEntry,
@@ -42,8 +40,7 @@ export function LineupActionRow({
   selectedTeamShortName,
   onModeChange,
   onRecentOpen,
-  onPublishRequest,
-  onUnpublishRequest
+  onPublishRequest
 }: LineupActionRowProps) {
   return (
     <div className="lineup-action-row">
@@ -52,7 +49,7 @@ export function LineupActionRow({
         const losses = currentEntryStats?.losses ?? 0;
         return (
           <p className="lineup-action-hint lineup-action-hint-published">
-            🔒 공개 라인업 · {wins}승 {losses}패
+            출전 중 · {wins}승 {losses}패
           </p>
         );
       })() : currentEntry ? (
@@ -88,35 +85,28 @@ export function LineupActionRow({
             투수
           </button>
         </div>
-        {/* 공개/비공개 토글 */}
+        {/* 경기장 출전 등록 */}
         {(() => {
           if (!currentEntry) return null;
           const isOn = !!currentEntry.isPublished;
           // 익명도 DB sync되므로 syncStatus가 "synced"면 통과. "local-only"는 sync 실패 fallback.
           const canSync = syncStatus !== "local-only";
-          // 공개 조건 미충족은 클릭 시 안내한다. 이미 공개 중이면 세션을 재확인해 비공개 전환을 시도한다.
-          const disabled = publishProcessing || (!isOn && !canSync);
+          const disabled = isOn || publishProcessing || !canSync;
           const tip = !canSync
             ? "잠시 후 다시 시도해주세요"
             : isOn
-              ? "공개 중 — 다른 사람이 도전 가능. 클릭하여 비공개로 (전적 리셋)"
-              : publishRequirementMessage ?? "공개로 바꾸면 다른 사람이 도전할 수 있어요";
+              ? "출전 중 — 라인업은 자유롭게 수정할 수 있어요"
+              : publishRequirementMessage ?? "출전 등록하면 다른 사람이 도전할 수 있어요";
           return (
             <button
               type="button"
               className={`lineup-action-btn ${isOn ? "lineup-action-btn-published" : "lineup-action-btn-primary"}`}
               disabled={disabled}
               title={tip}
-              onClick={() => {
-                if (isOn) {
-                  onUnpublishRequest();
-                } else {
-                  onPublishRequest();
-                }
-              }}
+              onClick={onPublishRequest}
             >
-              {isOn ? <Eye size={12} /> : <EyeOff size={12} />}
-              {isOn ? "공개 중" : "공개하기"}
+              <Eye size={12} />
+              {isOn ? "출전 중" : "출전 등록"}
             </button>
           );
         })()}

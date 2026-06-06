@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "계정 누적 랭킹",
-  description: "공개 매치 전적으로 매기는 계정별 누적 승수 랭킹.",
+  description: "공식 경기 전적으로 매기는 계정별 누적 승수 랭킹.",
   alternates: { canonical: "/play/account-ranking" }
 };
 

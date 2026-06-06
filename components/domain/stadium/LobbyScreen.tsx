@@ -23,10 +23,10 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking }: Props) {
         accountRows={topAccountRanking}
       />
 
-      {/* 2. 공개 라인업 풀 — 전체 리스트 (추가 진입 불필요) */}
+      {/* 2. 출전 팀 풀 — 전체 리스트 (추가 진입 불필요) */}
       <section className="stadium-lobby-section stadium-lobby-section-main">
         <header className="stadium-lobby-section-head">
-          <h2 className="stadium-lobby-section-title">공개 라인업</h2>
+          <h2 className="stadium-lobby-section-title">출전 팀</h2>
         </header>
         <RegisteredLineupList sortBy="winrate" showHeader={false} />
       </section>

@@ -94,8 +94,9 @@ export type SavedPitcherLineup = {
 
 export const PITCHER_STORAGE_PREFIX = "ballplay:lineup:pitcher:";
 
-/** 사용자 다중 라인업 슬롯 — 한 슬롯 = 한 팀 + 그 팀의 타자/투수 라인업.
- *  UI상 "슬롯 1/2/3"으로 표시. 같은 팀 여러 변형(주력/테스트 등) 저장 가능. */
+/** 사용자 팀 슬롯 — 한 슬롯 = 한 팀 + 그 팀의 타자/투수 라인업.
+ *  신규 생성에서는 같은 KBO 팀을 중복 선택하지 못하게 막지만,
+ *  기존에 이미 만들어진 중복 슬롯은 별도 팀으로 유지한다. */
 export type LineupEntry = {
   entryId: string;
   name: string;             // 사용자 지정 (또는 기본값: KBO 정식 팀명)

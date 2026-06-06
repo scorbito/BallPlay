@@ -96,9 +96,9 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
       {tab === "lineup" ? (
         lineupRows.length === 0 ? (
           <div className="stadium-lobby-rank-preview-empty">
-            <p>아직 집계된 공개 매치가 없어요.</p>
+            <p>아직 집계된 공식 경기가 없어요.</p>
             <p className="stadium-lobby-rank-preview-empty-sub">
-              공개 매치를 진행하면 라인업이 랭킹에 등록됩니다.
+              공식 경기를 진행하면 팀이 랭킹에 등록됩니다.
             </p>
           </div>
         ) : (
@@ -147,9 +147,9 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
         )
       ) : accountRows.length === 0 ? (
         <div className="stadium-lobby-rank-preview-empty">
-          <p>아직 집계된 공개 매치가 없어요.</p>
+          <p>아직 집계된 공식 경기가 없어요.</p>
           <p className="stadium-lobby-rank-preview-empty-sub">
-            공개 매치를 진행하면 계정 전적이 누적됩니다.
+            공식 경기를 진행하면 계정 전적이 누적됩니다.
           </p>
         </div>
       ) : (

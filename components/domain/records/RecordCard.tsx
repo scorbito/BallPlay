@@ -84,7 +84,7 @@ export function RecordCard({
         </span>
         <span
           className={`records-card-tier ${isOfficial ? "is-official" : "is-practice"}`}
-          title={isOfficial ? "공개 매치 (양쪽 공개 라인업) — 전적에 집계" : "연습 매치 — 전적 미집계"}
+          title={isOfficial ? "공식 경기 (양쪽 출전 팀) — 전적에 집계" : "연습 경기 — 전적 미집계"}
         >
           {isOfficial ? "정식 매치" : "연습 매치"}
         </span>

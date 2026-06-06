@@ -127,7 +127,7 @@ export function CreateLiveMatchScreen() {
                     <TeamBadge teamId={entry.teamId} size="sm" />
                     <span className="stadium-enter-picker-name">{entry.name}</span>
                     {isPublished ? (
-                      <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">공개 등록</span>
+                      <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">출전 등록</span>
                     ) : null}
                     {pitcherAuto ? (
                       <span className="stadium-enter-picker-tag">투수 자동</span>

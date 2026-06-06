@@ -22,7 +22,7 @@ type TabDef = {
 
 const tabs: readonly TabDef[] = [
   { id: "home", label: "홈", iconSrc: "/icons/tabs/home.png", href: "/" },
-  { id: "play", label: "라인업 짜기", iconSrc: "/icons/tabs/play.png", href: "/play/lineup" },
+  { id: "play", label: "팀 관리", iconSrc: "/icons/tabs/play.png", href: "/play/lineup" },
   { id: "stadium", label: "경기장", iconSrc: "/icons/tabs/stadium.png", href: "/stadium/lobby" },
   { id: "records", label: "내 기록", iconSrc: "/icons/tabs/records.png", href: "/records" }
 ] as const;

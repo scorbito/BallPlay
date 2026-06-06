@@ -243,8 +243,8 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            공개 라인업과 대결하려면 로그인이 필요해요.<br />
-            로그인하면 내 라인업도 공개해서 전적을 쌓을 수 있어요.
+            출전 팀과 대결하려면 로그인이 필요해요.<br />
+            로그인하면 내 팀도 출전 등록해서 전적을 쌓을 수 있어요.
           </p>
           <div className="lineup-confirm-actions">
             <button type="button" className="lineup-confirm-cancel" onClick={onClose}>
@@ -260,27 +260,27 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
     );
   }
 
-  // 공개 라인업 필요 게이트
+  // 출전 팀 필요 게이트
   if (stage === "need-publish-gate") {
     return (
       <ModalShell
         open
-        title="공개 라인업이 필요해요"
+        title="출전 팀이 필요해요"
         onClose={onClose}
         panelClassName="lineup-confirm-modal-panel"
         closeOnBackdrop
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            다른 공개 라인업과 도전하려면 본인도 공개 라인업이 있어야 해요.<br />
-            라인업 짜기에서 9명을 채운 뒤 &lsquo;공개하기&rsquo;를 눌러주세요.
+            다른 출전 팀과 도전하려면 본인도 출전 등록된 팀이 있어야 해요.<br />
+            팀 관리에서 타자 9명과 선발 투수를 채운 뒤 &lsquo;출전 등록&rsquo;을 눌러주세요.
           </p>
           <div className="lineup-confirm-actions">
             <button type="button" className="lineup-confirm-cancel" onClick={onClose}>
               닫기
             </button>
             <Link href="/play" className="lineup-confirm-primary" prefetch>
-              라인업 짜기
+              팀 관리
             </Link>
           </div>
         </div>
@@ -338,14 +338,14 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
                     <strong>{myEntry.name}</strong>
                   </>
                 ) : (
-                  <span className="stadium-enter-empty">공개 라인업이 없음</span>
+                  <span className="stadium-enter-empty">출전 팀이 없음</span>
                 )}
               </div>
             </div>
 
             {myPublishedEntries.length > 1 ? (
               <div className="stadium-discover-my-picker">
-                <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
+                <span className="stadium-discover-my-picker-label">내 출전 팀 선택</span>
                 <div className="stadium-discover-my-picker-list">
                   {myPublishedEntries.map((entry) => {
                     const s = myStatsByEntryId[entry.entryId];

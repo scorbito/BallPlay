@@ -12,7 +12,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "라인업 랭킹",
-  description: "공개 매치 전적으로 매기는 KBO 라인업 시즌/주간 랭킹.",
+  description: "공식 경기 전적으로 매기는 KBO 팀 시즌/주간 랭킹.",
   alternates: { canonical: "/play/lineup/ranking" }
 };
 

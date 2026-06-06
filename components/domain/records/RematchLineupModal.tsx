@@ -77,8 +77,8 @@ export function RematchLineupModal({
         </div>
       ) : null}
 
-      <div className="stadium-discover-my-picker" role="radiogroup" aria-label="내 공개 라인업 선택">
-        <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
+      <div className="stadium-discover-my-picker" role="radiogroup" aria-label="내 출전 팀 선택">
+        <span className="stadium-discover-my-picker-label">내 출전 팀 선택</span>
         <div className="stadium-discover-my-picker-list records-rematch-picker-list">
           {lineups.map((lineup) => {
             const recordTxt = formatRecord(statsByEntryId?.[lineup.entryId]);

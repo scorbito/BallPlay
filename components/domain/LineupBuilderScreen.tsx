@@ -38,19 +38,17 @@ import {
   type SlotState
 } from "@/lib/lineup/swapHelpers";
 import { useEntryStats } from "@/lib/lineup/useEntryStats";
+import { useArchivedTeams } from "@/lib/lineup/useArchivedTeams";
 import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
 import { ConfirmOverwriteRecentModal } from "@/components/domain/lineup/modals/ConfirmOverwriteRecentModal";
-import {
-  ConfirmUnpublishModal,
-  LockInfoModal
-} from "@/components/domain/lineup/modals/ConfirmUnpublishModal";
 import { NewSlotModal } from "@/components/domain/lineup/modals/NewSlotModal";
 import { RenameSlotModal } from "@/components/domain/lineup/modals/RenameSlotModal";
 import {
   ConfirmDeleteSlotModal,
   DeleteSlotStatusModal,
-  type DeleteStatus
+  type DeleteStatus,
+  type SlotRemoveMode
 } from "@/components/domain/lineup/modals/DeleteSlotModals";
 import { AutoFillPublishModal } from "@/components/domain/lineup/modals/AutoFillPublishModal";
 import {
@@ -76,7 +74,7 @@ export function LineupBuilderScreen() {
   // 시드가 있는 팀으로 기본값 — 사용자의 메인팀이 시드 안 됐으면 두산
   const initialTeamId = seededTeamIds.has(profile.mainTeamId) ? profile.mainTeamId : "doosan";
 
-  // 다중 라인업 슬롯 (entries) — useLineupSync가 localStorage + Supabase DB 양방향 sync.
+  // 팀 슬롯 (entries) — useLineupSync가 localStorage + Supabase DB 양방향 sync.
   // 비로그인이면 localStorage만, 로그인이면 첫 진입 시 마이그레이션 + 이후 양방향.
   const {
     entries,
@@ -101,6 +99,10 @@ export function LineupBuilderScreen() {
   const [confirmDeleteEntryId, setConfirmDeleteEntryId] = useState<string | null>(null);
   // 삭제 진행/결과 모달 — DB sync 완료까지 진행 상태 보여줌.
   const [deleteStatus, setDeleteStatus] = useState<DeleteStatus>({ phase: "idle" });
+  // 진행/결과 모달에서도 같은 모드 문구를 쓰려고 확정 시점에 보존 (삭제/은퇴).
+  const [removeMode, setRemoveMode] = useState<SlotRemoveMode>("delete");
+  // 은퇴 직후 하단 "은퇴한 팀" 목록을 다시 불러오게 하는 트리거.
+  const [archivedRefreshKey, setArchivedRefreshKey] = useState(0);
 
   const [mode, setMode] = useState<LineupMode>("batter");
   const [slots, setSlots] = useState<SlotState[]>(EMPTY_SLOTS);
@@ -111,26 +113,24 @@ export function LineupBuilderScreen() {
   const [swapSource, setSwapSource] = useState<Position | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  // 공개/비공개 토글 — 비공개로 갈 때 전적 리셋 확인 모달
-  const [confirmUnpublishOpen, setConfirmUnpublishOpen] = useState(false);
   const [publishProcessing, setPublishProcessing] = useState(false);
-  // 공개 상태에서 잠긴 영역(슬롯/풀/다이아몬드) 클릭 시 안내 모달
-  const [lockInfoOpen, setLockInfoOpen] = useState(false);
   // 새 슬롯 onboarding 안내 — 슬롯별 한 번씩만 노출.
-  //   step1: 타순 9명 채우면 "선발 투수만 선택하면 공개 가능"
-  //   step2: 선발 투수까지 고르면 "이제 공개해서 가상경기 가능 — 마무리/불펜은 자동"
+  //   step1: 타순 9명 채우면 "선발 투수만 선택하면 출전 가능"
+  //   step2: 선발 투수까지 고르면 "이제 출전해서 가상경기 가능 — 마무리/불펜은 자동"
   const [guideStep0Open, setGuideStep0Open] = useState(false);
   const [guideStep1Open, setGuideStep1Open] = useState(false);
   const [guideStep2Open, setGuideStep2Open] = useState(false);
-  // 공개 전환 성공 직후 "경기장 가기" 유도 모달
+  // 출전 등록 성공 직후 "경기장 가기" 유도 모달
   const [guideGoStadiumOpen, setGuideGoStadiumOpen] = useState(false);
   // 팀 최근 라인업 불러오기 모달 + 덮어쓰기 확인 (pending: 선택한 row 임시 보관)
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const [pendingRecentLineup, setPendingRecentLineup] = useState<RecentLineupRow | null>(null);
-  // 공개 시 마무리/불펜 빈 자리 자동 채움 안내 모달
+  // 출전 등록 시 마무리/불펜 빈 자리 자동 채움 안내 모달
   const [confirmAutoFillOpen, setConfirmAutoFillOpen] = useState(false);
-  // 본인 라인업별 전적 (entry_id → stats). 공개 라인업만 매칭되는 stats 있음.
+  // 본인 팀별 전적 (entry_id → stats). 출전 등록된 팀만 매칭되는 stats 있음.
   const statsByEntryId = useEntryStats(entries, syncStatus);
+  // 은퇴(보관)한 팀 + 최종 전적 — 팀 관리 드롭다운 하단에 읽기 전용으로 표시.
+  const archivedTeams = useArchivedTeams(syncStatus, archivedRefreshKey);
   /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
   const [hydratedEntryId, setHydratedEntryId] = useState<string | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
@@ -147,7 +147,7 @@ export function LineupBuilderScreen() {
     if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
   }, [entries, selectedEntryId]);
 
-  // 첫 진입(슬롯 0개) 시 "새 라인업 슬롯" 모달 자동 오픈.
+  // 첫 진입(슬롯 0개) 시 "새 팀 슬롯" 모달 자동 오픈.
   // - sync 완료(loading 외) + 진짜 entries 0개일 때만.
   // - 사용자가 모달을 취소하면 다시 자동 오픈하지 않음 (ref 잠금).
   // - 슬롯은 모달의 "만들기" 버튼으로 사용자가 명시적으로 생성 → "내 팀이 아닌 슬롯" 위화감 제거.
@@ -261,25 +261,27 @@ export function LineupBuilderScreen() {
   }, [playersById]);
 
   // 타자/투수 라인업 변경 → 현재 entry 업데이트 + 저장. 복원 완료 전엔 skip.
-  // 공개 상태면 DB trigger가 변경을 막으므로 저장 시도 자체 skip.
   //
   // ⚠️ batter/pitcher를 하나의 effect로 묶음 (이전엔 2개로 분리).
   //    applyRecentLineup처럼 setSlots + setPitcherSlots를 동시에 부르면
   //    두 effect가 같은 render에 실행되면서 둘 다 stale closure currentEntry를
   //    spread해서 두 번째 write가 첫 번째 write의 필드를 덮어쓰는 race가 발생함.
   //    (구체적으로: batter effect가 batting=9를 쓴 직후, pitcher effect가
-  //     batting=stale-empty를 다시 써서 batting이 비어버림 → 그 상태에서 공개되면
+  //     batting=stale-empty를 다시 써서 batting이 비어버림 → 그 상태에서 출전 등록되면
   //     DB에도 빈 batting 저장됨.)
   //    하나의 effect로 합쳐 batter+pitcher 양쪽 모두 live state에서 동시에 읽고
   //    한 번에 write → 어떤 setter 조합이든 race 차단.
   useEffect(() => {
     if (!currentEntry || hydratedEntryId !== currentEntry.entryId) return;
-    if (currentEntry.isPublished) return;
     const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
     const hasAnyPitcher = pitcherSlots.some(Boolean);
+    const hasStarterForPublic = pitcherSlots[PITCHER_STARTER_INDEX] != null;
+    const canStayPublished = filledSlots.length === 9 && hasStarterForPublic;
+    const nextPublished = !!currentEntry.isPublished && canStayPublished;
     const now = new Date().toISOString();
     const updated: LineupEntry = {
       ...currentEntry,
+      isPublished: nextPublished,
       batting: {
         teamId: currentEntry.teamId,
         slots: filledSlots,
@@ -291,9 +293,13 @@ export function LineupBuilderScreen() {
         : null,
       updatedAt: now
     };
+    const becameUnpublished = !!currentEntry.isPublished && !canStayPublished;
+    if (becameUnpublished) {
+      showToast("필수 라인업이 부족해 출전 준비 상태로 바꿨어요. 전적은 유지됩니다.");
+    }
     // 타선 9명 완성됐을 때만 DB 동기화. 미완성은 localStorage만 (호출 빈도 감소).
-    // DB엔 항상 "마지막 완성 시점의 9명 라인업"만 남아있음 → Discover에서 미완성 노출 X.
-    if (filledSlots.length === 9) {
+    // 단, 출전 중인 팀이 필수 조건 미달이 된 경우는 경기장 출전을 즉시 끄기 위해 DB에도 반영한다.
+    if (filledSlots.length === 9 || becameUnpublished) {
       syncedUpsert(updated);
     } else {
       localUpsertEntry(updated);
@@ -425,7 +431,7 @@ export function LineupBuilderScreen() {
    *  - 타순 9명: rosterId 매칭되는 선수만 채움. 매칭 실패 자리는 비워두고 토스트로 알림.
    *  - 선발 투수: starter_roster_id 매칭되면 pitcherSlots[0]에 세팅(나머지 불펜은 유지). */
   const applyRecentLineup = (row: RecentLineupRow) => {
-    if (!currentEntry || currentEntry.isPublished) return;
+    if (!currentEntry) return;
 
     const sorted = [...row.batting].sort((a, b) => a.order - b.order);
     const nextSlots: SlotState[] = Array.from({ length: 9 }, () => null);
@@ -464,7 +470,7 @@ export function LineupBuilderScreen() {
     }
 
     // 타자 9명 + 선발이 한 번에 채워지면 step1(타순 완성) 안내는 건너뛰고
-    // step2(공개 준비 완료)만 뜨도록 step1을 미리 "본 것"으로 표시한다.
+    // step2(출전 준비 완료)만 뜨도록 step1을 미리 "본 것"으로 표시한다.
     if (resolvedStarter) {
       markGuideSeen("step1", currentEntry.entryId);
     }
@@ -626,18 +632,18 @@ export function LineupBuilderScreen() {
   // stale ID(로스터에서 빠진 선수)는 UI에서 "(자동)" 으로 보이므로 카운트에서도 제외.
   const filledCount = slots.filter((s) => s !== null && playersById.has(s.playerId)).length;
   const pitcherFilled = pitcherSlots.filter((id) => id !== null && playersById.has(id)).length;
-  // 공개 가능 조건 — 타선 9명 + 선발 1명. 마무리/불펜은 공개 시 자동 채움.
+  // 출전 가능 조건 — 타선 9명 + 선발 1명. 마무리/불펜은 출전 등록 시 자동 채움.
   const hasStarter = pitcherSlots[PITCHER_STARTER_INDEX] != null;
   const hasCloser = pitcherSlots[PITCHER_CLOSER_INDEX] != null;
   const hasRequiredBullpen = pitcherSlots[PITCHER_REQUIRED_BULLPEN_INDEX] != null;
-  const hasRequiredPitchers = hasStarter; // 가이드 트리거용 — 선발만 있으면 공개 가능
+  const hasRequiredPitchers = hasStarter; // 가이드 트리거용 — 선발만 있으면 출전 가능
   const publishRequirementMessage = filledCount !== 9
-    ? "타자 9명을 모두 채워야 공개할 수 있어요"
+    ? "타자 9명을 모두 채워야 출전할 수 있어요"
     : !hasStarter
-      ? "선발 투수를 골라야 공개할 수 있어요"
+      ? "선발 투수를 골라야 출전할 수 있어요"
       : null;
   const canPublish = publishRequirementMessage === null;
-  // 마무리/불펜 중 하나라도 비어있으면 공개 시 자동 채움 안내가 필요한 상태.
+  // 마무리/불펜 중 하나라도 비어있으면 출전 등록 시 자동 채움 안내가 필요한 상태.
   const needsAutoFillNotice = canPublish && pitcherSlots.slice(PITCHER_CLOSER_INDEX).some((id) => !id);
 
   // 슬롯별 가이드 트리거 상태 추적 — transition(0~8→9, false→true)만 캐치.
@@ -649,7 +655,6 @@ export function LineupBuilderScreen() {
     const key = currentEntry.entryId;
     const prev = guideTrackRef.current.get(key);
     guideTrackRef.current.set(key, { filledCount, hasRequiredPitchers });
-    if (currentEntry.isPublished) return;
     if (!prev) return; // 슬롯 첫 추적은 트리거 X (기존 슬롯 보호)
 
     // step1: 타순 미완성 → 9명 완성
@@ -695,11 +700,11 @@ export function LineupBuilderScreen() {
     return combined;
   }, [slots, pitcherSlots]);
 
-  // 공개 요청 핸들러 — LineupActionRow가 호출. 마무리/불펜 빈 자리 있으면 자동 채움 모달로 분기.
+  // 출전 요청 핸들러 — LineupActionRow가 호출. 마무리/불펜 빈 자리 있으면 자동 채움 모달로 분기.
   const handlePublishRequest = async () => {
     if (!currentEntry) return;
     if (!canPublish) {
-      showToast(publishRequirementMessage ?? "공개 조건을 확인해주세요.");
+      showToast(publishRequirementMessage ?? "출전 조건을 확인해주세요.");
       return;
     }
     if (needsAutoFillNotice) {
@@ -716,11 +721,11 @@ export function LineupBuilderScreen() {
         source: "manual"
       });
     }
-    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
-    else showToast("공개됐어요");
+    if (!res.ok) showToast(res.error ?? "출전 등록 실패");
+    else showToast("출전 등록됐어요");
   };
 
-  // 자동 채움 모달의 "자동 채움 + 공개" 클릭 — 빈 자리 채움 + entry 직접 upsert + 공개 토글.
+  // 자동 채움 모달의 "자동 채움 + 출전" 클릭 — 빈 자리 채움 + entry 직접 upsert + 출전 등록.
   const handleAutoFillAndPublish = async () => {
     if (!currentEntry) return;
     const filled = fillMissingPitcherSlots(
@@ -753,8 +758,8 @@ export function LineupBuilderScreen() {
         source: "auto_fill"
       });
     }
-    if (!res.ok) showToast(res.error ?? "공개 전환 실패");
-    else showToast("공개됐어요");
+    if (!res.ok) showToast(res.error ?? "출전 등록 실패");
+    else showToast("출전 등록됐어요");
   };
 
   // 가이드 step2의 "확인" — 자동 채움(필요 시) + 공개.
@@ -788,33 +793,43 @@ export function LineupBuilderScreen() {
       });
     }
     if (!res.ok) {
-      showToast(res.error ?? "공개 전환 실패");
+      showToast(res.error ?? "출전 등록 실패");
     } else {
-      showToast("공개됐어요");
-      // 공개 성공 직후 — 바로 "경기장 가기" 유도 (온보딩 마지막 단계).
+      showToast("출전 등록됐어요");
+      // 출전 등록 성공 직후 — 바로 "경기장 가기" 유도 (온보딩 마지막 단계).
       setGuideGoStadiumOpen(true);
     }
   };
 
-  const isLocked = !!currentEntry?.isPublished;
+  const isLocked = false;
+  const noop = () => {};
+  const usedTeamIds = useMemo(() => new Set(entries.map((entry) => entry.teamId)), [entries]);
 
   return (
-    <AppShell activeTab="play" title="라인업 짜기" theme="light" backHref="/" wide>
+    <AppShell activeTab="play" title="팀 관리" theme="light" backHref="/" wide>
       <header className="lineup-header lineup-header-no-back">
-        {/* 헤더 좌측: 동기화 상태 배지 (이전 공개 토글 자리. 공개/비공개 개념은 "경기장 등록"으로 대체됨) */}
+        {/* 헤더 좌측: 동기화 상태 배지 */}
         <LineupSyncBadge syncStatus={syncStatus} />
 
-        {/* 슬롯 picker — 현재 슬롯 + 드롭다운으로 다른 슬롯 / 새 슬롯 / 이름 편집 / 삭제 */}
+        {/* 팀 슬롯 picker — 현재 팀 + 드롭다운으로 다른 팀 / 새 팀 / 이름 편집 / 삭제 */}
         <LineupSlotPicker
           entries={entries}
           selectedEntryId={selectedEntryId}
           statsByEntryId={statsByEntryId}
+          archivedTeams={archivedTeams}
           lineupLimit={lineupLimit}
           tier={tier}
           open={slotMenuOpen}
           setOpen={setSlotMenuOpen}
           onSelect={(entryId) => setSelectedEntryId(entryId)}
-          onAddNew={() => setNewSlotOpen(true)}
+          onAddNew={() => {
+            const hasAvailableTeam = Array.from(seededTeamIds).some((teamId) => !usedTeamIds.has(teamId));
+            if (!hasAvailableTeam) {
+              showToast("운영 가능한 팀을 모두 만들었어요.");
+              return;
+            }
+            setNewSlotOpen(true);
+          }}
           onRename={(entryId) => setRenamingEntryId(entryId)}
           onDelete={(entryId) => setConfirmDeleteEntryId(entryId)}
         />
@@ -834,7 +849,6 @@ export function LineupBuilderScreen() {
         <section
           className="lineup-diamond-card"
           aria-label={mode === "batter" ? "수비 위치" : "선발 투수"}
-          onClick={isLocked ? () => setLockInfoOpen(true) : undefined}
         >
           <LineupDiamond
             slots={diamondSlots}
@@ -873,7 +887,6 @@ export function LineupBuilderScreen() {
           }}
           onRecentOpen={() => setRecentPickerOpen(true)}
           onPublishRequest={handlePublishRequest}
-          onUnpublishRequest={() => setConfirmUnpublishOpen(true)}
         />
 
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 마무리 + 불펜 1~7 */}
@@ -889,7 +902,7 @@ export function LineupBuilderScreen() {
             onPositionPickerOpen={(order) => setPositionPickerForOrder(order)}
             onRemove={handleRemoveSlot}
             onReset={handleReset}
-            onLockedClick={() => setLockInfoOpen(true)}
+            onLockedClick={noop}
           />
         ) : (
           <PitcherSlotList
@@ -909,7 +922,7 @@ export function LineupBuilderScreen() {
           poolPlayers={poolPlayers}
           isLocked={isLocked}
           onAddPlayer={handleAddPlayer}
-          onLockedClick={() => setLockInfoOpen(true)}
+          onLockedClick={noop}
         />
       </div>
 
@@ -944,7 +957,7 @@ export function LineupBuilderScreen() {
         onPick={handleRecentLineupPick}
       />
 
-      {/* 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 공개 */}
+      {/* 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 출전 등록 */}
       <AutoFillPublishModal
         open={confirmAutoFillOpen}
         publishProcessing={publishProcessing}
@@ -958,32 +971,6 @@ export function LineupBuilderScreen() {
         onConfirm={() => {
           if (pendingRecentLineup) applyRecentLineup(pendingRecentLineup);
           setPendingRecentLineup(null);
-        }}
-      />
-
-      <ConfirmUnpublishModal
-        open={confirmUnpublishOpen}
-        stats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
-        processing={publishProcessing}
-        onCancel={() => setConfirmUnpublishOpen(false)}
-        onConfirm={async () => {
-          if (!currentEntry) return;
-          setPublishProcessing(true);
-          const res = await togglePublished(currentEntry.entryId, false);
-          setPublishProcessing(false);
-          setConfirmUnpublishOpen(false);
-          if (!res.ok) showToast(res.error ?? "비공개 전환 실패");
-          else showToast("비공개로 바꿨어요 (전적 리셋)");
-        }}
-      />
-
-      <LockInfoModal
-        open={lockInfoOpen}
-        onClose={() => setLockInfoOpen(false)}
-        onUnpublish={() => {
-          // 전적 리셋이 중요하므로 한 번 더 확인 모달 띄움
-          setLockInfoOpen(false);
-          setConfirmUnpublishOpen(true);
         }}
       />
 
@@ -1010,7 +997,7 @@ export function LineupBuilderScreen() {
         }}
       />
 
-      {/* 새 슬롯 onboarding step2 — 선발 투수까지 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개.
+      {/* 새 슬롯 onboarding step2 — 선발 투수까지 선택 직후, "이제 출전해서 가상경기" 안내 + 자동 출전 등록.
           마무리/불펜이 비어있으면 saves/era 기준으로 자동 채워서 함께 저장. */}
       <GuideStep2Modal
         open={guideStep2Open}
@@ -1020,7 +1007,7 @@ export function LineupBuilderScreen() {
         onAutoFillAndPublish={handleGuideStep2Confirm}
       />
 
-      {/* 공개 완료 직후 — 경기장 가기 유도 (온보딩 마지막) */}
+      {/* 출전 등록 완료 직후 — 경기장 가기 유도 (온보딩 마지막) */}
       <GuideGoStadiumModal
         open={guideGoStadiumOpen}
         onClose={() => setGuideGoStadiumOpen(false)}
@@ -1034,6 +1021,7 @@ export function LineupBuilderScreen() {
         open={newSlotOpen}
         initialTeamId={initialTeamId}
         seededTeamIds={seededTeamIds}
+        usedTeamIds={usedTeamIds}
         nickname={profile.nickname}
         onClose={() => setNewSlotOpen(false)}
         onCreate={(teamId, name) => {
@@ -1074,16 +1062,28 @@ export function LineupBuilderScreen() {
 
       <ConfirmDeleteSlotModal
         open={confirmDeleteEntryId !== null}
+        mode={
+          // 전적(홈경기) 있는 팀은 은퇴(보관), 0승 0패는 그냥 삭제.
+          (confirmDeleteEntryId && (statsByEntryId[confirmDeleteEntryId]?.matches ?? 0) > 0)
+            ? "archive"
+            : "delete"
+        }
         onCancel={() => setConfirmDeleteEntryId(null)}
         onConfirm={() => {
           if (!confirmDeleteEntryId) return;
           const entryToDelete = confirmDeleteEntryId;
+          const mode: SlotRemoveMode =
+            (statsByEntryId[entryToDelete]?.matches ?? 0) > 0 ? "archive" : "delete";
+          setRemoveMode(mode);
           setConfirmDeleteEntryId(null);
           setDeleteStatus({ phase: "deleting" });
           const next = syncedDelete(entryToDelete, {
+            archive: mode === "archive",
             onSyncResult: (res) => {
               if (res.ok) {
                 setDeleteStatus({ phase: "success" });
+                // 은퇴면 하단 "은퇴한 팀" 목록을 DB 반영 후 다시 불러옴.
+                if (mode === "archive") setArchivedRefreshKey((k) => k + 1);
                 // 1.5초 후 자동 닫기
                 setTimeout(() => setDeleteStatus({ phase: "idle" }), 1500);
               } else {
@@ -1099,6 +1099,7 @@ export function LineupBuilderScreen() {
 
       <DeleteSlotStatusModal
         status={deleteStatus}
+        mode={removeMode}
         onClose={() => setDeleteStatus({ phase: "idle" })}
       />
     </AppShell>

@@ -47,16 +47,16 @@ export function AccountRankingScreen({
     <AppShell activeTab="play" title="계정 누적 랭킹" theme="light" backHref={backHref} wide>
       {/* 안내 한 줄 */}
       <div className="account-rank-hint-row">
-        <p className="account-rank-hint">공개 매치에서 누적된 계정별 전적 순위입니다.</p>
+        <p className="account-rank-hint">공식 경기에서 누적된 계정별 전적 순위입니다.</p>
       </div>
 
       {/* 목록 */}
       {ranking.length === 0 ? (
         <div className="account-rank-empty">
           <Trophy size={28} aria-hidden />
-          <p>아직 집계된 공개 매치가 없어요.</p>
+          <p>아직 집계된 공식 경기가 없어요.</p>
           <p className="account-rank-empty-sub">
-            경기장에서 공개 매치를 진행하면 계정 전적이 랭킹에 등록됩니다.
+            경기장에서 공식 경기를 진행하면 계정 전적이 랭킹에 등록됩니다.
           </p>
         </div>
       ) : (
@@ -116,7 +116,7 @@ export function AccountRankingScreen({
         <section className="account-rank-my-card" aria-label="내 순위">
           <div className="account-rank-my-card-inner is-empty">
             <span className="account-rank-my-card-label">내 순위</span>
-            <span className="account-rank-my-card-empty">아직 공개 매치 기록이 없어요</span>
+            <span className="account-rank-my-card-empty">아직 공식 경기 기록이 없어요</span>
           </div>
         </section>
       ) : null}

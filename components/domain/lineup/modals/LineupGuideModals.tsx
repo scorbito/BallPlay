@@ -75,8 +75,8 @@ export function GuideStep1Modal({ open, onClose, onStartPicking }: GuideStep1Mod
     >
       <div className="lineup-confirm-body">
         <p className="lineup-confirm-msg">
-          이제 <strong>선발 투수</strong>만 선택하면 라인업을 공개할 수 있어요.<br />
-          (마무리·불펜은 공개 시 자동으로 채워집니다)
+          이제 <strong>선발 투수</strong>만 선택하면 출전 등록할 수 있어요.<br />
+          (마무리·불펜은 출전 등록 시 자동으로 채워집니다)
         </p>
         <div className="lineup-confirm-actions">
           <button
@@ -104,11 +104,11 @@ type GuideStep2ModalProps = {
   needsAutoFillNotice: boolean;
   publishProcessing: boolean;
   onClose: () => void;
-  /** "확인" 클릭 — 자동 채움(필요 시) + 공개 토글 */
+  /** "확인" 클릭 — 자동 채움(필요 시) + 출전 등록 */
   onAutoFillAndPublish: () => void;
 };
 
-/** 새 슬롯 onboarding step2 — 선발 투수까지 선택 직후, "이제 공개해서 가상경기" 안내 + 자동 공개.
+/** 새 슬롯 onboarding step2 — 선발 투수까지 선택 직후, "이제 출전해서 가상경기" 안내 + 자동 출전 등록.
     마무리/불펜이 비어있으면 saves/era 기준으로 자동 채워서 함께 저장. */
 export function GuideStep2Modal({
   open,
@@ -127,7 +127,7 @@ export function GuideStep2Modal({
     >
       <div className="lineup-confirm-body">
         <p className="lineup-confirm-msg">
-          이제 라인업을 <strong>공개</strong>해서 경기장에서 다른 사람 라인업과 가상경기를 할 수 있어요.<br />
+          이제 라인업을 <strong>출전 등록</strong>해서 경기장에서 다른 사람 라인업과 가상경기를 할 수 있어요.<br />
           {needsAutoFillNotice ? (
             <>
               <br />
@@ -161,23 +161,23 @@ export function GuideStep2Modal({
 type GuideGoStadiumModalProps = {
   open: boolean;
   onClose: () => void;
-  /** "경기장 가기" — 공개 완료 직후 경기장(/stadium/lobby)으로 이동해 바로 대결 유도 */
+  /** "경기장 가기" — 출전 등록 직후 경기장(/stadium/lobby)으로 이동해 바로 대결 유도 */
   onGoStadium: () => void;
 };
 
-/** 공개 전환 성공 직후 — "이제 경기장에서 대결해볼까요?" 다음 행동 유도. */
+/** 출전 등록 성공 직후 — "이제 경기장에서 대결해볼까요?" 다음 행동 유도. */
 export function GuideGoStadiumModal({ open, onClose, onGoStadium }: GuideGoStadiumModalProps) {
   return (
     <ModalShell
       open={open}
-      title="공개 완료! 🎉"
+      title="출전 등록 완료!"
       onClose={onClose}
       panelClassName="lineup-confirm-modal-panel"
       closeOnBackdrop
     >
       <div className="lineup-confirm-body">
         <p className="lineup-confirm-msg">
-          라인업이 공개됐어요. 이제 <strong>경기장</strong>에서 다른 사람 라인업과 가상경기를 해볼까요?
+          라인업이 출전 등록됐어요. 이제 <strong>경기장</strong>에서 다른 사람 라인업과 가상경기를 해볼까요?
         </p>
         <div className="lineup-confirm-actions">
           <button type="button" className="lineup-confirm-cancel" onClick={onClose}>
