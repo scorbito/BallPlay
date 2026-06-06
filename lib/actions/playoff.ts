@@ -206,7 +206,7 @@ export async function updatePlayoffLineup(input: {
   return updated;
 }
 
-/** 도전 포기. */
+/** 도전 포기(새 도전 시작 등 내부용). */
 export async function abandonPlayoffRun(runId: string): Promise<{ ok: boolean }> {
   const { client, userId } = await authed();
   if (!userId) return { ok: false };
@@ -214,5 +214,17 @@ export async function abandonPlayoffRun(runId: string): Promise<{ ok: boolean }>
     status: "abandoned",
     completed_at: new Date().toISOString()
   });
+  return { ok: true };
+}
+
+/** 진행 중 이탈 = 패배(탈락) 처리. 뒤로가기로 나가면 호출. */
+export async function forfeitPlayoffRun(runId: string): Promise<{ ok: boolean }> {
+  const { client, userId } = await authed();
+  if (!userId) return { ok: false };
+  await updatePlayoffRun(client, runId, userId, {
+    status: "eliminated",
+    completed_at: new Date().toISOString()
+  });
+  revalidatePath("/stadium/playoff");
   return { ok: true };
 }

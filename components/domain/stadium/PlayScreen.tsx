@@ -831,6 +831,7 @@ export function PlayScreen() {
             }
             setCursor(events.length);
           }}
+          canSkip={session.source !== "playoff"}
           onToggleMuted={toggleMuted}
           onToggleBgmMuted={toggleBgmMuted}
           onGoResult={() => router.push("/stadium/result")}

@@ -5,6 +5,7 @@
 // 라인업이 결정적(최근 라인업 또는 시즌 스탯)이라 같은 teamId → 같은 결과.
 
 import { getRoster } from "@/lib/rosters";
+import { normalizeKboPosition } from "@/lib/types/lineup";
 import { getTeamStats } from "./statsLoader";
 import type { SimBatter, SimPitcher, SimTeamInput } from "./types";
 
@@ -38,7 +39,10 @@ export function buildFakeOpponentTeam(
       .map((b) => {
         if (b.rosterId && batterById.has(b.rosterId)) {
           used.add(b.rosterId);
-          return batterById.get(b.rosterId)!;
+          const stat = batterById.get(b.rosterId)!;
+          // 최근 라인업에서 가져온 실제 포지션을 표시용으로 부여(없으면 stats 기본값 유지).
+          const pos = normalizeKboPosition(b.position);
+          return pos ? { ...stat, position: pos } : stat;
         }
         return null;
       });

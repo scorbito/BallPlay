@@ -13,6 +13,9 @@ type AppShellProps = {
   theme?: "default" | "dark" | "light";
   headerAction?: ReactNode;
   backHref?: string;
+  /** 뒤로가기를 네비게이션 대신 콜백으로 가로챔(예: 가을야구 이탈 시 패배 확인 모달).
+   *  지정 시 backHref 보다 우선하며 <button>으로 렌더된다. */
+  onBack?: () => void;
   /** 상단 헤더(타이틀바)를 완전히 숨김. 뒤로가기·타이틀·헤더 액션 모두 함께 사라짐.
    *  일정/커뮤니티/마이 상위 페이지처럼 헤더 없이 콘텐츠를 위로 올리고 싶을 때 사용. */
   hideHeader?: boolean;
@@ -32,6 +35,7 @@ export function AppShell({
   theme = "default",
   headerAction,
   backHref,
+  onBack,
   hideHeader = false,
   hideBottomTabs = false,
   wide = false,
@@ -52,7 +56,11 @@ export function AppShell({
           {hideHeader ? null : (
             <header className="app-header">
               <div className="app-header-left">
-                {backHref ? (
+                {onBack ? (
+                  <button type="button" className="header-back" onClick={onBack} aria-label="뒤로">
+                    <ArrowLeft size={18} />
+                  </button>
+                ) : backHref ? (
                   <Link className="header-back" href={backHref} aria-label="뒤로" prefetch>
                     <ArrowLeft size={18} />
                   </Link>

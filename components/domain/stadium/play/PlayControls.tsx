@@ -14,6 +14,7 @@ export function PlayControls({
   onTogglePlaying,
   onChangeMode,
   onSkip,
+  canSkip = true,
   onToggleMuted,
   onToggleBgmMuted,
   onGoResult
@@ -27,6 +28,8 @@ export function PlayControls({
   onTogglePlaying: () => void;
   onChangeMode: (m: PlayMode) => void;
   onSkip: () => void;
+  /** 끝까지 건너뛰기 노출 여부. 가을야구는 끝까지 시청 강제 → false. 기본 true. */
+  canSkip?: boolean;
   onToggleMuted: () => void;
   onToggleBgmMuted: () => void;
   onGoResult: () => void;
@@ -104,14 +107,16 @@ export function PlayControls({
             {/* 건너뛰기 — 6회 진입 이후만 동작 (5회 = KBO 정식경기 성립 기준).
                 매치 시작 직후 무한 스킵으로 전적 어뷰징하는 것 방지.
                 6회 전엔 disabled 대신 클릭 받아 안내 모달 노출 (사유 설명). */}
-            <button
-              type="button"
-              className="stadium-play-btn stadium-play-btn-skip"
-              onClick={onSkip}
-              title="끝까지 건너뛰기"
-            >
-              건너뛰기
-            </button>
+            {canSkip ? (
+              <button
+                type="button"
+                className="stadium-play-btn stadium-play-btn-skip"
+                onClick={onSkip}
+                title="끝까지 건너뛰기"
+              >
+                건너뛰기
+              </button>
+            ) : null}
             <button
               type="button"
               className="stadium-play-btn stadium-play-btn-mute"
