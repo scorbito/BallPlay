@@ -2898,18 +2898,18 @@
 }
 /* 이닝 칸(2~10번째 td = 1~9이닝)만 순차. both-fill 로 각자 delay 전엔 숨김.
    team-cell(1)·R(11)은 프레임과 함께 등장. away/home 두 행의 같은 nth-child = 같은 이닝 → 함께. */
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(n+2):nth-child(-n+10) {
-  animation: stadium-final-rise 0.28s ease-out both;
-}
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(2) { animation-delay: 0.5s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(3) { animation-delay: 0.56s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(4) { animation-delay: 0.62s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(5) { animation-delay: 0.68s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(6) { animation-delay: 0.74s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(7) { animation-delay: 0.8s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(8) { animation-delay: 0.86s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(9) { animation-delay: 0.92s; }
-.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(10) { animation-delay: 0.98s; }
+/* 이닝 칸(2~10번째 td = 1~9이닝)만 순차. 각 규칙에 animation+delay 함께 둔다
+   (범위 선택자로 animation 따로 두면 pseudo 2개라 특이도가 높아 개별 delay를 덮어써 버림).
+   shorthand가 delay를 0으로 리셋하므로 animation-delay 를 뒤에 명시해 덮어쓴다. */
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(2) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.5s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(3) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.56s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(4) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.62s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(5) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.68s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(6) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.74s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(7) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.8s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(8) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.86s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(9) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.92s; }
+.phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(10) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.98s; }
 
 /* 3) 팀 로고·팀명(스코어보드) — 점수판 후 등장. 점수(team-score)는 4단계에서 별도로
    나오므로 여기선 숨김 유지(아래 both-fill). (0.87~1.29s) */
