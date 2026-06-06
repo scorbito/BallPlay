@@ -32,8 +32,8 @@ export function ResultScreen() {
   const [savedId, setSavedId] = useState<string | null>(null);
   // 동기 ref 가드 — useEffect가 두 번 실행돼도 INSERT 1회만 시도하도록 차단.
   const saveAttemptedRef = useRef(false);
-  // 플레이오프 결과 기록 1회 가드.
-  const playoffRecordedRef = useRef(false);
+  // 플레이오프 결과 기록+이동 진행 중 (버튼 중복 클릭 차단).
+  const [playoffReturning, setPlayoffReturning] = useState(false);
   // 매치 종료 직후 승급 모달 트리거용 — 본인 누적 승수.
   const [accountWins, setAccountWins] = useState<number>(0);
 
@@ -70,26 +70,6 @@ export function ResultScreen() {
       }
     })();
   }, [hydrated, savedId]);
-
-  // 플레이오프 매치 — 결과 화면 도달 즉시 대진표에 자동 기록(1회). 버튼은 이동만.
-  // 액션 내부에서 같은 라운드 중복 기록은 막으므로 effect 재실행에도 안전.
-  useEffect(() => {
-    if (!hydrated || !session?.result) return;
-    if (session.source !== "playoff") return;
-    if (playoffRecordedRef.current) return;
-    if (!session.playoffRunId || session.playoffRound == null) return;
-    playoffRecordedRef.current = true;
-    const fs = session.result.finalScore;
-    void recordPlayoffGame({
-      runId: session.playoffRunId,
-      round: session.playoffRound,
-      win: fs.home > fs.away,
-      scoreMe: fs.home,
-      scoreOpp: fs.away,
-      playSeed: session.seed,
-      oppTeamId: session.opponentTeamId
-    }).catch(() => {});
-  }, [hydrated, session]);
 
   const mvpPlayer = useMemo(() => {
     if (!session?.result || !session.input) return null;
@@ -218,13 +198,40 @@ export function ResultScreen() {
     };
   }, [hydrated, canSave, session, mvpPlayer, savedId, saving, showToast]);
 
-  // 뒤로가기 — public 매치는 경기장, 플레이오프는 대진표, 그 외는 연습경기장.
+  // 뒤로가기 — public 매치는 경기장, 그 외는 연습경기장.
+  // 플레이오프는 결과 기록을 반드시 거치게 하려고 헤더 뒤로가기를 숨기고(undefined)
+  // "대진표로" 버튼(기록 await 후 이동)만 노출한다.
   const backHrefForSource =
     session?.source === "public"
       ? "/stadium/lobby"
       : session?.source === "playoff"
-        ? "/stadium/playoff"
+        ? undefined
         : "/play/practice";
+
+  // 플레이오프 — 결과 기록(승=다음 라운드/패=탈락/4R승=우승)을 await한 뒤 대진표로.
+  const handlePlayoffReturn = async () => {
+    if (playoffReturning) return;
+    setPlayoffReturning(true);
+    const s = loadMatchSession();
+    if (s?.source === "playoff" && s.playoffRunId && s.playoffRound != null && s.result) {
+      const fs = s.result.finalScore;
+      try {
+        await recordPlayoffGame({
+          runId: s.playoffRunId,
+          round: s.playoffRound,
+          win: fs.home > fs.away,
+          scoreMe: fs.home,
+          scoreOpp: fs.away,
+          playSeed: s.seed,
+          oppTeamId: s.opponentTeamId
+        });
+      } catch {
+        // 기록 실패해도 대진표에서 재시도 가능 — 이동은 진행.
+      }
+    }
+    clearMatchSession();
+    router.push("/stadium/playoff");
+  };
 
   if (!hydrated || !session?.result || !session.input) {
     return (
@@ -375,13 +382,11 @@ export function ResultScreen() {
             <button
               type="button"
               className="stadium-cta-primary"
-              onClick={() => {
-                clearMatchSession();
-                router.push("/stadium/playoff");
-              }}
+              onClick={handlePlayoffReturn}
+              disabled={playoffReturning}
             >
               <Trophy size={16} />
-              <span>대진표로</span>
+              <span>{playoffReturning ? "기록 중..." : "대진표로"}</span>
             </button>
           </footer>
         ) : (
