@@ -16,8 +16,10 @@ type LineupActionRowProps = {
   poolCount: number;
   filledCount: number;
   pitcherFilled: number;
-  /** 현재 entry의 stats (없으면 undefined) — 출전 상태 hint에서 사용 */
+  /** 현재 entry의 홈 전적 (없으면 undefined) — 출전 상태 hint에서 사용 */
   currentEntryStats: LineupStats | undefined;
+  /** 현재 entry의 원정/방어 전적 (다른 유저가 도전한 경기). 기록 있을 때만 표시 */
+  currentEntryAwayStats: LineupStats | undefined;
   /** "실제 경기 라인업 불러오기" 버튼 hint에 보여줄 팀 약칭 */
   selectedTeamShortName: string;
   onModeChange: (mode: LineupMode) => void;
@@ -37,6 +39,7 @@ export function LineupActionRow({
   publishProcessing,
   poolCount,
   currentEntryStats,
+  currentEntryAwayStats,
   selectedTeamShortName,
   onModeChange,
   onRecentOpen,
@@ -47,9 +50,15 @@ export function LineupActionRow({
       {currentEntry?.isPublished ? (() => {
         const wins = currentEntryStats?.wins ?? 0;
         const losses = currentEntryStats?.losses ?? 0;
+        // 원정/방어 전적은 도전받은 적 있을 때(matches>0)만 노출 — 평소엔 간결하게.
+        const away = currentEntryAwayStats;
+        const hasAway = !!away && away.matches > 0;
         return (
           <p className="lineup-action-hint lineup-action-hint-published">
-            출전 중 · {wins}승 {losses}패
+            출전 중 · {hasAway ? "홈 " : ""}{wins}승 {losses}패
+            {hasAway ? (
+              <span className="lineup-action-hint-away"> · 원정 {away!.wins}승 {away!.losses}패</span>
+            ) : null}
           </p>
         );
       })() : currentEntry ? (

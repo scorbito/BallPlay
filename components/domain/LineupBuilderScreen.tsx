@@ -38,6 +38,7 @@ import {
   type SlotState
 } from "@/lib/lineup/swapHelpers";
 import { useEntryStats } from "@/lib/lineup/useEntryStats";
+import { useEntryAwayStats } from "@/lib/lineup/useEntryAwayStats";
 import { useArchivedTeams } from "@/lib/lineup/useArchivedTeams";
 import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
@@ -129,6 +130,8 @@ export function LineupBuilderScreen() {
   const [confirmAutoFillOpen, setConfirmAutoFillOpen] = useState(false);
   // 본인 팀별 전적 (entry_id → stats). 출전 등록된 팀만 매칭되는 stats 있음.
   const statsByEntryId = useEntryStats(entries, syncStatus);
+  // 원정/방어 전적 (entry_id → stats) — 다른 유저가 내 팀을 도전한 경기.
+  const awayStatsByEntryId = useEntryAwayStats(entries, syncStatus);
   // 은퇴(보관)한 팀 + 최종 전적 — 팀 관리 드롭다운 하단에 읽기 전용으로 표시.
   const archivedTeams = useArchivedTeams(syncStatus, archivedRefreshKey);
   /** entry 복원이 끝났는지 — 저장 effect가 마운트 직후 EMPTY로 entry를 덮어쓰는 레이스 차단 */
@@ -880,6 +883,7 @@ export function LineupBuilderScreen() {
           filledCount={filledCount}
           pitcherFilled={pitcherFilled}
           currentEntryStats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
+          currentEntryAwayStats={currentEntry ? awayStatsByEntryId[currentEntry.entryId] : undefined}
           selectedTeamShortName={selectedTeam.shortName}
           onModeChange={(nextMode) => {
             setMode(nextMode);

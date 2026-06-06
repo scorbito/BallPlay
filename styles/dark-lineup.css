@@ -2240,6 +2240,12 @@
   font-weight: 800;
 }
 
+/* 원정/방어 전적 — 홈(녹색 강조) 옆에 중립색으로 톤다운 */
+.phone-frame-light .lineup-action-hint-away {
+  color: var(--bp-text-muted);
+  font-weight: 700;
+}
+
 .phone-frame-light .lineup-layout.is-locked .lineup-slots-card,
 .phone-frame-light .lineup-layout.is-locked .lineup-pool-card,
 .phone-frame-light .lineup-layout.is-locked .lineup-diamond-card {

@@ -503,3 +503,31 @@ export async function fetchLineupStatsBulk(
   }
   return result;
 }
+
+/** 원정/방어 전적 — 다른 유저가 내 팀을 도전한 경기(user_side=away).
+ *  bp_lineup_away_stats 뷰를 직접 조회. RLS상 본인 mirror row(owner=본인)만 집계되므로
+ *  security-definer RPC 없이도 본인 팀 원정 전적만 정확히 나옴.
+ *  뷰가 없거나 에러면 빈 객체(graceful) → 원정 전적 0으로 표시. */
+export async function fetchLineupAwayStatsBulk(
+  client: SupabaseClient,
+  lineupIds: string[]
+): Promise<Record<string, LineupStats>> {
+  if (lineupIds.length === 0) return {};
+  const { data, error } = await client
+    .from("bp_lineup_away_stats")
+    .select("lineup_id, matches, wins, losses, draws")
+    .in("lineup_id", lineupIds);
+  if (error) return {};
+  const rows = (data ?? []) as Array<{
+    lineup_id: string;
+    matches: number;
+    wins: number;
+    losses: number;
+    draws: number;
+  }>;
+  const result: Record<string, LineupStats> = {};
+  for (const r of rows) {
+    result[r.lineup_id] = { matches: r.matches, wins: r.wins, losses: r.losses, draws: r.draws };
+  }
+  return result;
+}
