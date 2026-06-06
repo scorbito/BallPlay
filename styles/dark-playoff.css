@@ -955,7 +955,8 @@
   /* 등속(linear) — 구간마다 이징이 다시 걸려 중간에 '주춤'하던 문제 제거. */
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  animation-fill-mode: both;
+  /* fill-mode 제거: both 면 delay(터지기 전) 동안 0%(중심·불투명)가 미리 보여
+     입자가 점으로 떠 있다 순차로 터지는 것처럼 보임. 기본 opacity:0(투명) 유지. */
   animation-delay: inherit;
 }
 
