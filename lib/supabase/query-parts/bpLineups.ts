@@ -7,7 +7,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LineupEntry, SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 
 const TABLE = "bp_lineups";
-const RECORDS_TABLE = "bp_records";
 
 // DB row 1:1 매핑 (snake_case)
 export type BpLineupRow = {
@@ -237,30 +236,9 @@ export async function unpublishLineup(
     userId: string;
   }
 ): Promise<{ ok: true; row: BpLineupRow } | { ok: false; error: string }> {
-  // 1. lineup row id 조회 (entry_id → id 매핑)
-  const { data: existing } = await client
-    .from(TABLE)
-    .select("id")
-    .eq("owner_user_id", params.userId)
-    .eq("entry_id", params.entryId)
-    .maybeSingle();
-  const lineupRowId = (existing as { id: string } | null)?.id ?? null;
-
-  // 2. 본인 매치 기록 중 이 라인업으로 한 row 삭제 (전적 리셋)
-  if (lineupRowId) {
-    await client
-      .from(RECORDS_TABLE)
-      .delete()
-      .eq("owner_user_id", params.userId)
-      .eq("home_lineup_id", lineupRowId);
-    await client
-      .from(RECORDS_TABLE)
-      .delete()
-      .eq("owner_user_id", params.userId)
-      .eq("away_lineup_id", lineupRowId);
-  }
-
-  // 3. bp_lineups 자체 비공개 + lineup_hash null
+  // 팀 슬롯 모델: 출전을 내려도(출전 중 → 출전 준비) 전적은 팀의 것이라 보존한다.
+  // 옛 모델은 여기서 bp_records 를 삭제(전적 리셋)했지만, 더 이상 삭제하지 않는다.
+  // is_published=false + lineup_hash null 만 처리 → 매치 풀에서만 빠지고 기록은 유지.
   const { data, error } = await client
     .from(TABLE)
     .update({ is_published: false, lineup_hash: null })
@@ -268,7 +246,7 @@ export async function unpublishLineup(
     .eq("entry_id", params.entryId)
     .select()
     .single();
-  if (error || !data) return { ok: false, error: error?.message ?? "비공개 전환 실패" };
+  if (error || !data) return { ok: false, error: error?.message ?? "출전 철회 실패" };
   return { ok: true, row: data as BpLineupRow };
 }
 

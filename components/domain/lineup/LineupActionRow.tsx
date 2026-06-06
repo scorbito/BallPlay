@@ -26,6 +26,8 @@ type LineupActionRowProps = {
   onRecentOpen: () => void;
   /** 출전 요청 — 마무리/불펜이 비어있으면 자동 채움 모달, 아니면 즉시 출전 등록 */
   onPublishRequest: () => void;
+  /** 출전 철회 — 출전 중 → 출전 준비. 라인업·전적 유지, 매치 풀에서만 빠짐 */
+  onWithdraw: () => void;
 };
 
 /** 액션 행 — 최근 라인업 불러오기 + 타자/투수 토글 + 출전 버튼 + 대기 풀 뱃지 (PC 와이드) */
@@ -43,7 +45,8 @@ export function LineupActionRow({
   selectedTeamShortName,
   onModeChange,
   onRecentOpen,
-  onPublishRequest
+  onPublishRequest,
+  onWithdraw
 }: LineupActionRowProps) {
   return (
     <div className="lineup-action-row">
@@ -100,11 +103,12 @@ export function LineupActionRow({
           const isOn = !!currentEntry.isPublished;
           // 익명도 DB sync되므로 syncStatus가 "synced"면 통과. "local-only"는 sync 실패 fallback.
           const canSync = syncStatus !== "local-only";
-          const disabled = isOn || publishProcessing || !canSync;
+          // 출전 중이면 토글로 철회 가능 → 더 이상 disabled 아님 (sync 가능할 때).
+          const disabled = publishProcessing || !canSync;
           const tip = !canSync
             ? "잠시 후 다시 시도해주세요"
             : isOn
-              ? "출전 중 — 라인업은 자유롭게 수정할 수 있어요"
+              ? "출전 중 — 누르면 출전을 내립니다 (라인업·전적은 유지)"
               : publishRequirementMessage ?? "출전 등록하면 다른 사람이 도전할 수 있어요";
           return (
             <button
@@ -112,7 +116,7 @@ export function LineupActionRow({
               className={`lineup-action-btn ${isOn ? "lineup-action-btn-published" : "lineup-action-btn-primary"}`}
               disabled={disabled}
               title={tip}
-              onClick={onPublishRequest}
+              onClick={isOn ? onWithdraw : onPublishRequest}
             >
               <Eye size={12} />
               {isOn ? "출전 중" : "출전 등록"}

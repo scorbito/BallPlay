@@ -5,6 +5,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 export type AnalyticsEventName =
   | "lineup_created"
   | "lineup_published"
+  | "lineup_withdrawn"
   | "match_started"
   | "match_completed"
   | "prediction_submitted"

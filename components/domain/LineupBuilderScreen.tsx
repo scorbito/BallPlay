@@ -728,6 +728,24 @@ export function LineupBuilderScreen() {
     else showToast("출전 등록됐어요");
   };
 
+  // 출전 철회 — 출전 중 → 출전 준비. 라인업/전적은 그대로 유지하고 매치 풀에서만 빠진다.
+  // togglePublished(false) 는 이제 전적을 보존(unpublishLineup 수정됨). 언제든 다시 출전 가능.
+  const handleWithdraw = async () => {
+    if (!currentEntry?.isPublished) return;
+    setPublishProcessing(true);
+    const res = await togglePublished(currentEntry.entryId, false);
+    setPublishProcessing(false);
+    if (res.ok) {
+      void trackEvent("lineup_withdrawn", {
+        entryId: currentEntry.entryId,
+        teamId: currentEntry.teamId
+      });
+      showToast("출전을 내렸어요. 전적은 유지돼요. 언제든 다시 출전할 수 있어요.");
+    } else {
+      showToast(res.error ?? "출전 철회 실패");
+    }
+  };
+
   // 자동 채움 모달의 "자동 채움 + 출전" 클릭 — 빈 자리 채움 + entry 직접 upsert + 출전 등록.
   const handleAutoFillAndPublish = async () => {
     if (!currentEntry) return;
@@ -891,6 +909,7 @@ export function LineupBuilderScreen() {
           }}
           onRecentOpen={() => setRecentPickerOpen(true)}
           onPublishRequest={handlePublishRequest}
+          onWithdraw={handleWithdraw}
         />
 
         {/* 슬롯 카드 — 타자: 1~9 타순 / 투수: 선발 + 마무리 + 불펜 1~7 */}

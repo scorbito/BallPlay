@@ -457,7 +457,7 @@ export function useLineupSync() {
 
   // 공개 풀 토글 — 로그인 + 9명 완성된 라인업에서만 호출 (UI에서 강제).
   // - 공개 ON: lineup_hash 계산 → publishLineup (중복 차단)
-  // - 공개 OFF: unpublishLineup (본인 매치 기록 삭제 + lineup_hash null)
+  // - 공개 OFF: unpublishLineup (전적 보존 + lineup_hash null) — 팀 슬롯 모델
   const togglePublished = useCallback(
     async (entryId: string, nextPublished: boolean): Promise<{ ok: boolean; error?: string }> => {
       let userId = state.userId;
@@ -540,7 +540,7 @@ export function useLineupSync() {
           }));
           return { ok: true };
         } else {
-          // 비공개로 전환: 전적 리셋 + lineup_hash null
+          // 출전 철회: 전적 보존 + lineup_hash null (팀 슬롯 모델 — 더 이상 리셋 안 함)
           const res = await dbUnpublishLineup(clientRef.current, { entryId, userId });
           if (!res.ok) {
             rollback(res.error);
