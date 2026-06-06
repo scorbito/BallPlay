@@ -1233,8 +1233,8 @@
   white-space: nowrap;
 }
 
-/* ── 헤더 우측 공유 버튼 (이전 동기화 배지 자리) ── */
-.phone-frame-light .lineup-header-share {
+/* ── 헤더 우측 프리셋 드롭다운 (이전 공유 버튼 자리) ── */
+.phone-frame-light .lineup-header-preset {
   position: absolute;
   right: 0;
   top: 50%;
@@ -1244,8 +1244,7 @@
 /* 전역 button:active { transform: scale(0.97) } 무효화 —
    absolute + translateY(-50%)로 세로 중앙 정렬된 헤더 버튼은 scale이 끼면
    중앙 정렬이 깨져 "움직임"으로 보임. 그냥 상태만 변하도록 유지. */
-.phone-frame-light .lineup-publish-toggle:not(:disabled):active,
-.phone-frame-light .lineup-header-share:not(:disabled):active {
+.phone-frame-light .lineup-publish-toggle:not(:disabled):active {
   transform: translateY(-50%);
   filter: none;
 }
@@ -1370,13 +1369,15 @@
   grid-template-areas:
     "diamond diamond"
     "hint    hint"
-    "slots   pool";
+    "slots   pool"
+    "share   share";
 }
 
 .phone-frame-light .lineup-diamond-card { grid-area: diamond; }
 /* .lineup-action-hint는 .lineup-action-row 안으로 들어가므로 grid-area는 행에서 지정 */
 .phone-frame-light .lineup-slots-card { grid-area: slots; }
 .phone-frame-light .lineup-pool-card-side { grid-area: pool; }
+.phone-frame-light .lineup-pool-share-btn { grid-area: share; }
 
 /* 다이아몬드와 타순/대기 사이 사용법 안내 — 텍스트만, 좌측 정렬.
    안내 텍스트 + 우측 액션 버튼(저장/공유)을 한 줄에 배치 */
@@ -1388,20 +1389,13 @@
   min-width: 0;
 }
 
-/* lead 영역 — [불러오기/출전중 hint] [프리셋 드롭다운] 좌우 반반 */
+/* lead 영역 — 불러오기 버튼(또는 출전중 hint)이 단독으로 전체 폭 차지 */
 .phone-frame-light .lineup-action-lead {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-}
-/* 좌측 절반(불러오기 버튼 / 출전중 hint)과 우측 절반(프리셋)을 50/50 으로 */
-.phone-frame-light .lineup-action-lead > .lineup-recent-load-btn,
-.phone-frame-light .lineup-action-lead > .lineup-action-hint,
-.phone-frame-light .lineup-action-lead > .lineup-preset-picker {
-  flex: 1 1 0;
-  min-width: 0;
 }
 
 .phone-frame-light .lineup-action-hint {
@@ -1514,7 +1508,8 @@
     grid-template-areas:
       "diamond slots"
       "hint    slots"
-      "pool    pool";
+      "pool    pool"
+      "share   share";
     column-gap: 14px;
     row-gap: 4px;
   }
@@ -3415,16 +3410,46 @@
   background: rgba(232, 74, 138, 0.22);
 }
 
+/* ── 공유 버튼 (대기 풀 카드 아래로 강등 — 자주 안 쓰는 부가 기능) ── */
+.phone-frame-light .lineup-pool-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 12px;
+  background: rgba(20, 30, 50, 0.03);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 10px;
+  color: var(--bp-text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.phone-frame-light .lineup-pool-share-btn:hover {
+  background: rgba(232, 74, 138, 0.06);
+  border-color: rgba(232, 74, 138, 0.35);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .lineup-pool-share-btn:active {
+  background: rgba(232, 74, 138, 0.10);
+}
+
 /* ── 라인업 프리셋 드롭다운 ─────────────────────────────────────
-   액션 행 lead 영역 우측 절반. "실제 라인업 불러오기" 버튼과 50/50.
-   트리거는 셀 폭을 꽉 채우는 컴팩트 버튼. */
+   헤더 우측 칩 (팀 선택 드롭다운 톤과 어울리는 컴팩트 버튼).
+   패널은 헤더 기준 우측 하향 전개. */
 .phone-frame-light .lineup-preset-picker {
   position: relative;
   min-width: 0;
 }
 
 .phone-frame-light .lineup-preset-trigger {
-  width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;

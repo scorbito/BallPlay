@@ -962,15 +962,24 @@ export function LineupBuilderScreen() {
           onRename={(entryId) => setRenamingEntryId(entryId)}
           onDelete={(entryId) => setConfirmDeleteEntryId(entryId)}
         />
-        {/* 헤더 우측: 공유 버튼 (이전 동기화 배지 자리) */}
-        <button
-          type="button"
-          className="lineup-action-btn lineup-action-btn-primary lineup-header-share"
-          onClick={() => setShareOpen(true)}
-        >
-          <Share2 size={12} />
-          공유
-        </button>
+        {/* 헤더 우측: 라인업 프리셋 드롭다운 (이전 공유 버튼 자리) */}
+        {currentEntry ? (
+          <div className="lineup-header-preset">
+            <LineupPresetBar
+              teamId={selectedTeamId}
+              canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
+              open={presetMenuOpen}
+              setOpen={(open) => {
+                setPresetMenuOpen(open);
+                if (open) setSlotMenuOpen(false);
+              }}
+              onSaveCurrent={handleOpenSavePreset}
+              onApply={handleApplyPreset}
+              onRename={(preset) => setRenamingPreset(preset)}
+              onDelete={(preset) => setDeletingPreset(preset)}
+            />
+          </div>
+        ) : null}
       </header>
 
       <div className={`lineup-layout ${isLocked ? "is-locked" : ""}`}>
@@ -1011,21 +1020,6 @@ export function LineupBuilderScreen() {
           currentEntryStats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
           currentEntryAwayStats={currentEntry ? awayStatsByEntryId[currentEntry.entryId] : undefined}
           selectedTeamShortName={selectedTeam.shortName}
-          presetSlot={currentEntry ? (
-            <LineupPresetBar
-              teamId={selectedTeamId}
-              canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
-              open={presetMenuOpen}
-              setOpen={(open) => {
-                setPresetMenuOpen(open);
-                if (open) setSlotMenuOpen(false);
-              }}
-              onSaveCurrent={handleOpenSavePreset}
-              onApply={handleApplyPreset}
-              onRename={(preset) => setRenamingPreset(preset)}
-              onDelete={(preset) => setDeletingPreset(preset)}
-            />
-          ) : null}
           onModeChange={(nextMode) => {
             setMode(nextMode);
             setSwapSource(null);
@@ -1070,6 +1064,16 @@ export function LineupBuilderScreen() {
           onAddPlayer={handleAddPlayer}
           onLockedClick={noop}
         />
+
+        {/* 공유 — 자주 쓰지 않는 부가 기능이라 대기 풀 카드 아래로 강등 */}
+        <button
+          type="button"
+          className="lineup-pool-share-btn"
+          onClick={() => setShareOpen(true)}
+        >
+          <Share2 size={14} />
+          라인업 공유하기
+        </button>
       </div>
 
       <ConfirmResetModal

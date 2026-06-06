@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { Eye, History } from "lucide-react";
 import type { LineupEntry, LineupMode } from "@/lib/types/lineup";
 import type { SyncStatus } from "@/lib/storage/useLineupSync";
@@ -23,8 +22,6 @@ type LineupActionRowProps = {
   currentEntryAwayStats: LineupStats | undefined;
   /** "실제 경기 라인업 불러오기" 버튼 hint에 보여줄 팀 약칭 */
   selectedTeamShortName: string;
-  /** lead 영역 우측 절반에 들어갈 프리셋 드롭다운 (없으면 null) */
-  presetSlot?: ReactNode;
   onModeChange: (mode: LineupMode) => void;
   onRecentOpen: () => void;
   /** 출전 요청 — 마무리/불펜이 비어있으면 자동 채움 모달, 아니면 즉시 출전 등록 */
@@ -46,7 +43,6 @@ export function LineupActionRow({
   currentEntryStats,
   currentEntryAwayStats,
   selectedTeamShortName,
-  presetSlot,
   onModeChange,
   onRecentOpen,
   onPublishRequest,
@@ -54,7 +50,7 @@ export function LineupActionRow({
 }: LineupActionRowProps) {
   return (
     <div className="lineup-action-row">
-      {/* lead 영역 — 좌우 반반: [불러오기/출전중 hint] [프리셋 드롭다운] */}
+      {/* lead 영역 — 불러오기 버튼(또는 출전중 hint)이 단독으로 넓게 차지 */}
       <div className="lineup-action-lead">
         {currentEntry?.isPublished ? (() => {
           const wins = currentEntryStats?.wins ?? 0;
@@ -81,7 +77,6 @@ export function LineupActionRow({
             <span>실제 경기 라인업 불러오기</span>
           </button>
         ) : null}
-        {presetSlot}
       </div>
       <div className="lineup-action-buttons">
         {/* 타자/투수 토글 — 공유 옆에 배치 */}
