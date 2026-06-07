@@ -21,6 +21,8 @@ export type MatchSession = {
   // 플레이오프 매치일 때 — 결과 화면에서 어느 run/라운드 결과인지 식별해 대진표에 기록.
   playoffRunId?: string;
   playoffRound?: number;
+  // 한국시리즈 시리즈에서 이 경기를 이기면 우승 확정(2승째)인지 — 결과 화면 우승 연출 트리거용.
+  playoffClinch?: boolean;
   // 실시간 매치 진입 시에만 세팅 — PlayScreen이 wall-clock 동기화에 사용
   liveMatchId?: string;
   liveStartAt?: string; // ISO 시각. 현재 시각 < liveStartAt이면 그때까지 대기 후 진행

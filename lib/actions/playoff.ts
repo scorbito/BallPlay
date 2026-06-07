@@ -12,6 +12,7 @@ import {
   getPlayoffRunById,
   updatePlayoffRun,
   PLAYOFF_TOTAL_ROUNDS,
+  PLAYOFF_FINAL_WINS_NEEDED,
   type PlayoffRun,
   type PlayoffRunState,
   type PlayoffOpponent,
@@ -140,7 +141,10 @@ export async function beginPlayoffGame(input: {
   if (!run) return { ok: false, error: "가을야구 도전을 찾을 수 없어요." };
   if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
   if (run.state.pendingGame) return { ok: true, run };
-  if (run.state.games.some((g) => g.round === input.round)) return { ok: true, run };
+  // 단판 라운드(1~3)는 라운드당 1경기 — 이미 있으면 막음. 한국시리즈(시리즈)는 여러 경기 허용.
+  if (input.round < PLAYOFF_TOTAL_ROUNDS && run.state.games.some((g) => g.round === input.round)) {
+    return { ok: true, run };
+  }
   if (input.round !== run.currentRound) return { ok: false, error: "현재 라운드와 맞지 않아요." };
 
   const opp = run.state.opponents.find((o) => o.round === input.round);
@@ -180,8 +184,9 @@ export async function recordPlayoffGame(input: {
   const run = await getPlayoffRunById(client, input.runId, userId);
   if (!run) return { ok: false, error: "도전을 찾을 수 없어요." };
   if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
-  // 중복 기록 방지 — 같은 라운드 결과가 이미 있으면 현재 run 반환
-  if (run.state.games.some((g) => g.round === input.round)) {
+  // 중복 기록 방지 — 같은 경기(라운드+seed)가 이미 있으면 현재 run 반환.
+  // (한국시리즈 시리즈는 라운드당 여러 경기라 round만으로는 막으면 안 됨 → seed까지 본다.)
+  if (run.state.games.some((g) => g.round === input.round && g.playSeed === input.playSeed)) {
     return { ok: true, run };
   }
   const pending = run.state.pendingGame;
@@ -209,12 +214,23 @@ export async function recordPlayoffGame(input: {
   let status: PlayoffStatus = run.status;
   let currentRound = run.currentRound;
   let completedAt: string | null = null;
-  if (!input.win) {
+  const now = new Date().toISOString();
+  if (input.round >= PLAYOFF_TOTAL_ROUNDS) {
+    // 한국시리즈 3전 2선승 — 방금 추가한 경기 포함해 시리즈 집계.
+    const finalGames = nextState.games.filter((g) => g.round === PLAYOFF_TOTAL_ROUNDS);
+    const wins = finalGames.filter((g) => g.win).length;
+    const losses = finalGames.filter((g) => !g.win).length;
+    if (wins >= PLAYOFF_FINAL_WINS_NEEDED) {
+      status = "champion";
+      completedAt = now;
+    } else if (losses >= PLAYOFF_FINAL_WINS_NEEDED) {
+      status = "eliminated";
+      completedAt = now;
+    }
+    // 그 외(1-0/0-1/1-1) → 시리즈 진행 중: currentRound(4)·active 유지.
+  } else if (!input.win) {
     status = "eliminated";
-    completedAt = new Date().toISOString();
-  } else if (input.round >= PLAYOFF_TOTAL_ROUNDS) {
-    status = "champion";
-    completedAt = new Date().toISOString();
+    completedAt = now;
   } else {
     currentRound = input.round + 1;
   }

@@ -281,7 +281,9 @@ export function ResultScreen() {
   // 가을야구 축하 연출 — 사용자는 항상 home. 승리(homeWin)일 때만 연출.
   // round 4 승리 = 한국시리즈 우승(champion), 그 외 라운드 승리 = win.
   const isPlayoffWin = session.source === "playoff" && homeWin;
-  const isChampion = isPlayoffWin && session.playoffRound === PLAYOFF_TOTAL_ROUNDS;
+  // 한국시리즈는 3전 2선승 — 우승 연출/배너는 이 승리로 시리즈를 끝낸(2승째) 경우에만.
+  const isChampion =
+    isPlayoffWin && session.playoffRound === PLAYOFF_TOTAL_ROUNDS && session.playoffClinch === true;
 
   const winnerLabel = draw
     ? "무승부"

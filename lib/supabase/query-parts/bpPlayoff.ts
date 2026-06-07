@@ -8,6 +8,9 @@ import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
 const TABLE = "bp_playoff_runs";
 
 export const PLAYOFF_TOTAL_ROUNDS = 4;
+/** 한국시리즈(마지막 라운드)는 3전 2선승제 — 먼저 2승 시 우승, 2패 시 탈락. */
+export const PLAYOFF_FINAL_WINS_NEEDED = 2;
+export const PLAYOFF_FINAL_BEST_OF = 3;
 /** 라운드 번호 → 표시명. 5위로 시작해 4·5위전부터. */
 export const PLAYOFF_ROUND_LABEL: Record<number, string> = {
   1: "4·5위전",

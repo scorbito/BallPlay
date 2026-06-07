@@ -19,6 +19,7 @@ import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRec
 import {
   PLAYOFF_ROUND_LABEL,
   PLAYOFF_TOTAL_ROUNDS,
+  PLAYOFF_FINAL_WINS_NEEDED,
   type PlayoffRun
 } from "@/lib/supabase/query-parts/bpPlayoff";
 
@@ -53,6 +54,12 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
 
   const pendingGame = run.state.pendingGame ?? null;
   const round = pendingGame?.round ?? run.currentRound;
+  // 한국시리즈(마지막 라운드) — 3전 2선승. 완료된 경기들로 시리즈 스코어/차수 계산.
+  const isFinal = round === PLAYOFF_TOTAL_ROUNDS;
+  const finalGames = run.state.games.filter((g) => g.round === PLAYOFF_TOTAL_ROUNDS);
+  const finalWins = finalGames.filter((g) => g.win).length;
+  const finalLosses = finalGames.filter((g) => !g.win).length;
+  const seriesGameNo = finalWins + finalLosses + 1; // 지금 시작/진행할 경기 차수
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
   const hintFor = (teamId: string, frozen?: RecentLineupHint | null): RecentLineupHint | null =>
     liveHints[teamId] ?? frozen ?? null;
@@ -114,6 +121,12 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         showToast("\uC0C1\uB300 \uD300 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
         return false;
       }
+      // 한국시리즈: 이 경기를 이기면 우승 확정(이미 1승)인지 → 결과 화면 우승 연출 트리거.
+      const seriesWins = runForGame.state.games.filter(
+        (g) => g.round === PLAYOFF_TOTAL_ROUNDS && g.win
+      ).length;
+      const playoffClinch =
+        pending.round === PLAYOFF_TOTAL_ROUNDS && seriesWins >= PLAYOFF_FINAL_WINS_NEEDED - 1;
       saveMatchSession({
         myTeamId: runForGame.teamId,
         opponentTeamId: savedOpp.teamId,
@@ -122,7 +135,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         startedAt: pending.startedAt,
         source: "playoff",
         playoffRunId: runForGame.id,
-        playoffRound: pending.round
+        playoffRound: pending.round,
+        playoffClinch
       });
       router.push("/stadium/play");
       return true;
@@ -178,26 +192,50 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       <div className="playoff-ladder-head">전체 대진</div>
       <ul className="playoff-ladder">
         {ladder.map((o) => {
-          const g = gameByRound.get(o.round);
           const isCurrent = o.round === round;
-          const cls = g ? (g.win ? "is-win" : "is-loss") : isCurrent ? "is-current" : "is-upcoming";
+          const isFinalRow = o.round === PLAYOFF_TOTAL_ROUNDS;
+          let cls: string;
+          let statusText: string;
+          if (isFinalRow && finalGames.length > 0) {
+            // 한국시리즈 시리즈 — 스코어로 표시. 2승=승(우승) / 2패=패 / 그 외=현재.
+            cls =
+              finalWins >= PLAYOFF_FINAL_WINS_NEEDED
+                ? "is-win"
+                : finalLosses >= PLAYOFF_FINAL_WINS_NEEDED
+                  ? "is-loss"
+                  : "is-current";
+            statusText = `${finalWins}승 ${finalLosses}패`;
+          } else {
+            const g = gameByRound.get(o.round);
+            cls = g ? (g.win ? "is-win" : "is-loss") : isCurrent ? "is-current" : "is-upcoming";
+            statusText = g
+              ? `${g.score.me}:${g.score.opp} ${g.win ? "승" : "패"}`
+              : isCurrent
+                ? "현재"
+                : "예정";
+          }
           return (
             <li key={o.round} className={`playoff-ladder-row ${cls}`}>
               <span className="playoff-ladder-round">{PLAYOFF_ROUND_LABEL[o.round]}</span>
               <TeamLogo teamId={o.teamId} size="sm" />
               <span className="playoff-ladder-name">{o.teamName}</span>
               <span className="playoff-ladder-seed">{5 - o.round}위</span>
-              <span className="playoff-ladder-status">
-                {g ? `${g.score.me}:${g.score.opp} ${g.win ? "승" : "패"}` : isCurrent ? "현재" : "예정"}
-              </span>
+              <span className="playoff-ladder-status">{statusText}</span>
             </li>
           );
         })}
       </ul>
 
       <header className="playoff-bracket-head">
-        <span className="playoff-round-chip">{PLAYOFF_ROUND_LABEL[round]}</span>
-        <span className="playoff-round-progress">{round} / {PLAYOFF_TOTAL_ROUNDS}</span>
+        <span className="playoff-round-chip">
+          {PLAYOFF_ROUND_LABEL[round]}
+          {isFinal ? ` · ${seriesGameNo}차전` : ""}
+        </span>
+        <span className="playoff-round-progress">
+          {isFinal
+            ? `${finalWins}승 ${finalLosses}패 · ${PLAYOFF_FINAL_WINS_NEEDED}선승`
+            : `${round} / ${PLAYOFF_TOTAL_ROUNDS}`}
+        </span>
       </header>
 
       {pendingGame ? (
