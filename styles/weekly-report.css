@@ -1,0 +1,411 @@
+.weekly-report-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 공통 카드 스타일 */
+.weekly-report-title-card,
+.weekly-teams-analysis {
+  background: #ffffff;
+  border: 1px solid #edf0f4;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+/* 상단 주차 정보 */
+.weekly-report-title-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #f8fafc, #edf2f7);
+}
+
+.weekly-title-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.weekly-nav-btn {
+  background: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.weekly-nav-btn:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+}
+
+.weekly-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.weekly-selector-icon {
+  color: #2563eb;
+}
+
+.weekly-title-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.weekly-selector-title {
+  margin: 0;
+  font-size: 18px; /* 16px -> 18px 상향 */
+  font-weight: 900;
+  color: #1e293b;
+}
+
+.weekly-selector-subtitle {
+  font-size: 13px; /* 11px -> 13px 상향 */
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* 섹션 헤더 */
+.weekly-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 8px;
+}
+
+.weekly-header-icon {
+  color: #2563eb;
+}
+
+.weekly-section-header h3 {
+  margin: 0;
+  font-size: 17px; /* 15px -> 17px 상향 */
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* 테이블 스타일 가이드라인 헤더 */
+.weekly-list-header-row {
+  display: grid;
+  grid-template-columns: 45px 1.5fr 1fr 1.8fr 24px;
+  gap: 4px;
+  align-items: center;
+  padding: 0 16px 8px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 8px;
+  font-size: 13px; /* 11px -> 13px 상향 */
+  font-weight: 800;
+  color: #64748b;
+  text-align: center;
+}
+
+.weekly-list-header-row .col-lbl-team {
+  text-align: left;
+  padding-left: 28px;
+}
+
+/* 아코디언 목록 */
+.weekly-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weekly-accordion-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+
+.weekly-accordion-item.is-expanded {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+}
+
+.weekly-accordion-header {
+  width: 100%;
+  padding: 14px 16px; /* 모바일 대응 및 글씨 커짐에 대비해 약간 넉넉하게 조정 */
+  background: #ffffff;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* 아코디언 헤더 그리드 */
+.weekly-header-grid {
+  display: grid;
+  grid-template-columns: 45px 1.5fr 1fr 1.8fr 24px;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+  font-size: 14px; /* 12px -> 14px 상향 */
+}
+
+.grid-rank {
+  font-weight: 900;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 13px; /* 11px -> 13px 상향 */
+}
+
+.weekly-accordion-item:nth-child(-n+3) .grid-rank {
+  background: #faf5ff;
+  color: #7c3aed;
+  font-weight: 950;
+}
+
+.grid-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+}
+
+.grid-team-name {
+  font-weight: 900;
+  color: #0f172a;
+  font-size: 14px; /* 기본값에서 명시적으로 14px로 상향 지정 */
+}
+
+.grid-record {
+  font-weight: 750;
+  color: #475569;
+}
+
+.grid-badges {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.grid-chevron {
+  color: #94a3b8;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* 결과 배지 */
+.weekly-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 11px; /* 9.5px -> 11px 상향 */
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.badge-sweep-win {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-winning {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-split {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.badge-losing {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.badge-sweep-loss {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* 아코디언 바디 */
+.weekly-accordion-body {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+  background: #fafcff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-small-title {
+  display: block;
+  font-size: 13px; /* 11px -> 13px 상향 */
+  font-weight: 850;
+  color: #64748b;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.body-overall-card {
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.overall-comment-text {
+  margin: 0;
+  font-size: 16px; /* 14.5px -> 16px 상향 */
+  line-height: 1.6;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.body-series-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .body-series-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.series-detail-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.series-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.series-title-label {
+  font-size: 11px; /* 9px -> 11px 상향 */
+  font-weight: 900;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.series-title-row strong {
+  font-size: 14.5px; /* 13px -> 14.5px 상향 */
+  font-weight: 850;
+  color: #0f172a;
+}
+
+.series-summary {
+  margin: 0 0 6px;
+  font-size: 15px; /* 13.5px -> 15px 상향 */
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.series-details-content {
+  font-size: 14.5px; /* 13px -> 14.5px 상향 */
+  line-height: 1.6; /* 1.5 -> 1.6 여유있게 조정 */
+  color: #475569;
+  font-weight: 500;
+}
+
+/* 모바일 좁은 가로 폭 최적화 */
+@media (max-width: 480px) {
+  .weekly-list-header-row,
+  .weekly-header-grid {
+    grid-template-columns: 36px 1.3fr 1.1fr 1.6fr 20px;
+    font-size: 12.5px; /* 11px -> 12.5px 상향 */
+  }
+  .weekly-list-header-row .col-lbl-team {
+    padding-left: 20px;
+  }
+  .grid-team {
+    gap: 4px;
+  }
+  .grid-team-name {
+    font-size: 13px; /* 11.5px -> 13px 상향 */
+  }
+  .weekly-badge {
+    padding: 2px 4px;
+    font-size: 9px; /* 8px -> 9px 상향 */
+  }
+  .grid-badges {
+    gap: 2px;
+  }
+}
+
+/* 빈 리포트(Empty State) 디자인 */
+.weekly-report-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.empty-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  border: 1px solid #e2e8f0;
+}
+
+.empty-icon {
+  color: #94a3b8;
+}
+
+.empty-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.empty-subtitle {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #64748b;
+  font-weight: 500;
+}

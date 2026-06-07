@@ -26,6 +26,38 @@ function addDays(dateISO: string, days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function isMonday(dateISO: string): boolean {
+  return new Date(`${dateISO}T00:00:00+09:00`).getDay() === 1;
+}
+
+function listMondaysBetween(fromISO: string, toISO: string): string[] {
+  const dates: string[] = [];
+  let cursor = fromISO;
+  while (cursor <= toISO) {
+    if (isMonday(cursor)) dates.push(cursor);
+    cursor = addDays(cursor, 1);
+  }
+  return dates;
+}
+
+function pickPrevDate(selectedDate: string, gameDates: string[]): string | null {
+  const candidates = new Set<string>([
+    ...gameDates,
+    ...listMondaysBetween(addDays(selectedDate, -14), addDays(selectedDate, -1))
+  ]);
+  const sorted = Array.from(candidates).filter((date) => date < selectedDate).sort();
+  return sorted.length > 0 ? sorted[sorted.length - 1] : null;
+}
+
+function pickNextDate(selectedDate: string, gameDates: string[]): string | null {
+  const candidates = new Set<string>([
+    ...gameDates,
+    ...listMondaysBetween(addDays(selectedDate, 1), addDays(selectedDate, 14))
+  ]);
+  const sorted = Array.from(candidates).filter((date) => date > selectedDate).sort();
+  return sorted[0] ?? null;
+}
+
 export default async function AiWinnerPredictPage({
   searchParams
 }: {
@@ -41,10 +73,11 @@ export default async function AiWinnerPredictPage({
 
   let selectedDate = explicitDate ?? today;
   let gamesForDate = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);
+  const shouldShowWeeklyPreview = isMonday(selectedDate) && gamesForDate.length === 0;
 
   // 오늘 진입인데 경기 자체가 없음 → 14일 lookahead 중 가장 이른 경기일로 자동 이동.
   // (AI 예측이 목적이라 경기 없는 날엔 미리 다음 경기일 + 카운트다운 노출.)
-  if (!explicitDate && gamesForDate.length === 0) {
+  if (!explicitDate && gamesForDate.length === 0 && !shouldShowWeeklyPreview) {
     const lookahead = await listGamesFromDb({
       from: addDays(today, 1),
       to: addDays(today, 14)
@@ -63,8 +96,8 @@ export default async function AiWinnerPredictPage({
     listGamesFromDb({ from: addDays(selectedDate, -14), to: addDays(selectedDate, -1) }).catch(() => []),
     listGamesFromDb({ from: addDays(selectedDate, 1), to: addDays(selectedDate, 14) }).catch(() => [])
   ]);
-  const prevDate = prevLookback.length > 0 ? prevLookback[prevLookback.length - 1].date : null;
-  const nextDate = nextLookahead.length > 0 ? nextLookahead[0].date : null;
+  const prevDate = pickPrevDate(selectedDate, prevLookback.map((g) => g.date));
+  const nextDate = pickNextDate(selectedDate, nextLookahead.map((g) => g.date));
 
   const supabase = createSupabaseServerClient();
 
@@ -158,6 +191,7 @@ export default async function AiWinnerPredictPage({
       prevDate={prevDate}
       nextDate={nextDate}
       published={predictionsPublished}
+      showWeeklyPreview={shouldShowWeeklyPreview}
       games={gameCards}
       nextGameDate={nextGameDate}
       overallStats={overallResult.ok ? overallResult.stats : { total_count: 0, correct_count: 0, accuracy: null }}

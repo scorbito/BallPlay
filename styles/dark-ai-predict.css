@@ -632,6 +632,390 @@
 }
 
 /* ============================================================
+   월요일 주간 시리즈 예측
+   ============================================================ */
+.phone-frame-light .ai-weekly-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.phone-frame-light .ai-weekly-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(16, 163, 127, 0.08));
+  border: 1px solid rgba(232, 74, 138, 0.22);
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-weekly-kicker {
+  width: fit-content;
+  padding: 4px 8px;
+  background: rgba(232, 74, 138, 0.12);
+  border-radius: 999px;
+  color: var(--bp-accent);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-hero h2 {
+  margin: 0;
+  color: var(--bp-text);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-hero p {
+  margin: 0;
+  color: var(--bp-text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.phone-frame-light .ai-weekly-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .ai-weekly-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.phone-frame-light .ai-weekly-section-head h3 {
+  margin: 0;
+  color: var(--bp-text);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-section-head p {
+  margin: 2px 0 0;
+  color: var(--bp-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.phone-frame-light .ai-weekly-section-head > span {
+  padding: 4px 8px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  color: var(--bp-text-secondary);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-series-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.phone-frame-light .ai-weekly-series-card {
+  padding: 0;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-weekly-series-link {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  color: inherit;
+  border-radius: 14px;
+  text-decoration: none;
+}
+
+.phone-frame-light .ai-weekly-series-link:hover {
+  background: rgba(232, 74, 138, 0.04);
+}
+
+.phone-frame-light .ai-weekly-series-top,
+.phone-frame-light .ai-weekly-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.phone-frame-light .ai-weekly-series-label,
+.phone-frame-light .ai-weekly-series-range {
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-series-label {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-weekly-series-range {
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-weekly-matchup {
+  justify-content: center;
+}
+
+.phone-frame-light .ai-weekly-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-frame-light .ai-weekly-team strong {
+  color: var(--bp-text);
+  font-size: 17px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.phone-frame-light .ai-weekly-vs {
+  color: var(--bp-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.phone-frame-light .ai-weekly-headline {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--bp-card-soft);
+  border-radius: 8px;
+  color: var(--bp-text-secondary);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.phone-frame-light .ai-weekly-picks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.phone-frame-light .ai-weekly-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 4px;
+  background: var(--bp-card-soft);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.phone-frame-light .ai-weekly-pick-gemini { border-color: rgba(30, 136, 229, 0.30); }
+.phone-frame-light .ai-weekly-pick-claude { border-color: rgba(217, 119, 87, 0.30); }
+.phone-frame-light .ai-weekly-pick-gpt { border-color: rgba(16, 163, 127, 0.30); }
+
+.phone-frame-light .ai-weekly-pick-provider {
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-pick-gemini .ai-weekly-pick-provider { color: #1E88E5; }
+.phone-frame-light .ai-weekly-pick-claude .ai-weekly-pick-provider { color: #D97757; }
+.phone-frame-light .ai-weekly-pick-gpt .ai-weekly-pick-provider { color: #10A37F; }
+
+.phone-frame-light .ai-weekly-pick-result {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--bp-text);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.phone-frame-light .ai-weekly-pick-note {
+  color: var(--bp-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.phone-frame-light .ai-weekly-detail-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 14px 32px;
+}
+
+.phone-frame-light .ai-weekly-detail-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(16, 163, 127, 0.08));
+  border: 1px solid rgba(232, 74, 138, 0.22);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.phone-frame-light .ai-weekly-detail-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--bp-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.phone-frame-light .ai-weekly-detail-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.phone-frame-light .ai-weekly-detail-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.phone-frame-light .ai-weekly-detail-team strong {
+  color: var(--bp-text);
+  font-size: 20px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.phone-frame-light .ai-weekly-detail-matchup > span {
+  color: var(--bp-text-muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-detail-hero p {
+  margin: 0;
+  color: var(--bp-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.phone-frame-light .ai-weekly-detail-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: rgba(232, 74, 138, 0.12);
+  border-radius: 999px;
+  color: var(--bp-accent);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phone-frame-light .ai-weekly-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-left-width: 4px;
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-weekly-detail-card-gemini { border-left-color: #1E88E5; }
+.phone-frame-light .ai-weekly-detail-card-claude { border-left-color: #D97757; }
+.phone-frame-light .ai-weekly-detail-card-gpt { border-left-color: #10A37F; }
+
+.phone-frame-light .ai-weekly-detail-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.phone-frame-light .ai-weekly-detail-card-head span {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-detail-card-gemini .ai-weekly-detail-card-head span { color: #1E88E5; }
+.phone-frame-light .ai-weekly-detail-card-claude .ai-weekly-detail-card-head span { color: #D97757; }
+.phone-frame-light .ai-weekly-detail-card-gpt .ai-weekly-detail-card-head span { color: #10A37F; }
+
+.phone-frame-light .ai-weekly-detail-card-head strong {
+  color: var(--bp-text);
+  font-size: 15px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.phone-frame-light .ai-weekly-detail-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 6px 8px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+}
+
+.phone-frame-light .ai-weekly-detail-pick .team-badge-initial {
+  color: #ffffff;
+}
+
+.phone-frame-light .ai-weekly-detail-pick-team {
+  color: var(--bp-text);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-detail-pick em {
+  color: var(--bp-text-muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.phone-frame-light .ai-weekly-detail-oneliner,
+.phone-frame-light .ai-weekly-detail-analysis {
+  margin: 0;
+  color: var(--bp-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.phone-frame-light .ai-weekly-detail-analysis {
+  padding: 10px 12px;
+  background: var(--bp-card-soft);
+  border-radius: 10px;
+}
+
+/* ============================================================
    풀스크린 reveal 페이지
    ============================================================ */
 

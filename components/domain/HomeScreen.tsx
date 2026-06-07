@@ -196,6 +196,14 @@ const sections: HomeSection[] = [
         icon: Trophy,
         iconImage: "/icons/menu/team-standings.png",
         available: true
+      },
+      {
+        id: "weekly-report",
+        href: "/weekly-report",
+        title: "주간 리포트",
+        description: "한 주간의 KBO 성적 분석 리포트",
+        icon: FileText,
+        available: true
       }
     ]
   },
