@@ -28,7 +28,8 @@ function addDays(dateISO: string, days: number): string {
 }
 
 function isMonday(dateISO: string): boolean {
-  return new Date(`${dateISO}T00:00:00+09:00`).getDay() === 1;
+  const [year, month, day] = dateISO.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 1;
 }
 
 function listMondaysBetween(fromISO: string, toISO: string): string[] {
