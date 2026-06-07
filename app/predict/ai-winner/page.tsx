@@ -7,6 +7,7 @@ import {
   type BpAiPredictionResultRow,
   type BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
+import { listAiWeeklySeriesForWeek } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
 import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
@@ -100,6 +101,9 @@ export default async function AiWinnerPredictPage({
   const nextDate = pickNextDate(selectedDate, nextLookahead.map((g) => g.date));
 
   const supabase = createSupabaseServerClient();
+  const weeklySeriesResult = shouldShowWeeklyPreview
+    ? await listAiWeeklySeriesForWeek(createSupabaseAdminClient(), selectedDate)
+    : { ok: true as const, rows: [] };
 
   // 운영자(admin) 는 시간 게이트(published_at) 만 우회 — 그 외 동작은 일반 유저와 동일.
   // service_role 클라이언트로 RLS 우회 → 발행 전 픽도 미리 봄 (영상 사전 제작용).
@@ -192,6 +196,7 @@ export default async function AiWinnerPredictPage({
       nextDate={nextDate}
       published={predictionsPublished}
       showWeeklyPreview={shouldShowWeeklyPreview}
+      weeklySeries={weeklySeriesResult.ok ? weeklySeriesResult.rows : []}
       games={gameCards}
       nextGameDate={nextGameDate}
       overallStats={overallResult.ok ? overallResult.stats : { total_count: 0, correct_count: 0, accuracy: null }}

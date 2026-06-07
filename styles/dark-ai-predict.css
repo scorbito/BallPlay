@@ -836,7 +836,7 @@
   justify-content: center;
   gap: 4px;
   color: var(--bp-text);
-  font-size: 12px;
+  font-size: 14.5px; /* 12px -> 14.5px 상향 */
   font-weight: 900;
   line-height: 1.2;
   text-align: center;
@@ -944,6 +944,15 @@
   border: 1px solid var(--bp-line-soft);
   border-left-width: 4px;
   border-radius: 14px;
+  /* reveal: 초기엔 안 보이고, is-visible 토글 시 페이드인 + 미세한 슬라이드업 */
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.phone-frame-light .ai-weekly-detail-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .phone-frame-light .ai-weekly-detail-card-gemini { border-left-color: #1E88E5; }
@@ -966,37 +975,42 @@
 .phone-frame-light .ai-weekly-detail-card-claude .ai-weekly-detail-card-head span { color: #D97757; }
 .phone-frame-light .ai-weekly-detail-card-gpt .ai-weekly-detail-card-head span { color: #10A37F; }
 
-.phone-frame-light .ai-weekly-detail-card-head strong {
-  color: var(--bp-text);
-  font-size: 15px;
+.phone-frame-light .ai-weekly-detail-pick-percent {
+  margin-left: auto;
+  font-size: 20px;
   font-weight: 900;
-  text-align: right;
+  color: var(--bp-accent);
+  font-variant-numeric: tabular-nums;
 }
 
-.phone-frame-light .ai-weekly-detail-pick {
+.phone-frame-light .ai-weekly-detail-pick-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.phone-frame-light .ai-weekly-detail-pick-team-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-weekly-detail-pick-result strong {
+  color: var(--bp-text);
+  font-size: 16.5px;
+  font-weight: 900;
+}
+
+.phone-frame-light .ai-weekly-detail-pick-note {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   width: fit-content;
-  padding: 6px 8px;
+  padding: 4px 8px;
   background: var(--bp-card-soft);
-  border-radius: 999px;
-}
-
-.phone-frame-light .ai-weekly-detail-pick .team-badge-initial {
-  color: #ffffff;
-}
-
-.phone-frame-light .ai-weekly-detail-pick-team {
-  color: var(--bp-text);
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.phone-frame-light .ai-weekly-detail-pick em {
+  border-radius: 6px;
   color: var(--bp-text-muted);
-  font-size: 11px;
-  font-style: normal;
+  font-size: 11.5px;
   font-weight: 800;
 }
 
@@ -1373,4 +1387,41 @@
 .phone-frame-light .ai-reveal-tag-split {
   background: rgba(155, 89, 182, 0.16);
   color: #8e44ad;
+}
+
+/* ============================================================
+   주간 시리즈 예측 탭 버튼
+   ============================================================ */
+.phone-frame-light .ai-weekly-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--bp-card-soft);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--bp-line-soft);
+  margin-bottom: 6px;
+}
+
+.phone-frame-light .ai-weekly-tab-btn {
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.phone-frame-light .ai-weekly-tab-btn:hover {
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .ai-weekly-tab-btn.is-active {
+  background: var(--bp-card);
+  color: var(--bp-accent);
+  box-shadow: 0 2px 8px rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.15);
 }

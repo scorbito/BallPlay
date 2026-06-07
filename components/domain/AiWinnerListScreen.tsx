@@ -28,6 +28,7 @@ import type {
   AiProviderStats,
   BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
+import type { AiWeeklySeries } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
 
 export type AiWinnerGame = {
   id: string;
@@ -55,6 +56,7 @@ type Props = {
   /** 공개 여부 — 그 날 모든 경기가 3개 AI 예측을 다 갖추면 true. (기존 09시 게이트 대체) */
   published: boolean;
   showWeeklyPreview?: boolean;
+  weeklySeries?: AiWeeklySeries[];
   games: AiWinnerGame[];
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
   overallStats: AiOverallStats;
@@ -75,167 +77,6 @@ const AI_LABEL: Record<AiProvider, string> = {
 // 적중률 헤더, 경기 카드 픽, reveal 페이지 모두 같은 순서로.
 const AI_ORDER: AiProvider[] = ["gpt", "gemini", "claude"];
 const AI_ORDER_RANK: Record<AiProvider, number> = { gpt: 0, gemini: 1, claude: 2 };
-
-type WeeklySeriesPick = {
-  provider: AiProvider;
-  teamId: string;
-  result: string;
-  note: string;
-};
-
-type WeeklySeriesMock = {
-  id: string;
-  group: "early" | "weekend";
-  label: string;
-  range: string;
-  homeTeamId: string;
-  awayTeamId: string;
-  headline: string;
-  picks: WeeklySeriesPick[];
-};
-
-const WEEKLY_SERIES_MOCK: WeeklySeriesMock[] = [
-  {
-    id: "early-doosan-lotte",
-    group: "early",
-    label: "주중 3연전",
-    range: "6.9 - 6.11",
-    homeTeamId: "doosan",
-    awayTeamId: "lotte",
-    headline: "두산 선발진 우세, 롯데 타선 응집력이 변수",
-    picks: [
-      { provider: "gpt", teamId: "doosan", result: "두산 위닝", note: "선발 안정감" },
-      { provider: "gemini", teamId: "doosan", result: "두산 2승 1패", note: "불펜 우위" },
-      { provider: "claude", teamId: "lotte", result: "롯데 위닝", note: "타선 반등" }
-    ]
-  },
-  {
-    id: "early-lg-hanwha",
-    group: "early",
-    label: "주중 3연전",
-    range: "6.9 - 6.11",
-    homeTeamId: "lg",
-    awayTeamId: "hanwha",
-    headline: "LG의 출루 흐름과 한화 장타력이 맞붙는 시리즈",
-    picks: [
-      { provider: "gpt", teamId: "lg", result: "LG 위닝", note: "상위타선 우세" },
-      { provider: "gemini", teamId: "hanwha", result: "한화 2승 1패", note: "장타 변수" },
-      { provider: "claude", teamId: "lg", result: "LG 2승 1패", note: "수비 안정" }
-    ]
-  },
-  {
-    id: "early-kia-samsung",
-    group: "early",
-    label: "주중 3연전",
-    range: "6.9 - 6.11",
-    homeTeamId: "kia",
-    awayTeamId: "samsung",
-    headline: "KIA 중심타선이 앞서지만 삼성 후반 집중력도 강점",
-    picks: [
-      { provider: "gpt", teamId: "kia", result: "KIA 위닝", note: "득점권 강세" },
-      { provider: "gemini", teamId: "kia", result: "KIA 2승 1패", note: "타선 깊이" },
-      { provider: "claude", teamId: "samsung", result: "삼성 위닝", note: "후반 승부" }
-    ]
-  },
-  {
-    id: "early-ssg-nc",
-    group: "early",
-    label: "주중 3연전",
-    range: "6.9 - 6.11",
-    homeTeamId: "ssg",
-    awayTeamId: "nc",
-    headline: "장타 싸움으로 흐르면 SSG, 접전이면 NC가 유리",
-    picks: [
-      { provider: "gpt", teamId: "ssg", result: "SSG 2승 1패", note: "홈런 기대" },
-      { provider: "gemini", teamId: "nc", result: "NC 위닝", note: "접전 운영" },
-      { provider: "claude", teamId: "ssg", result: "SSG 위닝", note: "초반 득점" }
-    ]
-  },
-  {
-    id: "early-kt-kiwoom",
-    group: "early",
-    label: "주중 3연전",
-    range: "6.9 - 6.11",
-    homeTeamId: "kt",
-    awayTeamId: "kiwoom",
-    headline: "KT 마운드 운영과 키움 젊은 타선의 흐름 대결",
-    picks: [
-      { provider: "gpt", teamId: "kt", result: "KT 위닝", note: "마운드 우위" },
-      { provider: "gemini", teamId: "kiwoom", result: "키움 2승 1패", note: "타선 활력" },
-      { provider: "claude", teamId: "kt", result: "KT 2승 1패", note: "불펜 안정" }
-    ]
-  },
-  {
-    id: "weekend-doosan-kia",
-    group: "weekend",
-    label: "주말 3연전",
-    range: "6.12 - 6.14",
-    homeTeamId: "doosan",
-    awayTeamId: "kia",
-    headline: "상위권 분위기를 가를 수 있는 주말 핵심 시리즈",
-    picks: [
-      { provider: "gpt", teamId: "kia", result: "KIA 위닝", note: "공격 기대값" },
-      { provider: "gemini", teamId: "doosan", result: "두산 2승 1패", note: "선발 매치업" },
-      { provider: "claude", teamId: "kia", result: "KIA 2승 1패", note: "중심타선" }
-    ]
-  },
-  {
-    id: "weekend-lotte-lg",
-    group: "weekend",
-    label: "주말 3연전",
-    range: "6.12 - 6.14",
-    homeTeamId: "lotte",
-    awayTeamId: "lg",
-    headline: "롯데의 홈 분위기와 LG의 출루 야구가 맞붙는 시리즈",
-    picks: [
-      { provider: "gpt", teamId: "lg", result: "LG 위닝", note: "출루율 우세" },
-      { provider: "gemini", teamId: "lotte", result: "롯데 위닝", note: "홈 강세" },
-      { provider: "claude", teamId: "lg", result: "LG 2승 1패", note: "작전 수행" }
-    ]
-  },
-  {
-    id: "weekend-hanwha-ssg",
-    group: "weekend",
-    label: "주말 3연전",
-    range: "6.12 - 6.14",
-    homeTeamId: "hanwha",
-    awayTeamId: "ssg",
-    headline: "한화의 장타와 SSG의 한 방이 정면으로 붙는 매치업",
-    picks: [
-      { provider: "gpt", teamId: "ssg", result: "SSG 위닝", note: "장타 생산" },
-      { provider: "gemini", teamId: "hanwha", result: "한화 2승 1패", note: "선발 호투" },
-      { provider: "claude", teamId: "ssg", result: "SSG 2승 1패", note: "득점 루트" }
-    ]
-  },
-  {
-    id: "weekend-samsung-kt",
-    group: "weekend",
-    label: "주말 3연전",
-    range: "6.12 - 6.14",
-    homeTeamId: "samsung",
-    awayTeamId: "kt",
-    headline: "삼성의 후반 응집력과 KT의 마운드 계산이 관건",
-    picks: [
-      { provider: "gpt", teamId: "kt", result: "KT 2승 1패", note: "선발 안정" },
-      { provider: "gemini", teamId: "samsung", result: "삼성 위닝", note: "후반 집중" },
-      { provider: "claude", teamId: "kt", result: "KT 위닝", note: "불펜 우세" }
-    ]
-  },
-  {
-    id: "weekend-nc-kiwoom",
-    group: "weekend",
-    label: "주말 3연전",
-    range: "6.12 - 6.14",
-    homeTeamId: "nc",
-    awayTeamId: "kiwoom",
-    headline: "NC의 경기 운영이 앞서지만 키움의 업셋 가능성도 있는 시리즈",
-    picks: [
-      { provider: "gpt", teamId: "nc", result: "NC 위닝", note: "운영 우세" },
-      { provider: "gemini", teamId: "nc", result: "NC 2승 1패", note: "투타 균형" },
-      { provider: "claude", teamId: "kiwoom", result: "키움 위닝", note: "젊은 타선" }
-    ]
-  }
-];
 
 function formatDateLabel(dateISO: string): string {
   const [, m, d] = dateISO.split("-");
@@ -315,46 +156,81 @@ function summarize(predictions: BpAiPredictionRow[], homeTeamId: string, awayTea
 }
 
 // reveal 페이지가 마킹하는 키 — 한 번 본 게임은 목록에서 결과 노출
-function WeeklySeriesPreview() {
-  const groups: Array<{ id: WeeklySeriesMock["group"]; title: string; sub: string }> = [
-    { id: "early", title: "이번주초 시리즈", sub: "화-목 예상 매치업" },
-    { id: "weekend", title: "주말 시리즈", sub: "금-일 예상 매치업" }
+function WeeklySeriesPreview({ seriesRows }: { seriesRows: AiWeeklySeries[] }) {
+  const [activeTab, setActiveTab] = useState<"early" | "weekend">("early");
+
+  const groups: Array<{ id: AiWeeklySeries["group"]; title: string; sub: string }> = [
+    { id: "early", title: "주초 시리즈", sub: "화-목 매치업" },
+    { id: "weekend", title: "주말 시리즈", sub: "금-일 매치업" }
   ];
+
+  if (seriesRows.length === 0) {
+    return (
+      <div className="ai-winner-empty">
+        <Bot size={36} strokeWidth={1.5} aria-hidden="true" />
+        <p className="ai-winner-empty-title">이번 주 AI 시리즈 예측 준비 중</p>
+        <p className="ai-winner-empty-sub">예측 데이터가 입력되면 바로 공개됩니다</p>
+      </div>
+    );
+  }
+
+  const activeGroup = groups.find((g) => g.id === activeTab) || groups[0];
+  const activeSeriesRows = seriesRows.filter((s) => s.group === activeTab);
+
+  // 첫 번째 경기의 range 값을 파싱하여 '6.9(화)~6.11(목)' 형태로 변환한 뒤 타이틀로 동적 제공
+  let rangeText = "";
+  if (activeSeriesRows[0]?.range) {
+    const parts = activeSeriesRows[0].range.split(" - ");
+    if (parts.length === 2) {
+      const startDayLabel = activeTab === "early" ? "(화)" : "(금)";
+      const endDayLabel = activeTab === "early" ? "(목)" : "(일)";
+      rangeText = `${parts[0]}${startDayLabel}~${parts[1]}${endDayLabel}`;
+    } else {
+      rangeText = activeSeriesRows[0].range.replace(" - ", "~");
+    }
+  }
+  const headerSubtitle = rangeText ? `${rangeText} 매치업 3연전` : `${activeGroup.sub} 3연전`;
 
   return (
     <div className="ai-weekly-preview">
       <header className="ai-weekly-hero">
         <span className="ai-weekly-kicker">월요일 콘텐츠</span>
         <h2>이번 주 AI 시리즈 예측</h2>
-        <p>이번 주 예정된 10개 시리즈를 AI 3개가 각각 예측한 임시 화면입니다.</p>
       </header>
 
-      {groups.map((group) => (
-        <section key={group.id} className="ai-weekly-section">
-          <div className="ai-weekly-section-head">
-            <div>
-              <h3>{group.title}</h3>
-              <p>{group.sub}</p>
-            </div>
-            <span>{WEEKLY_SERIES_MOCK.filter((s) => s.group === group.id).length}개</span>
+      {/* 주초 / 주말 탭 버튼 */}
+      <div className="ai-weekly-tabs">
+        {groups.map((group) => (
+          <button
+            key={group.id}
+            type="button"
+            className={`ai-weekly-tab-btn ${activeTab === group.id ? "is-active" : ""}`}
+            onClick={() => setActiveTab(group.id as "early" | "weekend")}
+          >
+            {group.title}
+          </button>
+        ))}
+      </div>
+
+      <section className="ai-weekly-section">
+        <div className="ai-weekly-section-head">
+          <div>
+            <p>{headerSubtitle}</p>
           </div>
+          <span>{activeSeriesRows.length}개 시리즈</span>
+        </div>
 
-          <ul className="ai-weekly-series-list">
-            {WEEKLY_SERIES_MOCK.filter((series) => series.group === group.id).map((series) => {
-              const home = getTeam(series.homeTeamId);
-              const away = getTeam(series.awayTeamId);
-              return (
-                <li key={series.id} className="ai-weekly-series-card">
-                  <Link
-                    href={`/predict/ai-winner/weekly/${series.id}`}
-                    className="ai-weekly-series-link"
-                    prefetch={false}
-                  >
-                  <div className="ai-weekly-series-top">
-                    <span className="ai-weekly-series-label">{series.label}</span>
-                    <span className="ai-weekly-series-range">{series.range}</span>
-                  </div>
-
+        <ul className="ai-weekly-series-list">
+          {activeSeriesRows.map((series) => {
+            const home = getTeam(series.homeTeamId);
+            const away = getTeam(series.awayTeamId);
+            return (
+              <li key={series.id} className="ai-weekly-series-card">
+                <Link
+                  href={`/predict/ai-winner/weekly/${series.id}`}
+                  className="ai-weekly-series-link"
+                  prefetch={false}
+                >
                   <div className="ai-weekly-matchup">
                     <div className="ai-weekly-team">
                       <TeamBadge teamId={series.homeTeamId} size="sm" />
@@ -367,30 +243,15 @@ function WeeklySeriesPreview() {
                     </div>
                   </div>
 
-                  <p className="ai-weekly-headline">{series.headline}</p>
-
-                  <div className="ai-weekly-picks">
-                    {AI_ORDER.map((provider) => {
-                      const pick = series.picks.find((p) => p.provider === provider)!;
-                      return (
-                        <div key={provider} className={`ai-weekly-pick ai-weekly-pick-${provider}`}>
-                          <span className="ai-weekly-pick-provider">{AI_LABEL[provider]}</span>
-                          <span className="ai-weekly-pick-result">
-                            <TeamBadge teamId={pick.teamId} size="sm" />
-                            {pick.result}
-                          </span>
-                          <span className="ai-weekly-pick-note">{pick.note}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
+                  {series.headline ? (
+                    <p className="ai-weekly-headline">{series.headline}</p>
+                  ) : null}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </div>
   );
 }
@@ -406,6 +267,7 @@ export function AiWinnerListScreen({
   nextDate,
   published,
   showWeeklyPreview = false,
+  weeklySeries = [],
   games,
   nextGameDate,
   overallStats,
@@ -637,7 +499,7 @@ export function AiWinnerListScreen({
         {/* ── 선택 날짜 경기 ── */}
         <section className="ai-winner-games">
           {games.length === 0 && showWeeklyPreview ? (
-            <WeeklySeriesPreview />
+            <WeeklySeriesPreview seriesRows={weeklySeries} />
           ) : games.length === 0 ? (
             <div className="ai-winner-empty">
               <Bot size={36} strokeWidth={1.5} aria-hidden="true" />

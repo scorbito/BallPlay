@@ -140,7 +140,8 @@ const sections: HomeSection[] = [
         description: "AI 3사 분석 종합",
         icon: Bot,
         iconImage: "/icons/menu/ai-prediction.png",
-        available: true
+        available: true,
+        badge: "HOT"
       },
       {
         id: "sim-1000",
@@ -203,6 +204,17 @@ const sections: HomeSection[] = [
         title: "주간 리포트",
         description: "한 주간의 KBO 성적 분석 리포트",
         icon: FileText,
+        iconImage: "/icons/menu/weekly-report.png",
+        available: true,
+        badge: "NEW"
+      },
+      {
+        id: "news",
+        href: "/news",
+        title: "야구 뉴스",
+        description: "KBO 헤드라인·트레이드",
+        icon: FileText,
+        iconImage: "/icons/menu/baseball-news.png",
         available: true
       }
     ]
@@ -213,8 +225,7 @@ const sections: HomeSection[] = [
     variant: "standard",
     sectionIcon: Play,
     sectionIconImage: "/icons/sections/content.png",
-    // 영상·뉴스·퀴즈 3개로 3열 그리드를 모두 채움.
-    gridCols: 3,
+    gridCols: 2,
     cards: [
       {
         id: "videos",
@@ -223,15 +234,6 @@ const sections: HomeSection[] = [
         description: "끝내기·호수비·짤방 모음",
         icon: PlaySquare,
         iconImage: "/icons/menu/fun-videos.png",
-        available: true
-      },
-      {
-        id: "news",
-        href: "/news",
-        title: "야구 뉴스",
-        description: "KBO 헤드라인·트레이드",
-        icon: FileText,
-        iconImage: "/icons/menu/baseball-news.png",
         available: true
       },
       {
