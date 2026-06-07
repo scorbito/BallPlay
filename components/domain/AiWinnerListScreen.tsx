@@ -7,7 +7,20 @@ import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from 
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
+import { getRoster } from "@/lib/rosters";
 import { trackEvent } from "@/lib/analytics/events";
+import { useAppState } from "@/lib/state/AppState";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
+import {
+  getLatestBattingLineupForTeam,
+  type RecentLineupRow
+} from "@/lib/supabase/query-parts/bpRecentLineups";
+import {
+  applyBlendedStatsToTeam,
+  buildStatsDirectoryWithRecentForm
+} from "@/lib/sim/statsLoaderWithRecent";
+import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type {
   AiOverallStats,
@@ -22,6 +35,8 @@ export type AiWinnerGame = {
   stadium: string;
   homeTeamId: string;
   awayTeamId: string;
+  homeStarter: string | null;
+  awayStarter: string | null;
   homeScore: number | null;
   awayScore: number | null;
   status: GameStatus;
@@ -37,7 +52,8 @@ type Props = {
   prevDate: string | null;
   /** 다음 경기일 (없으면 null — 화살표 비활성). 미래 경기일도 허용 (AI 예측 도착 전 카운트다운 표시). */
   nextDate: string | null;
-  publishAtISO: string;           // 선택 날짜의 09:00 KST ISO
+  /** 공개 여부 — 그 날 모든 경기가 3개 AI 예측을 다 갖추면 true. (기존 09시 게이트 대체) */
+  published: boolean;
   games: AiWinnerGame[];
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
   overallStats: AiOverallStats;
@@ -59,39 +75,6 @@ const AI_LABEL: Record<AiProvider, string> = {
 const AI_ORDER: AiProvider[] = ["gpt", "gemini", "claude"];
 const AI_ORDER_RANK: Record<AiProvider, number> = { gpt: 0, gemini: 1, claude: 2 };
 
-/** 카운트다운: 09시 공개까지 남은 시간. 1초마다 업데이트. */
-function useCountdown(targetISO: string) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const target = new Date(targetISO).getTime();
-  const diff = Math.max(0, target - now);
-  // 시간 스케일에 따라 라벨 형식 분기 — "17:00:00" 같은 시각 오인 방지.
-  //   >= 24h: "약 X일 Y시간"
-  //   1h ~ 24h: "약 H시간 M분"
-  //   < 1h: "MM:SS"
-  let label: string;
-  if (diff >= 86_400_000) {
-    const days = Math.floor(diff / 86_400_000);
-    const hours = Math.floor((diff % 86_400_000) / 3_600_000);
-    label = hours > 0 ? `약 ${days}일 ${hours}시간` : `약 ${days}일`;
-  } else if (diff >= 3_600_000) {
-    const hours = Math.floor(diff / 3_600_000);
-    const mins = Math.floor((diff % 3_600_000) / 60_000);
-    label = mins > 0 ? `약 ${hours}시간 ${mins}분` : `약 ${hours}시간`;
-  } else {
-    const mins = Math.floor(diff / 60_000);
-    const secs = Math.floor((diff % 60_000) / 1000);
-    label = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  }
-  return {
-    isPast: diff === 0,
-    label
-  };
-}
-
 function formatDateLabel(dateISO: string): string {
   const [, m, d] = dateISO.split("-");
   return `${Number(m)}월 ${Number(d)}일`;
@@ -101,6 +84,30 @@ function formatDateLabel(dateISO: string): string {
 function formatGameTime(time: string | null): string {
   if (!time) return "";
   return time.slice(0, 5);
+}
+
+function findRosterIdByName(teamId: string, name: string | null): string | null {
+  if (!name) return null;
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  const roster = getRoster(teamId);
+  const exact = roster.find((p) => p.name === trimmed);
+  if (exact) return exact.id;
+  const partial = roster.find((p) => p.name.includes(trimmed) || trimmed.includes(p.name));
+  return partial?.id ?? null;
+}
+
+function toRecentLineupHint(
+  teamId: string,
+  row: RecentLineupRow | null,
+  starterName: string | null
+): RecentLineupHint | null {
+  if (!row || !Array.isArray(row.batting) || row.batting.length < 9) return null;
+  return {
+    batting: row.batting,
+    starter_roster_id: findRosterIdByName(teamId, starterName) ?? row.starter_roster_id,
+    starter_name: starterName ?? row.starter_name
+  };
 }
 
 /** 구장이 "미정" 또는 빈값이면 표시 안 함. */
@@ -151,7 +158,7 @@ export function AiWinnerListScreen({
   isFuture,
   prevDate,
   nextDate,
-  publishAtISO,
+  published,
   games,
   nextGameDate,
   overallStats,
@@ -161,8 +168,7 @@ export function AiWinnerListScreen({
 }: Props) {
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.
   const loginHref = `/login?next=${encodeURIComponent(`/predict/ai-winner?date=${selectedDate}`)}`;
-  const countdown = useCountdown(publishAtISO);
-  // 클라이언트 hydration 후 시간 계산 (SSR 미스매치 회피)
+  // 클라이언트 hydration 후 게이트 계산 (SSR 미스매치 회피)
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
@@ -172,14 +178,16 @@ export function AiWinnerListScreen({
   // 이 페이지는 경기 진행에 따라 상태가 실시간으로 바뀌므로 진입 시 1회 refresh 로
   // sim-1000 처럼 들어오자마자 최신 상태가 보이게 한다.
   const router = useRouter();
+  const { showToast } = useAppState();
+  const [simStartingGameId, setSimStartingGameId] = useState<string | null>(null);
   useEffect(() => {
     router.refresh();
   }, [router]);
 
   // 홈 펄스 뱃지용 — 오늘자 AI 예측 페이지 진입 시 viewed 마킹.
-  // 09시 공개 전이거나 예측이 0건이면 마킹 안 함 (그땐 어차피 뱃지 안 떠야 함).
+  // 공개 전이거나 예측이 0건이면 마킹 안 함 (그땐 어차피 뱃지 안 떠야 함).
   useEffect(() => {
-    if (!isToday || !countdown.isPast) return;
+    if (!isToday || !published) return;
     const hasAny = games.some((g) => g.predictions.length > 0);
     if (!hasAny) return;
     try {
@@ -187,7 +195,7 @@ export function AiWinnerListScreen({
     } catch {
       // ignore storage errors
     }
-  }, [isToday, countdown.isPast, games, selectedDate]);
+  }, [isToday, published, games, selectedDate]);
 
   useEffect(() => {
     const predictionCount = games.reduce((sum, g) => sum + g.predictions.length, 0);
@@ -233,13 +241,63 @@ export function AiWinnerListScreen({
   // 운영자(admin) 는 잠금 해제 — 컨텐츠 영상 사전 제작용으로 예측을 미리 봐야 함.
   // 공개 시각 전 — admin도 카드에 예측이 없으면 카운트다운 표시 (데이터 미생성 안내용).
   // 단 예측이 이미 존재하면 showLocked가 hasPredictions로 자연히 false가 돼서 admin은 미리 reveal됨.
-  const isBeforePublish = hydrated && !countdown.isPast;
+  const isBeforePublish = hydrated && !published;
 
   const providerByName = useMemo(() => {
     const map = new Map<AiProvider, AiProviderStats>();
     for (const p of providerStats) map.set(p.ai_provider, p);
     return map;
   }, [providerStats]);
+
+  const startPredictionSim = async (game: AiWinnerGame) => {
+    if (simStartingGameId) return;
+    setSimStartingGameId(game.id);
+    try {
+      const seed = generateSeed();
+      const client = createSupabaseBrowserClient();
+      const [statsDir, homeLineupRes, awayLineupRes] = await Promise.all([
+        buildStatsDirectoryWithRecentForm(client, [
+          game.homeTeamId,
+          game.awayTeamId
+        ]),
+        getLatestBattingLineupForTeam(client, game.homeTeamId),
+        getLatestBattingLineupForTeam(client, game.awayTeamId)
+      ]);
+      if (!homeLineupRes.ok || !awayLineupRes.ok) {
+        showToast("최신 라인업을 불러올 수 없어요.");
+        setSimStartingGameId(null);
+        return;
+      }
+      const homeHint = toRecentLineupHint(game.homeTeamId, homeLineupRes.row, game.homeStarter);
+      const awayHint = toRecentLineupHint(game.awayTeamId, awayLineupRes.row, game.awayStarter);
+      if (!homeHint || !awayHint) {
+        showToast("DB에 저장된 최신 라인업이 부족해요.");
+        setSimStartingGameId(null);
+        return;
+      }
+      const homeRaw = buildFakeOpponentTeam(game.homeTeamId, seed + 101, homeHint);
+      const awayRaw = buildFakeOpponentTeam(game.awayTeamId, seed + 202, awayHint);
+      if (!homeRaw || !awayRaw) {
+        showToast("가상 경기 라인업을 만들 수 없어요.");
+        setSimStartingGameId(null);
+        return;
+      }
+      const home = applyBlendedStatsToTeam(homeRaw, statsDir);
+      const away = applyBlendedStatsToTeam(awayRaw, statsDir);
+      saveMatchSession({
+        myTeamId: game.homeTeamId,
+        opponentTeamId: game.awayTeamId,
+        seed,
+        input: { home, away, context: {} },
+        startedAt: new Date().toISOString(),
+        source: "ai"
+      });
+      router.push("/stadium/play");
+    } catch {
+      showToast("예측 시뮬레이션을 준비하는 중 오류가 발생했어요.");
+      setSimStartingGameId(null);
+    }
+  };
 
   return (
     <AppShell activeTab="home" title="AI 승리팀 예측" theme="light" backHref="/" wide>
@@ -477,7 +535,7 @@ export function AiWinnerListScreen({
                     {showLocked ? (
                       <div className="ai-winner-card-state ai-winner-state-locked">
                         <Lock size={12} strokeWidth={2.5} />
-                        공개까지 <strong>{countdown.label}</strong>
+                        <strong>AI들이 예측 중이에요</strong>
                       </div>
                     ) : null}
 
@@ -556,10 +614,24 @@ export function AiWinnerListScreen({
                         <ArrowRight size={12} strokeWidth={2.5} />
                       </Link>
                     ) : hasPredictions ? (
-                      <Link href={`/predict/ai-winner/${g.id}`} className="ai-winner-card-cta">
-                        결과 보기
-                        <ArrowRight size={12} strokeWidth={2.5} />
-                      </Link>
+                      <div className="ai-winner-card-actions">
+                        <Link
+                          href={`/predict/ai-winner/${g.id}`}
+                          className="ai-winner-card-cta ai-winner-card-cta-main"
+                        >
+                          결과 보기
+                          <ArrowRight size={12} strokeWidth={2.5} />
+                        </Link>
+                        <button
+                          type="button"
+                          className="ai-winner-card-cta ai-winner-card-cta-sim"
+                          onClick={() => void startPredictionSim(g)}
+                          disabled={simStartingGameId === g.id}
+                          title="최신 라인업과 오늘 선발로 가상 경기를 시작"
+                        >
+                          {simStartingGameId === g.id ? "준비" : "가상 경기"}
+                        </button>
+                      </div>
                     ) : null}
                   </li>
                 );

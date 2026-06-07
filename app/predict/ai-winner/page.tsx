@@ -26,11 +26,6 @@ function addDays(dateISO: string, days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-/** 해당 날짜의 09:00 KST → ISO. AI publish 시점 + 카운트다운 기준. */
-function publishAtISO(dateISO: string): string {
-  return `${dateISO}T09:00:00+09:00`;
-}
-
 export default async function AiWinnerPredictPage({
   searchParams
 }: {
@@ -81,7 +76,9 @@ export default async function AiWinnerPredictPage({
   // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 픽 데이터를 서버에서 비워 보내
   // 개발자도구로도 훔쳐볼 수 없게 한다.
   const locked = userTier.tier === "guest";
-  const predictionsClient = isAdmin ? createSupabaseAdminClient() : supabase;
+  // 예측은 항상 service_role 로 전부 읽고(발행 전 포함) 서버에서 "3개 AI 완료" 여부로 게이트한다.
+  // (기존 09시 published_at RLS 게이트 → 3개 AI 입력 완료 시 공개로 변경.)
+  const predictionsClient = createSupabaseAdminClient();
 
   // 예측 + 시즌 통계 병렬 (게임 데이터는 위에서 이미 확보)
   // 예측은 VIEW(bp_ai_predictions_with_result) 에서 가져옴 — 점수 입력 즉시 is_correct_live 채워짐.
@@ -100,6 +97,15 @@ export default async function AiWinnerPredictPage({
       predictionsByGameId.set(row.game_id, list);
     }
   }
+
+  // 공개 게이트: 그 날의 모든 경기가 3개 AI(gemini/claude/gpt) 예측을 다 갖추면 공개.
+  const AI_PROVIDER_COUNT = 3;
+  const predictionsPublished =
+    gamesForDate.length > 0 &&
+    gamesForDate.every((g) => {
+      const ps = predictionsByGameId.get(g.id) ?? [];
+      return new Set(ps.map((p) => p.ai_provider)).size >= AI_PROVIDER_COUNT;
+    });
 
   const gameCards: AiWinnerGame[] = gamesForDate.map((g) => {
     // VIEW 의 is_correct_live 를 BpAiPredictionRow.is_correct 로 매핑.
@@ -127,11 +133,14 @@ export default async function AiWinnerPredictPage({
       stadium: g.stadium,
       homeTeamId: g.homeTeamId,
       awayTeamId: g.awayTeamId,
+      homeStarter: g.homeStarter ?? null,
+      awayStarter: g.awayStarter ?? null,
       homeScore: g.homeScore ?? null,
       awayScore: g.awayScore ?? null,
       status: g.status,
-      // 잠긴 사용자에겐 픽을 아예 비워서 전송 (클라이언트로 데이터 자체가 안 감).
-      predictions: locked ? [] : enriched
+      // guest 는 항상 가림(클라이언트로 데이터 자체가 안 감). 그 외엔 3개 AI 완료(공개) 전엔
+      // 가리되, 운영자(영상 사전제작용)는 미리 본다.
+      predictions: locked ? [] : predictionsPublished || isAdmin ? enriched : []
     };
   });
 
@@ -148,7 +157,7 @@ export default async function AiWinnerPredictPage({
       isFuture={isFuture}
       prevDate={prevDate}
       nextDate={nextDate}
-      publishAtISO={publishAtISO(selectedDate)}
+      published={predictionsPublished}
       games={gameCards}
       nextGameDate={nextGameDate}
       overallStats={overallResult.ok ? overallResult.stats : { total_count: 0, correct_count: 0, accuracy: null }}
