@@ -526,6 +526,12 @@
 }
 
 /* ── 결과 보기 CTA ── */
+.phone-frame-light .ai-winner-card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
 .phone-frame-light .ai-winner-card-cta {
   display: inline-flex;
   align-items: center;
@@ -534,15 +540,39 @@
   padding: 8px 12px;
   background: var(--bp-accent);
   color: white;
+  border: 0;
   border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
-  transition: background 0.12s ease;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.phone-frame-light .ai-winner-card-cta-main {
+  min-width: 0;
+}
+
+.phone-frame-light .ai-winner-card-cta-sim {
+  min-width: 96px;
+  background: rgba(232, 74, 138, 0.08);
+  border: 1.5px solid rgba(232, 74, 138, 0.35);
+  color: var(--bp-accent);
 }
 
 .phone-frame-light .ai-winner-card-cta:hover {
   background: #d63a7c;
+}
+
+.phone-frame-light .ai-winner-card-cta-sim:hover:not(:disabled) {
+  background: rgba(232, 74, 138, 0.14);
+  border-color: rgba(232, 74, 138, 0.55);
+}
+
+.phone-frame-light .ai-winner-card-cta:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 /* ============================================================
