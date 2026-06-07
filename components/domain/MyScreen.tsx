@@ -42,6 +42,10 @@ function fmtDate(iso: string | null | undefined): string {
 
 export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: MyScreenProps) {
   const slotLimit = getLineupSlotLimit(tier);
+  const combinedWins = accountStats.wins + playoffSummary.wins;
+  const combinedLosses = accountStats.losses + playoffSummary.losses;
+  const combinedTotal = combinedWins + combinedLosses;
+  const combinedWinRate = combinedTotal > 0 ? combinedWins / combinedTotal : 0;
   const { profile, isAnonymous, updateProfile, showToast } = useAppState();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -118,14 +122,17 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
         </div>
         <div className="mypage-record-row">
           <span className="mypage-record-wl">
-            {accountStats.wins}승 {accountStats.losses}패
+            {combinedWins}승 {combinedLosses}패
           </span>
           <span className="mypage-record-rate">
-            {accountStats.total > 0 ? `승률 ${Math.round(accountStats.winRate * 100)}%` : "아직 경기 없음"}
+            {combinedTotal > 0 ? `승률 ${Math.round(combinedWinRate * 100)}%` : "아직 경기 없음"}
           </span>
           <Link href="/play/account-ranking" className="mypage-stat-link" prefetch>
-            랭킹 <ChevronRight size={14} />
+            공식 랭킹 <ChevronRight size={14} />
           </Link>
+        </div>
+        <div className="mypage-record-breakdown">
+          공식 {accountStats.wins}승 {accountStats.losses}패 · 가을야구 {playoffSummary.wins}승 {playoffSummary.losses}패
         </div>
       </Card>
 
@@ -182,24 +189,36 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
           </span>
         </div>
         {playoffSummary.totalChallenges > 0 ? (
-          <div className="my-playoff-grid">
-            <div className="my-playoff-cell">
-              <span className="my-playoff-num">{playoffSummary.beat4}</span>
-              <span className="my-playoff-label">4위 격파</span>
+          <>
+            <div className="mypage-record-row my-playoff-record-row">
+              <span className="mypage-record-wl">
+                {playoffSummary.wins}승 {playoffSummary.losses}패
+              </span>
+              <span className="mypage-record-rate">
+                {playoffSummary.totalGames > 0
+                  ? `승률 ${Math.round((playoffSummary.wins / playoffSummary.totalGames) * 100)}%`
+                  : "아직 경기 없음"}
+              </span>
             </div>
-            <div className="my-playoff-cell">
-              <span className="my-playoff-num">{playoffSummary.beat3}</span>
-              <span className="my-playoff-label">3위 격파</span>
+            <div className="my-playoff-grid">
+              <div className="my-playoff-cell">
+                <span className="my-playoff-num">{playoffSummary.beat4}</span>
+                <span className="my-playoff-label">4위 격파</span>
+              </div>
+              <div className="my-playoff-cell">
+                <span className="my-playoff-num">{playoffSummary.beat3}</span>
+                <span className="my-playoff-label">3위 격파</span>
+              </div>
+              <div className="my-playoff-cell">
+                <span className="my-playoff-num">{playoffSummary.beat2}</span>
+                <span className="my-playoff-label">2위 격파</span>
+              </div>
+              <div className="my-playoff-cell is-champion">
+                <span className="my-playoff-num">{playoffSummary.championCount}</span>
+                <span className="my-playoff-label">🏆 우승</span>
+              </div>
             </div>
-            <div className="my-playoff-cell">
-              <span className="my-playoff-num">{playoffSummary.beat2}</span>
-              <span className="my-playoff-label">2위 격파</span>
-            </div>
-            <div className="my-playoff-cell is-champion">
-              <span className="my-playoff-num">{playoffSummary.championCount}</span>
-              <span className="my-playoff-label">🏆 우승</span>
-            </div>
-          </div>
+          </>
         ) : (
           <p className="my-playoff-empty">아직 가을야구 도전 기록이 없어요.</p>
         )}

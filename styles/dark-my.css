@@ -668,6 +668,16 @@
 
 .phone-frame-light .mypage-record-row .mypage-stat-link { margin-left: auto; }
 
+.phone-frame-light .mypage-record-breakdown {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--bp-line-soft);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  line-height: 1.35;
+}
+
 .phone-frame-light .mypage-team-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -735,6 +745,10 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+}
+
+.phone-frame-light .my-playoff-record-row {
+  margin-bottom: 10px;
 }
 
 .phone-frame-light .my-playoff-cell {

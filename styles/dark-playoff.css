@@ -106,6 +106,10 @@
 }
 
 .phone-frame-light .stadium-playoff-entry-text strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
   font-size: 15px;
   font-weight: 850;
 }
@@ -114,6 +118,16 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .stadium-playoff-entry-text .stadium-playoff-entry-record {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--bp-accent);
+  white-space: nowrap;
 }
 
 .phone-frame-light .stadium-playoff-entry > svg {

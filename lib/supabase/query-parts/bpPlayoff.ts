@@ -199,6 +199,9 @@ export type PlayoffSummary = {
   championCount: number;
   bestRound: number;            // 도달한 최고 라운드(우승=5로 표기, 1~4 진행)
   totalRuns: number;
+  wins: number;                 // 실제 진행한 가을야구 경기 승수
+  losses: number;               // 실제 진행한 가을야구 경기 패수 + 진행 중 이탈 패배
+  totalGames: number;
   champions: PlayoffChampion[]; // 명예의 전당 (최신순)
   // ── 가을야구 도전 기록(누적/깔때기형). 종료된 도전(champion/eliminated)만 집계. ──
   totalChallenges: number;      // champion + eliminated run 수
@@ -211,6 +214,9 @@ export const EMPTY_PLAYOFF_SUMMARY: PlayoffSummary = {
   championCount: 0,
   bestRound: 0,
   totalRuns: 0,
+  wins: 0,
+  losses: 0,
+  totalGames: 0,
   champions: [],
   totalChallenges: 0,
   beat4: 0,
@@ -224,12 +230,12 @@ export async function getPlayoffSummary(
 ): Promise<PlayoffSummary> {
   const { data, error } = await client
     .from(TABLE)
-    .select("id, team_id, team_name, status, current_round, completed_at")
+    .select("id, team_id, team_name, status, current_round, state, completed_at")
     .eq("user_id", userId)
     .order("completed_at", { ascending: false, nullsFirst: false });
   if (error || !data) return EMPTY_PLAYOFF_SUMMARY;
 
-  const rows = data as Array<Pick<Row, "id" | "team_id" | "team_name" | "status" | "current_round" | "completed_at">>;
+  const rows = data as Array<Pick<Row, "id" | "team_id" | "team_name" | "status" | "current_round" | "state" | "completed_at">>;
   const champions = rows.filter((r) => r.status === "champion");
   // 최고 도달: 우승은 5(완주), 그 외엔 도달한 current_round.
   let bestRound = 0;
@@ -244,7 +250,16 @@ export async function getPlayoffSummary(
   let beat4 = 0;
   let beat3 = 0;
   let beat2 = 0;
+  let playoffWins = 0;
+  let playoffLosses = 0;
   for (const r of rows) {
+    const games = Array.isArray(r.state?.games) ? r.state.games : [];
+    playoffWins += games.filter((g) => g.win).length;
+    playoffLosses += games.filter((g) => !g.win).length;
+    if (r.status === "eliminated" && r.state?.pendingGame) {
+      playoffLosses += 1;
+    }
+
     if (r.status !== "champion" && r.status !== "eliminated") continue;
     totalChallenges += 1;
     const wins = r.status === "champion" ? PLAYOFF_TOTAL_ROUNDS : Math.max(0, r.current_round - 1);
@@ -257,6 +272,9 @@ export async function getPlayoffSummary(
     championCount: champions.length,
     bestRound,
     totalRuns: rows.length,
+    wins: playoffWins,
+    losses: playoffLosses,
+    totalGames: playoffWins + playoffLosses,
     champions: champions.map((r) => ({
       runId: r.id,
       teamId: r.team_id,

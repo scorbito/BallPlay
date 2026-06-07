@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { LobbyScreen } from "@/components/domain/stadium/LobbyScreen";
+import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPlayoffSummary, EMPTY_PLAYOFF_SUMMARY } from "@/lib/supabase/query-parts/bpPlayoff";
 import { getCachedSeasonLineupRanking } from "@/lib/supabase/query-parts/bpLineupRankings";
 import {
   getCachedFullAccountStatsRanking,
   hydrateAccountStatsNicknames
 } from "@/lib/supabase/query-parts/bpAccountStats";
 
-// 랭킹 TOP3 위젯이 60초 캐시 데이터를 쓰므로 ISR(60s)로 전환.
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "경기장",
@@ -16,11 +17,24 @@ export const metadata: Metadata = {
 };
 
 export default async function StadiumLobbyPage() {
+  const supabase = createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const admin = createSupabaseAdminClient();
+
   const [lineupTop, accountFull] = await Promise.all([
     getCachedSeasonLineupRanking(3),
     getCachedFullAccountStatsRanking()
   ]);
-  const accountTop = await hydrateAccountStatsNicknames(accountFull.slice(0, 3));
+  const [accountTop, playoffSummary] = await Promise.all([
+    hydrateAccountStatsNicknames(accountFull.slice(0, 3)),
+    user ? getPlayoffSummary(admin, user.id) : Promise.resolve(EMPTY_PLAYOFF_SUMMARY)
+  ]);
 
-  return <LobbyScreen topLineupRanking={lineupTop} topAccountRanking={accountTop} />;
+  return (
+    <LobbyScreen
+      topLineupRanking={lineupTop}
+      topAccountRanking={accountTop}
+      playoffSummary={playoffSummary}
+    />
+  );
 }
