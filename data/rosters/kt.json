@@ -1,7 +1,7 @@
 {
   "teamId": "kt",
   "teamName": "KT 위즈",
-  "_scrapedAt": "2026-06-01T03:47:11.968Z",
+  "_scrapedAt": "2026-06-08T03:45:06.788Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -10,9 +10,8 @@
       "name": "고영표",
       "jerseyNumber": 1,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "kt-2",
@@ -21,7 +20,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 1
     },
     {
       "id": "kt-3",
@@ -30,7 +29,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 52
+      "seasonGames": 58
     },
     {
       "id": "kt-4",
@@ -39,7 +38,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 38
+      "seasonGames": 43
     },
     {
       "id": "kt-5",
@@ -66,7 +65,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 50
+      "seasonGames": 56
     },
     {
       "id": "kt-8",
@@ -84,7 +83,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 20
+      "seasonGames": 25
     },
     {
       "id": "kt-10",
@@ -93,7 +92,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 53
+      "seasonGames": 59
     },
     {
       "id": "kt-11",
@@ -109,7 +108,6 @@
       "name": "우규민",
       "jerseyNumber": 12,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 20
     },
@@ -120,7 +118,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 24
+      "seasonGames": 30
     },
     {
       "id": "kt-14",
@@ -154,7 +152,6 @@
       "name": "이채호",
       "jerseyNumber": 17,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
     },
@@ -165,7 +162,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 2
+      "seasonGames": 3
     },
     {
       "id": "kt-19",
@@ -174,7 +171,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 3
+      "seasonGames": 4
     },
     {
       "id": "kt-20",
@@ -237,7 +234,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 23
+      "seasonGames": 26
     },
     {
       "id": "kt-27",
@@ -246,7 +243,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 40
+      "seasonGames": 44
     },
     {
       "id": "kt-29",
@@ -255,7 +252,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 26
+      "seasonGames": 30
     },
     {
       "id": "kt-30",
@@ -282,7 +279,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "kt-33",
@@ -291,7 +288,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 36
+      "seasonGames": 39
     },
     {
       "id": "kt-34",
@@ -300,7 +297,7 @@
       "primaryPosition": "3B",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 53
+      "seasonGames": 59
     },
     {
       "id": "kt-35",
@@ -309,7 +306,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 28
+      "seasonGames": 30
     },
     {
       "id": "kt-36",
@@ -327,7 +324,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 2
     },
     {
       "id": "kt-38",
@@ -336,7 +333,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 20
+      "seasonGames": 23
     },
     {
       "id": "kt-39",
@@ -363,7 +360,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 24
+      "seasonGames": 27
     },
     {
       "id": "kt-42",
@@ -390,7 +387,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 41
+      "seasonGames": 47
     },
     {
       "id": "kt-46",
@@ -408,7 +405,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "kt-48",
@@ -444,7 +441,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 7
+      "seasonGames": 10
     },
     {
       "id": "kt-52",
@@ -453,7 +450,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 40
+      "seasonGames": 46
     },
     {
       "id": "kt-53",
@@ -462,7 +459,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 33
+      "seasonGames": 39
     },
     {
       "id": "kt-54",
@@ -480,7 +477,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 15
+      "seasonGames": 20
     },
     {
       "id": "kt-56",
@@ -489,7 +486,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 32
+      "seasonGames": 37
     },
     {
       "id": "kt-57",
@@ -501,22 +498,39 @@
       "seasonGames": 0
     },
     {
+      "id": "kt-58",
+      "name": "정준영",
+      "jerseyNumber": 58,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 1
+    },
+    {
+      "id": "kt-59",
+      "name": "한승주",
+      "jerseyNumber": 59,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 3
+    },
+    {
       "id": "kt-60",
       "name": "박영현",
       "jerseyNumber": 60,
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 22
     },
     {
       "id": "kt-61",
       "name": "김정운",
       "jerseyNumber": 61,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "kt-62",
@@ -544,6 +558,15 @@
       "throwingHand": "L",
       "battingHand": "L",
       "seasonGames": 0
+    },
+    {
+      "id": "kt-65",
+      "name": "이재원",
+      "jerseyNumber": 65,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 5
     },
     {
       "id": "kt-66",
@@ -699,15 +722,6 @@
       "seasonGames": 0
     },
     {
-      "id": "kt-105",
-      "name": "이재원",
-      "jerseyNumber": 105,
-      "primaryPosition": "CF",
-      "throwingHand": "R",
-      "battingHand": "L",
-      "seasonGames": 0
-    },
-    {
       "id": "kt-106",
       "name": "이용현",
       "jerseyNumber": 106,
@@ -840,6 +854,15 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "kt-121",
+      "name": "최윤서",
+      "jerseyNumber": 121,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
       "seasonGames": 0
     }
   ]

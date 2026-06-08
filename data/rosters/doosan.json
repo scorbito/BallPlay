@@ -1,7 +1,7 @@
 {
   "teamId": "doosan",
   "teamName": "두산 베어스",
-  "_scrapedAt": "2026-06-01T03:46:36.289Z",
+  "_scrapedAt": "2026-06-08T03:44:27.669Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -10,9 +10,8 @@
       "name": "박치국",
       "jerseyNumber": 1,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 17
+      "seasonGames": 20
     },
     {
       "id": "doosan-2",
@@ -21,7 +20,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 49
+      "seasonGames": 54
     },
     {
       "id": "doosan-3",
@@ -31,6 +30,15 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 12
+    },
+    {
+      "id": "doosan-4",
+      "name": "김동주",
+      "jerseyNumber": 4,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 2
     },
     {
       "id": "doosan-5",
@@ -48,7 +56,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 29
+      "seasonGames": 33
     },
     {
       "id": "doosan-7",
@@ -57,7 +65,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 54
+      "seasonGames": 60
     },
     {
       "id": "doosan-8",
@@ -66,7 +74,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 28
     },
     {
       "id": "doosan-9",
@@ -96,13 +104,22 @@
       "seasonGames": 0
     },
     {
+      "id": "doosan-12",
+      "name": "타카다",
+      "jerseyNumber": 12,
+      "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
       "id": "doosan-13",
       "name": "이유찬",
       "jerseyNumber": 13,
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 39
     },
     {
       "id": "doosan-14",
@@ -129,16 +146,15 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 24
+      "seasonGames": 25
     },
     {
       "id": "doosan-17",
       "name": "박정수",
       "jerseyNumber": 17,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 6
+      "seasonGames": 7
     },
     {
       "id": "doosan-19",
@@ -159,13 +175,22 @@
       "seasonGames": 0
     },
     {
+      "id": "doosan-p51097",
+      "name": "김영현",
+      "jerseyNumber": 20,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
       "id": "doosan-22",
       "name": "김기연",
       "jerseyNumber": 22,
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 18
+      "seasonGames": 20
     },
     {
       "id": "doosan-23",
@@ -174,7 +199,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 38
+      "seasonGames": 44
     },
     {
       "id": "doosan-24",
@@ -183,7 +208,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 54
+      "seasonGames": 60
     },
     {
       "id": "doosan-25",
@@ -192,7 +217,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 51
+      "seasonGames": 57
     },
     {
       "id": "doosan-26",
@@ -210,7 +235,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 41
     },
     {
       "id": "doosan-28",
@@ -219,7 +244,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "doosan-29",
@@ -228,7 +253,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 29
+      "seasonGames": 31
     },
     {
       "id": "doosan-30",
@@ -246,7 +271,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 53
+      "seasonGames": 59
     },
     {
       "id": "doosan-32",
@@ -255,7 +280,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 1
     },
     {
       "id": "doosan-33",
@@ -264,7 +289,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 27
+      "seasonGames": 29
     },
     {
       "id": "doosan-34",
@@ -291,7 +316,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 50
+      "seasonGames": 56
     },
     {
       "id": "doosan-38",
@@ -309,7 +334,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "doosan-40",
@@ -336,7 +361,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 7
+      "seasonGames": 10
     },
     {
       "id": "doosan-43",
@@ -363,7 +388,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 13
     },
     {
       "id": "doosan-46",
@@ -390,7 +415,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 7
+      "seasonGames": 9
     },
     {
       "id": "doosan-49",
@@ -399,7 +424,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 9
+      "seasonGames": 11
     },
     {
       "id": "doosan-50",
@@ -408,7 +433,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 18
+      "seasonGames": 21
     },
     {
       "id": "doosan-51",
@@ -417,7 +442,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 38
+      "seasonGames": 44
     },
     {
       "id": "doosan-52",
@@ -480,14 +505,13 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 11
+      "seasonGames": 14
     },
     {
       "id": "doosan-61",
       "name": "최원준",
       "jerseyNumber": 61,
       "primaryPosition": "P",
-      "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 2
     },
@@ -498,7 +522,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 23
+      "seasonGames": 29
     },
     {
       "id": "doosan-63",
@@ -543,7 +567,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "doosan-77",
@@ -784,6 +808,24 @@
       "name": "이기석",
       "jerseyNumber": 123,
       "primaryPosition": "P",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-124",
+      "name": "임서준",
+      "jerseyNumber": 124,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "doosan-125",
+      "name": "강태완",
+      "jerseyNumber": 125,
+      "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
       "seasonGames": 0
