@@ -54,12 +54,12 @@ type Phase = "title" | "lineups" | "countdown" | "playball" | "done";
 
 // 페이즈별 지속 시간 (ms)
 const TITLE_MS = 1500;
-const LINEUP_ROW_INTERVAL_MS = 400; // 0.4s 간격
-// idx 0 = 선발 투수, idx 1..9 = 타순 1~9번. 0ms 부터 9*400=3600ms, fade-in 완료.
-// 이후 ~2.4s 동안 전체 라인업을 그대로 hold하고 countdown 으로 전환.
-const LINEUP_TOTAL_MS = 6000;
-const COUNTDOWN_STEP_MS = 1000;
-const COUNTDOWN_TOTAL_MS = 3000;
+const LINEUP_ROW_INTERVAL_MS = 200; // 0.2s 간격
+// idx 0 = 선발 투수, idx 1..9 = 타순 1~9번. 0ms 부터 9*200=1800ms, fade-in 완료.
+// 이후 ~1.2s 동안 전체 라인업을 그대로 hold하고 countdown 으로 전환.
+const LINEUP_TOTAL_MS = 3000;
+const COUNTDOWN_STEP_MS = 600;
+const COUNTDOWN_TOTAL_MS = 1800;
 const PLAYBALL_MS = 1000;
 
 export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, onSkip }: Props) {
@@ -214,7 +214,7 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
                     key={`away-${b.orderIdx}-${i}`}
                     className="match-opening-lineups-row"
                     data-visible={i + 1 <= lineupRowIdx ? "true" : "false"}
-                    style={{ transitionDelay: `${i * 40}ms` }}
+                    style={{ transitionDelay: `${i * 20}ms` }}
                   >
                     <span className="match-opening-lineups-order">{b.orderIdx}</span>
                     <span className="match-opening-lineups-name" title={b.name}>
@@ -250,7 +250,7 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
                     key={`home-${b.orderIdx}-${i}`}
                     className="match-opening-lineups-row"
                     data-visible={i + 1 <= lineupRowIdx ? "true" : "false"}
-                    style={{ transitionDelay: `${i * 40}ms` }}
+                    style={{ transitionDelay: `${i * 20}ms` }}
                   >
                     <span className="match-opening-lineups-order">{b.orderIdx}</span>
                     <span className="match-opening-lineups-name" title={b.name}>

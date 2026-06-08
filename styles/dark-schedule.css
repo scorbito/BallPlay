@@ -191,6 +191,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 4px 12px;
+  /* nav가 중앙 칼럼 차지 — 좌측 빈 자리 + 우측 갱신 버튼과 균형 */
 }
 
 .phone-frame-light .sched-day-title {
@@ -202,7 +203,7 @@
   white-space: nowrap;
 }
 
-/* 좌측 뒤로가기 버튼 — AppShell 헤더의 back과 같은 모양 */
+/* 좌측 뒤로가기 버튼 */
 .phone-frame-light .sched-day-back {
   width: 30px;
   height: 30px;
@@ -219,6 +220,34 @@
 }
 
 .phone-frame-light .sched-day-back:hover {
+  background: var(--bp-bg-soft, #f5f6f8);
+  color: var(--bp-text);
+}
+
+/* 날짜 < 6.6 (토) > 네비게이션 */
+.phone-frame-light .sched-day-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: center;
+}
+
+.phone-frame-light .sched-day-nav-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--bp-line);
+  border-radius: 8px;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .sched-day-nav-btn:hover {
   background: var(--bp-bg-soft, #f5f6f8);
   color: var(--bp-text);
 }
@@ -292,9 +321,9 @@
 
 .phone-frame-light .sched-game-row {
   display: grid;
-  grid-template-columns: 50px 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid var(--bp-line-soft);
@@ -308,11 +337,19 @@
   background: rgba(232, 74, 138, 0.04);
 }
 
+/* 시간을 스코어/VS 위에 2줄로 쌓는 중앙 컬럼 */
+.phone-frame-light .sched-game-center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .phone-frame-light .sched-game-time {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--bp-text);
-  letter-spacing: -0.2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  letter-spacing: -0.1px;
 }
 
 .phone-frame-light .sched-game-match {
@@ -407,6 +444,31 @@
   background: rgba(148, 163, 184, 0.12);
   border-color: rgba(148, 163, 184, 0.3);
   color: #cbd5e1;
+}
+
+
+.phone-frame-light .sched-game-sim-btn {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(232, 74, 138, 0.08);
+  border: 1px solid rgba(232, 74, 138, 0.32);
+  color: var(--bp-accent);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .sched-game-sim-btn:hover:not(:disabled) {
+  background: rgba(232, 74, 138, 0.14);
+  border-color: rgba(232, 74, 138, 0.5);
+}
+
+.phone-frame-light .sched-game-sim-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .phone-frame-light .sched-game-empty {

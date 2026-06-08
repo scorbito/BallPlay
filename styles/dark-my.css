@@ -521,7 +521,7 @@
 
 .phone-frame-light .profile-card .profile-hero h1 {
   margin: 0;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
   color: var(--bp-text);
   letter-spacing: -0.2px;
@@ -535,7 +535,7 @@
 }
 
 .phone-frame-light .profile-card .profile-hero-team-text {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--bp-text-secondary);
   font-weight: 600;
   line-height: 1;
@@ -576,7 +576,7 @@
 
 .phone-frame-light .profile-card .profile-bio {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.45;
   color: var(--bp-text);
@@ -619,7 +619,7 @@
 }
 
 .phone-frame-light .mypage-stat-head > strong {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 850;
   color: var(--bp-text);
 }
@@ -640,7 +640,7 @@
   display: inline-flex;
   align-items: center;
   gap: 1px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--bp-text-secondary);
   text-decoration: none;
@@ -648,20 +648,41 @@
 
 .phone-frame-light .mypage-stat-link:hover { color: var(--bp-accent); }
 
+/* 헤더 우측 액션을 버튼처럼 — accent pill */
+.phone-frame-light .mypage-stat-btn {
+  gap: 2px;
+  padding: 5px 8px 5px 12px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.1);
+  border: 1px solid rgba(232, 74, 138, 0.4);
+  color: var(--bp-accent);
+  font-weight: 800;
+}
+
+.phone-frame-light .mypage-stat-btn:hover {
+  background: rgba(232, 74, 138, 0.18);
+  color: var(--bp-accent);
+}
+
 .phone-frame-light .mypage-record-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
 }
 
+/* 누적 전적 등급 뱃지 — 승패 텍스트 왼쪽 */
+.phone-frame-light .mypage-record-badge {
+  flex-shrink: 0;
+}
+
 .phone-frame-light .mypage-record-wl {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
   color: var(--bp-text);
 }
 
 .phone-frame-light .mypage-record-rate {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--bp-text-secondary);
 }
@@ -672,7 +693,7 @@
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--bp-line-soft);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--bp-text-secondary);
   line-height: 1.35;
@@ -695,20 +716,20 @@
 }
 
 .phone-frame-light .mypage-team-num {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 900;
   color: var(--bp-text);
   white-space: nowrap;
 }
 
 .phone-frame-light .mypage-team-num small {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--bp-text-secondary);
 }
 
 .phone-frame-light .mypage-team-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--bp-text-secondary);
 }
@@ -723,7 +744,7 @@
 }
 
 .phone-frame-light .mypage-best-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--bp-text);
   overflow: hidden;
@@ -735,7 +756,7 @@
 .phone-frame-light .mypage-best-record {
   margin-left: auto;
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--bp-accent);
 }
@@ -767,7 +788,7 @@
 }
 
 .phone-frame-light .my-playoff-num {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   color: var(--bp-text);
   line-height: 1;
@@ -778,7 +799,7 @@
 }
 
 .phone-frame-light .my-playoff-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--bp-text-secondary);
   white-space: nowrap;
@@ -786,7 +807,7 @@
 
 .phone-frame-light .my-playoff-empty {
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--bp-text-secondary);
 }
@@ -869,7 +890,7 @@
   align-items: center;
   padding: 2px 9px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 850;
   color: var(--bp-accent);
   background: rgba(232, 74, 138, 0.12);
@@ -911,7 +932,7 @@
 
 .phone-frame-light .mypage-archived-name {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--bp-text);
   overflow: hidden;
@@ -921,7 +942,7 @@
 }
 
 .phone-frame-light .mypage-archived-dates {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--bp-text-muted);
 }
@@ -929,7 +950,7 @@
 .phone-frame-light .mypage-archived-rec {
   margin-left: auto;
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--bp-text-secondary);
   white-space: nowrap;

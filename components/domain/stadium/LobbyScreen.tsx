@@ -35,9 +35,9 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking, playoffSummar
 
   return (
     <AppShell activeTab="stadium" title="경기장" backHref="/" theme="light" wide>
-      {/* === 가을야구(특별 이벤트) — 명예의 전당 → 도전, 상단 강조 === */}
-      {/* 1. 명예의 전당 — 전체 유저 공개 우승자 */}
-      <PlayoffHallOfFame />
+      {/* === 가을야구(특별 이벤트) — 명예의 전당 배너 → 도전, 상단 강조 === */}
+      {/* 1. 명예의 전당 — 1줄 요약 배너(전체 목록은 가을야구 페이지에서) */}
+      <PlayoffHallOfFame variant="compact" />
 
       {/* 2. 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
       <Link href="/stadium/playoff" className="stadium-playoff-entry" prefetch>

@@ -11,6 +11,7 @@ import { PITCHER_STARTER_INDEX, type LineupEntry } from "@/lib/types/lineup";
 import { startPlayoffRun } from "@/lib/actions/playoff";
 import { PLAYOFF_ROUND_LABEL, type PlayoffRun } from "@/lib/supabase/query-parts/bpPlayoff";
 import { PlayoffBracket } from "./PlayoffBracket";
+import { PlayoffHallOfFame } from "../PlayoffHallOfFame";
 
 /** 완성 팀 — 타자 9명 + 선발 1명. */
 function isComplete(e: LineupEntry): boolean {
@@ -22,8 +23,10 @@ type Props = { initialRun: PlayoffRun | null; loggedIn: boolean };
 export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
   const { showToast } = useAppState();
   const [run, setRun] = useState<PlayoffRun | null>(initialRun);
-  // "auto": 최신 run 따라감 / "select": 새 도전 팀 선택
-  const [mode, setMode] = useState<"auto" | "select">("auto");
+  // 이전 run이 이미 종료됐으면 진입 즉시 팀 선택 화면으로.
+  const [mode, setMode] = useState<"auto" | "select">(
+    initialRun?.status === "eliminated" || initialRun?.status === "champion" ? "select" : "auto"
+  );
   const [starting, startTransition] = useTransition();
 
   // localStorage 읽기는 마운트 후 — 서버/초기 클라이언트 렌더 일치(hydration-safe).
@@ -53,6 +56,9 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
 
   return (
     <AppShell activeTab="stadium" title="가을야구" backHref="/stadium/lobby" theme="light" wide>
+      {/* 명예의 전당 — 가을야구 우승자 전체 목록(경기장에서 이리로 이동) */}
+      <PlayoffHallOfFame variant="full" />
+
       {showBracket && run ? (
         <PlayoffBracket run={run} />
       ) : showResult && run ? (

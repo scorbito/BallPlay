@@ -169,7 +169,7 @@
   font-size: 13px; /* 11px -> 13px 상향 */
 }
 
-.weekly-accordion-item:nth-child(-n+3) .grid-rank {
+.grid-rank.is-top-three {
   background: #faf5ff;
   color: #7c3aed;
   font-weight: 950;

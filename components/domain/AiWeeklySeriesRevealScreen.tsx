@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
 import type { AiProvider } from "@/lib/supabase/query-parts/bpAiPredictions";
 import type { AiWeeklySeries } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
@@ -94,6 +95,17 @@ export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: 
             </div>
           ) : null}
         </header>
+
+        {/* ── 돌려보기 버튼 ── */}
+        <VirtualMatchButton
+          game={{
+            homeTeamId: series.homeTeamId,
+            awayTeamId: series.awayTeamId
+          }}
+          className="ai-reveal-sim-btn"
+          idleLabel={`${home.shortName} vs ${away.shortName} 가상경기 해보기`}
+          busyLabel="준비 중"
+        />
 
         <ul className="ai-weekly-detail-cards">
           {orderedPicks.map((pick, idx) => {

@@ -274,9 +274,9 @@ export function PlayScreen() {
     if (phase === "GAME_END") return; // 게임 종료 페이즈에선 진행 멈춤
     if (cursor > events.length) return;
 
-    // 모드별 시간 배수 — normal=기본, fast=절반, live=느림(중계 호흡)
+    // 모드별 시간 배수 — normal=기본, fast=0.35, superfast=0.20, live=느림(중계 호흡)
     const modeMul =
-      mode === "superfast" ? 0.28 : mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+      mode === "superfast" ? 0.20 : mode === "fast" ? 0.35 : mode === "live" ? 1.6 : 1;
 
     // OUTCOME phase 시간은 타구 결과에 따라 달라짐 — 득점 발생/안타/홈런은 더 길게.
     const currentEvt = cursor > 0 ? events[cursor - 1] : null;
@@ -315,7 +315,7 @@ export function PlayScreen() {
       INNING_END: 1200 * modeMul,
       // 투수 교체는 중요 정보라 mode별 명시 (modeMul 미적용).
       PITCHER_CHANGE:
-        mode === "live" ? 1800 : mode === "fast" ? 1200 : mode === "superfast" ? 700 : 1500
+        mode === "live" ? 1800 : mode === "fast" ? 800 : mode === "superfast" ? 500 : 1500
     };
 
     const handle = window.setTimeout(() => {
@@ -423,7 +423,7 @@ export function PlayScreen() {
     const distance = o === "1B" ? 280 : o === "2B" ? 460 : o === "3B" ? 720 : viewportH + 200;
     // duration 도 진행 모드 따라가도록 modeMul 적용. normal 기준 1400~2800.
     const ballModeMul =
-      mode === "superfast" ? 0.28 : mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+      mode === "superfast" ? 0.20 : mode === "fast" ? 0.35 : mode === "live" ? 1.6 : 1;
     const baseDurationMs = o === "1B" ? 1400 : o === "2B" ? 1900 : o === "3B" ? 2400 : 2800;
     const durationMs = baseDurationMs * ballModeMul;
     // 정점 scale — 안타 3배, 홈런 4배.
@@ -524,7 +524,7 @@ export function PlayScreen() {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const ballModeMul =
-      mode === "superfast" ? 0.28 : mode === "fast" ? 0.5 : mode === "live" ? 1.6 : 1;
+      mode === "superfast" ? 0.20 : mode === "fast" ? 0.35 : mode === "live" ? 1.6 : 1;
     const durationMs = 1500 * ballModeMul;
     strikeoutFiredForCursorRef.current = cursor;
     setStrikeoutEffect({ centerX, centerY, durationMs, key: cursor });
@@ -902,7 +902,8 @@ export function PlayScreen() {
           onTogglePlaying={() => setPlaying((p) => !p)}
           onChangeMode={setMode}
           onSkip={() => {
-            if (linescore.currentInning < 6) {
+            // 가상경기(ai/self)는 전적 미집계라 이닝 제한 없이 즉시 건너뛰기 허용.
+            if (session.source !== "ai" && session.source !== "self" && linescore.currentInning < 6) {
               setSkipBlockedOpen(true);
               return;
             }

@@ -5,6 +5,8 @@
 // 행 탭 → 그 우승 라인업으로 LineupDetailModal (StadiumLineupRankingPreview.openLineupPreview 패턴).
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { getRoster } from "@/lib/rosters";
@@ -29,19 +31,28 @@ function formatDate(iso: string | null): string {
   return `${y}.${m}.${day}`;
 }
 
-export function PlayoffHallOfFame() {
+type Props = {
+  /** "full": 전체 목록 + 라인업 모달(가을야구 페이지). "compact": 1줄 진입 배너(경기장). */
+  variant?: "full" | "compact";
+};
+
+export function PlayoffHallOfFame({ variant = "full" }: Props) {
+  const compact = variant === "compact";
   const [rows, setRows] = useState<PlayoffChampionRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  // compact 배너 — 역대 우승자 순환(광고판) 인덱스.
+  const [rotateIdx, setRotateIdx] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       const client = createSupabaseBrowserClient();
+      // compact는 광고판처럼 역대 우승자를 순환 노출하므로 여러 명을 가져온다.
       const [listRes, countRes] = await Promise.all([
-        listPlayoffChampions(client, 5),
+        listPlayoffChampions(client, compact ? 10 : 3),
         countPlayoffChampions(client)
       ]);
       if (cancelled) return;
@@ -52,7 +63,16 @@ export function PlayoffHallOfFame() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [compact]);
+
+  // compact: 2.8초마다 다음 우승자로 순환.
+  useEffect(() => {
+    if (!compact || rows.length <= 1) return;
+    const t = window.setInterval(() => {
+      setRotateIdx((i) => (i + 1) % rows.length);
+    }, 2800);
+    return () => window.clearInterval(t);
+  }, [compact, rows.length]);
 
   const openLineup = (champ: PlayoffChampionRow) => {
     if (loadingId || !champ.batting || !champ.pitching) return;
@@ -72,6 +92,26 @@ export function PlayoffHallOfFame() {
 
   // 로드 전이거나 우승자 0명이라도 카드는 그려서 "첫 우승" 안내를 보여준다.
   if (!loaded) return null;
+
+  // 경기장 진입 배너 — 1줄 요약. 우승자가 없으면(아래 '가을야구 도전' 배너가 유도) 숨김.
+  if (compact) {
+    if (total === 0) return null;
+    const champ = rows[rotateIdx % rows.length] ?? rows[0];
+    return (
+      <Link href="/stadium/playoff" className="playoff-hall-banner" prefetch>
+        <span className="playoff-hall-banner-emoji" aria-hidden="true">🏆</span>
+        <strong className="playoff-hall-banner-title">명예의 전당</strong>
+        {champ ? (
+          <span key={champ.id} className="playoff-hall-banner-spot">
+            <TeamLogo teamId={champ.teamId} size="sm" />
+            <span className="playoff-hall-banner-nick">{champ.nickname}</span>
+          </span>
+        ) : null}
+        <span className="playoff-hall-banner-count">역대 {total}회</span>
+        <ChevronRight size={18} aria-hidden="true" />
+      </Link>
+    );
+  }
 
   return (
     <section className="playoff-hall">
@@ -100,8 +140,8 @@ export function PlayoffHallOfFame() {
                 >
                   <TeamLogo teamId={champ.teamId} size="sm" />
                   <div className="playoff-hall-row-body">
-                    <span className="playoff-hall-nick">{champ.nickname}</span>
-                    <span className="playoff-hall-team">{champ.teamName}</span>
+                    <strong className="playoff-hall-team-name">{champ.teamName}</strong>
+                    <span className="playoff-hall-owner">({champ.nickname})</span>
                   </div>
                   <span className="playoff-hall-date">{formatDate(champ.completedAt)}</span>
                 </button>

@@ -121,7 +121,7 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
         <div className="weekly-teams-analysis">
           <div className="weekly-section-header">
             <FileText size={18} className="weekly-header-icon" />
-            <h3>통합 순위 리포트</h3>
+            <h3>주간 순위 리포트</h3>
           </div>
 
           {/* 테이블 스타일 가이드라인 헤더 */}
@@ -165,7 +165,7 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
                     >
                       <div className="weekly-header-grid">
                         {/* 순위 */}
-                        <span className="grid-rank">{team.weeklyRank}위</span>
+                        <span className={`grid-rank ${team.weeklyRank <= 3 ? "is-top-three" : ""}`}>{team.weeklyRank}위</span>
                         
                         {/* 팀 배지 + 팀명 */}
                         <div className="grid-team">

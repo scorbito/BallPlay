@@ -4,10 +4,11 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ChevronRight, ClipboardList, Settings } from "lucide-react";
+import { Camera, ChevronRight, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
+import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { Card } from "@/components/common/Card";
 import { ModalShell } from "@/components/common/ModalShell";
 import { Button } from "@/components/common/Button";
@@ -21,7 +22,6 @@ import type { TeamSummary } from "@/lib/supabase/query-parts/bpLineups";
 import type { PlayoffSummary } from "@/lib/supabase/query-parts/bpPlayoff";
 
 const menuItems = [
-  { label: "내 기록", href: "/records", icon: ClipboardList },
   { label: "설정", href: "/my/settings", icon: Settings }
 ];
 
@@ -42,10 +42,8 @@ function fmtDate(iso: string | null | undefined): string {
 
 export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: MyScreenProps) {
   const slotLimit = getLineupSlotLimit(tier);
-  const combinedWins = accountStats.wins + playoffSummary.wins;
-  const combinedLosses = accountStats.losses + playoffSummary.losses;
-  const combinedTotal = combinedWins + combinedLosses;
-  const combinedWinRate = combinedTotal > 0 ? combinedWins / combinedTotal : 0;
+  // 누적 전적은 공식+가을야구가 이미 bp_account_stats 에 합산돼 들어온다(경기장 경기 모두 공식 인정).
+  // → 여기서 따로 더하지 않는다(이중 계산 방지).
   const { profile, isAnonymous, updateProfile, showToast } = useAppState();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -119,20 +117,21 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
       <Card className="mypage-stat-card">
         <div className="mypage-stat-head">
           <strong>누적 전적</strong>
+          <Link href="/records" className="mypage-stat-link mypage-stat-btn" prefetch>
+            내 경기 기록 보기 <ChevronRight size={14} />
+          </Link>
         </div>
         <div className="mypage-record-row">
+          <AccountTierBadge wins={accountStats.wins} size={40} showName className="mypage-record-badge" />
           <span className="mypage-record-wl">
-            {combinedWins}승 {combinedLosses}패
+            {accountStats.wins}승 {accountStats.losses}패
           </span>
           <span className="mypage-record-rate">
-            {combinedTotal > 0 ? `승률 ${Math.round(combinedWinRate * 100)}%` : "아직 경기 없음"}
+            {accountStats.total > 0 ? `승률 ${Math.round(accountStats.winRate * 100)}%` : "아직 경기 없음"}
           </span>
           <Link href="/play/account-ranking" className="mypage-stat-link" prefetch>
             공식 랭킹 <ChevronRight size={14} />
           </Link>
-        </div>
-        <div className="mypage-record-breakdown">
-          공식 {accountStats.wins}승 {accountStats.losses}패 · 가을야구 {playoffSummary.wins}승 {playoffSummary.losses}패
         </div>
       </Card>
 

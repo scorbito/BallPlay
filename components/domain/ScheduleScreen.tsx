@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { refreshTodayGamesAction } from "@/lib/actions/refreshTodayGames";
@@ -340,6 +341,18 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
 
   const selectedTitle = `${selectedDate.getMonth() + 1}.${selectedDate.getDate()} (${WEEKDAYS_SUN[selectedDate.getDay()]})`;
 
+  const goToPrevDay = () => {
+    const prev = new Date(selectedDate);
+    prev.setDate(prev.getDate() - 1);
+    selectDate(prev);
+  };
+
+  const goToNextDay = () => {
+    const next = new Date(selectedDate);
+    next.setDate(next.getDate() + 1);
+    selectDate(next);
+  };
+
   // 오늘 선택된 상태인지 + 오늘 경기 진행 상태 분석
   const isTodaySelected = isSameDate(selectedDate, today);
   const todayGames = isTodaySelected ? selectedGames : [];
@@ -562,7 +575,15 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
           >
             <ArrowLeft size={18} />
           </button>
-          <strong className="sched-day-title">{selectedTitle}</strong>
+          <div className="sched-day-nav">
+            <button type="button" className="sched-day-nav-btn" onClick={goToPrevDay} aria-label="이전 날">
+              <ChevronLeft size={18} />
+            </button>
+            <strong className="sched-day-title">{selectedTitle}</strong>
+            <button type="button" className="sched-day-nav-btn" onClick={goToNextDay} aria-label="다음 날">
+              <ChevronRight size={18} />
+            </button>
+          </div>
           <div className="sched-day-head-right">
             {canShowRefresh ? (
               <button
@@ -590,7 +611,7 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
                 ? <span className="sched-game-score">{game.awayScore} : {game.homeScore}</span>
                 : game.status === "canceled"
                   ? <span className="sched-game-vs">취소</span>
-                  : <span className="sched-game-vs">VS</span>;
+                  : null;
 
               const statusLabel = game.status === "finished"
                 ? "경기종료"
@@ -608,19 +629,31 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
                   className={`sched-game-row ${isMine ? "sched-game-row-mine" : ""}`}
                   key={game.id}
                 >
-                  <span className="sched-game-time">{game.time ? game.time.slice(0, 5) : "--:--"}</span>
+                  <span className={`sched-game-status ${statusClass}`}>{statusLabel}</span>
                   <div className="sched-game-match">
                     <span className="sched-game-team">
                       <TeamBadge teamId={game.awayTeamId} size="sm" />
                       <strong>{away.shortName}</strong>
                     </span>
-                    {center}
+                    <div className="sched-game-center-col">
+                      {game.status !== "finished" ? (
+                        <span className="sched-game-time">{game.time ? game.time.slice(0, 5) : "--:--"}</span>
+                      ) : null}
+                      {center}
+                    </div>
                     <span className="sched-game-team sched-game-team-right">
                       <strong>{home.shortName}</strong>
                       <TeamBadge teamId={game.homeTeamId} size="sm" />
                     </span>
                   </div>
-                  <span className={`sched-game-status ${statusClass}`}>{statusLabel}</span>
+                  {game.status !== "canceled" ? (
+                    <VirtualMatchButton
+                      game={{ homeTeamId: game.homeTeamId, awayTeamId: game.awayTeamId }}
+                      className="sched-game-sim-btn"
+                      idleLabel="경기해보기"
+                      busyLabel="준비"
+                    />
+                  ) : null}
                 </div>
               );
             })

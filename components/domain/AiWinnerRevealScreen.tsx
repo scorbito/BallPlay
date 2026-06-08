@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, RotateCcw, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type {
@@ -185,6 +186,19 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
             </div>
           ) : null}
         </header>
+
+        {/* ── 돌려보기 버튼 ── */}
+        <VirtualMatchButton
+          game={{
+            homeTeamId: game.homeTeamId,
+            awayTeamId: game.awayTeamId,
+            homeStarter: game.homeStarter,
+            awayStarter: game.awayStarter
+          }}
+          className="ai-reveal-sim-btn"
+          idleLabel={`${home.shortName} vs ${away.shortName} 가상경기 해보기`}
+          busyLabel="준비 중"
+        />
 
         {/* 예측 없으면 */}
         {orderedPredictions.length === 0 ? (

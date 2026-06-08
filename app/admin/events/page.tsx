@@ -133,7 +133,7 @@ function playoffReachLabel(value: number): string {
   if (value === 4) return "한국시리즈";
   if (value === 3) return "플레이오프";
   if (value === 2) return "준플레이오프";
-  if (value === 1) return "4·5위전";
+  if (value === 1) return "와일드카드";
   return "-";
 }
 

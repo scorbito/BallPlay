@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 14px 0;
+  margin: 4px 0;
   padding: 15px 16px;
   border-radius: 16px;
   /* 이중 배경: 안쪽(padding-box)은 가을빛 카드, 바깥(border-box)은 흐르는 그라데이션 테두리 */
@@ -139,6 +139,80 @@
    명예의 전당 — 가을야구 진입 카드 바로 위. 살짝 골드/프리미엄 톤이되
    진입 카드(주인공)보다 시각적으로 튀지 않게 정적이고 차분하게.
    ============================================================ */
+/* 경기장 진입 배너 — 명예의 전당 1줄 요약 */
+.phone-frame-light .playoff-hall-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 90, 0.35);
+  background: linear-gradient(180deg, #fffdf6, #fffaf0);
+  box-shadow: 0 2px 10px rgba(180, 140, 50, 0.08);
+  text-decoration: none;
+  color: inherit;
+}
+
+.phone-frame-light .playoff-hall-banner-emoji {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .playoff-hall-banner-title {
+  font-size: 14px;
+  font-weight: 850;
+  color: var(--bp-text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 회전 노출 영역 — 우승자 팀로고 + 닉네임(광고판) */
+.phone-frame-light .playoff-hall-banner-spot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  animation: playoff-hall-spot-in 0.45s ease;
+}
+
+.phone-frame-light .playoff-hall-banner-nick {
+  font-size: 13px;
+  font-weight: 750;
+  color: #b8860b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes playoff-hall-spot-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.phone-frame-light .playoff-hall-banner-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #b8860b;
+  background: rgba(212, 175, 90, 0.14);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .playoff-hall-banner svg {
+  color: #b8860b;
+  flex-shrink: 0;
+}
+
 .phone-frame-light .playoff-hall {
   margin: 14px 0 0;
   padding: 12px 14px 6px;
@@ -217,25 +291,28 @@
 
 .phone-frame-light .playoff-hall-row-body {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: baseline;
+  gap: 5px;
   flex: 1;
   min-width: 0;
 }
 
-.phone-frame-light .playoff-hall-nick {
+.phone-frame-light .playoff-hall-team-name {
   font-size: 13px;
   font-weight: 750;
   color: var(--bp-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
-.phone-frame-light .playoff-hall-team {
+.phone-frame-light .playoff-hall-owner {
   font-size: 11px;
   font-weight: 600;
   color: var(--bp-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .phone-frame-light .playoff-hall-date {
@@ -342,29 +419,6 @@
 }
 
 /* 대진표 */
-.phone-frame-light .playoff-bracket-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 6px 2px 12px;
-}
-
-.phone-frame-light .playoff-round-chip {
-  display: inline-flex;
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 900;
-  color: #fff;
-  background: var(--bp-accent);
-}
-
-.phone-frame-light .playoff-round-progress {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--bp-text-muted);
-}
-
 .phone-frame-light .playoff-pending-card {
   display: flex;
   flex-direction: column;
@@ -422,11 +476,38 @@
   color: var(--bp-text-secondary);
 }
 
+/* 두 팀 로고 사이 — 라운드 칩(위) + VS(아래) */
 .phone-frame-light .playoff-vs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .playoff-vs-round {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--bp-accent);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.phone-frame-light .playoff-vs-text {
   font-size: 16px;
   font-weight: 900;
   color: var(--bp-text-muted);
-  flex-shrink: 0;
+}
+
+/* 한국시리즈 차수 — VS 아래 작게 */
+.phone-frame-light .playoff-vs-series {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  white-space: nowrap;
 }
 
 .phone-frame-light .playoff-start-btn {

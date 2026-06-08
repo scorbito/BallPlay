@@ -26,7 +26,7 @@ type Props = {
 export function VirtualMatchButton({
   game,
   className,
-  idleLabel = "가상 경기",
+  idleLabel = "경기해보기",
   busyLabel = "준비",
   title = "최신 라인업과 오늘 선발로 가상 경기를 시작",
   onStarted

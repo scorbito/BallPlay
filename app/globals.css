@@ -42,12 +42,12 @@ body.has-custom-cursor textarea {
 }
 
 .custom-cursor.is-swing::before {
-  animation: custom-cursor-swing 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: custom-cursor-swing 180ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes custom-cursor-swing {
   0%   { transform: rotate(0deg); }
-  35%  { transform: rotate(-90deg); }
+  35%  { transform: rotate(-22deg); }
   100% { transform: rotate(0deg); }
 }
 

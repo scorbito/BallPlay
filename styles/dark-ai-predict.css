@@ -850,6 +850,33 @@
   text-align: center;
 }
 
+/* 상세 화면 상단 돌려보기 버튼 — 일일 예측 상세 + 주간 시리즈 상세 공용 */
+.phone-frame-light .ai-reveal-sim-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  background: rgba(232, 74, 138, 0.08);
+  border: 1.5px solid rgba(232, 74, 138, 0.35);
+  color: var(--bp-accent);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .ai-reveal-sim-btn:hover:not(:disabled) {
+  background: rgba(232, 74, 138, 0.14);
+  border-color: rgba(232, 74, 138, 0.55);
+}
+
+.phone-frame-light .ai-reveal-sim-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .phone-frame-light .ai-weekly-detail-screen {
   display: flex;
   flex-direction: column;

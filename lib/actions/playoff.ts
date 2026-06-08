@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { teams } from "@/lib/constants/teams";
+import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { getLatestBattingLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
@@ -13,6 +14,7 @@ import {
   updatePlayoffRun,
   PLAYOFF_TOTAL_ROUNDS,
   PLAYOFF_FINAL_WINS_NEEDED,
+  PLAYOFF_ROUND_LABEL,
   type PlayoffRun,
   type PlayoffRunState,
   type PlayoffOpponent,
@@ -66,6 +68,52 @@ async function authed() {
   const client = createSupabaseServerClient();
   const { data: { user } } = await client.auth.getUser();
   return { client, userId: user?.id ?? null };
+}
+
+/** 가을야구 경기 1건을 공식 누적 전적(bp_records)에도 기록 — 경기장 경기는 모두 공식 인정.
+ *  source='public' 이면 z_bp_account_stats 트리거가 final_score+owner 로 자동 +1 한다.
+ *  상대가 AI(상대 라인업 id 없음)라 mirror 트리거는 안전하게 skip.
+ *  멱등: unique(owner_user_id, source, seed) 인덱스가 같은 playSeed 재기록을 23505 로 거부.
+ *  best-effort — 실패해도 가을야구 결과 자체(state)는 유지해야 하므로 에러는 무시한다. */
+async function recordPlayoffGameAsOfficial(params: {
+  userId: string;
+  myTeamId: string;
+  myTeamName: string;
+  oppTeamId: string;
+  oppTeamName: string;
+  round: number;
+  scoreMe: number;
+  scoreOpp: number;
+  playSeed: number;
+}): Promise<void> {
+  try {
+    // RLS 우회(트리거가 SECURITY DEFINER 라 admin 불필요하지만, 본인 row 라 server client 로 충분).
+    const client = createSupabaseServerClient();
+    const { error } = await client.from("bp_records").insert({
+      owner_user_id: params.userId,
+      source: "public",
+      user_side: "home",
+      engine_version: SIM_ENGINE_VERSION,
+      seed: params.playSeed,
+      // 재생 데이터는 가을야구 자체 시스템(playSeed)에 있으므로 bp_records 엔 비워둔다.
+      input: null,
+      result: null,
+      home_team_id: params.myTeamId,
+      away_team_id: params.oppTeamId,
+      home_label: params.myTeamName,
+      away_label: params.oppTeamName,
+      final_score: { home: params.scoreMe, away: params.scoreOpp },
+      is_walkoff: false,
+      total_innings: 9,
+      name: `가을야구 ${PLAYOFF_ROUND_LABEL[params.round] ?? ""}`.trim()
+    });
+    // 23505 = 이미 기록됨(멱등) → 정상. 그 외 에러도 누적은 best-effort 라 무시.
+    if (error && error.code !== "23505") {
+      console.warn("[playoff] bp_records 누적 실패(무시):", error.message);
+    }
+  } catch (e) {
+    console.warn("[playoff] bp_records 누적 예외(무시):", (e as Error).message);
+  }
 }
 
 /** 도전 시작 — 내 구단 제외 4팀 랜덤 배정. 기존 진행 중 도전은 종료. */
@@ -241,6 +289,22 @@ export async function recordPlayoffGame(input: {
     status,
     completed_at: completedAt
   });
+
+  // 경기장 경기는 모두 공식 인정 — 이 가을야구 경기도 공식 누적 전적에 기록.
+  if (updated.ok) {
+    const opp = run.state.opponents.find((o) => o.round === input.round);
+    await recordPlayoffGameAsOfficial({
+      userId,
+      myTeamId: run.teamId,
+      myTeamName: run.teamName,
+      oppTeamId: input.oppTeamId,
+      oppTeamName: opp?.teamName ?? input.oppTeamId,
+      round: input.round,
+      scoreMe: input.scoreMe,
+      scoreOpp: input.scoreOpp,
+      playSeed: input.playSeed
+    });
+  }
 
   // 우승 확정이면 명예의 전당에 박제. INSERT 실패해도 우승 처리는 유지(에러 무시).
   if (updated.ok && status === "champion" && completedAt) {

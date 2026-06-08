@@ -226,18 +226,6 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         })}
       </ul>
 
-      <header className="playoff-bracket-head">
-        <span className="playoff-round-chip">
-          {PLAYOFF_ROUND_LABEL[round]}
-          {isFinal ? ` · ${seriesGameNo}차전` : ""}
-        </span>
-        <span className="playoff-round-progress">
-          {isFinal
-            ? `${finalWins}승 ${finalLosses}패 · ${PLAYOFF_FINAL_WINS_NEEDED}선승`
-            : `${round} / ${PLAYOFF_TOTAL_ROUNDS}`}
-        </span>
-      </header>
-
       {pendingGame ? (
         <div className="playoff-pending-card">
           <strong>{"\uC9C4\uD589 \uC911\uC778 \uACBD\uAE30\uAC00 \uC788\uC5B4\uC694"}</strong>
@@ -246,13 +234,18 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       ) : null}
 
       <Card className="playoff-matchup">
-        {/* 왼쪽=상대(상대 라인업 보기 버튼), 오른쪽=내 팀(내 라인업 수정 버튼) — 버튼과 좌우 정렬 일치 */}
+        {/* 왼쪽=상대(상대 라인업 보기 버튼), 오른쪽=내 팀(내 라인업 수정 버튼) — 버튼과 좌우 정렬 일치.
+            가운데 칩=현재 라운드(VS 대신, 두 팀 로고 사이) */}
         <div className="playoff-matchup-team">
           <TeamLogo teamId={opp?.teamId ?? ""} size="lg" />
           <strong>{opp?.teamName ?? "-"}</strong>
           <span className="playoff-seed">{opp ? `${5 - round}위 · AI` : ""}</span>
         </div>
-        <span className="playoff-vs">VS</span>
+        <div className="playoff-vs">
+          <span className="playoff-vs-round">{PLAYOFF_ROUND_LABEL[round]}</span>
+          <span className="playoff-vs-text">VS</span>
+          {isFinal ? <span className="playoff-vs-series">{seriesGameNo}차전</span> : null}
+        </div>
         <div className="playoff-matchup-team">
           <TeamLogo teamId={run.teamId} size="lg" />
           <strong>{run.teamName}</strong>
