@@ -7,20 +7,8 @@ import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from 
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
-import { getRoster } from "@/lib/rosters";
 import { trackEvent } from "@/lib/analytics/events";
-import { useAppState } from "@/lib/state/AppState";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
-import {
-  getLatestBattingLineupForTeam,
-  type RecentLineupRow
-} from "@/lib/supabase/query-parts/bpRecentLineups";
-import {
-  applyBlendedStatsToTeam,
-  buildStatsDirectoryWithRecentForm
-} from "@/lib/sim/statsLoaderWithRecent";
-import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
+import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type {
   AiOverallStats,
@@ -91,30 +79,6 @@ function formatDateLabel(dateISO: string): string {
 function formatGameTime(time: string | null): string {
   if (!time) return "";
   return time.slice(0, 5);
-}
-
-function findRosterIdByName(teamId: string, name: string | null): string | null {
-  if (!name) return null;
-  const trimmed = name.trim();
-  if (!trimmed) return null;
-  const roster = getRoster(teamId);
-  const exact = roster.find((p) => p.name === trimmed);
-  if (exact) return exact.id;
-  const partial = roster.find((p) => p.name.includes(trimmed) || trimmed.includes(p.name));
-  return partial?.id ?? null;
-}
-
-function toRecentLineupHint(
-  teamId: string,
-  row: RecentLineupRow | null,
-  starterName: string | null
-): RecentLineupHint | null {
-  if (!row || !Array.isArray(row.batting) || row.batting.length < 9) return null;
-  return {
-    batting: row.batting,
-    starter_roster_id: findRosterIdByName(teamId, starterName) ?? row.starter_roster_id,
-    starter_name: starterName ?? row.starter_name
-  };
 }
 
 /** 구장이 "미정" 또는 빈값이면 표시 안 함. */
@@ -287,8 +251,6 @@ export function AiWinnerListScreen({
   // 이 페이지는 경기 진행에 따라 상태가 실시간으로 바뀌므로 진입 시 1회 refresh 로
   // sim-1000 처럼 들어오자마자 최신 상태가 보이게 한다.
   const router = useRouter();
-  const { showToast } = useAppState();
-  const [simStartingGameId, setSimStartingGameId] = useState<string | null>(null);
   useEffect(() => {
     router.refresh();
   }, [router]);
@@ -357,56 +319,6 @@ export function AiWinnerListScreen({
     for (const p of providerStats) map.set(p.ai_provider, p);
     return map;
   }, [providerStats]);
-
-  const startPredictionSim = async (game: AiWinnerGame) => {
-    if (simStartingGameId) return;
-    setSimStartingGameId(game.id);
-    try {
-      const seed = generateSeed();
-      const client = createSupabaseBrowserClient();
-      const [statsDir, homeLineupRes, awayLineupRes] = await Promise.all([
-        buildStatsDirectoryWithRecentForm(client, [
-          game.homeTeamId,
-          game.awayTeamId
-        ]),
-        getLatestBattingLineupForTeam(client, game.homeTeamId),
-        getLatestBattingLineupForTeam(client, game.awayTeamId)
-      ]);
-      if (!homeLineupRes.ok || !awayLineupRes.ok) {
-        showToast("최신 라인업을 불러올 수 없어요.");
-        setSimStartingGameId(null);
-        return;
-      }
-      const homeHint = toRecentLineupHint(game.homeTeamId, homeLineupRes.row, game.homeStarter);
-      const awayHint = toRecentLineupHint(game.awayTeamId, awayLineupRes.row, game.awayStarter);
-      if (!homeHint || !awayHint) {
-        showToast("DB에 저장된 최신 라인업이 부족해요.");
-        setSimStartingGameId(null);
-        return;
-      }
-      const homeRaw = buildFakeOpponentTeam(game.homeTeamId, seed + 101, homeHint);
-      const awayRaw = buildFakeOpponentTeam(game.awayTeamId, seed + 202, awayHint);
-      if (!homeRaw || !awayRaw) {
-        showToast("가상 경기 라인업을 만들 수 없어요.");
-        setSimStartingGameId(null);
-        return;
-      }
-      const home = applyBlendedStatsToTeam(homeRaw, statsDir);
-      const away = applyBlendedStatsToTeam(awayRaw, statsDir);
-      saveMatchSession({
-        myTeamId: game.homeTeamId,
-        opponentTeamId: game.awayTeamId,
-        seed,
-        input: { home, away, context: {} },
-        startedAt: new Date().toISOString(),
-        source: "ai"
-      });
-      router.push("/stadium/play");
-    } catch {
-      showToast("예측 시뮬레이션을 준비하는 중 오류가 발생했어요.");
-      setSimStartingGameId(null);
-    }
-  };
 
   return (
     <AppShell activeTab="home" title="AI 승리팀 예측" theme="light" backHref="/" wide>
@@ -733,15 +645,15 @@ export function AiWinnerListScreen({
                           결과 보기
                           <ArrowRight size={12} strokeWidth={2.5} />
                         </Link>
-                        <button
-                          type="button"
+                        <VirtualMatchButton
+                          game={{
+                            homeTeamId: g.homeTeamId,
+                            awayTeamId: g.awayTeamId,
+                            homeStarter: g.homeStarter,
+                            awayStarter: g.awayStarter
+                          }}
                           className="ai-winner-card-cta ai-winner-card-cta-sim"
-                          onClick={() => void startPredictionSim(g)}
-                          disabled={simStartingGameId === g.id}
-                          title="최신 라인업과 오늘 선발로 가상 경기를 시작"
-                        >
-                          {simStartingGameId === g.id ? "준비" : "가상 경기"}
-                        </button>
+                        />
                       </div>
                     ) : null}
                   </li>
