@@ -1,8 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   listAiPredictionResultsForGame,
-  type BpAiPredictionRow
+  listAiPredictionResultsForDate,
+  type BpAiPredictionRow,
+  type BpAiPredictionResultRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
@@ -61,22 +64,50 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
   // 운영자(admin) 는 09시 공개 전이라도 예측을 미리 볼 수 있어야 함 (컨텐츠 영상 제작용).
   // RLS 가 published_at <= now() 만 노출하므로 admin 만 service_role 클라이언트로 우회.
   const userTier = await getUserTier(supabase);
+  const isAdmin = userTier.tier === "admin";
+  const locked = userTier.tier === "guest";
 
   // AI 예측 상세(reveal)는 정식 로그인 전용. 비로그인/익명(guest)은 로그인으로 보낸다.
   // (리스트는 소프트 게이트로 매치업만 노출하지만, 상세는 곧 결과 전체라 하드 게이트.)
-  if (userTier.tier === "guest") {
+  if (locked) {
     redirect(`/login?next=${encodeURIComponent(`/predict/ai-winner/${params.gameId}`)}`);
   }
 
-  const predictionsClient =
-    userTier.tier === "admin" ? createSupabaseAdminClient() : supabase;
+  // 예측은 항상 service_role 로 전부 읽고(발행 전 포함) 서버에서 "3개 AI 완료" 여부로 게이트한다.
+  const adminClient = createSupabaseAdminClient();
+
+  // 1. 해당 날짜의 모든 경기 조회
+  const gamesForDate = await listGamesFromDb({ from: gameRow.game_date, to: gameRow.game_date }).catch(() => []);
+
+  // 2. 해당 날짜의 모든 예측 조회 (어드민 클라이언트로)
+  const datePredictionsResult = await listAiPredictionResultsForDate(adminClient, gameRow.game_date);
+
+  // 3. 게임별 예측 매핑
+  const predictionsByGameId = new Map<string, BpAiPredictionResultRow[]>();
+  if (datePredictionsResult.ok) {
+    for (const row of datePredictionsResult.rows) {
+      const list = predictionsByGameId.get(row.game_id) ?? [];
+      list.push(row);
+      predictionsByGameId.set(row.game_id, list);
+    }
+  }
+
+  // 4. 공개 게이트: 그 날의 모든 경기가 3개 AI(gemini/claude/gpt) 예측을 다 갖추면 공개.
+  const AI_PROVIDER_COUNT = 3;
+  const predictionsPublished =
+    gamesForDate.length > 0 &&
+    gamesForDate.every((g) => {
+      const ps = predictionsByGameId.get(g.id) ?? [];
+      return new Set(ps.map((p) => p.ai_provider)).size >= AI_PROVIDER_COUNT;
+    });
 
   // 예측 조회. VIEW(bp_ai_predictions_with_result) — 점수 들어오자마자 is_correct_live 채워짐.
   // 컴포넌트(AiWinnerRevealScreen) 시그니처는 BpAiPredictionRow[] 라서 page 안에서 is_correct_live → is_correct 로 매핑.
-  // 일반 유저는 VIEW(security_invoker=true) 가 underlying RLS(published_at <= now()) 상속.
-  const predictionsResult = await listAiPredictionResultsForGame(predictionsClient, params.gameId);
-  const predictions: BpAiPredictionRow[] = predictionsResult.ok
-    ? predictionsResult.rows.map((p) => ({
+  const predictionsResult = await listAiPredictionResultsForGame(adminClient, params.gameId);
+  const rawPredictions = predictionsResult.ok ? predictionsResult.rows : [];
+
+  const predictions: BpAiPredictionRow[] = (predictionsPublished || isAdmin)
+    ? rawPredictions.map((p) => ({
         id: p.id,
         game_id: p.game_id,
         game_date: p.game_date,
