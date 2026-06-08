@@ -214,9 +214,9 @@
 }
 
 .phone-frame-light .playoff-hall {
-  margin: 14px 0 0;
-  padding: 12px 14px 6px;
-  border-radius: 16px;
+  margin: 8px 0 0;
+  padding: 8px 10px 4px;
+  border-radius: 12px;
   border: 1px solid rgba(212, 175, 90, 0.35);
   background: linear-gradient(180deg, #fffdf6, #fffaf0);
   box-shadow: 0 2px 10px rgba(180, 140, 50, 0.08);
@@ -227,34 +227,34 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 3px;
 }
 
 .phone-frame-light .playoff-hall-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 850;
   color: var(--bp-text);
 }
 
 .phone-frame-light .playoff-hall-count {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #b8860b;
   background: rgba(212, 175, 90, 0.14);
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 999px;
   white-space: nowrap;
 }
 
 .phone-frame-light .playoff-hall-empty {
-  padding: 10px 4px 12px;
+  padding: 6px 4px 8px;
   text-align: center;
 }
 
 .phone-frame-light .playoff-hall-empty p {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--bp-text-secondary);
 }
@@ -274,9 +274,9 @@
 .phone-frame-light .playoff-hall-row-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
   width: 100%;
-  padding: 9px 4px;
+  padding: 5px 2px;
   background: none;
   border: none;
   text-align: left;
@@ -289,16 +289,23 @@
   opacity: 0.7;
 }
 
+.phone-frame-light .playoff-hall-row-btn .team-logo,
+.phone-frame-light .playoff-hall-row-btn .team-logo-wrap {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
 .phone-frame-light .playoff-hall-row-body {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 4px;
   flex: 1;
   min-width: 0;
 }
 
 .phone-frame-light .playoff-hall-team-name {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 750;
   color: var(--bp-text);
   overflow: hidden;
@@ -308,7 +315,7 @@
 }
 
 .phone-frame-light .playoff-hall-owner {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--bp-text-secondary);
   white-space: nowrap;
@@ -316,7 +323,7 @@
 }
 
 .phone-frame-light .playoff-hall-date {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--bp-text-muted);
   white-space: nowrap;
@@ -518,29 +525,62 @@
 }
 
 .phone-frame-light .playoff-ladder-head {
-  margin: 4px 2px 8px;
+  margin: 4px 2px 7px;
   font-size: 12px;
   font-weight: 850;
   color: var(--bp-text-muted);
 }
 
 .phone-frame-light .playoff-ladder {
+  position: relative;
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: 0 0 10px;
+  padding: 8px 8px 8px 22px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 250, 252, 0.9));
+  overflow: hidden;
+}
+
+.phone-frame-light .playoff-ladder::before {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: 29px;
+  bottom: 29px;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f59e0b, #e84a8a);
+  opacity: 0.55;
 }
 
 .phone-frame-light .playoff-ladder-row {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(20, 30, 50, 0.04);
+  gap: 7px;
+  min-height: 42px;
+  padding: 6px 10px 6px 16px;
+  border-radius: 11px;
+  background: transparent;
   border: 1px solid transparent;
+}
+
+.phone-frame-light .playoff-ladder-row::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(148, 163, 184, 0.45);
+  background: #fff;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
 .phone-frame-light .playoff-ladder-row.is-current {
@@ -549,21 +589,42 @@
 }
 
 .phone-frame-light .playoff-ladder-row.is-upcoming {
-  opacity: 0.6;
+  opacity: 0.7;
+}
+
+.phone-frame-light .playoff-ladder-row.is-current::before {
+  border-color: var(--bp-accent);
+  background: var(--bp-accent);
+  box-shadow: 0 0 0 4px rgba(232, 74, 138, 0.14);
+}
+
+.phone-frame-light .playoff-ladder-row.is-win::before {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.phone-frame-light .playoff-ladder-row.is-loss::before {
+  border-color: var(--bp-danger);
+  background: var(--bp-danger);
 }
 
 .phone-frame-light .playoff-ladder-round {
-  width: 64px;
+  width: 74px;
   flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10.5px;
+  font-weight: 850;
   color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .playoff-ladder-row .team-logo,
+.phone-frame-light .playoff-ladder-row .team-logo-wrap {
+  flex-shrink: 0;
 }
 
 .phone-frame-light .playoff-ladder-name {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--bp-text);
   overflow: hidden;
@@ -573,16 +634,21 @@
 
 .phone-frame-light .playoff-ladder-seed {
   flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--bp-text-muted);
+  min-width: 28px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  text-align: center;
 }
 
 .phone-frame-light .playoff-ladder-status {
   flex-shrink: 0;
-  width: 66px;
+  width: 54px;
   text-align: right;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--bp-text-secondary);
 }

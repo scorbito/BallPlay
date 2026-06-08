@@ -3,10 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { History, Lock, Trophy } from "lucide-react";
+import { History, Lock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
-import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { TierUpHost } from "@/components/common/TierUpHost";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import {
@@ -23,7 +22,7 @@ import {
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
 import { fetchLineupStatsBulk, listMyLineups, rowToEntry, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
-import { formatWinRate, type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
+import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 import { getTeam } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
@@ -92,6 +91,7 @@ export function RecordsScreen({
   const [startingRematch, setStartingRematch] = useState(false);
   // 필터 chip 컨테이너 — PC에서 마우스 드래그로 가로 스크롤 가능하게 ref 부착.
   const filterRef = useRef<HTMLDivElement | null>(null);
+  void isAnonymous;
 
   const fetchRecords = useCallback(async () => {
     setLoadError(null);
@@ -430,53 +430,6 @@ export function RecordsScreen({
 
   return (
     <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
-      {/* 누적 공개 매치 요약 카드 — 서버에서 집계해 props로 받은 값.
-          0전 0승 0패도 카드 노출(빈 메시지 분기). 익명 사용자에겐 로그인 CTA 추가.
-          우측 상단에 "랭킹 보기" 보조 버튼 — 계정 누적 랭킹 페이지로 진입. */}
-      <section className="records-summary-card" aria-label="누적 공식 경기 전적">
-        <div className="records-summary-row">
-          {userRecord.total > 0 ? (
-            <div className="records-summary-stats">
-              {/* wins>=1이면 마일스톤 뱃지, 아니면 기본 📊 — 0/0 케이스는 아래 else 분기. */}
-              {userRecord.wins >= 1 ? (
-                <AccountTierBadge wins={userRecord.wins} size={48} />
-              ) : (
-                <span className="records-summary-icon" aria-hidden="true">📊</span>
-              )}
-              <div className="records-summary-text">
-                <span className="records-summary-label">내 공식 경기 누적</span>
-                <strong className="records-summary-numbers">
-                  {userRecord.wins}승 {userRecord.losses}패
-                  <span className="records-summary-rate">· 승률 {formatWinRate(userRecord.winRate)}</span>
-                </strong>
-              </div>
-            </div>
-          ) : (
-            <div className="records-summary-stats">
-              <span className="records-summary-icon" aria-hidden="true">📊</span>
-              <div className="records-summary-text">
-                <span className="records-summary-label">내 공식 경기 누적</span>
-                <strong className="records-summary-numbers">아직 기록이 없어요</strong>
-              </div>
-            </div>
-          )}
-          <Link
-            href="/play/account-ranking?from=records"
-            prefetch
-            className="records-ranking-link"
-            aria-label="계정 누적 랭킹 보기"
-          >
-            <Trophy size={14} aria-hidden />
-            <span>랭킹 보기</span>
-          </Link>
-        </div>
-        {isAnonymous ? (
-          <Link href="/login?next=/records" className="records-summary-cta" prefetch>
-            기기 변경 시 기록 보존을 위해 로그인하세요
-          </Link>
-        ) : null}
-      </section>
-
       {/* 라인업 필터 chip — 라인업이 2개 이상일 때만 노출. "전체" + 본인 라인업 각각.
           각 chip: 1줄 라인업명 + 2줄 승·패·무. PC는 마우스 드래그로도 가로 스크롤. */}
       {myLineups.length >= 2 ? (

@@ -80,7 +80,7 @@ export function HomeRecordBadge({ initialWins, initialLosses, initialRank }: Pro
 
   const total = wins + losses;
   return (
-    <Link href="/records" className="home-hero-record-badge" prefetch>
+    <Link href="/my" className="home-hero-record-badge" prefetch>
       {total > 0 ? (
         <>
           <AccountTierBadge wins={wins} size={24} />

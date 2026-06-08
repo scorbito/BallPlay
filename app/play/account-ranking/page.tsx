@@ -32,10 +32,10 @@ export default async function AccountRankingPage({
   const serverClient = createSupabaseServerClient();
 
   // ?from= 으로 들어온 출처에 따라 뒤로가기 목적지 결정.
-  // 미지정 시 기본 /records (홈 뱃지에서 옴 → 이제 홈은 /records 로 직행이지만 안전망).
+  // 미지정 시 기본 /my — 계정 누적 전적은 마이페이지에서 보는 흐름으로 통일.
   const from = searchParams.from;
   const backHref =
-    from === "stadium" ? "/stadium/lobby" : from === "records" ? "/records" : "/records";
+    from === "stadium" ? "/stadium/lobby" : from === "records" ? "/records" : "/my";
 
   // 1) 캐시된 전체 정렬 랭킹 (user_id 무관 → 공유 캐시 안전)
   //    bp_account_stats 카운터 기반 — mirror row 제외된 본인 직접 플레이 전적.

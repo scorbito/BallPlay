@@ -14,7 +14,7 @@ type Props = {
   myRank: MyAccountRank | null;
   myUserId: string | null;
   isLoggedIn: boolean;
-  /** 뒤로가기 목적지 — 페이지 진입 시점의 출처 따라 결정 (?from=). 기본 /records. */
+  /** 뒤로가기 목적지 — 페이지 진입 시점의 출처 따라 결정 (?from=). 기본 /my. */
   backHref?: string;
 };
 
@@ -36,7 +36,7 @@ export function AccountRankingScreen({
   myRank,
   myUserId,
   isLoggedIn,
-  backHref = "/records"
+  backHref = "/my"
 }: Props) {
   // 본인이 상위 100위 안에 들어 있는지 — 들어 있으면 별도 내 순위 카드 노출 생략.
   const myRowInTop = myUserId

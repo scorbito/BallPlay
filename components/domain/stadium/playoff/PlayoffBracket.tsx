@@ -189,7 +189,6 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
 
   return (
     <section className="playoff-bracket">
-      <div className="playoff-ladder-head">전체 대진</div>
       <ul className="playoff-ladder">
         {ladder.map((o) => {
           const isCurrent = o.round === round;

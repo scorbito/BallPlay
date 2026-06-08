@@ -182,7 +182,7 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
       {/* 가을야구(플레이오프) 도전 기록 — 누적/깔때기형 */}
       <Card className="mypage-stat-card my-playoff-card">
         <div className="mypage-stat-head">
-          <strong>🍁 가을야구</strong>
+          <strong>🏆 가을야구</strong>
           <span className="mypage-stat-link">
             총 도전 {playoffSummary.totalChallenges}회
           </span>
