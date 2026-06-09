@@ -124,66 +124,74 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
     };
   };
 
-  // 2. 팀 타선 방사형 데이터 정규화 (100점 만점 기준 보정)
-  const radarData = useMemo(() => {
-    const normalize = (val: number, min: number, max: number) => {
-      return Math.round(Math.max(10, Math.min(100, ((val - min) / (max - min)) * 100)));
+  // 2. 팀 타선 지표 게이지 비율 계산 헬퍼 (높을수록 좋음)
+  const getBatterGauge = (metric: keyof BattingStats) => {
+    const homeVal = data.batting.home[metric];
+    const awayVal = data.batting.away[metric];
+    const sum = homeVal + awayVal;
+    if (sum === 0) return { homePct: 50, awayPct: 50 };
+
+    const homeRatio = homeVal / sum;
+    const homePct = Math.max(15, Math.min(85, Math.round(homeRatio * 100)));
+    return {
+      homePct,
+      awayPct: 100 - homePct
     };
+  };
 
-    const h = data.batting.home;
-    const a = data.batting.away;
-
-    return [
-      {
-        subject: "타율",
-        [homeTeamName]: normalize(h.avg, 0.200, 0.340),
-        [awayTeamName]: normalize(a.avg, 0.200, 0.340),
-        rawHome: h.avg.toFixed(3),
-        rawAway: a.avg.toFixed(3)
-      },
-      {
-        subject: "출루율",
-        [homeTeamName]: normalize(h.obp, 0.260, 0.420),
-        [awayTeamName]: normalize(a.obp, 0.260, 0.420),
-        rawHome: h.obp.toFixed(3),
-        rawAway: a.obp.toFixed(3)
-      },
-      {
-        subject: "장타율",
-        [homeTeamName]: normalize(h.slg, 0.300, 0.520),
-        [awayTeamName]: normalize(a.slg, 0.300, 0.520),
-        rawHome: h.slg.toFixed(3),
-        rawAway: a.slg.toFixed(3)
-      },
-      {
-        subject: "OPS",
-        [homeTeamName]: normalize(h.ops, 0.550, 0.940),
-        [awayTeamName]: normalize(a.ops, 0.550, 0.940),
-        rawHome: h.ops.toFixed(3),
-        rawAway: a.ops.toFixed(3)
-      },
-      {
-        subject: "컨택",
-        [homeTeamName]: Math.round(h.contact * 100),
-        [awayTeamName]: Math.round(a.contact * 100),
-        rawHome: `${Math.round(h.contact * 100)}점`,
-        rawAway: `${Math.round(a.contact * 100)}점`
-      }
-    ];
-  }, [data.batting, homeTeamName, awayTeamName]);
-
-  // 3. 최근 10경기 득점 추이 꺾은선 차트 데이터 가공
+  // 3. 최근 10경기 누적 승리 흐름 가공
   const lineData = useMemo(() => {
     const homeGames = data.recentGames.home;
     const awayGames = data.recentGames.away;
     const length = Math.max(homeGames.length, awayGames.length);
 
-    return Array.from({ length }, (_, i) => ({
-      name: `${i + 1}경기전`,
-      [homeTeamName]: homeGames[i]?.score ?? 0,
-      [awayTeamName]: awayGames[i]?.score ?? 0
-    }));
+    let homeWinsAcc = 0;
+    let awayWinsAcc = 0;
+
+    return Array.from({ length }, (_, i) => {
+      const homeG = homeGames[i];
+      const awayG = awayGames[i];
+
+      if (homeG && homeG.score > homeG.opponentScore) {
+        homeWinsAcc += 1;
+      }
+      if (awayG && awayG.score > awayG.opponentScore) {
+        awayWinsAcc += 1;
+      }
+
+      let label = `${10 - i}경기전`;
+      if (i === length - 1) {
+        label = "최근";
+      }
+
+      return {
+        name: label,
+        [homeTeamName]: homeWinsAcc,
+        [awayTeamName]: awayWinsAcc
+      };
+    });
   }, [data.recentGames, homeTeamName, awayTeamName]);
+
+  // 최근 10경기 승패 요약 계산
+  const homeSummary = useMemo(() => {
+    let w = 0, d = 0, l = 0;
+    data.recentGames.home.forEach((g) => {
+      if (g.score > g.opponentScore) w++;
+      else if (g.score < g.opponentScore) l++;
+      else d++;
+    });
+    return `${w}승 ${d}무 ${l}패`;
+  }, [data.recentGames.home]);
+
+  const awaySummary = useMemo(() => {
+    let w = 0, d = 0, l = 0;
+    data.recentGames.away.forEach((g) => {
+      if (g.score > g.opponentScore) w++;
+      else if (g.score < g.opponentScore) l++;
+      else d++;
+    });
+    return `${w}승 ${d}무 ${l}패`;
+  }, [data.recentGames.away]);
 
   return (
     <div className="ai-stats-tab-container">
@@ -206,7 +214,6 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
           </div>
         </div>
 
-        {/* 세부 수평 대칭 막대 그래프 리스트 */}
         <div className="ai-stats-starter-metrics">
           {(["era", "whip", "k9", "bb9"] as const).map((metric) => {
             const label =
@@ -245,56 +252,90 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
         </div>
       </section>
 
-      {/* ── [섹션 2] 팀 타선 방사형 레이더 비교 ── */}
+      {/* ── [섹션 2] 팀 타선 지표 대조 ── */}
       <section className="ai-stats-section">
         <h3 className="ai-stats-section-title">오늘 출전 타선 전력 분석</h3>
         <p className="ai-stats-section-subtitle">
-          * 최근 9인 선발 타순의 시즌 종합 성적을 백분율화한 지표입니다.
+          * 최근 9인 선발 타순의 시즌 종합 성적을 대칭 지표로 나타낸 것입니다.
         </p>
-        <div className="ai-stats-radar-wrapper">
-          <ResponsiveContainer width="100%" height={260}>
-            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-              <PolarGrid stroke="#cbd5e1" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: "#475569", fontSize: 13, fontWeight: 800 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar
-                name={homeTeamName}
-                dataKey={homeTeamName}
-                stroke={homeColor}
-                fill={homeColor}
-                fillOpacity={0.25}
-              />
-              <Radar
-                name={awayTeamName}
-                dataKey={awayTeamName}
-                stroke={awayFill}
-                fill={awayFill}
-                fillOpacity={0.25}
-              />
-              <Legend verticalAlign="bottom" height={36} />
-              <Tooltip
-                formatter={(value: any, name: any, props: any) => {
-                  const isHome = name === homeTeamName;
-                  const rawVal = isHome ? props.payload.rawHome : props.payload.rawAway;
-                  return [`${rawVal} (${value}점)`, name];
-                }}
-                contentStyle={{ borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "12px", fontWeight: "700" }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="ai-stats-starter-header">
+          <div className="ai-stats-starter-profile text-left">
+            <span className="starter-label-team" style={{ color: homeColor }}>
+              {homeTeamName}
+            </span>
+          </div>
+          <span className="starter-vs-badge">VS</span>
+          <div className="ai-stats-starter-profile text-right">
+            <span className="starter-label-team" style={{ color: awayColor }}>
+              {awayTeamName}
+            </span>
+          </div>
+        </div>
+
+        <div className="ai-stats-starter-metrics">
+          {(["avg", "obp", "slg", "ops", "contact"] as const).map((metric) => {
+            const label =
+              metric === "avg"
+                ? "타율 (AVG)"
+                : metric === "obp"
+                  ? "출루율 (OBP)"
+                  : metric === "slg"
+                    ? "장타율 (SLG)"
+                    : metric === "ops"
+                      ? "OPS"
+                      : "컨택 점수 (Contact)";
+            const homeVal = data.batting.home[metric];
+            const awayVal = data.batting.away[metric];
+            const { homePct, awayPct } = getBatterGauge(metric);
+
+            // 컨택만 100점 만점, 타율/장타율/출루율/OPS는 소수점 3자리 표출 (.280 등)
+            const formatValue = (val: number) => {
+              if (metric === "contact") return Math.round(val * 100).toString();
+              return val.toFixed(3).replace(/^0/, "");
+            };
+
+            return (
+              <div className="starter-metric-row" key={metric}>
+                <div className="metric-row-info">
+                  <span className="metric-value home-val">{formatValue(homeVal)}</span>
+                  <span className="metric-label">{label}</span>
+                  <span className="metric-value away-val">{formatValue(awayVal)}</span>
+                </div>
+                <div className="metric-bar-container">
+                  <div
+                    className="metric-bar home-bar"
+                    style={{ width: `${homePct}%`, background: homeColor }}
+                  />
+                  <div className="metric-bar-gap" />
+                  <div
+                    className="metric-bar away-bar"
+                    style={{ width: `${awayPct}%`, background: awayFill }}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* ── [섹션 3] 최근 10경기 득점 페이스 ── */}
+      {/* ── [섹션 3] 최근 10경기 승리 누적 흐름 ── */}
       <section className="ai-stats-section">
-        <h3 className="ai-stats-section-title">최근 10경기 득점 흐름</h3>
+        <h3 className="ai-stats-section-title">최근 10경기 승리 누적 흐름</h3>
+        <p className="ai-stats-section-subtitle" style={{ marginBottom: "10px" }}>
+          * 10경기 전부터 최근 경기까지의 누적 승리 횟수 추이(상승 곡선)입니다.
+        </p>
+        <div className="ai-stats-recent-summary" style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: "800", color: "#475569", marginBottom: "16px", padding: "8px 12px", background: "#f8fafc", borderRadius: "8px" }}>
+          <span style={{ color: homeColor }}>{homeTeamName}: {homeSummary}</span>
+          <span style={{ color: awayColor }}>{awayTeamName}: {awaySummary}</span>
+        </div>
         <div className="ai-stats-line-wrapper">
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={lineData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} />
-              <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} />
+              <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} domain={[0, 10]} />
               <Tooltip
+                formatter={(value: any, name: any) => [`${value}승`, name]}
                 contentStyle={{ borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "12px", fontWeight: "700" }}
               />
               <Legend verticalAlign="top" height={32} />
