@@ -11,7 +11,7 @@ const FLASH_SYSTEM_INSTRUCTION = `당신은 대한민국 프로야구(KBO) 전�
 [작성 조건]:
 1. 제공된 경기 점수(스코어), 홈/원정팀, 경기 상태를 절대 왜곡하지 마십시오.
 2. 경기가 우천취소 등 'canceled' 상태라면 그에 맞게 비로 인해 취소되었다는 요약을 적고, 승리/패배 요인은 빈 배열로 하십시오.
-3. 'summary'는 반드시 경기 흐름, 분위기, 결정적 장면을 포함하여 3~5문장 이상의 충실한 문단으로 작성하십시오.
+3. 'summary'는 반드시 경기 흐름, 분위기, 결정적 장면을 포함하여 3~5문장 이상의 충실한 요약문으로 작성하십시오.
 4. 승리 요인('winningFactors')과 패배 요인('losingFactors')은 각각 2~3가지의 핵심적인 근거를 아주 구체적으로 적으십시오. (예: "불펜 필승조의 3이닝 무실점 홀드", "결정적 8회초 주자 만루 기회에서의 병살타") 각 항목은 한 문장이 아닌 2~3문장의 상세한 서술로 작성하십시오.
 5. 오늘의 경기 히어로('gameHeroName', 'gameHeroComment')는 활약한 선수 이름과 그 선수의 수훈 내역(타점, 투구수 등)을 구체적으로 연결하여 2~3문장으로 작성하십시오.
 6. 어조는 독자에게 신뢰감을 주는 격조 높은 스포츠 분석 기사 스타일(해요체 또는 하십시오체)로 작성하십시오.
@@ -27,7 +27,35 @@ const PRO_SYSTEM_INSTRUCTION = `당신은 대한민국 프로야구(KBO)를 총�
 4. 'standingsSummary'는 당일 경기 결과로 인한 순위표의 미세한 균열, 상하위권 승차 변화 등을 서술하십시오.
 5. 어조는 전문적이고 차분하면서도 흥미를 돋우는 해설위원의 말투(해요체 또는 하십시오체)로 일관되게 작성하십시오.`;
 
-// 박스스코어 → AI 프롬프트용 텍스트 변환
+// 2단계 종합 분석 응답 JSON 스키마 정의
+const PRO_RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    headlines: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "오늘의 KBO를 요약하는 명확한 3줄 요약 문장 배열"
+    },
+    hotTopics: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING, description: "핫 토픽 제목 (예: 한화 극적 연패 탈출)" },
+          desc: { type: Type.STRING, description: "해당 이슈에 대한 3~4문장의 흥미롭고 짜임새 있는 분석" }
+        },
+        required: ["title", "desc"]
+      },
+      description: "오늘 발생한 KBO 주요 이슈 분석 (1~2개)"
+    },
+    dailyMvpName: { type: Type.STRING, description: "오늘 5개 경기 통합 MVP 선수 이름" },
+    dailyMvpComment: { type: Type.STRING, description: "해당 선수를 오늘 최고의 MVP로 선정한 이유와 활약상에 대한 전문 해설" },
+    standingsSummary: { type: Type.STRING, description: "오늘 경기 결과로 인한 순위 다툼 및 승차 변화 상황에 대한 해설" }
+  },
+  required: ["headlines", "hotTopics", "dailyMvpName", "dailyMvpComment", "standingsSummary"]
+};
+
+// 박스스코어 - AI 프롬프트용 텍스트 변환
 function formatBoxScoreForPrompt(box: GameBoxScore, awayName: string, homeName: string): string {
   const lines: string[] = [];
 
@@ -64,6 +92,40 @@ function formatBoxScoreForPrompt(box: GameBoxScore, awayName: string, homeName: 
   formatPitchers(box.homePitchers, homeName);
 
   return lines.join("\n");
+}
+
+// Gemini API 재시도 헬퍼 (503 및 429 대응용 지수 백오프)
+async function callGeminiWithRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delayMs = 2000
+): Promise<T> {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      attempt++;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      
+      // 429 (Resource Exhausted/Rate Limit) 또는 503 (Service Unavailable) 감지
+      const isRateLimit = errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED") || err?.status === 429;
+      const isUnavailable = errMsg.includes("503") || errMsg.includes("UNAVAILABLE") || err?.status === 503;
+
+      if (attempt >= retries) {
+        throw err;
+      }
+
+      if (isRateLimit || isUnavailable) {
+        const nextDelay = delayMs * Math.pow(2, attempt - 1);
+        console.warn(`[Gemini API Warning] Attempt ${attempt} failed. Retrying in ${nextDelay}ms... (Error: ${errMsg.slice(0, 150)})`);
+        await new Promise(resolve => setTimeout(resolve, nextDelay));
+      } else {
+        // 복구 불가능한 에러(예: 400 Bad Request, API Key 오류 등)는 재시도 없이 즉시 throw
+        throw err;
+      }
+    }
+  }
 }
 
 // 1. 단일 경기 분석 생성 (Gemini 2.5 Flash 사용)
@@ -106,34 +168,36 @@ async function generateSingleGameReport(
   반드시 JSON 규격에 맞추어 summary, winningFactors, losingFactors, gameHeroName, gameHeroComment, oneLiner를 작성해 주세요.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: FLASH_SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            summary: { type: Type.STRING, description: "경기의 시작부터 결말까지 흐름, 분위기, 결정적 장면을 담은 3~5문장 이상의 충실한 요약문. 절대 1~2문장으로 짧게 작성하지 말 것." },
-            winningFactors: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "승리팀의 주요 요인 2~3개. 각 항목은 단순 키워드가 아닌 구체적 근거를 담은 2~3문장의 서술형 텍스트로 작성."
+    const response = await callGeminiWithRetry(() =>
+      ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          systemInstruction: FLASH_SYSTEM_INSTRUCTION,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              summary: { type: Type.STRING, description: "경기의 시작부터 결말까지 흐름, 분위기, 결정적 장면을 담은 3~5문장 이상의 충실한 요약문. 절대 1~2문장으로 짧게 작성하지 말 것." },
+              winningFactors: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "승리팀의 주요 요인 2~3개. 각 항목은 단순 키워드가 아닌 구체적 근거를 담은 2~3문장의 서술형 텍스트로 작성."
+              },
+              losingFactors: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "패배팀의 패배 요인 2~3개. 각 항목은 단순 키워드가 아닌 구체적 근거를 담은 2~3문장의 서술형 텍스트로 작성. (취소 경기인 경우 빈 배열 가능)"
+              },
+              gameHeroName: { type: Type.STRING, description: "오늘 경기의 최우수 선수 이름 (없으면 '-')" },
+              gameHeroComment: { type: Type.STRING, description: "해당 선수의 오늘 활약상을 수치(타점, 안타, 투구수 등)와 함께 2~3문장으로 구체적으로 서술." },
+              oneLiner: { type: Type.STRING, description: "유쾌하고 공감 가는 위트 있는 한 줄 평" }
             },
-            losingFactors: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "패배팀의 패배 요인 2~3개. 각 항목은 단순 키워드가 아닌 구체적 근거를 담은 2~3문장의 서술형 텍스트로 작성. (취소 경기인 경우 빈 배열 가능)"
-            },
-            gameHeroName: { type: Type.STRING, description: "오늘 경기의 최우수 선수 이름 (없으면 '-')" },
-            gameHeroComment: { type: Type.STRING, description: "해당 선수의 오늘 활약상을 수치(타점, 안타, 투구수 등)와 함께 2~3문장으로 구체적으로 서술." },
-            oneLiner: { type: Type.STRING, description: "유쾌하고 공감 가는 위트 있는 한 줄 평" }
-          },
-          required: ["summary", "winningFactors", "losingFactors", "gameHeroName", "gameHeroComment", "oneLiner"]
+            required: ["summary", "winningFactors", "losingFactors", "gameHeroName", "gameHeroComment", "oneLiner"]
+          }
         }
-      }
-    });
+      })
+    );
 
     const resultText = response.text;
     if (!resultText) throw new Error("Flash API response is empty");
@@ -162,7 +226,7 @@ async function generateSingleGameReport(
   }
 }
 
-// 2. 일일 종합 리포트 생성 및 취합 (Gemini 2.5 Pro 사용)
+// 2. 일일 종합 리포트 생성 및 취합 (Gemini 2.5 Pro 사용, 실패 시 Flash 대체)
 export async function generateDailyReportWithGemini(
   skeleton: KboDailyReport,
   newsTitles: string[],
@@ -187,7 +251,7 @@ export async function generateDailyReportWithGemini(
       await new Promise(resolve => setTimeout(resolve, 3500));
     }
 
-    // 2단계: KBO 판도 종합 브리핑 생성 (Gemini 2.5 Pro)
+    // 2단계: KBO 판도 종합 브리핑 생성 (Gemini 2.5 Pro -> 실패 시 Flash)
     console.log("[Daily AI Report] 2단계: KBO 전체 종합 분석 시작 (Gemini Pro)");
 
     const simplifiedGameResults = analyzedGameReports.map(g => {
@@ -217,43 +281,44 @@ export async function generateDailyReportWithGemini(
     
     반드시 JSON 규격에 맞추어 headlines, hotTopics, dailyMvpName, dailyMvpComment, standingsSummary를 작성해 주세요.`;
 
-    const proResponse = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
-      contents: proPrompt,
-      config: {
-        systemInstruction: PRO_SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            headlines: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "오늘의 KBO를 요약하는 명확한 3줄 요약 문장 배열"
-            },
-            hotTopics: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING, description: "핫 토픽 제목 (예: 한화 극적 연패 탈출)" },
-                  desc: { type: Type.STRING, description: "해당 이슈에 대한 3~4문장의 흥미롭고 짜임새 있는 분석" }
-                },
-                required: ["title", "desc"]
-              },
-              description: "오늘 발생한 KBO 주요 이슈 분석 (1~2개)"
-            },
-            dailyMvpName: { type: Type.STRING, description: "오늘 5개 경기 통합 MVP 선수 이름" },
-            dailyMvpComment: { type: Type.STRING, description: "해당 선수를 오늘 최고의 MVP로 선정한 이유와 활약상에 대한 전문 해설" },
-            standingsSummary: { type: Type.STRING, description: "오늘 경기 결과로 인한 순위 다툼 및 승차 변화 상황에 대한 해설" }
-          },
-          required: ["headlines", "hotTopics", "dailyMvpName", "dailyMvpComment", "standingsSummary"]
-        }
+    let proResponse;
+    try {
+      proResponse = await callGeminiWithRetry(() =>
+        ai.models.generateContent({
+          model: "gemini-2.5-pro",
+          contents: proPrompt,
+          config: {
+            systemInstruction: PRO_SYSTEM_INSTRUCTION,
+            responseMimeType: "application/json",
+            responseSchema: PRO_RESPONSE_SCHEMA
+          }
+        })
+      );
+    } catch (proErr: any) {
+      const errMsg = proErr instanceof Error ? proErr.message : String(proErr);
+      console.warn(`[Daily AI Report] 2단계: Gemini Pro 리포트 생성 중 에러 발생: ${errMsg.slice(0, 150)}`);
+      console.warn("[Daily AI Report] 2단계: Gemini 2.5 Flash 모델로 대체(Fallback)하여 종합 분석 생성을 시도합니다.");
+      
+      try {
+        proResponse = await callGeminiWithRetry(() =>
+          ai.models.generateContent({
+            model: "gemini-2.5-flash", // 대체 모델로 Flash 사용
+            contents: proPrompt,
+            config: {
+              systemInstruction: PRO_SYSTEM_INSTRUCTION,
+              responseMimeType: "application/json",
+              responseSchema: PRO_RESPONSE_SCHEMA
+            }
+          })
+        );
+      } catch (flashErr: any) {
+        console.error("[Daily AI Report] 2단계: 대체 Flash 모델 생성도 실패했습니다:", (flashErr as Error).message);
+        throw flashErr;
       }
-    });
+    }
 
     const proResultText = proResponse.text;
-    if (!proResultText) throw new Error("Pro API response is empty");
+    if (!proResultText) throw new Error("Pro/Flash API response is empty");
 
     const parsedPro = JSON.parse(proResultText) as {
       headlines: string[];
