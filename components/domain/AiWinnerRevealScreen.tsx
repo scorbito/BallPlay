@@ -97,7 +97,7 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
   const [statsError, setStatsError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab !== "stats" || statsData || statsLoading) return;
+    if (statsData || statsLoading) return;
 
     setStatsLoading(true);
     setStatsError(null);
@@ -117,7 +117,7 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
       .finally(() => {
         setStatsLoading(false);
       });
-  }, [activeTab, gameId, statsData, statsLoading]);
+  }, [gameId, statsData, statsLoading]);
 
   // mount 직후 1회 — 과거 경기면 4로 즉시 점프 (연출 스킵).
   // 오늘 경기는 재진입이라도 매번 애니메이션 재생 (사용자 영상 제작 워크플로우).
