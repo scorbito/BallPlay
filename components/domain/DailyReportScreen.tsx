@@ -277,7 +277,7 @@ export function DailyReportScreen({
                   <div className="daily-card daily-mvp-card">
                     <div className="mvp-badge-header">
                       <Trophy className="mvp-trophy" size={24} />
-                      <span className="mvp-badge-title">TODAY'S KBO MVP</span>
+                      <span className="mvp-badge-title">TODAY&apos;S KBO MVP</span>
                     </div>
                     <div className="mvp-content">
                       <h4 className="mvp-name">{initialReport.dailyMvpName}</h4>
@@ -410,7 +410,7 @@ export function DailyReportScreen({
                               {/* 경기 히어로 수훈 */}
                               {report.gameHeroName && report.gameHeroName !== "-" && (
                                 <div className="game-hero-box">
-                                  <span className="hero-label">Today's Hero</span>
+                                  <span className="hero-label">Today&apos;s Hero</span>
                                   <strong className="hero-name">{report.gameHeroName}</strong>
                                   <p className="hero-desc">{report.gameHeroComment}</p>
                                 </div>
