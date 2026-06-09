@@ -86,10 +86,10 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
               💡 신규 대결 콘텐츠
             </span>
             <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900, color: "var(--bp-text)", letterSpacing: "-0.5px" }}>
-              Gemini vs GPT 승리회로 쇼다운
+              Gemini vs GPT 승리 근거 매치
             </h2>
             <p style={{ margin: 0, fontSize: "12.5px", fontWeight: 650, color: "var(--bp-text-secondary)", lineHeight: 1.5, maxWidth: "420px" }}>
-              홈팀 수호자 <strong>Gemini</strong>와 원정팀 수호자 <strong>GPT</strong>의 편파 승리 시나리오 대결!
+              홈팀 수호자 <strong>Gemini</strong>와 원정팀 수호자 <strong>GPT</strong>가 분석한 결정적인 승리 요인 분석 대결!
               매 경기 어느 쪽 AI 주장이 더 강력한지 투표해보세요.
             </p>
           </div>

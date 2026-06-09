@@ -121,9 +121,9 @@ export function AiWinnerBattleTab({
     return (
       <div className="ai-battle-empty">
         <div className="ai-battle-empty-icon">🤖</div>
-        <p className="ai-battle-empty-title">오늘의 승리회로 배틀 분석 중</p>
+        <p className="ai-battle-empty-title">오늘의 승리 근거 배틀 분석 중</p>
         <p className="ai-battle-empty-sub">
-          두 AI의 흥미진진한 편파 승리 시나리오 배틀이 곧 공개됩니다!
+          두 AI가 주장하는 흥미진진한 승리 근거 배틀이 곧 공개됩니다!
         </p>
       </div>
     );
@@ -134,11 +134,11 @@ export function AiWinnerBattleTab({
       {/* ── 타이틀 코멘트 ── */}
       <div className="ai-battle-intro">
         <h3 className="ai-battle-intro-title">
-          <span>🔥</span> AI 편파 승리회로 배틀 <span>🔥</span>
+          <span>🔥</span> AI 승리 근거 배틀 <span>🔥</span>
         </h3>
         <p className="ai-battle-intro-desc">
-          각 팀의 대변인 AI가 <strong>&quot;무조건 이기는 시나리오&quot;</strong>를 돌립니다.<br />
-          양쪽의 설득력 넘치는(?) 행복회로를 직접 비교해 보세요!
+          각 팀의 대변인 AI가 정밀 분석한 <strong>확실한 승리 요인</strong>을 제시합니다.<br />
+          양쪽 AI가 주장하는 결정적인 승리 근거를 직접 비교해 보세요!
         </p>
       </div>
 
@@ -153,7 +153,7 @@ export function AiWinnerBattleTab({
             <span className="ai-battle-side-badge">{AI_LABEL[homePred.ai_provider] ?? homePred.ai_provider} · 홈팀</span>
             {isFinished && homePred.is_correct && (
               <span className="ai-battle-winner-seal">
-                <Award size={12} /> 승리회로 실현!
+                <Award size={12} /> 승리 예측 적중!
               </span>
             )}
           </div>
@@ -200,7 +200,7 @@ export function AiWinnerBattleTab({
             <span className="ai-battle-side-badge">{AI_LABEL[awayPred.ai_provider] ?? awayPred.ai_provider} · 원정팀</span>
             {isFinished && awayPred.is_correct && (
               <span className="ai-battle-winner-seal">
-                <Award size={12} /> 승리회로 실현!
+                <Award size={12} /> 승리 예측 적중!
               </span>
             )}
           </div>

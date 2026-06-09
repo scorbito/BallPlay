@@ -146,7 +146,7 @@ const sections: HomeSection[] = [
         id: "ai-battle",
         href: "/predict/battle",
         title: "AI 맞대결",
-        description: "Gemini vs GPT 편파 대결",
+        description: "Gemini vs GPT 승리 근거 대결",
         icon: Swords,
         iconImage: "/icons/menu/ai-battle.png",
         available: true,
