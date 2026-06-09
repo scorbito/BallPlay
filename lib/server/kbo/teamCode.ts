@@ -26,3 +26,21 @@ export function parseTeamCode(name: string): string | null {
   if (up.includes("키움") || up.includes("히어로즈") || up.includes("KIW")) return "kiwoom";
   return null;
 }
+// teamId → KBO 공식 2글자 코드 역방향 매핑 (박스스코어 gameId 조립용)
+const TEAM_ID_TO_KBO_CODE: Record<string, string> = {
+  doosan:  "OB",
+  lg:      "LG",
+  kt:      "KT",
+  ssg:     "SK",
+  nc:      "NC",
+  kiwoom:  "WO",
+  samsung: "SS",
+  lotte:   "LT",
+  kia:     "HT",
+  hanwha:  "HH",
+};
+
+/** teamId → KBO 공식 2글자 코드 (예: doosan → "OB") */
+export function teamIdToKboCode(teamId: string): string {
+  return TEAM_ID_TO_KBO_CODE[teamId] ?? teamId.toUpperCase().slice(0, 2);
+}

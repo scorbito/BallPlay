@@ -196,6 +196,138 @@ export async function fetchNaverGames(date: KboDateInput): Promise<RawGame[]> {
   return games;
 }
 
+// ─── 박스스코어 타입 ─────────────────────────────────────────────────────────
+
+export type BoxScoreBatter = {
+  order: number;         // 타순
+  position: string;     // 포지션
+  name: string;         // 선수명
+  atBats: number;       // 타수
+  hits: number;         // 안타
+  rbi: number;          // 타점
+  runs: number;         // 득점
+  avg: string;          // 타율
+};
+
+export type BoxScorePitcher = {
+  name: string;         // 선수명 (번호일 수도 있음)
+  role: string;         // 선발/중간/마무리 역할 구분 (이닝 표기)
+  result: string;       // 승/패/홀드/세이브 등
+  innings: string;      // 투구 이닝
+  hits: number;         // 피안타
+  strikeouts: number;   // 탈삼진
+  walks: number;        // 볼넷
+  runs: number;         // 실점
+  era: string;          // ERA
+};
+
+export type BoxScoreSpecialPlay = {
+  type: string;         // "결승타" | "2루타" | "홈런" | "실책" 등
+  detail: string;       // "히우라(1회 1사 3루서 중전 안타)" 등 상세
+};
+
+export type GameBoxScore = {
+  gameId: string;
+  specialPlays: BoxScoreSpecialPlay[];   // 결승타·홈런·실책 등 특이사항
+  awayBatters: BoxScoreBatter[];
+  homeBatters: BoxScoreBatter[];
+  awayPitchers: BoxScorePitcher[];
+  homePitchers: BoxScorePitcher[];
+};
+
+function parseCells(row: { row?: { Text?: string }[] }): string[] {
+  return (row.row ?? []).map((c) => (c.Text ?? "").replace(/&nbsp;/g, "").trim());
+}
+
+function parseBatterRow(cells: string[]): BoxScoreBatter | null {
+  // 타순이 숫자가 아닌 소계 등의 행은 무시
+  const order = parseInt(cells[0], 10);
+  if (!Number.isFinite(order) || order < 1 || order > 9) return null;
+  const last5 = cells.slice(-5);
+  return {
+    order,
+    position: cells[1] ?? "",
+    name: cells[2] ?? "",
+    atBats: parseInt(last5[0], 10) || 0,
+    hits: parseInt(last5[1], 10) || 0,
+    rbi: parseInt(last5[2], 10) || 0,
+    runs: parseInt(last5[3], 10) || 0,
+    avg: last5[4] ?? "",
+  };
+}
+
+function parsePitcherRow(cells: string[]): BoxScorePitcher | null {
+  if (!cells[0] || cells[0] === "") return null;
+  return {
+    name: cells[0],
+    innings: cells[1] ?? "",
+    result: cells[2] ?? "",
+    hits: parseInt(cells[3], 10) || 0,
+    runs: parseInt(cells[4], 10) || 0,
+    walks: parseInt(cells[5], 10) || 0,
+    strikeouts: parseInt(cells[7], 10) || 0,
+    role: cells[1] === "선발" ? "선발" : "불펜",
+    era: cells[cells.length - 1] ?? "",
+  };
+}
+
+/**
+ * KBO 공식 GetBoxScore API → 타자/투수 스탯 + 특이사항 파싱
+ * @param kboGameId   KBO 공식 경기 ID (예: "20260607WOOB0")
+ * @param dateStr     YYYY-MM-DD 형태
+ */
+export async function fetchBoxScore(kboGameId: string, dateStr: string): Promise<GameBoxScore | null> {
+  const seasonId = dateStr.slice(0, 4);
+  const body = new URLSearchParams({ leId: "1", srId: "0", seasonId, gameId: kboGameId });
+
+  try {
+    const res = await fetch("https://www.koreabaseball.com/ws/Schedule.asmx/GetBoxScore", {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "User-Agent": USER_AGENT,
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Referer": "https://www.koreabaseball.com/Schedule/GameCenter/Main.aspx",
+        "X-Requested-With": "XMLHttpRequest",
+        "Origin": "https://www.koreabaseball.com",
+      },
+      body: body.toString(),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { tables?: { rows?: { row?: { Text?: string }[] }[] }[] };
+    const tables = data.tables ?? [];
+
+    // tables[0]: 특이사항 (결승타, 홈런, 2루타, 실책 등)
+    const specialPlays: BoxScoreSpecialPlay[] = (tables[0]?.rows ?? [])
+      .map((r) => parseCells(r))
+      .filter((c) => c[0] && !["심판", "관중"].includes(c[0]))
+      .map((c) => ({ type: c[0], detail: c[1] ?? "" }));
+
+    // tables[1]: 원정팀 타자, tables[2]: 홈팀 타자
+    const awayBatters: BoxScoreBatter[] = (tables[1]?.rows ?? [])
+      .map((r) => parseBatterRow(parseCells(r)))
+      .filter((b): b is BoxScoreBatter => b !== null);
+
+    const homeBatters: BoxScoreBatter[] = (tables[2]?.rows ?? [])
+      .map((r) => parseBatterRow(parseCells(r)))
+      .filter((b): b is BoxScoreBatter => b !== null);
+
+    // tables[3]: 원정팀 투수, tables[4]: 홈팀 투수
+    const awayPitchers: BoxScorePitcher[] = (tables[3]?.rows ?? [])
+      .map((r) => parsePitcherRow(parseCells(r)))
+      .filter((p): p is BoxScorePitcher => p !== null);
+
+    const homePitchers: BoxScorePitcher[] = (tables[4]?.rows ?? [])
+      .map((r) => parsePitcherRow(parseCells(r)))
+      .filter((p): p is BoxScorePitcher => p !== null);
+
+    return { gameId: kboGameId, specialPlays, awayBatters, homeBatters, awayPitchers, homePitchers };
+  } catch (err) {
+    console.warn(`[fetchBoxScore] ${kboGameId} 파싱 실패:`, (err as Error).message);
+    return null;
+  }
+}
+
 /** KBO API 우선, 실패 시 네이버 폴백 */
 export async function fetchGamesForDate(date: KboDateInput): Promise<{
   games: RawGame[];

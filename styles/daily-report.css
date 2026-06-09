@@ -1,0 +1,680 @@
+.daily-report-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 공통 카드 스타일 */
+.daily-report-title-card,
+.daily-card {
+  background: #ffffff;
+  border: 1px solid #edf0f4;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+/* 상단 날짜 정보 카드 */
+.daily-report-title-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #f8fafc, #edf2f7);
+}
+
+.daily-title-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.daily-nav-btn {
+  background: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.daily-nav-btn:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+}
+
+.daily-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.daily-selector-icon {
+  color: #2563eb;
+}
+
+.daily-title-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.daily-selector-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #1e293b;
+}
+
+.daily-selector-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* 탭 바 */
+.daily-tabs {
+  display: flex;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.daily-tab-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.daily-tab-btn:hover {
+  color: #0f172a;
+}
+
+.daily-tab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+/* 탭 컨텐츠 컨테이너 */
+.daily-report-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.daily-tab-content-brief {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 카드 내 공통 타이틀 */
+.card-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 8px;
+}
+
+.card-header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 8px;
+}
+
+.card-header-with-action .card-title {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.share-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.share-copy-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.text-green {
+  color: #16a34a;
+}
+
+/* 3줄 요약 스타일 */
+.headline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.headline-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.bullet-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.headline-item p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #334155;
+  font-weight: 700;
+}
+
+/* MVP 카드 스타일 */
+.daily-mvp-card {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #fcd34d;
+  box-shadow: 0 4px 14px rgba(251, 191, 36, 0.15);
+}
+
+.mvp-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mvp-trophy {
+  color: #d97706;
+}
+
+.mvp-badge-title {
+  font-size: 11px;
+  font-weight: 900;
+  color: #b45309;
+  letter-spacing: 0.5px;
+}
+
+.mvp-name {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 950;
+  color: #78350f;
+}
+
+.mvp-comment {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #92400e;
+  font-weight: 700;
+}
+
+/* 주요 이슈 토픽 */
+.topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.topic-item-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 850;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topic-icon {
+  color: #ea580c;
+}
+
+.topic-item-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* 순위 변동 */
+.standings-summary-text {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* 경기별 상세 아코디언 */
+.daily-tab-content-games {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.no-games-text {
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+  padding: 40px 0;
+}
+
+.daily-game-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.daily-game-accordion-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+
+.daily-game-accordion-item.is-expanded {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+}
+
+.daily-game-header {
+  width: 100%;
+  padding: 16px;
+  background: #ffffff;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 경기 스코어보드 로우 */
+.game-score-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.score-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.score-team-cell.away-cell {
+  justify-content: flex-end;
+}
+
+.score-team-cell.home-cell {
+  justify-content: flex-start;
+}
+
+.team-name-text {
+  font-size: 15px;
+  font-weight: 900;
+  color: #475569;
+}
+
+.score-num-text {
+  font-size: 20px;
+  font-weight: 950;
+  color: #64748b;
+  min-width: 28px;
+  text-align: center;
+}
+
+.score-team-cell.is-winner .team-name-text {
+  color: #0f172a;
+}
+
+.score-team-cell.is-winner .score-num-text {
+  color: #2563eb;
+  font-weight: 990;
+}
+
+.score-versus-cell {
+  font-size: 11px;
+  font-weight: 900;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.game-expand-chevron {
+  color: #94a3b8;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* 아코디언 바디 */
+.daily-game-body {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+  background: #fafcff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 경기 요약 박스 */
+.game-summary-box {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.summary-bulb-icon {
+  color: #eab308;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.summary-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #334155;
+  font-weight: 700;
+}
+
+/* 승리/패배 요인 그리드 */
+.game-factors-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .game-factors-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.factor-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.factor-title {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.factor-winning .factor-title {
+  color: #15803d;
+}
+
+.factor-losing .factor-title {
+  color: #b91c1c;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-win {
+  background: #16a34a;
+}
+
+.dot-lose {
+  background: #dc2626;
+}
+
+.factor-list {
+  padding-left: 14px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.factor-list li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* 경기 히어로 */
+.game-hero-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-label {
+  font-size: 10px;
+  font-weight: 900;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.hero-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-top: 4px;
+}
+
+.hero-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* 한 줄 드립 */
+.game-oneliner-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  border-left: 4px solid #94a3b8;
+}
+
+.oneliner-quote,
+.oneliner-quote-end {
+  font-size: 20px;
+  font-family: serif;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.oneliner-text {
+  margin: 0;
+  font-size: 13.5px;
+  font-style: italic;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+}
+
+/* 빈 리포트(Empty State) 디자인 */
+.daily-report-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.empty-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  border: 1px solid #e2e8f0;
+}
+
+.empty-icon {
+  color: #94a3b8;
+}
+
+.empty-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.empty-subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 모바일 화면 좁은 기기 최적화 */
+@media (max-width: 480px) {
+  .team-name-text {
+    font-size: 13.5px;
+  }
+  .score-num-text {
+    font-size: 18px;
+    min-width: 22px;
+  }
+  .score-team-cell {
+    gap: 6px;
+  }
+}
+
+/* 운영자 어드민 전용 리포트 수동 발행 바 */
+.daily-admin-bar {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.daily-admin-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 1px solid #b91c1c;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 850;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.daily-admin-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
+}
+
+.daily-admin-btn:disabled {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 어드민 스핀 애니메이션 */
+@keyframes admin-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-spin {
+  animation: admin-spin 1s linear infinite;
+}

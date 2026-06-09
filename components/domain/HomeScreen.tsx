@@ -199,13 +199,14 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "sim-1000",
-        href: "/predict/sim-1000",
-        title: "1000판 시뮬레이션",
-        description: "오늘 경기 1000판 결과",
-        icon: BarChart3,
-        iconImage: "/icons/menu/sim-1000.png",
-        available: true
+        id: "daily-report",
+        href: "/daily-report",
+        title: "일일 리포트",
+        description: "어제 경기 결과 및 AI 종합 요약 리포트",
+        icon: FileText,
+        iconImage: "/icons/menu/daily-report.png",
+        available: true,
+        badge: "NEW"
       },
       {
         id: "weekly-report",
@@ -234,8 +235,17 @@ const sections: HomeSection[] = [
     variant: "standard",
     sectionIcon: Play,
     sectionIconImage: "/icons/sections/content.png",
-    gridCols: 2,
+    gridCols: 3,
     cards: [
+      {
+        id: "sim-1000",
+        href: "/predict/sim-1000",
+        title: "1000판 시뮬레이션",
+        description: "오늘 경기 1000판 결과",
+        icon: BarChart3,
+        iconImage: "/icons/menu/sim-1000.png",
+        available: true
+      },
       {
         id: "videos",
         href: "/videos",
