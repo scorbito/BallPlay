@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend
 } from "recharts";
+import { getTeam } from "@/lib/constants/teams";
 
 type StarterStats = {
   name: string;
@@ -62,23 +63,46 @@ type Props = {
   data: StatsTabData;
 };
 
-// KBO 10개 팀 대표 색상 매핑
-const TEAM_COLORS: Record<string, string> = {
-  lg: "#c30452",      // 트윈스 레드
-  doosan: "#131230",  // 베어스 네이비
-  kt: "#2b2b2b",      // 위즈 블랙
-  samsung: "#074ca1",  // 라이온즈 블루
-  ssg: "#e02027",      // 랜더스 레드
-  nc: "#07306b",      // 다이노스 네이비
-  kia: "#c70125",      // 타이거즈 레드
-  hanwha: "#ff6600",   // 이글스 오렌지
-  kiwoom: "#570514",   // 히어로즈 버건디
-  lotte: "#041e42"     // 자이언츠 네이비
-};
+// ── 팀 컬러 대비 보정 ──────────────────────────────────────
+function hexToRgb(hex: string): [number, number, number] {
+  const m = hex.replace("#", "");
+  const n = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
+  const int = parseInt(n, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const h = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+function colorDist(a: [number, number, number], b: [number, number, number]): number {
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+}
+function mix(c: [number, number, number], t: [number, number, number], amt: number): [number, number, number] {
+  return [c[0] + (t[0] - c[0]) * amt, c[1] + (t[1] - c[1]) * amt, c[2] + (t[2] - c[2]) * amt];
+}
+function ensureAwayFill(homeHex: string, awayHex: string, awayAccent?: string): string {
+  const home = hexToRgb(homeHex);
+  const away = hexToRgb(awayHex);
+  if (colorDist(home, away) >= 110) return awayHex; // 충분히 다름
+
+  if (awayAccent) {
+    const acc = hexToRgb(awayAccent);
+    if (colorDist(home, acc) >= 110) return awayAccent;
+  }
+
+  const lighter = mix(away, [255, 255, 255], 0.55);
+  const darker = mix(away, [0, 0, 0], 0.5);
+  const chosen = colorDist(home, lighter) >= colorDist(home, darker) ? lighter : darker;
+  return rgbToHex(chosen[0], chosen[1], chosen[2]);
+}
 
 export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTeamName, data }: Props) {
-  const homeColor = TEAM_COLORS[homeTeamId] ?? "#e84a8a";
-  const awayColor = TEAM_COLORS[awayTeamId] ?? "#475569";
+  const home = getTeam(homeTeamId);
+  const away = getTeam(awayTeamId);
+
+  const homeColor = home.color;
+  const awayColor = away.color;
+  const awayFill = ensureAwayFill(homeColor, awayColor, away.accent);
 
   // 1. 선발 투수 지표 게이지 비율 계산 헬퍼
   // ERA, WHIP는 낮을수록 우수하므로 가로 대칭 바가 역으로 넓어지게 처리
@@ -212,7 +236,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                   <div className="metric-bar-gap" />
                   <div
                     className="metric-bar away-bar"
-                    style={{ width: `${awayPct}%`, background: awayColor }}
+                    style={{ width: `${awayPct}%`, background: awayFill }}
                   />
                 </div>
               </div>
@@ -243,8 +267,8 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
               <Radar
                 name={awayTeamName}
                 dataKey={awayTeamName}
-                stroke={awayColor}
-                fill={awayColor}
+                stroke={awayFill}
+                fill={awayFill}
                 fillOpacity={0.25}
               />
               <Legend verticalAlign="bottom" height={36} />
@@ -285,7 +309,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
               <Line
                 type="monotone"
                 dataKey={awayTeamName}
-                stroke={awayColor}
+                stroke={awayFill}
                 strokeWidth={3}
                 activeDot={{ r: 6 }}
                 dot={{ r: 3 }}
