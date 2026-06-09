@@ -1452,3 +1452,704 @@
   box-shadow: 0 2px 8px rgba(232, 74, 138, 0.08);
   border: 1px solid rgba(232, 74, 138, 0.15);
 }
+
+/* ============================================================
+   AI 편파 승리회로 배틀 탭 스타일
+   ============================================================ */
+.phone-frame-light .ai-battle-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px dashed var(--bp-line);
+  border-radius: 16px;
+}
+
+.phone-frame-light .ai-battle-empty-icon {
+  font-size: 32px;
+  animation: float-anim 2s ease-in-out infinite;
+}
+
+@keyframes float-anim {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.phone-frame-light .ai-battle-empty-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-battle-empty-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .ai-battle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 2px 24px;
+}
+
+.phone-frame-light .ai-battle-intro {
+  text-align: center;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.08), rgba(20, 30, 50, 0.03));
+  border-radius: 12px;
+  border: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .ai-battle-intro-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-battle-intro-desc {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.45;
+}
+
+/* 배틀 카드를 감싸는 Grid */
+.phone-frame-light .ai-battle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.phone-frame-light .ai-battle-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line-soft);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.phone-frame-light .ai-battle-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* 팀 고유 컬러를 살짝 묻히는 디자인 */
+.phone-frame-light .ai-battle-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--team-color);
+}
+
+.phone-frame-light .ai-battle-card-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-battle-side-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  background: var(--bp-card-soft);
+  border-radius: 999px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .ai-battle-winner-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--bp-success);
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  animation: battle-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes battle-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.phone-frame-light .ai-battle-team-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-battle-team-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-battle-card-oneliner {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.phone-frame-light .ai-battle-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-frame-light .ai-battle-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bp-card-soft);
+}
+
+.phone-frame-light .ai-battle-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 850;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-battle-section-title .icon-star {
+  color: #f1c40f;
+}
+
+.phone-frame-light .ai-battle-section-title .icon-alert {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-battle-section-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  width: fit-content;
+  color: var(--team-color);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.phone-frame-light .ai-battle-section-text {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.5;
+}
+
+.phone-frame-light .ai-battle-vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 4px 0;
+}
+
+.phone-frame-light .vs-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--bp-accent), #f1c40f);
+  color: white;
+  font-weight: 900;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.phone-frame-light .vs-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bp-line-soft);
+  z-index: 1;
+}
+
+/* 투표 섹션 */
+.phone-frame-light .ai-battle-vote-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.phone-frame-light .ai-battle-vote-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 850;
+  color: var(--bp-text);
+  text-align: center;
+}
+
+.phone-frame-light .ai-battle-vote-title svg {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-battle-vote-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phone-frame-light .ai-battle-vote-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 8px;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  background: var(--bp-card);
+  color: var(--bp-text-secondary);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.phone-frame-light .ai-battle-vote-btn:hover {
+  background: var(--bg-color);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 투표 결과 게이지 */
+.phone-frame-light .ai-battle-vote-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-battle-vote-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.phone-frame-light .vote-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .vote-percent-summary {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .ai-battle-vote-bar-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+}
+
+.phone-frame-light .ai-battle-vote-bar-fill {
+  height: 100%;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.phone-frame-light .ai-battle-voted-thanks {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-success);
+  text-align: center;
+}
+
+/* AI 편파 배틀 상단 인트로 히어로 배너 */
+.phone-frame-light .ai-battle-hero-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  padding: 18px 16px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(29, 78, 216, 0.06)) !important;
+  border: 1px solid rgba(232, 74, 138, 0.2) !important;
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
+
+.phone-frame-light .ai-battle-hero-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* ── 단우아빠님 제공 시안 기반 프리미엄 대결장 카드 디자인 ── */
+.phone-frame-light .ai-battle-game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 수직 간격 더 축소 (12px -> 8px) */
+  padding: 10px 14px !important; /* 상하 패딩 더 축소 (14px -> 10px) */
+  background: #ffffff !important;
+  border: 1px solid #edf2f7 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+  position: relative;
+  overflow: visible !important;
+  margin-bottom: 0 !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.phone-frame-light .ai-battle-game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.07) !important;
+}
+
+
+
+/* 상단 메타 바 */
+.phone-frame-light .ai-battle-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 800;
+  color: #868e96;
+}
+
+.phone-frame-light .ai-battle-meta-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #495057;
+}
+
+.phone-frame-light .ai-battle-clock-icon {
+  color: #ff2a85 !important;
+  opacity: 0.9;
+}
+
+.phone-frame-light .ai-battle-meta-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+/* Versus 바디 영역 - 무조건 정중앙 VS 축 고정을 위해 Flex 반반 레이아웃 적용 */
+.phone-frame-light .ai-battle-match-body {
+  display: flex;
+  position: relative;
+  width: 100%;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 1) 0%, rgba(226, 232, 240, 0.4) 100%) !important;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* 좌우 팀 박스 사선 깎기 - 콘텐츠 팽창으로 인한 비대칭을 막기 위해 50% 강제 고정 */
+.phone-frame-light .ai-battle-team-box {
+  flex: 1 1 0% !important;
+  width: 50% !important;
+  max-width: 50% !important;
+  min-width: 0 !important; /* 야구 배트 이미지 등으로 인한 팽창 차단 */
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  border: none !important;
+  background: transparent !important;
+  box-sizing: border-box;
+}
+
+.phone-frame-light .ai-battle-team-box.home-box {
+  background: rgba(37, 99, 235, 0.15) !important; /* 은은한 하늘색 테두리 선 */
+  clip-path: polygon(0 0, 94% 0, 86% 100%, 0 100%);
+  padding: 1px 1px 1px 0 !important;
+}
+
+.phone-frame-light .ai-battle-team-box.home-box .ai-battle-team-box-inner {
+  background: #ffffff !important;
+  clip-path: polygon(0 0, calc(94% - 1.5px) 0, calc(86% - 1.5px) 100%, 0 100%);
+  padding: 8px 10px; /* 상하 패딩 극한 축소 (12px -> 8px) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; /* 이너 요소 간격 더 축소 (6px -> 4px) */
+  box-shadow: inset 0 0 16px rgba(37, 99, 235, 0.03) !important;
+  background-image: radial-gradient(rgba(29, 78, 216, 0.012) 1.5px, transparent 1.5px) !important;
+  background-size: 8px 8px;
+}
+
+.phone-frame-light .ai-battle-team-box.away-box {
+  background: rgba(4, 120, 87, 0.15) !important; /* 은은한 연초록색 테두리 선 */
+  clip-path: polygon(14% 0, 100% 0, 100% 100%, 6% 100%);
+  padding: 1px 0 1px 1px !important;
+}
+
+.phone-frame-light .ai-battle-team-box.away-box .ai-battle-team-box-inner {
+  background: #ffffff !important;
+  clip-path: polygon(calc(14% + 1.5px) 0, 100% 0, 100% 100%, calc(6% + 1.5px) 100%);
+  padding: 8px 10px; /* 상하 패딩 극한 축소 (12px -> 8px) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; /* 이너 요소 간격 더 축소 (6px -> 4px) */
+  box-shadow: inset 0 0 16px rgba(4, 120, 87, 0.03) !important;
+  background-image: radial-gradient(rgba(4, 120, 87, 0.012) 1.5px, transparent 1.5px) !important;
+  background-size: 8px 8px;
+}
+
+.phone-frame-light .ai-battle-team-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.phone-frame-light .ai-battle-team-name {
+  font-size: 15px; /* 팀 이름 축소 (19px -> 15px) */
+  font-weight: 900;
+  color: #212529;
+  letter-spacing: -0.5px;
+}
+
+.phone-frame-light .ai-battle-team-score {
+  font-size: 16px; /* 점수 크기 축소 (20px -> 16px) */
+  font-weight: 900;
+  color: #212529;
+  margin-left: 4px;
+}
+
+/* AI 캡슐 뱃지 */
+.phone-frame-light .ai-battle-team-ai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3.5px 10px; /* 상하 크기 축소 (5px -> 3.5px) */
+  border-radius: 999px;
+  font-size: 11px; /* 폰트 축소 (12px -> 11px) */
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.phone-frame-light .ai-battle-team-ai.gemini-ai {
+  background: rgba(219, 234, 254, 0.5) !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+.phone-frame-light .ai-battle-team-ai.gpt-ai {
+  background: rgba(220, 252, 231, 0.5) !important;
+  border: 1px solid #bbf7d0 !important;
+  color: #047857 !important;
+}
+
+/* 중앙 VS 절대 좌표 고정 디바이더 - 부모 카드 50% 세로선 기준 대칭 배치 */
+.phone-frame-light .ai-battle-center-vs {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 중앙 사선 빛줄기 */
+.phone-frame-light .ai-battle-center-vs::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  bottom: -30px;
+  width: 16px; /* 광채 폭 축소 (25px -> 16px) */
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.95) 30%, 
+    rgba(255, 255, 255, 0.95) 70%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(12deg);
+  filter: blur(4px);
+  z-index: 2;
+  pointer-events: none;
+  height: 150%;
+}
+
+.phone-frame-light .vs-glow-circle {
+  width: 34px; /* 구체 크기 축소 (44px -> 34px) */
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1d4ed8 0%, #047857 100%) !important;
+  border: 2.5px solid #ffffff !important; /* 테두리 얇게 (3.5px -> 2.5px) */
+  box-shadow: 
+    0 3px 10px rgba(29, 78, 216, 0.3), 
+    0 0 8px rgba(4, 120, 87, 0.25), 
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.4) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 6;
+  transform: none !important;
+}
+
+.phone-frame-light .vs-glow-circle span {
+  color: #ffffff !important;
+  font-size: 13px; /* 글자 크기 축소 (16px -> 13px) */
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 하단 버튼 카드 내부 안착 배치 및 그라데이션 */
+.phone-frame-light .ai-battle-action-row {
+  position: static;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 2px; /* 수직 마진 축소 (6px -> 2px) */
+}
+
+.phone-frame-light .ai-battle-enter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 85%;
+  max-width: 280px;
+  padding: 6px 18px; /* 상하 크기 대폭 축소하여 초슬림화 (8.5px 20px -> 6px 18px) */
+  background: linear-gradient(90deg, #ff2a85 0%, #ff7e00 50%, #ffbe00 100%) !important;
+  color: #ffffff !important;
+  font-size: 12px; /* 폰트 축소 (13px -> 12px) */
+  font-weight: 900;
+  border-radius: 999px !important;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(255, 42, 133, 0.4) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none !important;
+}
+
+.phone-frame-light .ai-battle-enter-btn:hover {
+  transform: scale(1.03) translateY(-1px);
+  box-shadow: 0 8px 25px rgba(255, 42, 133, 0.55) !important;
+}
+
+.phone-frame-light .ai-battle-enter-btn.is-disabled {
+  background: #e9ecef !important;
+  background-image: none !important;
+  color: #adb5bd !important;
+  box-shadow: none !important;
+  cursor: default;
+  pointer-events: none;
+}
+
+.phone-frame-light .ai-battle-enter-btn .btn-arrow {
+  font-size: 14px;
+  font-weight: 800;
+  margin-left: 2px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* 빗금 데코레이션이 들어간 섹션 타이틀 스타일 추가 */
+.phone-frame-light .ai-winner-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+  font-size: 19px;
+  font-weight: 900;
+  color: #111827;
+  position: relative;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(255, 42, 133, 0.08) !important;
+}
+
+.phone-frame-light .ai-winner-section-title::before {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 45px;
+  height: 2px;
+  background: #ff2a85;
+  z-index: 2;
+}
+
+.phone-frame-light .ai-battle-swords-icon {
+  color: #ff2a85 !important;
+}
+
+.phone-frame-light .ai-battle-title-deco {
+  color: #ff2a85;
+  font-style: italic;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -1.5px;
+  margin-left: 8px;
+  opacity: 0.8;
+}
+
+
+
+
+
