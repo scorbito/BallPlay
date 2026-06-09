@@ -18,15 +18,31 @@ export const VIDEOS_VIEWED_KEY = "ballplay:videos:lastViewedAt";
 export const NEWS_VIEWED_KEY = "ballplay:news:lastViewedAt";
 export const TODAY_RESULTS_VIEWED_KEY = "ballplay:today-results:lastViewedDate";
 
+import { fetchHomeBadges } from "@/lib/client/clientBadges";
+
 type Props = {
   cardId: string;
-  data: HomeBadgeServerData;
+  data?: HomeBadgeServerData;
 };
 
-export function HomeCardPulse({ cardId, data }: Props) {
+export function HomeCardPulse({ cardId, data: propData }: Props) {
   const [show, setShow] = useState(false);
+  const [badgeData, setBadgeData] = useState<HomeBadgeServerData | null>(propData ?? null);
 
   useEffect(() => {
+    if (badgeData) return;
+    fetchHomeBadges()
+      .then((res) => {
+        if (res.ok && res.badges) {
+          setBadgeData(res.badges);
+        }
+      })
+      .catch(() => {});
+  }, [badgeData]);
+
+  useEffect(() => {
+    if (!badgeData) return;
+    const data = badgeData;
     const compute = () => {
       if (cardId === "stadium") return true;
       if (cardId === "winner-predict") {
@@ -77,7 +93,7 @@ export function HomeCardPulse({ cardId, data }: Props) {
       window.removeEventListener("storage", recompute);
       window.removeEventListener(LINEUP_ENTRIES_CHANGED_EVENT, recompute);
     };
-  }, [cardId, data]);
+  }, [cardId, badgeData]);
 
   if (!show) return null;
   const className =

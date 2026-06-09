@@ -19,12 +19,12 @@ export type HomeBadgeServerData = {
   latestNewsAt: string | null;      // bp_news.published_at 최신값 (ISO)
 };
 
-export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
+export async function getHomeBadgeServerData(userId?: string): Promise<HomeBadgeServerData> {
   const todayDate = kstToday();
   try {
     const supabase = createSupabaseServerClient();
 
-    const [gamesRes, finishedRes, aiRes, simRes, userRes, latestVideoRes, latestNewsRes] = await Promise.all([
+    const [gamesRes, finishedRes, aiRes, simRes, latestVideoRes, latestNewsRes] = await Promise.all([
       supabase.from("games").select("id", { count: "exact", head: true }).eq("game_date", todayDate),
       supabase
         .from("games")
@@ -39,7 +39,6 @@ export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
         .from("bp_sim_results")
         .select("id", { count: "exact", head: true })
         .eq("game_date", todayDate),
-      supabase.auth.getUser(),
       supabase
         .from("bp_videos")
         .select("created_at")
@@ -55,7 +54,6 @@ export async function getHomeBadgeServerData(): Promise<HomeBadgeServerData> {
     ]);
 
     let userPredictionsToday = 0;
-    const userId = userRes.data.user?.id;
     if (userId) {
       const r = await supabase
         .from("bp_predictions")

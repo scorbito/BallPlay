@@ -21,8 +21,7 @@ import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { HomeCardPulse } from "@/components/domain/HomeCardPulse";
 import { HomeRecordBadge } from "@/components/domain/HomeRecordBadge";
 import { NoticeButton } from "@/components/domain/NoticeButton";
-import { getLatestNoticePublishedAt } from "@/lib/supabase/query-parts/notices";
-import { getHomeBadgeServerData } from "@/lib/server/homeBadges";
+import { DailySyncTrigger } from "@/components/domain/DailySyncTrigger";
 import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
@@ -271,6 +270,8 @@ const sections: HomeSection[] = [
 ];
 
 type HomeScreenProps = {
+  /** Supabase Auth User 객체 */
+  user?: any;
   /** 현재 사용자의 공개 매치 누적 전적 (히어로 뱃지용). 미로그인 시 zeros. */
   userRecord?: UserPublicMatchRecord;
   /** 계정 누적 랭킹 내 본인 순위. 매치 기록 없거나 미로그인 시 null. */
@@ -279,20 +280,15 @@ type HomeScreenProps = {
   isAnonymous?: boolean;
 };
 
-export async function HomeScreen({
+export function HomeScreen({
+  user = null,
   userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
   myRank = null,
   isAnonymous = false
 }: HomeScreenProps = {}) {
-  // 정적 카드 그리드만 렌더하는 Server Component. 인터랙티브 영역(공지 빨간점)은
-  // NoticeButton client island가 담당 → 홈 진입 시 클라이언트 JS/hydration 최소화.
-  // 최신 공지 시각을 서버에서 받아 client 배지 판정에 넘긴다.
-  const [latestNoticeAt, badgeData] = await Promise.all([
-    getLatestNoticePublishedAt(),
-    getHomeBadgeServerData()
-  ]);
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
   void isAnonymous;
+  void user;
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
       <header className="play-hub-header">
@@ -311,7 +307,7 @@ export async function HomeScreen({
           </span>
         </h1>
         <div className="play-hub-header-actions">
-          <NoticeButton latestPublishedAt={latestNoticeAt} />
+          <NoticeButton />
           <Link href="/my/settings" className="play-hub-settings" prefetch aria-label="설정">
             <Image
               src="/icons/header/settings.png"
@@ -410,7 +406,7 @@ export async function HomeScreen({
                   badge={card.badge}
                 />
                 {card.available && !card.external ? (
-                  <HomeCardPulse cardId={card.id} data={badgeData} />
+                  <HomeCardPulse cardId={card.id} />
                 ) : null}
                 {/* 가을야구 모드 오픈 — 경기장 카드 상단에 겹쳐 강조. 카드 링크와 별도(형제)
                     Link 라 뱃지 탭은 가을야구, 카드 나머지 탭은 경기장 로비로. */}
@@ -545,6 +541,7 @@ export async function HomeScreen({
       })()}
       {/* 승급 모달 — 홈 진입 시 자동 감지. 익명/0승은 detector 내부에서 no-op. */}
       <TierUpHost wins={userRecord.wins} />
+      <DailySyncTrigger />
     </AppShell>
   );
 }

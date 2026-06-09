@@ -8,11 +8,24 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { fetchHomeBadges } from "@/lib/client/clientBadges";
 
 const LAST_SEEN_KEY = "bp:notices-last-seen";
 
-export function NoticeButton({ latestPublishedAt }: { latestPublishedAt: string | null }) {
+export function NoticeButton({ latestPublishedAt: propLatestNoticeAt }: { latestPublishedAt?: string | null }) {
   const [unread, setUnread] = useState(false);
+  const [latestPublishedAt, setLatestPublishedAt] = useState<string | null>(propLatestNoticeAt ?? null);
+
+  useEffect(() => {
+    if (latestPublishedAt) return;
+    fetchHomeBadges()
+      .then((data) => {
+        if (data.ok && data.latestNoticeAt) {
+          setLatestPublishedAt(data.latestNoticeAt);
+        }
+      })
+      .catch(() => {});
+  }, [latestPublishedAt]);
 
   useEffect(() => {
     if (!latestPublishedAt) return;
