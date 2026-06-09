@@ -73,7 +73,8 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
     onDateChange(`${yyyy}-${mm}-${dd}`);
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  // 한국 시간(KST) 기준 오늘 날짜 구하기 (자정 이후 UTC 오프셋 대응)
+  const today = new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const isFutureDate = selectedDate > today;
 
   return (
