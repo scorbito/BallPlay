@@ -135,7 +135,7 @@ const sections: HomeSection[] = [
       {
         id: "ai-predict",
         href: "/predict/ai-winner",
-        title: "AI 예측",
+        title: "AI 승리팀 예측",
         description: "AI 3사 분석 종합",
         icon: Bot,
         iconImage: "/icons/menu/ai-prediction.png",
@@ -145,7 +145,7 @@ const sections: HomeSection[] = [
       {
         id: "ai-battle",
         href: "/predict/battle",
-        title: "AI 맞대결",
+        title: "AI 승부 맞대결",
         description: "Gemini vs GPT 승리 근거 대결",
         icon: Swords,
         iconImage: "/icons/menu/ai-battle.png",

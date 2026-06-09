@@ -77,7 +77,7 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
   const isFutureDate = selectedDate > today;
 
   return (
-    <AppShell activeTab="home" title="AI 맞대결" backHref="/" theme="light" wide>
+    <AppShell activeTab="home" title="AI 승부 맞대결" backHref="/" theme="light" wide>
       <section className="ai-winner-screen">
         {/* ── 상단 인트로 히어로 배너 (가운데 정렬) ── */}
         <header className="ai-battle-hero-card">
