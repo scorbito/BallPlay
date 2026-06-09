@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { ChevronDown, ChevronUp, RotateCcw, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
 import type { GameStatus } from "@/lib/types/api-contracts";
+
+const AiWinnerStatsTab = dynamic(
+  () => import("./AiWinnerStatsTab").then((m) => m.AiWinnerStatsTab),
+  { ssr: false }
+);
 import type {
   AiProvider,
   BpAiPredictionRow
@@ -83,6 +89,35 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
   // 단계: 0=매치업만, 1=첫 AI 등장, 2=두 번째, 3=세 번째, 4=종합 결과까지 모두.
   const [visibleStage, setVisibleStage] = useState(0);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+
+  // 전력 비교 탭 관련 상태 및 fetch 로직
+  const [activeTab, setActiveTab] = useState<"ai" | "stats">("ai");
+  const [statsData, setStatsData] = useState<any | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== "stats" || statsData || statsLoading) return;
+
+    setStatsLoading(true);
+    setStatsError(null);
+    fetch(`/api/predict/ai-winner/${gameId}/stats`)
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.ok) {
+          setStatsData(resData);
+        } else {
+          setStatsError(resData.error || "데이터를 불러오지 못했습니다.");
+        }
+      })
+      .catch((err) => {
+        setStatsError("네트워크 오류가 발생했습니다.");
+        console.error(err);
+      })
+      .finally(() => {
+        setStatsLoading(false);
+      });
+  }, [activeTab, gameId, statsData, statsLoading]);
 
   // mount 직후 1회 — 과거 경기면 4로 즉시 점프 (연출 스킵).
   // 오늘 경기는 재진입이라도 매번 애니메이션 재생 (사용자 영상 제작 워크플로우).
@@ -200,98 +235,149 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
           busyLabel="준비 중"
         />
 
-        {/* 예측 없으면 */}
-        {orderedPredictions.length === 0 ? (
-          <div className="ai-reveal-empty">
-            <p>아직 공개된 분석이 없어요.</p>
-          </div>
-        ) : (
-          <>
-            {/* ── AI 예측 카드 — 단계별 페이드인 ── */}
-            <ul className="ai-reveal-cards">
-              {orderedPredictions.map((p, idx) => {
-                const visible = visibleStage > idx;
-                const expanded = expandedIdx === idx;
-                const winnerTeam = getTeam(p.predicted_winner_team_id);
-                const isCorrect = p.is_correct === true;
-                const isWrong = p.is_correct === false;
-                return (
-                  <li
-                    key={p.id}
-                    className={`ai-reveal-card ai-reveal-card-${p.ai_provider} ${visible ? "is-visible" : ""}`}
-                    aria-hidden={!visible}
-                  >
-                    <header className="ai-reveal-card-head">
-                      <span className="ai-reveal-card-ai">
-                        {AI_LABEL[p.ai_provider]}
-                        {p.model_name ? <span className="ai-reveal-card-model"> · {p.model_name}</span> : null}
-                      </span>
-                      {finished ? (
-                        <span className={`ai-reveal-card-result ${isCorrect ? "is-correct" : isWrong ? "is-wrong" : ""}`}>
-                          {isCorrect ? "적중" : isWrong ? "실패" : "—"}
-                        </span>
-                      ) : null}
-                    </header>
-                    <div className="ai-reveal-card-pick">
-                      <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
-                      <span className="ai-reveal-card-team">{winnerTeam.shortName} 승</span>
-                      <span className="ai-reveal-card-confidence">{Math.round(p.confidence * 100)}%</span>
-                    </div>
-                    <div className="ai-reveal-card-key">
-                      <span className="ai-reveal-card-key-label">핵심</span>
-                      <span className="ai-reveal-card-key-value">{p.key_factor}</span>
-                    </div>
-                    <p className="ai-reveal-card-oneliner">{p.one_liner}</p>
-                    <button
-                      type="button"
-                      className="ai-reveal-card-toggle"
-                      onClick={() => setExpandedIdx(expanded ? null : idx)}
-                      aria-expanded={expanded}
-                    >
-                      {expanded ? "상세 닫기" : "상세 분석"}
-                      {expanded ? <ChevronUp size={12} strokeWidth={2.5} /> : <ChevronDown size={12} strokeWidth={2.5} />}
-                    </button>
-                    {expanded ? (
-                      <p className="ai-reveal-card-detail">{p.detailed_analysis}</p>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
+        <div className="ai-reveal-tab-bar">
+          <button
+            type="button"
+            className={`ai-reveal-tab-btn ${activeTab === "ai" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("ai")}
+          >
+            AI 예측 결과
+          </button>
+          <button
+            type="button"
+            className={`ai-reveal-tab-btn ${activeTab === "stats" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("stats")}
+          >
+            정밀 데이터 비교
+          </button>
+        </div>
 
-            {/* ── 종합 결과 (마지막 단계) ── */}
-            <section className={`ai-reveal-summary ${visibleStage >= 4 ? "is-visible" : ""}`} aria-hidden={visibleStage < 4}>
-              <h2 className="ai-reveal-summary-title">
-                <Trophy size={14} strokeWidth={2.5} />
-                3 AI 종합 의견
-              </h2>
-              <div className="ai-reveal-summary-rows">
-                <div className="ai-reveal-summary-row">
-                  <span className="ai-reveal-summary-label">다수결</span>
-                  <span className="ai-reveal-summary-value">
-                    {home.shortName} {summary.homeVotes} · {away.shortName} {summary.awayVotes}
-                  </span>
+        {activeTab === "ai" ? (
+          orderedPredictions.length === 0 ? (
+            <div className="ai-reveal-empty">
+              <p>아직 공개된 분석이 없어요.</p>
+            </div>
+          ) : (
+            <>
+              {/* ── AI 예측 카드 — 단계별 페이드인 ── */}
+              <ul className="ai-reveal-cards">
+                {orderedPredictions.map((p, idx) => {
+                  const visible = visibleStage > idx;
+                  const expanded = expandedIdx === idx;
+                  const winnerTeam = getTeam(p.predicted_winner_team_id);
+                  const isCorrect = p.is_correct === true;
+                  const isWrong = p.is_correct === false;
+                  return (
+                    <li
+                      key={p.id}
+                      className={`ai-reveal-card ai-reveal-card-${p.ai_provider} ${visible ? "is-visible" : ""}`}
+                      aria-hidden={!visible}
+                    >
+                      <header className="ai-reveal-card-head">
+                        <span className="ai-reveal-card-ai">
+                          {AI_LABEL[p.ai_provider]}
+                          {p.model_name ? <span className="ai-reveal-card-model"> · {p.model_name}</span> : null}
+                        </span>
+                        {finished ? (
+                          <span className={`ai-reveal-card-result ${isCorrect ? "is-correct" : isWrong ? "is-wrong" : ""}`}>
+                            {isCorrect ? "적중" : isWrong ? "실패" : "—"}
+                          </span>
+                        ) : null}
+                      </header>
+                      <div className="ai-reveal-card-pick">
+                        <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
+                        <span className="ai-reveal-card-team">{winnerTeam.shortName} 승</span>
+                        <span className="ai-reveal-card-confidence">{Math.round(p.confidence * 100)}%</span>
+                      </div>
+                      <div className="ai-reveal-card-key">
+                        <span className="ai-reveal-card-key-label">핵심</span>
+                        <span className="ai-reveal-card-key-value">{p.key_factor}</span>
+                      </div>
+                      <p className="ai-reveal-card-oneliner">{p.one_liner}</p>
+                      <button
+                        type="button"
+                        className="ai-reveal-card-toggle"
+                        onClick={() => setExpandedIdx(expanded ? null : idx)}
+                        aria-expanded={expanded}
+                      >
+                        {expanded ? "상세 닫기" : "상세 분석"}
+                        {expanded ? <ChevronUp size={12} strokeWidth={2.5} /> : <ChevronDown size={12} strokeWidth={2.5} />}
+                      </button>
+                      {expanded ? (
+                        <p className="ai-reveal-card-detail">{p.detailed_analysis}</p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {/* ── 종합 결과 (마지막 단계) ── */}
+              <section className={`ai-reveal-summary ${visibleStage >= 4 ? "is-visible" : ""}`} aria-hidden={visibleStage < 4}>
+                <h2 className="ai-reveal-summary-title">
+                  <Trophy size={14} strokeWidth={2.5} />
+                  3 AI 종합 의견
+                </h2>
+                <div className="ai-reveal-summary-rows">
+                  <div className="ai-reveal-summary-row">
+                    <span className="ai-reveal-summary-label">다수결</span>
+                    <span className="ai-reveal-summary-value">
+                      {home.shortName} {summary.homeVotes} · {away.shortName} {summary.awayVotes}
+                    </span>
+                  </div>
+                  <div className="ai-reveal-summary-row">
+                    <span className="ai-reveal-summary-label">가중평균</span>
+                    <span className="ai-reveal-summary-value">
+                      {home.shortName} {summary.homePct}% · {away.shortName} {summary.awayPct}%
+                    </span>
+                  </div>
                 </div>
-                <div className="ai-reveal-summary-row">
-                  <span className="ai-reveal-summary-label">가중평균</span>
-                  <span className="ai-reveal-summary-value">
-                    {home.shortName} {summary.homePct}% · {away.shortName} {summary.awayPct}%
-                  </span>
+                <div className="ai-reveal-summary-tag-row">
+                  {summary.isUnanimous ? (
+                    <span className="ai-reveal-summary-tag ai-reveal-tag-unanimous">🔥 만장일치</span>
+                  ) : summary.majorityTeamId ? (
+                    <span className="ai-reveal-summary-tag ai-reveal-tag-majority">
+                      ⚡ {getTeam(summary.majorityTeamId).shortName} 우세
+                    </span>
+                  ) : (
+                    <span className="ai-reveal-summary-tag ai-reveal-tag-split">⚔ 의견 분분</span>
+                  )}
                 </div>
+              </section>
+            </>
+          )
+        ) : (
+          <div className="ai-reveal-stats-section">
+            {statsLoading && (
+              <div className="ai-stats-loading">
+                <span className="spinner" />
+                <p>KBO 최신 성적 분석 중...</p>
               </div>
-              <div className="ai-reveal-summary-tag-row">
-                {summary.isUnanimous ? (
-                  <span className="ai-reveal-summary-tag ai-reveal-tag-unanimous">🔥 만장일치</span>
-                ) : summary.majorityTeamId ? (
-                  <span className="ai-reveal-summary-tag ai-reveal-tag-majority">
-                    ⚡ {getTeam(summary.majorityTeamId).shortName} 우세
-                  </span>
-                ) : (
-                  <span className="ai-reveal-summary-tag ai-reveal-tag-split">⚔ 의견 분분</span>
-                )}
+            )}
+            {statsError && (
+              <div className="ai-stats-error">
+                <p>{statsError}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatsData(null);
+                    setStatsLoading(false);
+                  }}
+                  className="retry-btn"
+                >
+                  다시 시도
+                </button>
               </div>
-            </section>
-          </>
+            )}
+            {!statsLoading && !statsError && statsData && (
+              <AiWinnerStatsTab
+                homeTeamId={game.homeTeamId}
+                awayTeamId={game.awayTeamId}
+                homeTeamName={home.shortName}
+                awayTeamName={away.shortName}
+                data={statsData}
+              />
+            )}
+          </div>
         )}
       </section>
     </AppShell>

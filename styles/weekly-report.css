@@ -414,7 +414,8 @@
 .phone-frame-light .play-hub-card-badge {
   position: absolute;
   top: 6px;
-  right: 6px;
+  left: 6px;
+  right: auto;
   padding: 3px 8px;
   border-radius: 999px;
   font-size: 10px;
@@ -484,4 +485,202 @@
 .phone-frame-light .play-hub-card-badge.is-disabled {
   background: rgba(20, 30, 50, 0.06);
   color: var(--bp-text-secondary);
+}
+
+/* AI 전력 비교 탭 스타일 */
+.ai-stats-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 4px;
+}
+.ai-stats-section {
+  background: #ffffff;
+  border: 1px solid #edf0f4;
+  border-radius: 16px;
+  padding: 20px 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
+}
+.ai-stats-section-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+}
+.ai-stats-section-subtitle {
+  margin: 0 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+.ai-stats-starter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.ai-stats-starter-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.starter-label-team {
+  font-size: 12px;
+  font-weight: 800;
+}
+.starter-label-name {
+  font-size: 18px;
+  font-weight: 900;
+  color: #0f172a;
+}
+.starter-vs-badge {
+  font-size: 11px;
+  font-weight: 900;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin: 0 16px;
+}
+.ai-stats-starter-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.starter-metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.metric-row-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.metric-value {
+  font-size: 15px;
+  font-weight: 900;
+  color: #1e293b;
+  width: 50px;
+}
+.metric-value.home-val {
+  text-align: left;
+}
+.metric-value.away-val {
+  text-align: right;
+}
+.metric-label {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #64748b;
+  text-align: center;
+  flex: 1;
+}
+.metric-bar-container {
+  display: flex;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.metric-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease-out;
+}
+.metric-bar-gap {
+  width: 4px;
+  background: transparent;
+  flex-shrink: 0;
+}
+.ai-stats-radar-wrapper {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+.ai-stats-line-wrapper {
+  margin-top: 16px;
+}
+
+/* AI reveal 탭 바 */
+.ai-reveal-tab-bar {
+  display: flex;
+  background: rgba(20, 30, 50, 0.04);
+  border: 1px solid rgba(20, 30, 50, 0.06);
+  border-radius: 12px;
+  padding: 4px;
+  margin: 16px 0 8px;
+  gap: 4px;
+}
+.ai-reveal-tab-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  color: var(--bp-text-secondary, #64748b);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+.ai-reveal-tab-btn:hover {
+  color: var(--bp-text, #1e293b);
+}
+.ai-reveal-tab-btn.is-active {
+  background: #ffffff;
+  color: var(--bp-accent, #e84a8a);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+/* AI 전력비교 탭 로딩/에러 */
+.ai-stats-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  color: #64748b;
+  font-weight: 700;
+  gap: 12px;
+}
+.ai-stats-loading .spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(232, 74, 138, 0.15);
+  border-top-color: var(--bp-accent, #e84a8a);
+  border-radius: 50%;
+  animation: ai-stats-spin 0.8s linear infinite;
+}
+@keyframes ai-stats-spin {
+  to { transform: rotate(360deg); }
+}
+.ai-stats-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  color: #ef4444;
+  font-weight: 750;
+  gap: 12px;
+}
+.ai-stats-error .retry-btn {
+  padding: 8px 16px;
+  background: #fecaca;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ai-stats-error .retry-btn:hover {
+  background: #fee2e2;
 }

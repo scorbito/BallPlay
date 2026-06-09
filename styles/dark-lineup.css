@@ -983,7 +983,8 @@
 .phone-frame-light .play-hub-card-badge {
   position: absolute;
   top: 6px;
-  right: 6px;
+  left: 6px;
+  right: auto;
   padding: 3px 8px;
   background: rgba(20, 30, 50, 0.06);
   border-radius: 999px;
