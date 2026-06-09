@@ -137,7 +137,7 @@ export function AiWinnerBattleTab({
           <span>🔥</span> AI 편파 승리회로 배틀 <span>🔥</span>
         </h3>
         <p className="ai-battle-intro-desc">
-          각 팀의 대변인 AI가 <strong>"무조건 이기는 시나리오"</strong>를 돌립니다.<br />
+          각 팀의 대변인 AI가 <strong>&quot;무조건 이기는 시나리오&quot;</strong>를 돌립니다.<br />
           양쪽의 설득력 넘치는(?) 행복회로를 직접 비교해 보세요!
         </p>
       </div>
