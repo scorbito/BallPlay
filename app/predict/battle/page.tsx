@@ -30,9 +30,24 @@ export default async function AiBattleListPage({
     const supabase = createSupabaseAdminClient();
     const { data } = await supabase
       .from("bp_ai_battle_predictions")
-      .select("game_id")
+      .select("game_id, target_side")
       .in("game_id", gameIds);
-    predictedGameIds = new Set((data ?? []).map((r) => r.game_id));
+
+    // 각 경기별 등록된 진영(home, away) 목록 수집
+    const gameSides = new Map<string, Set<string>>();
+    for (const r of data ?? []) {
+      if (!gameSides.has(r.game_id)) {
+        gameSides.set(r.game_id, new Set());
+      }
+      gameSides.get(r.game_id)!.add(r.target_side);
+    }
+
+    // 홈과 원정 분석이 둘 다 등록된 경기만 활성화
+    gameSides.forEach((sides, gid) => {
+      if (sides.has("home") && sides.has("away")) {
+        predictedGameIds.add(gid);
+      }
+    });
   }
 
   const games = rawGames.map((g) => ({

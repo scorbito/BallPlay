@@ -3,6 +3,9 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "12mb"
+    },
+    staleTimes: {
+      dynamic: 0
     }
   },
   images: {

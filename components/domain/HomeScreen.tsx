@@ -135,7 +135,7 @@ const sections: HomeSection[] = [
       {
         id: "ai-predict",
         href: "/predict/ai-winner",
-        title: "AI 승리팀 예측",
+        title: "AI 예측",
         description: "AI 3사 분석 종합",
         icon: Bot,
         iconImage: "/icons/menu/ai-prediction.png",
@@ -143,13 +143,14 @@ const sections: HomeSection[] = [
         badge: "HOT"
       },
       {
-        id: "sim-1000",
-        href: "/predict/sim-1000",
-        title: "1000판 시뮬레이션",
-        description: "오늘 경기 1000판 결과",
-        icon: BarChart3,
-        iconImage: "/icons/menu/sim-1000.png",
-        available: true
+        id: "ai-battle",
+        href: "/predict/battle",
+        title: "AI 맞대결",
+        description: "Gemini vs GPT 편파 대결",
+        icon: Swords,
+        iconImage: "/icons/menu/ai-battle.png",
+        available: true,
+        badge: "NEW"
       },
       {
         id: "winner-predict",
@@ -195,6 +196,15 @@ const sections: HomeSection[] = [
         description: "순위 + 최근 5경기",
         icon: Trophy,
         iconImage: "/icons/menu/team-standings.png",
+        available: true
+      },
+      {
+        id: "sim-1000",
+        href: "/predict/sim-1000",
+        title: "1000판 시뮬레이션",
+        description: "오늘 경기 1000판 결과",
+        icon: BarChart3,
+        iconImage: "/icons/menu/sim-1000.png",
         available: true
       },
       {
@@ -373,10 +383,10 @@ export function HomeScreen({
             );
 
             return (
-              <div className="play-hub-card-wrap" key={card.id}>
+              <div className={`play-hub-card-wrap play-hub-card-wrap-${card.id}`} key={card.id}>
                 {card.external ? (
                   <a
-                    className="play-hub-card play-hub-card-external"
+                    className={`play-hub-card play-hub-card-external play-hub-card-${card.id}`}
                     href={card.href}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -385,14 +395,14 @@ export function HomeScreen({
                   </a>
                 ) : card.available ? (
                   <Link
-                    className={`play-hub-card${card.featured ? " play-hub-card-featured-style" : ""}`}
+                    className={`play-hub-card play-hub-card-${card.id}${card.featured ? " play-hub-card-featured-style" : ""}`}
                     href={card.href}
                     prefetch
                   >
                     {cardInner}
                   </Link>
                 ) : (
-                  <div className="play-hub-card play-hub-card-disabled" aria-disabled="true">
+                  <div className={`play-hub-card play-hub-card-disabled play-hub-card-${card.id}`} aria-disabled="true">
                     {cardInner}
                   </div>
                 )}

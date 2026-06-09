@@ -1542,6 +1542,7 @@
   border-radius: 16px;
   background: var(--bp-card);
   border: 1.5px solid var(--bp-line-soft);
+  border-top: 4px solid var(--team-color);
   position: relative;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1552,15 +1553,8 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-/* 팀 고유 컬러를 살짝 묻히는 디자인 */
 .phone-frame-light .ai-battle-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: var(--team-color);
+  display: none;
 }
 
 .phone-frame-light .ai-battle-card-badge-row {
@@ -1571,7 +1565,7 @@
 }
 
 .phone-frame-light .ai-battle-side-badge {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   padding: 3px 8px;
   background: var(--bp-card-soft);
@@ -1606,14 +1600,14 @@
 
 .phone-frame-light .ai-battle-team-name {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 900;
   color: var(--bp-text);
 }
 
 .phone-frame-light .ai-battle-card-oneliner {
   margin: 4px 0 0;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--bp-text-secondary);
   line-height: 1.45;
@@ -1640,7 +1634,7 @@
   align-items: center;
   gap: 6px;
   margin: 0;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 850;
   color: var(--bp-text);
 }
@@ -1654,7 +1648,7 @@
 }
 
 .phone-frame-light .ai-battle-section-tag {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   padding: 3px 8px;
   background: rgba(255, 255, 255, 0.8);
@@ -1666,7 +1660,7 @@
 
 .phone-frame-light .ai-battle-section-text {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--bp-text-secondary);
   line-height: 1.5;
@@ -1963,7 +1957,7 @@
 }
 
 .phone-frame-light .ai-battle-team-name {
-  font-size: 15px; /* 팀 이름 축소 (19px -> 15px) */
+  font-size: 17px;
   font-weight: 900;
   color: #212529;
   letter-spacing: -0.5px;
@@ -2148,6 +2142,15 @@
   margin-left: 8px;
   opacity: 0.8;
 }
+
+/* AI 승리팀 대결(ai-battle) 카드 이미지 시각적 크기 불균형 보정 */
+.phone-frame-light .play-hub-card-ai-battle .play-hub-card-icon-image img {
+  transform: scale(1.42) !important;
+  transform-origin: center !important;
+}
+
+
+
 
 
 

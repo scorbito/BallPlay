@@ -5,6 +5,33 @@ import { getTeam } from "@/lib/constants/teams";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { MessageCircle, ShieldAlert, Award, Star, ThumbsUp, ArrowRight } from "lucide-react";
 
+function hexToRgb(hex: string): [number, number, number] {
+  const m = hex.replace("#", "");
+  const n = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
+  const int = parseInt(n, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const h = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+function colorDist(a: [number, number, number], b: [number, number, number]): number {
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+}
+function ensureAwayFill(homeHex: string, awayHex: string, awayAccent?: string): string {
+  const home = hexToRgb(homeHex);
+  const away = hexToRgb(awayHex);
+  if (colorDist(home, away) >= 110) return awayHex;
+  if (awayAccent) {
+    const acc = hexToRgb(awayAccent);
+    if (colorDist(home, acc) >= 110) return awayAccent;
+  }
+  const lighter: [number, number, number] = [home[0] + (255 - home[0]) * 0.55, home[1] + (255 - home[1]) * 0.55, home[2] + (255 - home[2]) * 0.55];
+  const darker: [number, number, number] = [away[0] * 0.5, away[1] * 0.5, away[2] * 0.5];
+  const chosen = colorDist(home, lighter) >= colorDist(home, darker) ? lighter : darker;
+  return rgbToHex(chosen[0], chosen[1], chosen[2]);
+}
+
 export type BattlePredictionRow = {
   id: string;
   game_id: string;
@@ -40,6 +67,8 @@ export function AiWinnerBattleTab({
 }: Props) {
   const homeTeam = getTeam(homeTeamId);
   const awayTeam = getTeam(awayTeamId);
+
+  const AI_LABEL: Record<string, string> = { gemini: "Gemini", gpt: "GPT", claude: "Claude" };
 
   // target_side별 매핑
   const homePred = predictions.find((p) => p.target_side === "home");
@@ -121,7 +150,7 @@ export function AiWinnerBattleTab({
           style={{ "--team-color": homeTeam.color } as React.CSSProperties}
         >
           <div className="ai-battle-card-badge-row">
-            <span className="ai-battle-side-badge">홈팀 대변인 AI</span>
+            <span className="ai-battle-side-badge">{AI_LABEL[homePred.ai_provider] ?? homePred.ai_provider} · 홈팀</span>
             {isFinished && homePred.is_correct && (
               <span className="ai-battle-winner-seal">
                 <Award size={12} /> 승리회로 실현!
@@ -168,7 +197,7 @@ export function AiWinnerBattleTab({
           style={{ "--team-color": awayTeam.color } as React.CSSProperties}
         >
           <div className="ai-battle-card-badge-row">
-            <span className="ai-battle-side-badge">원정팀 대변인 AI</span>
+            <span className="ai-battle-side-badge">{AI_LABEL[awayPred.ai_provider] ?? awayPred.ai_provider} · 원정팀</span>
             {isFinished && awayPred.is_correct && (
               <span className="ai-battle-winner-seal">
                 <Award size={12} /> 승리회로 실현!
@@ -250,7 +279,7 @@ export function AiWinnerBattleTab({
                 className="ai-battle-vote-bar-fill away-fill"
                 style={{
                   width: `${awayPct}%`,
-                  backgroundColor: awayTeam.color
+                  backgroundColor: ensureAwayFill(homeTeam.color, awayTeam.color, awayTeam.accent)
                 }}
               />
             </div>

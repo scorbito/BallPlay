@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CalendarDays, Bot, Clock, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -29,7 +30,28 @@ type Props = {
   onDateChange: (date: string) => void;
 };
 
-export function AiBattleListScreen({ games, selectedDate, onDateChange }: Props) {
+export function AiBattleListScreen({ games: initialGames, selectedDate, onDateChange }: Props) {
+  const router = useRouter();
+  const [games, setGames] = useState(initialGames);
+
+  // 최초 진입 시 Next.js Router Cache 강제 무효화 및 최신화
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
+
+  // 마운트/날짜 변경 시 predictions 재확인 — 서버 캐시로 stale 데이터가 왔을 때 보정.
+  useEffect(() => {
+    setGames(initialGames);
+    const ids = initialGames.map((g) => g.id).filter(Boolean);
+    if (ids.length === 0) return;
+    fetch(`/api/predict/ai-winner/predictions-check?ids=${ids.join(",")}`)
+      .then((r) => r.json())
+      .then((active: string[]) => {
+        const set = new Set(active);
+        setGames((prev) => prev.map((g) => ({ ...g, hasPrediction: set.has(g.id) })));
+      })
+      .catch(() => {});
+  }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
   // 날짜 포맷팅 헬퍼
   const formatDateLabel = (dateStr: string) => {
     try {
@@ -55,7 +77,7 @@ export function AiBattleListScreen({ games, selectedDate, onDateChange }: Props)
   const isFutureDate = selectedDate > today;
 
   return (
-    <AppShell activeTab="home" title="AI 승리팀 대결" backHref="/" theme="light" wide>
+    <AppShell activeTab="home" title="AI 맞대결" backHref="/" theme="light" wide>
       <section className="ai-winner-screen">
         {/* ── 상단 인트로 히어로 배너 (가운데 정렬) ── */}
         <header className="ai-battle-hero-card">
@@ -117,7 +139,7 @@ export function AiBattleListScreen({ games, selectedDate, onDateChange }: Props)
                     <div className="ai-battle-card-meta">
                       <span className="ai-battle-meta-time">
                         <Clock size={14} className="ai-battle-clock-icon" />
-                        {g.gameTime ?? "18:30:00"} {g.stadium}
+                        {(g.gameTime ?? "18:30").slice(0, 5)} {g.stadium}
                       </span>
                       <span className="ai-battle-meta-status" style={{
                         background: finished ? "#f1f3f5" : isFutureDate ? "#f1f3f5" : "#ffe8ec",

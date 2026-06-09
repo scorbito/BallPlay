@@ -29,3 +29,7 @@ data/ground*.jpg
 
 .vercel
 .env*.local
+
+# Scratch and local test scripts
+scratch/
+scripts/
