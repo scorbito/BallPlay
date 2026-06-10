@@ -17,6 +17,7 @@ import {
   Legend
 } from "recharts";
 import { getTeam } from "@/lib/constants/teams";
+import { AiTeamPowerComparison } from "./AiTeamPowerComparison";
 
 type StarterStats = {
   name: string;
@@ -40,6 +41,22 @@ type RecentGame = {
   opponentScore: number;
 };
 
+type TeamStandingData = {
+  rank: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  form: ("win" | "lose" | "draw")[];
+  teamEra: number;
+  teamBattingAvg: number;
+};
+
+type H2HRecordData = {
+  wins: number;
+  losses: number;
+  draws: number;
+};
+
 export type StatsTabData = {
   starters: {
     home: StarterStats;
@@ -53,6 +70,11 @@ export type StatsTabData = {
     home: RecentGame[];
     away: RecentGame[];
   };
+  teamStandings?: {
+    home: TeamStandingData;
+    away: TeamStandingData;
+  };
+  h2hRecord?: H2HRecordData;
 };
 
 type Props = {
@@ -244,6 +266,22 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
 
   return (
     <div className="ai-stats-tab-container">
+      {/* ── [섹션 0] 팀 전력 비교 ── */}
+      {data.teamStandings && data.h2hRecord && (
+        <AiTeamPowerComparison
+          homeTeamId={homeTeamId}
+          awayTeamId={awayTeamId}
+          homeTeamName={homeTeamName}
+          awayTeamName={awayTeamName}
+          homeColor={homeColor}
+          awayColor={awayColor}
+          awayFill={awayFill}
+          homeStanding={data.teamStandings.home}
+          awayStanding={data.teamStandings.away}
+          h2hRecord={data.h2hRecord}
+        />
+      )}
+
       {/* ── [섹션 1] 선발 투수 지표 대조 ── */}
       <section className="ai-stats-section">
         <h3 className="ai-stats-section-title">선발 투수 매치업 지표</h3>
@@ -313,7 +351,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
 
       {/* ── [섹션 2] 팀 타선 지표 대조 ── */}
       <section className="ai-stats-section">
-        <h3 className="ai-stats-section-title">오늘 출전 타선 전력 분석</h3>
+        <h3 className="ai-stats-section-title">최근 9인 선발 타선 전력</h3>
         <p className="ai-stats-section-subtitle">
           * 최근 9인 선발 타순의 시즌 종합 성적을 대칭 지표로 나타낸 것입니다.
         </p>

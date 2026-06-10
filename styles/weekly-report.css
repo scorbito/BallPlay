@@ -506,12 +506,14 @@
   font-size: 16px;
   font-weight: 900;
   color: #0f172a;
+  text-align: center;
 }
 .ai-stats-section-subtitle {
   margin: 0 0 16px;
   font-size: 11px;
   font-weight: 600;
   color: #64748b;
+  text-align: center;
 }
 .ai-stats-starter-header {
   display: flex;
@@ -684,3 +686,120 @@
 .ai-stats-error .retry-btn:hover {
   background: #fee2e2;
 }
+
+/* 팀 전력 비교 카드 스타일 */
+.team-power-comparison-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.power-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.power-team-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.power-team-name {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.power-team-record {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.power-team-form-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.power-team-form-row.justify-end {
+  justify-content: flex-end;
+}
+
+/* Form 원형 뱃지 */
+.form-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 900;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+.form-badge.is-win {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.form-badge.is-lose {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.form-badge.is-draw {
+  background: linear-gradient(135deg, #94a3b8, #475569);
+}
+
+.no-form-data {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.power-vs-badge {
+  font-size: 11px;
+  font-weight: 950;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin: 0 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.power-card-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.power-card-h2h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #475569;
+  margin-top: 20px;
+}
+
+.h2h-label {
+  color: #64748b;
+  font-weight: 750;
+}
+
+.h2h-value {
+  color: #0f172a;
+}
+

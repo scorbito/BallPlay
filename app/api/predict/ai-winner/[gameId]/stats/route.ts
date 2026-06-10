@@ -58,6 +58,7 @@ export async function GET(
   }
 
   const { home_team_id: homeTeamId, away_team_id: awayTeamId, home_starter: homeStarterName, away_starter: awayStarterName, game_date: gameDate } = game;
+  const season = new Date(gameDate).getFullYear();
 
   // 2. 선발 투수 온디맨드 크롤링 수행
   await fetchOnDemandStarterStats(adminClient, [homeTeamId, awayTeamId], gameDate);
@@ -145,11 +146,6 @@ export async function GET(
     };
   };
 
-  const [homeBatting, awayBatting] = await Promise.all([
-    getTeamBattingAvg(homeTeamId),
-    getTeamBattingAvg(awayTeamId)
-  ]);
-
   // 5. 최근 10경기 득실 페이스 데이터
   const getRecentGames = async (teamId: string) => {
     const { data: games } = await adminClient
@@ -176,10 +172,96 @@ export async function GET(
     return formatted.reverse();
   };
 
-  const [homeRecent, awayRecent] = await Promise.all([
+  // 6. 팀 순위 및 성적(Form 포함) 획득
+  const getTeamStandings = async () => {
+    const { data } = await adminClient
+      .from("team_standings")
+      .select("team_id, rank, wins, losses, draws, form")
+      .in("team_id", [homeTeamId, awayTeamId])
+      .eq("season", season);
+    return data ?? [];
+  };
+
+  // 7. 이번 시즌 상대 전적 (당일 경기 직전까지)
+  const getH2HRecord = async () => {
+    const { data } = await adminClient
+      .from("games")
+      .select("home_team_id, away_team_id, home_score, away_score")
+      .eq("status", "finished")
+      .gte("game_date", `${season}-01-01`)
+      .lt("game_date", gameDate)
+      .or(`and(home_team_id.eq.${homeTeamId},away_team_id.eq.${awayTeamId}),and(home_team_id.eq.${awayTeamId},away_team_id.eq.${homeTeamId})`);
+    return data ?? [];
+  };
+
+  // 병렬 데이터 조회 수행
+  const [
+    homeBatting,
+    awayBatting,
+    homeRecent,
+    awayRecent,
+    standings,
+    h2hGames
+  ] = await Promise.all([
+    getTeamBattingAvg(homeTeamId),
+    getTeamBattingAvg(awayTeamId),
     getRecentGames(homeTeamId),
-    getRecentGames(awayTeamId)
+    getRecentGames(awayTeamId),
+    getTeamStandings(),
+    getH2HRecord()
   ]);
+
+  // 상대전적 가공
+  let homeH2HWins = 0;
+  let awayH2HWins = 0;
+  let h2hDraws = 0;
+
+  for (const g of h2hGames) {
+    const isHomeTeamRealHome = g.home_team_id === homeTeamId;
+    const homeScore = g.home_score ?? 0;
+    const awayScore = g.away_score ?? 0;
+    if (homeScore > awayScore) {
+      if (isHomeTeamRealHome) homeH2HWins++; else awayH2HWins++;
+    } else if (awayScore > homeScore) {
+      if (isHomeTeamRealHome) awayH2HWins++; else homeH2HWins++;
+    } else {
+      h2hDraws++;
+    }
+  }
+
+  // 팀 평균자책점(ERA) 가중평균 계산
+  const getTeamEra = (teamId: string) => {
+    const pitchers = STATS.teams[teamId]?.pitchers || [];
+    let totalIp = 0;
+    let totalEarnedRuns = 0;
+    for (const p of pitchers) {
+      totalIp += p.ip;
+      totalEarnedRuns += p.earnedRuns;
+    }
+    if (totalIp === 0) return 4.50;
+    return Number(((totalEarnedRuns * 9) / totalIp).toFixed(2));
+  };
+
+  // 시즌 전체 팀 타율 계산
+  const getTeamBattingAvgAll = (teamId: string) => {
+    const batters = STATS.teams[teamId]?.batters || [];
+    let totalAb = 0;
+    let totalHits = 0;
+    for (const b of batters) {
+      totalAb += b.ab || 0;
+      totalHits += b.hits || 0;
+    }
+    if (totalAb === 0) return 0.260;
+    return Number((totalHits / totalAb).toFixed(3));
+  };
+
+  const homeTeamEra = getTeamEra(homeTeamId);
+  const awayTeamEra = getTeamEra(awayTeamId);
+  const homeTeamBattingAvgAll = getTeamBattingAvgAll(homeTeamId);
+  const awayTeamBattingAvgAll = getTeamBattingAvgAll(awayTeamId);
+
+  const homeStanding = standings.find((s) => s.team_id === homeTeamId);
+  const awayStanding = standings.find((s) => s.team_id === awayTeamId);
 
   return NextResponse.json({
     ok: true,
@@ -207,6 +289,31 @@ export async function GET(
     recentGames: {
       home: homeRecent,
       away: awayRecent
+    },
+    teamStandings: {
+      home: homeStanding ? {
+        rank: homeStanding.rank,
+        wins: homeStanding.wins,
+        losses: homeStanding.losses,
+        draws: homeStanding.draws,
+        form: homeStanding.form,
+        teamEra: homeTeamEra,
+        teamBattingAvg: homeTeamBattingAvgAll
+      } : { rank: 0, wins: 0, losses: 0, draws: 0, form: [], teamEra: homeTeamEra, teamBattingAvg: homeTeamBattingAvgAll },
+      away: awayStanding ? {
+        rank: awayStanding.rank,
+        wins: awayStanding.wins,
+        losses: awayStanding.losses,
+        draws: awayStanding.draws,
+        form: awayStanding.form,
+        teamEra: awayTeamEra,
+        teamBattingAvg: awayTeamBattingAvgAll
+      } : { rank: 0, wins: 0, losses: 0, draws: 0, form: [], teamEra: awayTeamEra, teamBattingAvg: awayTeamBattingAvgAll }
+    },
+    h2hRecord: {
+      wins: homeH2HWins,
+      losses: awayH2HWins,
+      draws: h2hDraws
     }
   });
 }

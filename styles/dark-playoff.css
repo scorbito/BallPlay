@@ -1259,3 +1259,77 @@
     animation: none;
   }
 }
+
+/* 명예의 전당 전체 보기 모달 및 버튼 스타일 */
+.phone-frame-light .playoff-hall-count-btn {
+  background: #fbf0e3;
+  color: #c48c4b;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.phone-frame-light .playoff-hall-count-btn:hover {
+  background: #f5e4cd;
+}
+
+.phone-frame-light .playoff-hall-more-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.phone-frame-light .playoff-hall-more-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+}
+
+.playoff-hall-modal-panel {
+  max-width: 480px;
+  width: 90%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.playoff-hall-modal-list {
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  max-height: 350px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.playoff-hall-modal-list .playoff-hall-row {
+  margin-bottom: 8px;
+}
+
+.playoff-hall-modal-list .playoff-hall-row:last-child {
+  margin-bottom: 0;
+}
+
+.playoff-hall-modal-list::-webkit-scrollbar {
+  width: 6px;
+}
+.playoff-hall-modal-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+.playoff-hall-modal-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}

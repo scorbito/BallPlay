@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { TeamLogo } from "@/components/common/TeamLogo";
+import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { getRoster } from "@/lib/rosters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -45,14 +46,16 @@ export function PlayoffHallOfFame({ variant = "full" }: Props) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   // compact 배너 — 역대 우승자 순환(광고판) 인덱스.
   const [rotateIdx, setRotateIdx] = useState(0);
+  const [allModalOpen, setAllModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       const client = createSupabaseBrowserClient();
       // compact는 광고판처럼 역대 우승자를 순환 노출하므로 여러 명을 가져온다.
+      // full 버전은 모달에서 전체 목록을 보여주어야 하므로, 넉넉하게 100명까지 가져온다.
       const [listRes, countRes] = await Promise.all([
-        listPlayoffChampions(client, compact ? 10 : 3),
+        listPlayoffChampions(client, compact ? 10 : 100),
         countPlayoffChampions(client)
       ]);
       if (cancelled) return;
@@ -117,7 +120,14 @@ export function PlayoffHallOfFame({ variant = "full" }: Props) {
     <section className="playoff-hall">
       <header className="playoff-hall-head">
         <h2 className="playoff-hall-title">🏆 명예의 전당</h2>
-        <span className="playoff-hall-count">역대 우승 {total}회</span>
+        <button
+          type="button"
+          className="playoff-hall-count-btn"
+          onClick={() => setAllModalOpen(true)}
+          aria-label="명예의 전당 전체 목록 보기"
+        >
+          역대 우승 {total}회
+        </button>
       </header>
 
       {rows.length === 0 ? (
@@ -125,7 +135,52 @@ export function PlayoffHallOfFame({ variant = "full" }: Props) {
           <p>아직 우승자가 없어요 — 첫 우승의 주인공이 되어보세요.</p>
         </div>
       ) : (
-        <ul className="playoff-hall-list">
+        <>
+          <ul className="playoff-hall-list">
+            {rows.slice(0, 3).map((champ) => {
+              const hasLineup = Boolean(champ.batting && champ.pitching);
+              const isLoading = loadingId === champ.id;
+              return (
+                <li key={champ.id} className="playoff-hall-row">
+                  <button
+                    type="button"
+                    className="playoff-hall-row-btn"
+                    onClick={() => openLineup(champ)}
+                    disabled={!hasLineup || isLoading}
+                    aria-label={`${champ.nickname} 우승 라인업 보기`}
+                  >
+                    <TeamLogo teamId={champ.teamId} size="sm" />
+                    <div className="playoff-hall-row-body">
+                      <strong className="playoff-hall-team-name">{champ.teamName}</strong>
+                      <span className="playoff-hall-owner">({champ.nickname})</span>
+                    </div>
+                    <span className="playoff-hall-date">{formatDate(champ.completedAt)}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {total > 3 && (
+            <button
+              type="button"
+              className="playoff-hall-more-btn"
+              onClick={() => setAllModalOpen(true)}
+            >
+              전체 보기
+            </button>
+          )}
+        </>
+      )}
+
+      {/* 전체 우승자 목록 모달 */}
+      <ModalShell
+        open={allModalOpen}
+        title="🏆 명예의 전당"
+        onClose={() => setAllModalOpen(false)}
+        panelClassName="playoff-hall-modal-panel"
+        closeOnBackdrop
+      >
+        <ul className="playoff-hall-modal-list">
           {rows.map((champ) => {
             const hasLineup = Boolean(champ.batting && champ.pitching);
             const isLoading = loadingId === champ.id;
@@ -149,7 +204,7 @@ export function PlayoffHallOfFame({ variant = "full" }: Props) {
             );
           })}
         </ul>
-      )}
+      </ModalShell>
 
       <LineupDetailModal
         open={previewTeam !== null}
