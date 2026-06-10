@@ -112,36 +112,38 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
   const battingSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const startersObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setAnimateStarters(true);
-          startersObserver.disconnect();
-        }
-      },
-      { threshold: 0.15 }
-    );
+    let startersObserver: IntersectionObserver | null = null;
+    let battingObserver: IntersectionObserver | null = null;
 
-    const battingObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setAnimateBatting(true);
-          battingObserver.disconnect();
-        }
-      },
-      { threshold: 0.15 }
-    );
+    // 마운트 시점의 레이아웃이 완전히 정렬된 뒤(150ms 후) 정확한 뷰포트 교차 상태 감지 시작
+    const timer = setTimeout(() => {
+      startersObserver = new IntersectionObserver(
+        ([entry]) => {
+          // 화면에 머무는 동안만 true, 벗어나면 false로 돌려 스크롤 할 때마다 재차 애니메이션을 보여줍니다.
+          setAnimateStarters(entry.isIntersecting);
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" } // 약간의 하단 마진을 주어 화면에 더 들어왔을 때 트리거
+      );
 
-    if (startersSectionRef.current) {
-      startersObserver.observe(startersSectionRef.current);
-    }
-    if (battingSectionRef.current) {
-      battingObserver.observe(battingSectionRef.current);
-    }
+      battingObserver = new IntersectionObserver(
+        ([entry]) => {
+          setAnimateBatting(entry.isIntersecting);
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      );
+
+      if (startersSectionRef.current) {
+        startersObserver.observe(startersSectionRef.current);
+      }
+      if (battingSectionRef.current) {
+        battingObserver.observe(battingSectionRef.current);
+      }
+    }, 150);
 
     return () => {
-      startersObserver.disconnect();
-      battingObserver.disconnect();
+      clearTimeout(timer);
+      if (startersObserver) startersObserver.disconnect();
+      if (battingObserver) battingObserver.disconnect();
     };
   }, []);
 
@@ -286,7 +288,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                       transitionDelay: `${idx * 80}ms`
                     }}
                   />
-                  <div className="metric-bar-gap" />
+                  <div className="metric-bar-gap" style={{ marginLeft: "auto" }} />
                   <div
                     className="metric-bar away-bar"
                     style={{
@@ -362,7 +364,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                       transitionDelay: `${idx * 80}ms`
                     }}
                   />
-                  <div className="metric-bar-gap" />
+                  <div className="metric-bar-gap" style={{ marginLeft: "auto" }} />
                   <div
                     className="metric-bar away-bar"
                     style={{
