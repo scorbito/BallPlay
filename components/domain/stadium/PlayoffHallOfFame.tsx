@@ -160,15 +160,6 @@ export function PlayoffHallOfFame({ variant = "full" }: Props) {
               );
             })}
           </ul>
-          {total > 3 && (
-            <button
-              type="button"
-              className="playoff-hall-more-btn"
-              onClick={() => setAllModalOpen(true)}
-            >
-              전체 보기
-            </button>
-          )}
         </>
       )}
 
