@@ -162,17 +162,13 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
                       {/* 좌측: 홈팀 수호 박스 */}
                       <div className="ai-battle-team-box home-box">
                         <div className="ai-battle-team-box-inner">
-                          <div className="ai-battle-team-row">
+                          <div className="ai-battle-team-row" style={{ margin: "6px 0" }}>
                             <TeamBadge teamId={g.homeTeamId} size="sm" />
                             <span className="ai-battle-team-name">{home.name.split(" ")[0]}</span>
                             {finished && (
                               <span className="ai-battle-team-score">{g.homeScore ?? 0}</span>
                             )}
                           </div>
-                          <span className="ai-battle-team-ai gemini-ai">
-                            <Sparkles size={11} />
-                            Gemini 승리론
-                          </span>
                         </div>
                       </div>
 
@@ -186,17 +182,13 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
                       {/* 우측: 원정팀 수호 박스 */}
                       <div className="ai-battle-team-box away-box">
                         <div className="ai-battle-team-box-inner">
-                          <div className="ai-battle-team-row">
+                          <div className="ai-battle-team-row" style={{ margin: "6px 0" }}>
                             <TeamBadge teamId={g.awayTeamId} size="sm" />
                             <span className="ai-battle-team-name">{away.name.split(" ")[0]}</span>
                             {finished && (
                               <span className="ai-battle-team-score">{g.awayScore ?? 0}</span>
                             )}
                           </div>
-                          <span className="ai-battle-team-ai gpt-ai">
-                            <Bot size={11} />
-                            GPT 승리론
-                          </span>
                         </div>
                       </div>
 
