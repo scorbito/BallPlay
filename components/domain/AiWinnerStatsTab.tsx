@@ -107,30 +107,32 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
   // 스크롤 감지 및 애니메이션 상태 정의
   const [animateStarters, setAnimateStarters] = useState(false);
   const [animateBatting, setAnimateBatting] = useState(false);
+  const [animateRecentFlow, setAnimateRecentFlow] = useState(false);
 
   const startersSectionRef = useRef<HTMLDivElement>(null);
   const battingSectionRef = useRef<HTMLDivElement>(null);
+  const recentFlowSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let startersObserver: IntersectionObserver | null = null;
     let battingObserver: IntersectionObserver | null = null;
+    let recentFlowObserver: IntersectionObserver | null = null;
 
     // 마운트 시점의 레이아웃이 완전히 정렬된 뒤(150ms 후) 정확한 뷰포트 교차 상태 감지 시작
     const timer = setTimeout(() => {
-      startersObserver = new IntersectionObserver(
-        ([entry]) => {
-          // 화면에 머무는 동안만 true, 벗어나면 false로 돌려 스크롤 할 때마다 재차 애니메이션을 보여줍니다.
-          setAnimateStarters(entry.isIntersecting);
-        },
-        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" } // 약간의 하단 마진을 주어 화면에 더 들어왔을 때 트리거
-      );
+      const config = { threshold: 0.1, rootMargin: "0px 0px -80px 0px" }; // 하단 마진 -80px을 주어 확실히 스크롤해서 보일 때 트리거
 
-      battingObserver = new IntersectionObserver(
-        ([entry]) => {
-          setAnimateBatting(entry.isIntersecting);
-        },
-        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
-      );
+      startersObserver = new IntersectionObserver(([entry]) => {
+        setAnimateStarters(entry.isIntersecting);
+      }, config);
+
+      battingObserver = new IntersectionObserver(([entry]) => {
+        setAnimateBatting(entry.isIntersecting);
+      }, config);
+
+      recentFlowObserver = new IntersectionObserver(([entry]) => {
+        setAnimateRecentFlow(entry.isIntersecting);
+      }, config);
 
       if (startersSectionRef.current) {
         startersObserver.observe(startersSectionRef.current);
@@ -138,12 +140,16 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
       if (battingSectionRef.current) {
         battingObserver.observe(battingSectionRef.current);
       }
+      if (recentFlowSectionRef.current) {
+        recentFlowObserver.observe(recentFlowSectionRef.current);
+      }
     }, 150);
 
     return () => {
       clearTimeout(timer);
       if (startersObserver) startersObserver.disconnect();
       if (battingObserver) battingObserver.disconnect();
+      if (recentFlowObserver) recentFlowObserver.disconnect();
     };
   }, []);
 
@@ -382,7 +388,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
       </section>
 
       {/* ── [섹션 3] 최근 10경기 승리 누적 흐름 ── */}
-      <section className="ai-stats-section">
+      <section className="ai-stats-section" ref={recentFlowSectionRef}>
         <h3 className="ai-stats-section-title">최근 10경기 승리 누적 흐름</h3>
         <p className="ai-stats-section-subtitle" style={{ marginBottom: "10px" }}>
           * 10경기 전부터 최근 경기까지의 누적 승리 횟수 추이(상승 곡선)입니다.
@@ -393,7 +399,11 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
         </div>
         <div className="ai-stats-line-wrapper">
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={lineData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+            <LineChart
+              key={animateRecentFlow ? "active" : "inactive"}
+              data={lineData}
+              margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} />
               <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} domain={[0, 10]} />
@@ -409,6 +419,9 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                 strokeWidth={3}
                 activeDot={{ r: 6 }}
                 dot={{ r: 3 }}
+                isAnimationActive={animateRecentFlow}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
               <Line
                 type="monotone"
@@ -417,6 +430,9 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                 strokeWidth={3}
                 activeDot={{ r: 6 }}
                 dot={{ r: 3 }}
+                isAnimationActive={animateRecentFlow}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
             </LineChart>
           </ResponsiveContainer>
