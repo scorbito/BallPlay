@@ -37,6 +37,9 @@ export function buildNarration(args: BuildNarrationArgs): NarrationResult {
 
   if (cursor === 0) return { text: "플레이볼!", variant: "default" };
   const current = events[cursor - 1];
+  if (!current) {
+    return { text: "경기 준비 중...", variant: "default" };
+  }
   const battingTeamBatters = current.half === "top" ? input.away.batters : input.home.batters;
   const orderIdx = battingTeamBatters.findIndex((b) => b.playerId === current.ab.batterId);
   const orderPrefix = orderIdx >= 0 ? `${orderIdx + 1}번 타자 ` : "";
