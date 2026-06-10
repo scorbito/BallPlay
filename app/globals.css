@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -207,7 +207,7 @@ button {
 
 .phone-frame {
   position: relative;
-  width: min(100%, 540px);
+  width: min(100%, 640px);
   height: min(960px, calc(100dvh - 48px));
   min-height: min(640px, calc(100dvh - 48px));
   overflow: hidden;
@@ -247,23 +247,23 @@ button {
   }
 }
 
-/* PC 해상도 — 일반 화면 및 와이드 화면 모두 540px로 일관되게 제한 */
+/* PC 해상도 — 일반 화면 및 와이드 화면 모두 640px로 일관되게 제한 */
 @media (min-width: 1025px) {
   .phone-frame {
-    width: min(540px, 100% - 32px);
-    max-width: 540px;
+    width: min(640px, 100% - 32px);
+    max-width: 640px;
     height: calc(100dvh - 48px);
-    min-height: min(540px, calc(100dvh - 48px));
+    min-height: min(640px, calc(100dvh - 48px));
   }
   .phone-frame.phone-frame-wide {
-    width: min(540px, 100% - 32px);
-    max-width: 540px;
+    width: min(640px, 100% - 32px);
+    max-width: 640px;
     height: calc(100dvh - 48px);
-    min-height: min(540px, calc(100dvh - 48px));
+    min-height: min(640px, calc(100dvh - 48px));
   }
 }
 
-/* 태블릿 — phone-frame을 화면 가운데 정렬 및 540px 고정 */
+/* 태블릿 — phone-frame을 화면 가운데 정렬 및 640px 고정 */
 @media (min-width: 481px) and (max-width: 1024px) {
   .app-backdrop {
     padding: 24px 0;
@@ -274,17 +274,17 @@ button {
     justify-content: center;
   }
   .phone-frame {
-    width: min(540px, 100% - 32px);
-    max-width: 540px;
+    width: min(640px, 100% - 32px);
+    max-width: 640px;
     height: calc(100dvh - 48px);
-    min-height: min(540px, calc(100dvh - 48px));
+    min-height: min(640px, calc(100dvh - 48px));
     border-radius: 24px;
   }
 
-  /* wide 모드인 페이지(라인업 등)도 태블릿에서 540px로 고정 */
+  /* wide 모드인 페이지(라인업 등)도 태블릿에서 640px로 고정 */
   .phone-frame.phone-frame-wide {
-    width: min(540px, 100% - 32px);
-    max-width: 540px;
+    width: min(640px, 100% - 32px);
+    max-width: 640px;
   }
 }
 
