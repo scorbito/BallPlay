@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import { AiWinnerBattleTab, type BattlePredictionRow } from "./AiWinnerBattleTab";
+import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import type { GameStatus } from "@/lib/types/api-contracts";
 
 type GameInfo = {
@@ -84,6 +85,19 @@ export function AiBattleRevealScreen({ gameId, game, predictions }: Props) {
             </div>
           ) : null}
         </header>
+
+        {/* ── 돌려보기 버튼 ── */}
+        <VirtualMatchButton
+          game={{
+            homeTeamId: game.homeTeamId,
+            awayTeamId: game.awayTeamId,
+            homeStarter: game.homeStarter,
+            awayStarter: game.awayStarter
+          }}
+          className="ai-reveal-sim-btn"
+          idleLabel={`${home.shortName} vs ${away.shortName} 가상경기 해보기`}
+          busyLabel="준비 중"
+        />
 
         {/* ── 배틀 탭 영역 (탭 없이 직접 즉각 렌더링!) ── */}
         <div style={{ marginTop: "8px" }}>

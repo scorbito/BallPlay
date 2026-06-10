@@ -181,24 +181,6 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "today-results",
-        href: "/schedule?focus=today",
-        title: "오늘 경기 결과",
-        description: "오늘 경기 스코어",
-        icon: ClipboardCheck,
-        iconImage: "/icons/menu/today-results.png",
-        available: true
-      },
-      {
-        id: "rankings",
-        href: "/rankings",
-        title: "팀 순위",
-        description: "순위 + 최근 5경기",
-        icon: Trophy,
-        iconImage: "/icons/menu/team-standings.png",
-        available: true
-      },
-      {
         id: "daily-report",
         href: "/daily-report",
         title: "일일 리포트",
@@ -217,6 +199,24 @@ const sections: HomeSection[] = [
         iconImage: "/icons/menu/weekly-report.png",
         available: true,
         badge: "NEW"
+      },
+      {
+        id: "today-results",
+        href: "/schedule?focus=today",
+        title: "오늘 경기 결과",
+        description: "오늘 경기 스코어",
+        icon: ClipboardCheck,
+        iconImage: "/icons/menu/today-results.png",
+        available: true
+      },
+      {
+        id: "rankings",
+        href: "/rankings",
+        title: "팀 순위",
+        description: "순위 + 최근 5경기",
+        icon: Trophy,
+        iconImage: "/icons/menu/team-standings.png",
+        available: true
       },
       {
         id: "news",

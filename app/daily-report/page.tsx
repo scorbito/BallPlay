@@ -85,7 +85,12 @@ export default async function DailyReportPage({ searchParams }: Props) {
   }
 
   // 2. 캐시가 없거나 실시간 강제 생성이 필요한 경우
-  console.log(`[Daily Report Cache Miss] 신규 AI 일일 리포트 생성 시도. date: ${targetDate}`);
+  const isAutoGenerateTarget = targetDate === yesterdayStr || targetDate === todayStr;
+  if (isAutoGenerateTarget) {
+    console.log(`[Daily Report Cache Miss] 신규 AI 일일 리포트 자동 생성 트리거 예정. date: ${targetDate}`);
+  } else {
+    console.log(`[Daily Report Cache Miss] 과거 날짜(${targetDate})이므로 자동 생성을 수행하지 않고 placeholder를 렌더링합니다.`);
+  }
 
   // 해당 날짜의 경기 데이터 조회
   const games = await listGamesFromDb({
@@ -123,66 +128,17 @@ export default async function DailyReportPage({ searchParams }: Props) {
     );
   }
 
-  // 모든 경기가 종료된 상태이므로 AI 분석 리포트 생성 및 캐시 저장 진행
-  let newsTitles: string[] = [];
-  try {
-    const { data: newsData } = await supabase
-      .from("bp_news")
-      .select("title")
-      .gte("published_at", `${targetDate}T00:00:00+09:00`)
-      .lte("published_at", `${targetDate}T23:59:59+09:00`)
-      .order("published_at", { ascending: false });
-
-    newsTitles = (newsData ?? []).map(n => n.title);
-  } catch (err) {
-    console.warn("[Daily Report News Fetch Warn] 뉴스 조회 오류:", (err as Error).message);
-  }
-
-  // 당일 순위표 조회
-  let standingsData: any[] = [];
-  try {
-    const yearNum = parseInt(targetDate.split("-")[0], 10);
-    standingsData = await listStandingsFromDb(yearNum);
-  } catch (err) {
-    console.warn("[Daily Report Standings Fetch Warn] 순위표 조회 오류:", (err as Error).message);
-  }
-
-  // 룰베이스 기본 스켈레톤 빌드
+  // 모든 경기가 종료되었고 캐시가 없으므로 실시간 생성 작업을 처리합니다.
+  // 어제(yesterdayStr) 또는 오늘(todayStr) 날짜인 경우에만 실시간 자동 분석을 동작시키고,
+  // 그 이전의 과거 날짜인 경우 자동 호출을 차단하고 리포트가 없다는 화면을 유도합니다.
   const basicSkeleton = buildDailyReportSkeleton(games, targetDate);
 
-  // Gemini API를 사용하여 경기 리포트 및 종합 브리핑 고도화
-  const aiReport = await generateDailyReportWithGemini(basicSkeleton, newsTitles, standingsData);
-
-  if (aiReport) {
-    // 생성 완료된 데이터를 캐시 테이블에 저장
-    try {
-      await supabase.from("daily_ai_reports").upsert({
-        report_date: targetDate,
-        report_json: aiReport,
-        created_at: new Date().toISOString()
-      });
-      console.log(`[Daily Report Cache Saved] date: ${targetDate}`);
-    } catch (err) {
-      console.error("[Daily Report Cache Save Fail]:", (err as Error).message);
-    }
-
-    return (
-      <DailyReportScreen 
-        initialReport={aiReport} 
-        reportDate={targetDate}
-        isAdmin={isAdmin}
-      />
-    );
-  }
-
-  // 생성에 실패하여 null이 반환된 경우 (더미 데이터를 캐싱하거나 화면에 보여주지 않고 Failed 상태로 표시)
-  console.warn(`[Daily Report Generation Failed] date: ${targetDate}`);
-  const emptySkeleton = buildDailyReportSkeleton(games, targetDate);
   return (
     <DailyReportScreen 
-      initialReport={emptySkeleton} 
+      initialReport={basicSkeleton} 
       reportDate={targetDate}
-      isFailed={true}
+      initialIsGenerating={isAutoGenerateTarget}
+      isNoReport={!isAutoGenerateTarget}
       isAdmin={isAdmin}
     />
   );

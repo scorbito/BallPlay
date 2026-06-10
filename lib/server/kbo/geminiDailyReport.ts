@@ -112,6 +112,14 @@ async function callGeminiWithRetry<T>(
       const isRateLimit = errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED") || err?.status === 429;
       const isUnavailable = errMsg.includes("503") || errMsg.includes("UNAVAILABLE") || err?.status === 503;
 
+      // 무료 티어 일일 한도 혹은 할당량이 완전히 소진된 경우 (재시도 불필요)
+      const isQuotaDepleted = errMsg.includes("depleted") || errMsg.includes("Quota exceeded") || errMsg.includes("quota");
+
+      if (isQuotaDepleted) {
+        console.error(`[Gemini API Fatal Error] API 할당량 소진 또는 제한 초과로 인해 즉시 중단합니다: ${errMsg.slice(0, 150)}`);
+        throw err;
+      }
+
       if (attempt >= retries) {
         throw err;
       }
@@ -241,15 +249,11 @@ export async function generateDailyReportWithGemini(
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    // 1단계: 개별 경기 분석 순차 실행 (무료 한도 429 방지)
-    console.log(`[Daily AI Report] 1단계: 경기별 리포트 생성 시작 (개수: ${skeleton.gameReports.length})`);
-    const analyzedGameReports: GameReport[] = [];
-    for (const g of skeleton.gameReports) {
-      const res = await generateSingleGameReport(ai, g, newsTitles, skeleton.reportDate);
-      analyzedGameReports.push(res);
-      // API Rate Limit 방지를 위해 3.5초 대기
-      await new Promise(resolve => setTimeout(resolve, 3500));
-    }
+    // 1단계: 개별 경기 분석 병렬 실행 (결제 계정 연동으로 Rate Limit 해소)
+    console.log(`[Daily AI Report] 1단계: 경기별 리포트 병렬 생성 시작 (개수: ${skeleton.gameReports.length})`);
+    const analyzedGameReports = await Promise.all(
+      skeleton.gameReports.map(g => generateSingleGameReport(ai, g, newsTitles, skeleton.reportDate))
+    );
 
     // 2단계: KBO 판도 종합 브리핑 생성 (Gemini 2.5 Pro -> 실패 시 Flash)
     console.log("[Daily AI Report] 2단계: KBO 전체 종합 분석 시작 (Gemini Pro)");

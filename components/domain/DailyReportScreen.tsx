@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -28,6 +28,8 @@ type DailyReportScreenProps = {
   isPending?: boolean;
   isNoGames?: boolean;
   isFailed?: boolean;
+  initialIsGenerating?: boolean;
+  isNoReport?: boolean;
   isAdmin?: boolean;
 };
 
@@ -50,15 +52,71 @@ export function DailyReportScreen({
   reportDate, 
   isPending = false, 
   isNoGames = false,
-  isFailed = false,
+  isFailed: initialIsFailed = false,
+  initialIsGenerating = false,
+  isNoReport: initialIsNoReport = false,
   isAdmin = false 
 }: DailyReportScreenProps) {
   const [activeTab, setActiveTab] = useState<"brief" | "games">("brief");
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
-  const hasReport = !isPending && !isNoGames && !isFailed;
+  
+  // 클라이언트 내부 상태 관리
+  const [report, setReport] = useState<KboDailyReport>(initialReport);
+  const [isGenerating, setIsGenerating] = useState(initialIsGenerating);
+  const [isFailed, setIsFailed] = useState(initialIsFailed);
+  const [isNoReport, setIsNoReport] = useState(initialIsNoReport);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const hasReport = !isPending && !isNoGames && !isFailed && !isGenerating && !isNoReport;
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
   const router = useRouter();
+
+  // 날짜나 서버 리프레시 시 상태 갱신
+  useEffect(() => {
+    setReport(initialReport);
+    setIsGenerating(initialIsGenerating);
+    setIsFailed(initialIsFailed);
+    setIsNoReport(initialIsNoReport);
+    setErrorMsg(null);
+  }, [initialReport, initialIsGenerating, initialIsFailed, initialIsNoReport, reportDate]);
+
+  // 비동기 리포트 생성 API 호출
+  useEffect(() => {
+    if (!isGenerating) return;
+
+    let active = true;
+    const triggerGeneration = async () => {
+      try {
+        const res = await fetch("/api/daily-report/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date: reportDate })
+        });
+        const data = await res.json();
+
+        if (!active) return;
+
+        if (res.ok && data.ok && data.report) {
+          setReport(data.report);
+          setIsGenerating(false);
+        } else {
+          throw new Error(data.error || "일일 리포트 생성에 실패했습니다.");
+        }
+      } catch (err) {
+        if (!active) return;
+        console.error(err);
+        setErrorMsg((err as Error).message);
+        setIsFailed(true);
+        setIsGenerating(false);
+      }
+    };
+
+    void triggerGeneration();
+    return () => {
+      active = false;
+    };
+  }, [isGenerating, reportDate]);
 
   // 운영자 수동 리포트 생성 요청 핸들러
   const handleGenerateReport = async () => {
@@ -123,12 +181,12 @@ export function DailyReportScreen({
     
     let shareText = `[KBO 일일 AI 분석 리포트 - ${formattedDate}]\n\n`;
     shareText += `⭐ 오늘의 KBO 3줄 요약\n`;
-    initialReport.headlines.forEach((h, idx) => {
+    report.headlines.forEach((h, idx) => {
       shareText += `${idx + 1}. ${h}\n`;
     });
     
-    if (initialReport.dailyMvpName !== "-") {
-      shareText += `\n🏆 오늘의 MVP: ${initialReport.dailyMvpName}\n- ${initialReport.dailyMvpComment}\n`;
+    if (report.dailyMvpName !== "-") {
+      shareText += `\n🏆 오늘의 MVP: ${report.dailyMvpName}\n- ${report.dailyMvpComment}\n`;
     }
     
     shareText += `\n더 자세한 경기별 패배/승리 요인 분석은 야구놀이터에서 확인해 보세요!`;
@@ -203,16 +261,32 @@ export function DailyReportScreen({
               className={`daily-tab-btn ${activeTab === "games" ? "active" : ""}`}
               onClick={() => setActiveTab("games")}
             >
-              경기별 분석 ({initialReport.gameReports.length})
+              경기별 분석 ({report.gameReports.length})
             </button>
           </div>
         )}
 
         {!hasReport ? (
           <div className="daily-report-empty-state">
-            <div className="empty-icon-wrap">
-              <FileText size={48} className="empty-icon" />
-            </div>
+            {isGenerating ? (
+              <div className="generating-spinner-wrap">
+                <span className="spinner" />
+              </div>
+            ) : (
+              <div className="empty-icon-wrap">
+                <FileText size={48} className="empty-icon" />
+              </div>
+            )}
+            
+            {isGenerating && (
+              <>
+                <p className="empty-title">AI가 일일 리포트를 생성하고 있습니다</p>
+                <p className="empty-subtitle">
+                  경기 결과와 관련 뉴스를 종합하여 분석을 진행하고 있습니다.<br />
+                  리포트 작성 완료 및 발행까지 약 20~30초 정도 소요되니 잠시만 기다려 주세요.
+                </p>
+              </>
+            )}
             {isNoGames && (
               <>
                 <p className="empty-title">예정되거나 진행된 경기가 없는 날입니다</p>
@@ -233,10 +307,25 @@ export function DailyReportScreen({
             )}
             {isFailed && (
               <>
-                <p className="empty-title">해당 일자의 AI 일일 리포트가 존재하지 않습니다</p>
+                <p className="empty-title">해당 일자의 AI 일일 리포트 발행에 실패했습니다</p>
+                <p className="empty-subtitle" style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "center" }}>
+                  {errorMsg ? (
+                    <span style={{ color: "#ef4444", fontWeight: 700 }}>
+                      사유: {errorMsg}
+                    </span>
+                  ) : (
+                    <span>일시적인 분석 오류 혹은 데이터 누락으로 리포트가 발행되지 않았습니다.</span>
+                  )}
+                  {isAdmin && <span>운영자이신 경우 상단의 '강제 발행' 버튼으로 재생성을 시도하실 수 있습니다.</span>}
+                </p>
+              </>
+            )}
+            {isNoReport && (
+              <>
+                <p className="empty-title">발행된 일일 리포트가 없습니다</p>
                 <p className="empty-subtitle">
-                  일시적인 분석 오류 혹은 데이터 누락으로 리포트가 발행되지 않았습니다.<br />
-                  {isAdmin && "운영자이신 경우 상단의 '강제 발행' 버튼으로 재생성을 시도하실 수 있습니다."}
+                  해당 날짜에는 AI 일일 리포트가 자동으로 발행되지 않았습니다.<br />
+                  {isAdmin && <span>운영자이신 경우 상단의 &apos;강제 발행&apos; 버튼으로 리포트를 생성하실 수 있습니다.</span>}
                 </p>
               </>
             )}
@@ -263,7 +352,7 @@ export function DailyReportScreen({
                     </button>
                   </div>
                   <ul className="headline-list">
-                    {initialReport.headlines.map((hl, idx) => (
+                    {report.headlines.map((hl, idx) => (
                       <li key={idx} className="headline-item">
                         <span className="bullet-num">{idx + 1}</span>
                         <p>{hl}</p>
@@ -273,15 +362,15 @@ export function DailyReportScreen({
                 </div>
 
                 {/* 오늘의 KBO MVP */}
-                {initialReport.dailyMvpName && initialReport.dailyMvpName !== "-" && (
+                {report.dailyMvpName && report.dailyMvpName !== "-" && (
                   <div className="daily-card daily-mvp-card">
                     <div className="mvp-badge-header">
                       <Trophy className="mvp-trophy" size={24} />
                       <span className="mvp-badge-title">TODAY&apos;S KBO MVP</span>
                     </div>
                     <div className="mvp-content">
-                      <h4 className="mvp-name">{initialReport.dailyMvpName}</h4>
-                      <p className="mvp-comment">{initialReport.dailyMvpComment}</p>
+                      <h4 className="mvp-name">{report.dailyMvpName}</h4>
+                      <p className="mvp-comment">{report.dailyMvpComment}</p>
                     </div>
                   </div>
                 )}
@@ -290,7 +379,7 @@ export function DailyReportScreen({
                 <div className="daily-card daily-topics-card">
                   <h3 className="card-title">🔥 오늘의 주요 이슈</h3>
                   <div className="topics-list">
-                    {initialReport.hotTopics.map((topic, idx) => (
+                    {report.hotTopics.map((topic, idx) => (
                       <div key={idx} className="topic-item">
                         <h4 className="topic-item-title">
                           <Flame size={16} className="topic-icon" />
