@@ -406,7 +406,7 @@ export function DailyReportScreen({
                 {/* 순위 변동 해설 */}
                 <div className="daily-card daily-standings-card">
                   <h3 className="card-title">📈 순위 판도 변동</h3>
-                  <p className="standings-summary-text">{initialReport.standingsSummary}</p>
+                  <p className="standings-summary-text">{report.standingsSummary}</p>
                 </div>
 
               </div>
@@ -415,37 +415,37 @@ export function DailyReportScreen({
             {/* 탭 2: 경기별 상세 리포트 */}
             {activeTab === "games" && (
               <div className="daily-tab-content-games">
-                {initialReport.gameReports.length === 0 ? (
+                {report.gameReports.length === 0 ? (
                   <p className="no-games-text">해당 날짜에는 경기가 없거나 취소되었습니다.</p>
                 ) : (
                   <div className="daily-game-accordion-list">
-                    {initialReport.gameReports.map((report) => {
-                      const isExpanded = expandedGame === report.gameId;
-                      const homeTeam = teams.find(t => t.id === report.homeTeamId);
-                      const awayTeam = teams.find(t => t.id === report.awayTeamId);
+                    {report.gameReports.map((gameReport) => {
+                      const isExpanded = expandedGame === gameReport.gameId;
+                      const homeTeam = teams.find(t => t.id === gameReport.homeTeamId);
+                      const awayTeam = teams.find(t => t.id === gameReport.awayTeamId);
 
                       // 승자 색상 분기를 위함
-                      const isHomeWinner = report.homeScore > report.awayScore;
-                      const isDraw = report.homeScore === report.awayScore;
+                      const isHomeWinner = gameReport.homeScore > gameReport.awayScore;
+                      const isDraw = gameReport.homeScore === gameReport.awayScore;
 
                       return (
                         <div 
-                          key={report.gameId}
+                          key={gameReport.gameId}
                           className={`daily-game-accordion-item ${isExpanded ? "is-expanded" : ""}`}
                         >
                           {/* 스코어보드 헤더 */}
                           <button
                             type="button"
                             className="daily-game-header"
-                            onClick={() => toggleExpandGame(report.gameId)}
+                            onClick={() => toggleExpandGame(gameReport.gameId)}
                             aria-expanded={isExpanded}
                           >
                             <div className="game-score-row">
                               {/* 원정팀 */}
                               <div className={`score-team-cell away-cell ${!isHomeWinner && !isDraw ? "is-winner" : ""}`}>
-                                <span className="team-name-text">{awayTeam?.shortName ?? report.awayTeamId}</span>
-                                <TeamBadge teamId={report.awayTeamId} size="sm" />
-                                <span className="score-num-text">{report.awayScore}</span>
+                                <span className="team-name-text">{awayTeam?.shortName ?? gameReport.awayTeamId}</span>
+                                <TeamBadge teamId={gameReport.awayTeamId} size="sm" />
+                                <span className="score-num-text">{gameReport.awayScore}</span>
                               </div>
 
                               {/* VS / 상태 분절 */}
@@ -455,9 +455,9 @@ export function DailyReportScreen({
 
                               {/* 홈팀 */}
                               <div className={`score-team-cell home-cell ${isHomeWinner && !isDraw ? "is-winner" : ""}`}>
-                                <span className="score-num-text">{report.homeScore}</span>
-                                <TeamBadge teamId={report.homeTeamId} size="sm" />
-                                <span className="team-name-text">{homeTeam?.shortName ?? report.homeTeamId}</span>
+                                <span className="score-num-text">{gameReport.homeScore}</span>
+                                <TeamBadge teamId={gameReport.homeTeamId} size="sm" />
+                                <span className="team-name-text">{homeTeam?.shortName ?? gameReport.homeTeamId}</span>
                               </div>
 
                               {/* 펼치기 아이콘 */}
@@ -474,11 +474,11 @@ export function DailyReportScreen({
                               {/* 경기 총평 */}
                               <div className="game-summary-box">
                                 <Lightbulb size={18} className="summary-bulb-icon" />
-                                <p className="summary-text">{report.summary}</p>
+                                <p className="summary-text">{gameReport.summary}</p>
                               </div>
 
                               {/* 승리/패배 요인 그리드 */}
-                              {report.winningFactors.length > 0 && (
+                              {gameReport.winningFactors.length > 0 && (
                                 <div className="game-factors-grid">
                                   {/* 승리요인 */}
                                   <div className="factor-box factor-winning">
@@ -487,7 +487,7 @@ export function DailyReportScreen({
                                       승리 요인
                                     </h5>
                                     <ul className="factor-list">
-                                      {report.winningFactors.map((wf, idx) => (
+                                      {gameReport.winningFactors.map((wf, idx) => (
                                         <li key={idx}>{wf}</li>
                                       ))}
                                     </ul>
@@ -500,7 +500,7 @@ export function DailyReportScreen({
                                       패배 아쉬운 점
                                     </h5>
                                     <ul className="factor-list">
-                                      {report.losingFactors.map((lf, idx) => (
+                                      {gameReport.losingFactors.map((lf, idx) => (
                                         <li key={idx}>{lf}</li>
                                       ))}
                                     </ul>
@@ -509,19 +509,19 @@ export function DailyReportScreen({
                               )}
 
                               {/* 경기 히어로 수훈 */}
-                              {report.gameHeroName && report.gameHeroName !== "-" && (
+                              {gameReport.gameHeroName && gameReport.gameHeroName !== "-" && (
                                 <div className="game-hero-box">
                                   <span className="hero-label">Today&apos;s Hero</span>
-                                  <strong className="hero-name">{report.gameHeroName}</strong>
-                                  <p className="hero-desc">{report.gameHeroComment}</p>
+                                  <strong className="hero-name">{gameReport.gameHeroName}</strong>
+                                  <p className="hero-desc">{gameReport.gameHeroComment}</p>
                                 </div>
                               )}
 
                               {/* AI 한 줄 드립 평 */}
-                              {report.oneLiner && (
+                              {gameReport.oneLiner && (
                                 <div className="game-oneliner-box">
                                   <span className="oneliner-quote">“</span>
-                                  <p className="oneliner-text">{report.oneLiner}</p>
+                                  <p className="oneliner-text">{gameReport.oneLiner}</p>
                                   <span className="oneliner-quote-end">”</span>
                                 </div>
                               )}

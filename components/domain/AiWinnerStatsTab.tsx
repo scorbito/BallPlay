@@ -351,7 +351,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
 
       {/* ── [섹션 2] 팀 타선 지표 대조 ── */}
       <section className="ai-stats-section">
-        <h3 className="ai-stats-section-title">최근 9인 선발 타선 전력</h3>
+        <h3 className="ai-stats-section-title">최근 선발 타선 전력 비교</h3>
         <p className="ai-stats-section-subtitle">
           * 최근 9인 선발 타순의 시즌 종합 성적을 대칭 지표로 나타낸 것입니다.
         </p>

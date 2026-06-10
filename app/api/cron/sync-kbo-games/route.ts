@@ -10,6 +10,8 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 function isAuthorized(request: NextRequest): boolean {
   const auth = request.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
@@ -87,7 +89,14 @@ export async function GET(request: NextRequest) {
     let dailyReport: any = { skipped: true };
     if (scope !== "week") {
       try {
-        const gamesForDate = await listGamesFromDb({ from, to: from });
+        const requestedReportDate = url.searchParams.get("reportDate");
+        const reportDate = requestedReportDate && DATE_RE.test(requestedReportDate)
+          ? requestedReportDate
+          : scope === "today"
+            ? to
+            : from;
+
+        const gamesForDate = await listGamesFromDb({ from: reportDate, to: reportDate });
         const hasUnfinished = gamesForDate.some(g => g.status === "scheduled" || g.status === "in_progress");
 
         if (gamesForDate.length > 0 && !hasUnfinished) {
@@ -97,45 +106,46 @@ export async function GET(request: NextRequest) {
           const { data: existingReport } = await supabase
             .from("daily_ai_reports")
             .select("report_date")
-            .eq("report_date", from)
+            .eq("report_date", reportDate)
             .maybeSingle();
 
           if (existingReport) {
-            dailyReport = { skipped: true, reason: "Daily report already exists in DB", date: from };
+            dailyReport = { skipped: true, reason: "Daily report already exists in DB", date: reportDate };
           } else {
             // 뉴스 조회
             const { data: newsData } = await supabase
               .from("bp_news")
               .select("title")
-              .gte("published_at", `${from}T00:00:00+09:00`)
-              .lte("published_at", `${from}T23:59:59+09:00`)
+              .gte("published_at", `${reportDate}T00:00:00+09:00`)
+              .lte("published_at", `${reportDate}T23:59:59+09:00`)
               .order("published_at", { ascending: false });
             const newsTitles = (newsData ?? []).map(n => n.title);
 
             // 순위표 조회
-            const yearNum = Number(from.slice(0, 4));
+            const yearNum = Number(reportDate.slice(0, 4));
             const standingsData = await listStandingsFromDb(yearNum);
 
             // 뼈대 생성 및 AI 분석
-            const basicSkeleton = buildDailyReportSkeleton(gamesForDate, from);
+            const basicSkeleton = buildDailyReportSkeleton(gamesForDate, reportDate);
             const aiReport = await generateDailyReportWithGemini(basicSkeleton, newsTitles, standingsData);
 
             if (aiReport) {
               // 캐시 적재
               await supabase.from("daily_ai_reports").upsert({
-                report_date: from,
+                report_date: reportDate,
                 report_json: aiReport,
                 created_at: new Date().toISOString()
               });
 
-              dailyReport = { ok: true, cached: true, date: from };
+              dailyReport = { ok: true, cached: true, date: reportDate };
             } else {
-              dailyReport = { error: "AI 리포트 생성 실패 (null 반환)", date: from };
+              dailyReport = { error: "AI 리포트 생성 실패 (null 반환)", date: reportDate };
             }
           }
         } else {
           dailyReport = { 
             skipped: true, 
+            date: reportDate,
             reason: gamesForDate.length === 0 ? "No games found" : "Some games are still in progress" 
           };
         }
