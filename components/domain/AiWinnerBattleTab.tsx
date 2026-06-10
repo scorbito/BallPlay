@@ -159,15 +159,17 @@ export function AiWinnerBattleTab({
           </div>
           <header className="ai-battle-card-header">
             <div className="ai-battle-team-row">
-              <img
-                src="/images/ai승부대결_gemini.png"
-                alt="Gemini Guardian"
-                className="battle-guardian-avatar-left"
-              />
               <TeamBadge teamId={homePred.predicted_winner_team_id} size="sm" />
               <h4 className="ai-battle-team-name">{homeTeamName} 우세론</h4>
             </div>
-            <p className="ai-battle-card-oneliner">“ {homePred.one_liner} ”</p>
+            <div className="ai-battle-oneliner-wrapper">
+              <img
+                src="/images/ai승부대결_gemini.png"
+                alt="Gemini Guardian"
+                className="battle-guardian-oneliner-img-left"
+              />
+              <p className="ai-battle-card-oneliner">“ {homePred.one_liner} ”</p>
+            </div>
           </header>
 
           <div className="ai-battle-card-body">
@@ -213,13 +215,15 @@ export function AiWinnerBattleTab({
             <div className="ai-battle-team-row">
               <TeamBadge teamId={awayPred.predicted_winner_team_id} size="sm" />
               <h4 className="ai-battle-team-name">{awayTeamName} 우세론</h4>
+            </div>
+            <div className="ai-battle-oneliner-wrapper">
+              <p className="ai-battle-card-oneliner">“ {awayPred.one_liner} ”</p>
               <img
                 src="/images/ai승부대결_gpt.png"
                 alt="GPT Guardian"
-                className="battle-guardian-avatar-right"
+                className="battle-guardian-oneliner-img-right"
               />
             </div>
-            <p className="ai-battle-card-oneliner">“ {awayPred.one_liner} ”</p>
           </header>
 
           <div className="ai-battle-card-body">

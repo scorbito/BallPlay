@@ -2176,22 +2176,33 @@
   filter: drop-shadow(0 2px 8px rgba(4, 120, 87, 0.15));
 }
 
-/* AI 배틀 상세 페이지 수호자 캐릭터 아바타 배치 */
-.phone-frame-light .battle-guardian-avatar-left {
-  width: 38px;
-  height: 38px;
+/* AI 배틀 상세 페이지 수호자 캐릭터 아바타 배치 (한줄평 요약 양옆 배치) */
+.phone-frame-light .ai-battle-oneliner-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.phone-frame-light .ai-battle-oneliner-wrapper .ai-battle-card-oneliner {
+  margin: 0 !important;
+  flex: 1;
+}
+
+.phone-frame-light .battle-guardian-oneliner-img-left {
+  width: 52px;
+  height: 52px;
   object-fit: contain;
-  margin-right: 8px;
-  filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.2));
+  filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.25));
   flex-shrink: 0;
 }
 
-.phone-frame-light .battle-guardian-avatar-right {
-  width: 38px;
-  height: 38px;
+.phone-frame-light .battle-guardian-oneliner-img-right {
+  width: 52px;
+  height: 52px;
   object-fit: contain;
-  margin-left: auto;
-  filter: drop-shadow(0 2px 6px rgba(4, 120, 87, 0.2));
+  filter: drop-shadow(0 2px 8px rgba(4, 120, 87, 0.25));
   flex-shrink: 0;
 }
 
