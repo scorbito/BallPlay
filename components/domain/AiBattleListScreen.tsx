@@ -152,6 +152,13 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
 
                     {/* 데칼코마니 Versus 바디 영역 */}
                     <div className="ai-battle-match-body">
+                      {/* 좌측 제미나이 아바타 */}
+                      <img
+                        src="/images/ai승부대결_gemini.png"
+                        alt="Gemini Guardian"
+                        className="ai-battle-avatar-left"
+                      />
+
                       {/* 좌측: 홈팀 수호 박스 */}
                       <div className="ai-battle-team-box home-box">
                         <div className="ai-battle-team-box-inner">
@@ -192,6 +199,13 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
                           </span>
                         </div>
                       </div>
+
+                      {/* 우측 GPT 아바타 */}
+                      <img
+                        src="/images/ai승부대결_gpt.png"
+                        alt="GPT Guardian"
+                        className="ai-battle-avatar-right"
+                      />
                     </div>
 
                     {/* 하단 대결장 들어가기 버튼 */}

@@ -2149,6 +2149,33 @@
   transform-origin: center !important;
 }
 
+/* AI 승부대결 목록 내 좌/우 AI 수호 캐릭터 아바타 배치 */
+.phone-frame-light .ai-battle-avatar-left {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  z-index: 10;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.15));
+}
+
+.phone-frame-light .ai-battle-avatar-right {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  z-index: 10;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(4, 120, 87, 0.15));
+}
+
 
 
 
