@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   Radar,
   RadarChart,
@@ -104,6 +104,47 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
   const awayColor = away.color;
   const awayFill = ensureAwayFill(homeColor, awayColor, away.accent);
 
+  // 스크롤 감지 및 애니메이션 상태 정의
+  const [animateStarters, setAnimateStarters] = useState(false);
+  const [animateBatting, setAnimateBatting] = useState(false);
+
+  const startersSectionRef = useRef<HTMLDivElement>(null);
+  const battingSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const startersObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setAnimateStarters(true);
+          startersObserver.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    const battingObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setAnimateBatting(true);
+          battingObserver.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (startersSectionRef.current) {
+      startersObserver.observe(startersSectionRef.current);
+    }
+    if (battingSectionRef.current) {
+      battingObserver.observe(battingSectionRef.current);
+    }
+
+    return () => {
+      startersObserver.disconnect();
+      battingObserver.disconnect();
+    };
+  }, []);
+
   // 1. 선발 투수 지표 게이지 비율 계산 헬퍼
   // ERA, WHIP는 낮을수록 우수하므로 가로 대칭 바가 역으로 넓어지게 처리
   const getPitcherGauge = (metric: "era" | "whip" | "k9" | "bb9") => {
@@ -196,7 +237,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
   return (
     <div className="ai-stats-tab-container">
       {/* ── [섹션 1] 선발 투수 지표 대조 ── */}
-      <section className="ai-stats-section">
+      <section className="ai-stats-section" ref={startersSectionRef}>
         <h3 className="ai-stats-section-title">선발 투수 매치업 지표</h3>
         <div className="ai-stats-starter-header">
           <div className="ai-stats-starter-profile text-left">
@@ -215,7 +256,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
         </div>
 
         <div className="ai-stats-starter-metrics">
-          {(["era", "whip", "k9", "bb9"] as const).map((metric) => {
+          {(["era", "whip", "k9", "bb9"] as const).map((metric, idx) => {
             const label =
               metric === "era"
                 ? "평균자책점 (ERA)"
@@ -238,12 +279,22 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                 <div className="metric-bar-container">
                   <div
                     className="metric-bar home-bar"
-                    style={{ width: `${homePct}%`, background: homeColor }}
+                    style={{
+                      width: animateStarters ? `${homePct}%` : "0%",
+                      background: homeColor,
+                      transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                      transitionDelay: `${idx * 80}ms`
+                    }}
                   />
                   <div className="metric-bar-gap" />
                   <div
                     className="metric-bar away-bar"
-                    style={{ width: `${awayPct}%`, background: awayFill }}
+                    style={{
+                      width: animateStarters ? `${awayPct}%` : "0%",
+                      background: awayFill,
+                      transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                      transitionDelay: `${idx * 80}ms`
+                    }}
                   />
                 </div>
               </div>
@@ -253,7 +304,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
       </section>
 
       {/* ── [섹션 2] 팀 타선 지표 대조 ── */}
-      <section className="ai-stats-section">
+      <section className="ai-stats-section" ref={battingSectionRef}>
         <h3 className="ai-stats-section-title">오늘 출전 타선 전력 분석</h3>
         <p className="ai-stats-section-subtitle">
           * 최근 9인 선발 타순의 시즌 종합 성적을 대칭 지표로 나타낸 것입니다.
@@ -273,7 +324,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
         </div>
 
         <div className="ai-stats-starter-metrics">
-          {(["avg", "obp", "slg", "ops", "contact"] as const).map((metric) => {
+          {(["avg", "obp", "slg", "ops", "contact"] as const).map((metric, idx) => {
             const label =
               metric === "avg"
                 ? "타율 (AVG)"
@@ -304,12 +355,22 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
                 <div className="metric-bar-container">
                   <div
                     className="metric-bar home-bar"
-                    style={{ width: `${homePct}%`, background: homeColor }}
+                    style={{
+                      width: animateBatting ? `${homePct}%` : "0%",
+                      background: homeColor,
+                      transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                      transitionDelay: `${idx * 80}ms`
+                    }}
                   />
                   <div className="metric-bar-gap" />
                   <div
                     className="metric-bar away-bar"
-                    style={{ width: `${awayPct}%`, background: awayFill }}
+                    style={{
+                      width: animateBatting ? `${awayPct}%` : "0%",
+                      background: awayFill,
+                      transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                      transitionDelay: `${idx * 80}ms`
+                    }}
                   />
                 </div>
               </div>
