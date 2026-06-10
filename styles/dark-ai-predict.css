@@ -2176,6 +2176,25 @@
   filter: drop-shadow(0 2px 8px rgba(4, 120, 87, 0.15));
 }
 
+/* AI 배틀 상세 페이지 수호자 캐릭터 아바타 배치 */
+.phone-frame-light .battle-guardian-avatar-left {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  margin-right: 8px;
+  filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.2));
+  flex-shrink: 0;
+}
+
+.phone-frame-light .battle-guardian-avatar-right {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  margin-left: auto;
+  filter: drop-shadow(0 2px 6px rgba(4, 120, 87, 0.2));
+  flex-shrink: 0;
+}
+
 
 
 
