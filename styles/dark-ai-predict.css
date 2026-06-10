@@ -2191,16 +2191,16 @@
 }
 
 .phone-frame-light .battle-guardian-oneliner-img-left {
-  width: 68px;
-  height: 68px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.25));
   flex-shrink: 0;
 }
 
 .phone-frame-light .battle-guardian-oneliner-img-right {
-  width: 68px;
-  height: 68px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 2px 8px rgba(4, 120, 87, 0.25));
   flex-shrink: 0;
