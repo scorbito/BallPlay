@@ -1,6 +1,6 @@
-/* 가을야구(플레이오프) — 라이트 테마 (.phone-frame-light) */
+/* 가?�야�??�레?�오?? ???�이???�마 (.phone-frame-light) */
 
-/* 경기장 로비 진입 카드 — 특별 연출(흐르는 그라데이션 외곽선 + 빛 스윕 + 글로우) */
+/* 경기??로비 진입 카드 ???�별 ?�출(?�르??그라?�이???�곽??+ �??�윕 + 글로우) */
 .phone-frame-light .stadium-playoff-entry {
   position: relative;
   display: flex;
@@ -9,7 +9,7 @@
   margin: 4px 0;
   padding: 15px 16px;
   border-radius: 16px;
-  /* 이중 배경: 안쪽(padding-box)은 가을빛 카드, 바깥(border-box)은 흐르는 그라데이션 테두리 */
+  /* ?�중 배경: ?�쪽(padding-box)?� 가?�빛 카드, 바깥(border-box)?� ?�르??그라?�이???�두�?*/
   border: 2px solid transparent;
   background:
     linear-gradient(135deg, #fff6f1, #fffaf2) padding-box,
@@ -22,14 +22,14 @@
   color: var(--bp-text);
 }
 
-/* 외곽선 그라데이션이 흐르는 연출 */
+/* ?�곽??그라?�이?�이 ?�르???�출 */
 @keyframes playoff-entry-border {
   to {
     background-position: 0% 0%, 300% 0%;
   }
 }
 
-/* 카드 위를 지나가는 은은한 빛 */
+/* 카드 ?��? 지?��????�?�??�?*/
 .phone-frame-light .stadium-playoff-entry::after {
   content: "";
   position: absolute;
@@ -60,7 +60,7 @@
   box-shadow: 0 6px 26px rgba(232, 74, 138, 0.28);
 }
 
-/* 모션 최소화 선호 시 애니메이션 정지 */
+/* 모션 최소???�호 ???�니메이???��? */
 @media (prefers-reduced-motion: reduce) {
   .phone-frame-light .stadium-playoff-entry {
     animation: none;
@@ -80,7 +80,7 @@
   transform-origin: 50% 80%;
 }
 
-/* 트로피 — 살짝 커졌다 작아지는 펄스 + 미세한 흔들림 */
+/* ?�로?????�짝 커졌???�아지???�스 + 미세???�들�?*/
 @keyframes playoff-entry-trophy {
   0%,
   100% {
@@ -136,10 +136,10 @@
 }
 
 /* ============================================================
-   명예의 전당 — 가을야구 진입 카드 바로 위. 살짝 골드/프리미엄 톤이되
-   진입 카드(주인공)보다 시각적으로 튀지 않게 정적이고 차분하게.
+   명예???�당 ??가?�야�?진입 카드 바로 ?? ?�짝 골드/?�리미엄 ?�이??
+   진입 카드(주인�?보다 ?�각?�으�??�지 ?�게 ?�적?�고 차분?�게.
    ============================================================ */
-/* 경기장 진입 배너 — 명예의 전당 1줄 요약 */
+/* 경기??진입 배너 ??명예???�당 1�??�약 */
 .phone-frame-light .playoff-hall-banner {
   display: flex;
   align-items: center;
@@ -167,7 +167,7 @@
   flex-shrink: 0;
 }
 
-/* 회전 노출 영역 — 우승자 팀로고 + 닉네임(광고판) */
+/* ?�전 ?�출 ?�역 ???�승???�로고 + ?�네??광고?? */
 .phone-frame-light .playoff-hall-banner-spot {
   display: flex;
   align-items: center;
@@ -330,7 +330,7 @@
   flex-shrink: 0;
 }
 
-/* 인트로 / 팀 선택 */
+/* ?�트�?/ ?� ?�택 */
 .phone-frame-light .playoff-intro {
   text-align: center;
   margin: 8px 0 16px;
@@ -425,7 +425,7 @@
   padding: 10px 20px;
 }
 
-/* 대진표 */
+/* ?�진표 */
 .phone-frame-light .playoff-pending-card {
   display: flex;
   flex-direction: column;
@@ -483,7 +483,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* 두 팀 로고 사이 — 라운드 칩(위) + VS(아래) */
+/* ???� 로고 ?�이 ???�운??�??? + VS(?�래) */
 .phone-frame-light .playoff-vs {
   display: flex;
   flex-direction: column;
@@ -509,7 +509,7 @@
   color: var(--bp-text-muted);
 }
 
-/* 한국시리즈 차수 — VS 아래 작게 */
+/* ?�국?�리�?차수 ??VS ?�래 ?�게 */
 .phone-frame-light .playoff-vs-series {
   font-size: 10px;
   font-weight: 700;
@@ -665,7 +665,7 @@
   color: var(--bp-accent);
 }
 
-/* 결과(우승/탈락) 카드 */
+/* 결과(?�승/?�락) 카드 */
 .phone-frame-light .playoff-result-card {
   display: flex;
   flex-direction: column;
@@ -706,7 +706,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* 보조 버튼 (상대 라인업 보기 / 내 라인업 수정) */
+/* 보조 버튼 (?��? ?�인??보기 / ???�인???�정) */
 .phone-frame-light .playoff-secondary-btn {
   width: 100%;
   height: 44px;
@@ -734,7 +734,7 @@
   margin-top: 0;
 }
 
-/* 상대 라인업 모달 */
+/* ?��? ?�인??모달 */
 .phone-frame-light .playoff-opp {
   display: flex;
   flex-direction: column;
@@ -839,7 +839,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* 임시 라인업 편집 모달 */
+/* ?�시 ?�인???�집 모달 */
 .phone-frame-light .playoff-edit {
   display: flex;
   flex-direction: column;
@@ -960,7 +960,7 @@
   color: var(--bp-accent);
 }
 
-/* 격리 편집기 — 배너 + 저장 */
+/* 격리 ?�집�???배너 + ?�??*/
 .phone-frame-light .playoff-edit-banner {
   margin: 0 0 12px;
   padding: 10px 12px;
@@ -973,9 +973,9 @@
   text-align: center;
 }
 
-/* 그라운드 ↔ 타순 사이 액션 행 — 팀 관리 빌더와 동일 배치.
-   [실제 경기 라인업 불러오기](넓게) · [타자/투수 토글] · [저장하기].
-   .lineup-action-row(flex) 위에 얹어, 좁은 화면에서는 자연스럽게 줄바꿈. */
+/* 그라?�드 ???�???�이 ?�션 ?????� 관�?빌더?� ?�일 배치.
+   [?�제 경기 ?�인??불러?�기](?�게) · [?�???�수 ?��?] · [?�?�하�?.
+   .lineup-action-row(flex) ?�에 ?�어, 좁�? ?�면?�서???�연?�럽�?줄바�? */
 .phone-frame-light .playoff-edit-actionrow {
   flex-wrap: wrap;
   margin: 0 0 8px;
@@ -1002,7 +1002,7 @@
   max-width: min(300px, calc(100vw - 48px));
 }
 
-/* 저장 버튼 — 토글 옆에 붙는 강조 버튼 */
+/* ?�??버튼 ???��? ?�에 붙는 강조 버튼 */
 .phone-frame-light .playoff-edit-save-btn {
   display: inline-flex;
   align-items: center;
@@ -1030,9 +1030,9 @@
   cursor: wait;
 }
 
-/* PC 와이드 — 액션 행이 그리드(hint 영역)일 때 불러오기 버튼을 hint 칸으로,
-   토글+저장 버튼 묶음을 buttons 칸으로 배치 (빌더와 동일한 2줄 그리드 활용). */
-@media (min-width: 1025px) {
+/* PC ?�?�드 ???�션 ?�이 그리??hint ?�역)????불러?�기 버튼??hint 칸으�?
+   ?��?+?�??버튼 묶음??buttons 칸으�?배치 (빌더?� ?�일??2�?그리???�용). */
+@media (min-width: 9999px) {
   .phone-frame-wide .playoff-edit-actionrow {
     flex-wrap: nowrap;
     grid-template-columns: auto 1fr auto;
@@ -1052,14 +1052,14 @@
   }
 }
 
-/* ── 가을야구 승리/우승 축하 연출 (PlayoffWinFx) ──
-   결과 화면 위 풀스크린 오버레이. pointer-events:none 라 버튼 클릭을 막지 않음.
-   win: 컨페티 버스트(중간). champion: 컨페티 풀(진하게) + CSS 폭죽 여러 발. */
+/* ?�?� 가?�야�??�리/?�승 축하 ?�출 (PlayoffWinFx) ?�?�
+   결과 ?�면 ???�?�크�??�버?�이. pointer-events:none ??버튼 ?�릭??막�? ?�음.
+   win: 컨페??버스??중간). champion: 컨페???�(진하�? + CSS ??�� ?�러 �? */
 .playoff-fx {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 60; /* AppShell 콘텐츠 위. 토스트/모달보다는 아래. */
+  z-index: 60; /* AppShell 콘텐�??? ?�스??모달보다???�래. */
   overflow: hidden;
 }
 
@@ -1069,9 +1069,9 @@
   overflow: hidden;
 }
 
-/* 컨페티 조각 — 크기/색/모양은 인라인 style(입자별 랜덤). 여기선 공통 모션만.
-   --cf-* 커스텀 프로퍼티(인라인): rot-start(시작 회전), spin(누적 회전),
-   drift1/drift2(낙하 중 좌우 흔들림). 무한 반복으로 끊임없는 스트림. */
+/* 컨페??조각 ???�기/??모양?� ?�라??style(?�자�??�덤). ?�기??공통 모션�?
+   --cf-* 커스?� ?�로?�티(?�라??: rot-start(?�작 ?�전), spin(?�적 ?�전),
+   drift1/drift2(?�하 �?좌우 ?�들�?. 무한 반복?�로 ?�임?�는 ?�트�? */
 .playoff-fx-confetti-piece {
   position: absolute;
   top: -14vh;
@@ -1083,7 +1083,7 @@
   animation-fill-mode: both;
 }
 
-/* 낙하 + 좌우 흔들림(sway) + 회전. translateX 가 단계별로 바뀌며 흔들리게. */
+/* ?�하 + 좌우 ?�들�?sway) + ?�전. translateX 가 ?�계별로 바뀌며 ?�들리게. */
 @keyframes playoff-fx-fall {
   0% {
     transform: translate(0, 0) rotate(var(--cf-rot-start, 0deg));
@@ -1110,8 +1110,8 @@
   }
 }
 
-/* ── 폭죽 (champion 전용, CSS-only) ── 방사형 입자 폭발 + 중심 플래시.
-   한 발 = 한 점에서 사방으로 퍼지는 spark 16개 + flash 1개. 무한 반복. */
+/* ?�?� ??�� (champion ?�용, CSS-only) ?�?� 방사???�자 ??�� + 중심 ?�래??
+   ??�?= ???�에???�방?�로 ?��???spark 16�?+ flash 1�? 무한 반복. */
 .playoff-fx-fireworks {
   position: absolute;
   inset: 0;
@@ -1121,10 +1121,10 @@
   position: absolute;
   width: 0;
   height: 0;
-  /* burst 주기를 타이밍으로만 쓰기 위한 더미 컨테이너. 자식이 inherit delay. */
+  /* burst 주기�??�?�밍?�로�??�기 ?�한 ?��? 컨테?�너. ?�식??inherit delay. */
 }
 
-/* 터지는 순간 중심의 밝은 플래시 — 짧게 확 커졌다 사라짐. */
+/* ?��????�간 중심??밝�? ?�래????짧게 ??커졌???�라�? */
 .playoff-fx-flash {
   position: absolute;
   left: 0;
@@ -1148,8 +1148,8 @@
   animation-delay: inherit;
 }
 
-/* 사방으로 날아가는 불꽃 입자 — 짧은 streak. 바깥으로 멀어지며 작아지고 페이드,
-   끝에 살짝 중력 낙하(translateY 양수). */
+/* ?�방?�로 ?�아가??불꽃 ?�자 ??짧�? streak. 바깥?�로 멀?��?�??�아지�??�이??
+   ?�에 ?�짝 중력 ?�하(translateY ?�수). */
 .playoff-fx-spark {
   position: absolute;
   left: 0;
@@ -1163,19 +1163,19 @@
   transform: rotate(var(--fw-angle, 0deg)) translateY(0);
   animation-name: playoff-fx-spark;
   animation-duration: var(--fw-cycle, 2800ms);
-  /* 등속(linear) — 구간마다 이징이 다시 걸려 중간에 '주춤'하던 문제 제거. */
+  /* ?�속(linear) ??구간마다 ?�징???�시 걸려 중간??'주춤'?�던 문제 ?�거. */
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  /* fill-mode 제거: both 면 delay(터지기 전) 동안 0%(중심·불투명)가 미리 보여
-     입자가 점으로 떠 있다 순차로 터지는 것처럼 보임. 기본 opacity:0(투명) 유지. */
+  /* fill-mode ?�거: both �?delay(?��?�??? ?�안 0%(중심·불투�?가 미리 보여
+     ?�자가 ?�으�????�다 ?�차�??��???것처??보임. 기본 opacity:0(?�명) ?��?. */
   animation-delay: inherit;
 }
 
-/* 폭죽 1발의 라이프사이클은 전체 주기(--fw-cycle)의 앞 ~28% 에서 터지고
-   나머지는 다음 발까지의 휴지. 발마다 delay 가 달라 staggered 반복. */
+/* ??�� 1발의 ?�이?�사?�클?� ?�체 주기(--fw-cycle)????~28% ?�서 ?��?�?
+   ?�머지???�음 발까지???��?. 발마??delay 가 ?�라 staggered 반복. */
 @keyframes playoff-fx-flash {
-  /* 터질 때만 잠깐 확 켜졌다 사라지고 다음 발까지 투명 대기.
-     사라진 뒤(10%~100%)는 transform 고정 + opacity 0 유지 → 되돌아오는 모션 없음. */
+  /* ?�질 ?�만 ?�깐 ??켜졌???�라지�??�음 발까지 ?�명 ?��?
+     ?�라�???10%~100%)??transform 고정 + opacity 0 ?��? ???�돌?�오??모션 ?�음. */
   0% {
     transform: scale(0.2);
     opacity: 0;
@@ -1195,36 +1195,36 @@
 }
 
 @keyframes playoff-fx-spark {
-  /* 0% 중심에서 투명하게 출발 → 바깥으로만 발사되며 잠깐 보였다가,
-     바깥 위치에서 완전히 사라진 뒤 다음 발까지 투명 대기.
-     ⚠ 절대 중심(translateY 0)으로 되돌아오지 않는다.
-     opacity 는 22% 에서 0 이 되어 100% 까지 0 유지 → 다음 사이클 0%(중심)로
-     점프해도 보이지 않아 "다시 모이는" 잔상이 사라진다. */
+  /* 0% 중심?�서 ?�명?�게 출발 ??바깥?�로�?발사?�며 ?�깐 보�??��?,
+     바깥 ?�치?�서 ?�전???�라�????�음 발까지 ?�명 ?��?
+     ???��? 중심(translateY 0)?�로 ?�돌?�오지 ?�는??
+     opacity ??22% ?�서 0 ???�어 100% 까�? 0 ?��? ???�음 ?�이??0%(중심)�?
+     ?�프?�도 보이지 ?�아 "?�시 모이?? ?�상???�라진다. */
   0% {
-    /* 중심에서 밝게 출발(터지는 시점 — 중심 플래시와 겹침). */
+    /* 중심?�서 밝게 출발(?��????�점 ??중심 ?�래?��? 겹침). */
     transform: rotate(var(--fw-angle, 0deg)) translateY(0) scale(0.9);
     opacity: 1;
   }
   12% {
-    /* opacity 만 지정 — transform 은 0%~24% 단일 linear 구간 유지(등속). */
+    /* opacity �?지????transform ?� 0%~24% ?�일 linear 구간 ?��?(?�속). */
     opacity: 1;
   }
   24% {
-    /* 바깥으로 퍼져나가는 '동안' 동시에 페이드 → 사거리 도달과 함께 자연스럽게 소멸.
-       (멈췄다 사라지지 않게: 이동과 페이드가 겹침) */
+    /* 바깥?�로 ?�져?��???'?�안' ?�시???�이?????�거�??�달�??�께 ?�연?�럽�??�멸.
+       (멈췄???�라지지 ?�게: ?�동�??�이?��? 겹침) */
     transform: rotate(var(--fw-angle, 0deg))
       translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.5);
     opacity: 0;
   }
   100% {
-    /* 다음 발까지 바깥 위치에 투명하게 대기 — 중심 복귀 없음. */
+    /* ?�음 발까지 바깥 ?�치???�명?�게 ?��???중심 복�? ?�음. */
     transform: rotate(var(--fw-angle, 0deg))
       translateY(calc(-1 * var(--fw-dist, 80px))) scale(0.5);
     opacity: 0;
   }
 }
 
-/* ── 결과 배너 강조 — 승리/우승 시 글로우 ── */
+/* ?�?� 결과 배너 강조 ???�리/?�승 ??글로우 ?�?� */
 .phone-frame-light .stadium-result-banner.is-playoff-win {
   box-shadow: 0 0 0 1px rgba(232, 74, 138, 0.4),
     0 6px 22px rgba(232, 74, 138, 0.28);
@@ -1247,7 +1247,7 @@
   }
 }
 
-/* ── 모션 감소 선호 — 연출 정지/축소 ── */
+/* ?�?� 모션 감소 ?�호 ???�출 ?��?/축소 ?�?� */
 @media (prefers-reduced-motion: reduce) {
   .playoff-fx-confetti-piece,
   .playoff-fx-flash,

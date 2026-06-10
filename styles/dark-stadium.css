@@ -1,6 +1,6 @@
 /* ============================================================
- * 경기장 (Stadium) 4단계 흐름 — dark theme
- * 로비 → 입장 → 시뮬레이션 → 결과
+ * 경기??(Stadium) 4?�계 ?�름 ??dark theme
+ * 로비 ???�장 ???��??�이????결과
  * ============================================================ */
 
 
@@ -62,7 +62,7 @@
   font-size: 13px;
 }
 
-/* ── 공통 CTA ── */
+/* ?�?� 공통 CTA ?�?� */
 .phone-frame-light .stadium-cta-primary {
   display: inline-flex;
   align-items: center;
@@ -110,8 +110,8 @@
   cursor: not-allowed;
 }
 
-/* primary 와 같은 폭/패딩, 핑크 outline — 보조 액션이지만 명확히 버튼으로 인지되어야 할 때.
-   예: 라인업 없을 때 "AI 자동 라인업으로 체험" — primary 옆에 자연스럽게 짝 이루도록. */
+/* primary ?� 같�? ???�딩, ?�크 outline ??보조 ?�션?��?�?명확??버튼?�로 ?��??�어??????
+   ?? ?�인???�을 ??"AI ?�동 ?�인?�으�?체험" ??primary ?�에 ?�연?�럽�?�??�루?�록. */
 .phone-frame-light .stadium-cta-outline-pink {
   display: inline-flex;
   align-items: center;
@@ -138,7 +138,7 @@
   cursor: not-allowed;
 }
 
-/* ── 로비 ── */
+/* ?�?� 로비 ?�?� */
 .phone-frame-light .stadium-lobby-header {
   padding: 4px 4px 12px;
 }
@@ -149,8 +149,8 @@
   gap: 10px;
 }
 
-/* AI 카드 — PC wide(1100px) 모드에선 2열, 그 외엔 1열 (좁은 폭에선 텍스트 깨짐 방지) */
-@media (min-width: 1025px) {
+/* AI 카드 ??PC wide(1100px) 모드?�선 2?? �??�엔 1??(좁�? ??��???�스??깨짐 방�?) */
+@media (min-width: 9999px) {
   .phone-frame-light.phone-frame-wide .stadium-lobby-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -211,7 +211,7 @@
   color: var(--bp-accent);
 }
 
-/* 카드 액션 버튼 묶음 — 라인업 / 도전 */
+/* 카드 ?�션 버튼 묶음 ???�인??/ ?�전 */
 .phone-frame-light .stadium-lobby-card-actions {
   display: flex;
   gap: 6px;
@@ -252,7 +252,7 @@
   filter: brightness(1.08);
 }
 
-/* ── 로비: 친구와 대결 진입점 (2-up) ── */
+/* ?�?� 로비: 친구?� ?��?진입??(2-up) ?�?� */
 .phone-frame-light .stadium-lobby-live-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -301,7 +301,7 @@
   flex-shrink: 0;
 }
 
-/* ── 로비 섹션 (공개 풀 + AI 대결) ── */
+/* ?�?� 로비 ?�션 (공개 ?� + AI ?��? ?�?� */
 .phone-frame-light .stadium-lobby-section {
   margin-top: 16px;
 }
@@ -350,7 +350,7 @@
   color: var(--bp-text);
 }
 
-/* ── (deprecated, Lobby 재구성으로 미사용) 공개 라인업 도전 카드 ── */
+/* ?�?� (deprecated, Lobby ?�구?�으�?미사?? 공개 ?�인???�전 카드 ?�?� */
 .phone-frame-light .stadium-lobby-discover {
   display: flex;
   align-items: center;
@@ -400,7 +400,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* ── Discover (공개 라인업 도전) ── */
+/* ?�?� Discover (공개 ?�인???�전) ?�?� */
 .phone-frame-light .stadium-discover-gate {
   display: flex;
   flex-direction: column;
@@ -429,7 +429,7 @@
   margin: 6px 0 10px;
 }
 
-/* DiscoverScreen 헤더 — 안내 + 새로고침 한 라인 (flex) */
+/* DiscoverScreen ?�더 ???�내 + ?�로고침 ???�인 (flex) */
 .phone-frame-light .stadium-discover-head {
   display: flex;
   align-items: center;
@@ -495,14 +495,14 @@
   gap: 8px;
 }
 
-/* PC wide 모드 — 공개 라인업 카드 2열 */
-@media (min-width: 1025px) {
+/* PC wide 모드 ??공개 ?�인??카드 2??*/
+@media (min-width: 9999px) {
   .phone-frame-light.phone-frame-wide .stadium-discover-list {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-/* 태블릿 가로 wide — 더 넓으면 2열 */
+/* ?�블�?가�?wide ?????�으�?2??*/
 @media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
   .phone-frame-light.phone-frame-wide .stadium-discover-list {
     grid-template-columns: 1fr 1fr;
@@ -554,7 +554,7 @@
   flex-shrink: 0;
 }
 
-/* 등록 라인업 카드 — meta + description + 전적 */
+/* ?�록 ?�인??카드 ??meta + description + ?�적 */
 .phone-frame-light .stadium-registered-card .stadium-discover-card-body {
   gap: 4px;
 }
@@ -581,7 +581,7 @@
   overflow: hidden;
 }
 
-/* 본인 등록 카드 삭제 버튼 — danger 톤 */
+/* 본인 ?�록 카드 ??�� 버튼 ??danger ??*/
 .phone-frame-light .stadium-lobby-card-btn.stadium-lobby-card-btn-danger {
   background: rgba(255, 99, 99, 0.1);
   color: var(--bp-danger, #d9534f);
@@ -597,7 +597,7 @@
   cursor: not-allowed;
 }
 
-/* 도전 모달 안의 VS 영역 — 스코어보드와 동일 3열 그리드, 뱃지 행 정렬 */
+/* ?�전 모달 ?�의 VS ?�역 ???�코?�보?��? ?�일 3??그리?? 뱃�? ???�렬 */
 .phone-frame-light .stadium-discover-vs {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -621,7 +621,7 @@
 .phone-frame-light .stadium-discover-vs-label-right {
   grid-column: 3;
   grid-row: 1;
-  /* 거울 대칭 — 라벨 "내 팀" 도 우측 위 */
+  /* 거울 ?��????�벨 "???�" ???�측 ??*/
   justify-self: end;
 }
 
@@ -659,11 +659,11 @@
 }
 
 .phone-frame-light .stadium-discover-vs-side-right.stadium-play-team {
-  /* 거울 대칭 — 오른쪽 카드는 [텍스트 → 뱃지] 순서로 우측 끝에 정렬 */
+  /* 거울 ?��????�른�?카드??[?�스????뱃�?] ?�서�??�측 ?�에 ?�렬 */
   justify-content: flex-end;
 }
 
-/* 뱃지 옆 텍스트 칼럼 — 팀명(strong) + 라인업명(sub). 좌·우 카드 정렬 분기. */
+/* 뱃�? ???�스??칼럼 ???��?strong) + ?�인?�명(sub). 좌·우 카드 ?�렬 분기. */
 .phone-frame-light .stadium-discover-vs-textcol {
   display: flex;
   flex-direction: column;
@@ -683,20 +683,20 @@
   line-height: 1.2;
 }
 
-/* AI 대전 모달 — 매치 미리보기 + picker(최대 10개) + 시작 버튼 다 들어가야 해서
-   기본 lineup-confirm-modal-panel(340px) 보다 약간 크게. 세로는 뷰포트 88% + 스크롤. */
+/* AI ?�??모달 ??매치 미리보기 + picker(최�? 10�? + ?�작 버튼 ???�어가???�서
+   기본 lineup-confirm-modal-panel(340px) 보다 ?�간 ?�게. ?�로??뷰포??88% + ?�크�? */
 .phone-frame-light .modal-panel.ai-challenge-modal-panel {
   max-width: 380px;
   max-height: 88vh;
   overflow-y: auto;
 }
 
-/* 모달 헤더에 이미 "AI와 대결" 표시되므로 본문 안 페이지 제목 숨김 */
+/* 모달 ?�더???��? "AI?� ?��? ?�시?��?�?본문 ???�이지 ?�목 ?��? */
 .phone-frame-light .ai-challenge-modal-panel .stadium-enter-head {
   display: none;
 }
 
-/* 모달 안 본문 패딩·간격 — AppShell wide 가 아닌 모달 컨텍스트 보정 */
+/* 모달 ??본문 ?�딩·간격 ??AppShell wide 가 ?�닌 모달 컨텍?�트 보정 */
 .phone-frame-light .ai-challenge-modal-panel .stadium-enter {
   padding: 16px;
   display: flex;
@@ -768,11 +768,11 @@
   max-width: 100%;
 }
 
-/* 재대전 picker는 부모(.stadium-discover-my-picker-list)의 flex-wrap 그대로 사용.
-   각 셀이 자기 텍스트 폭을 가져가고 넘치면 다음 줄로 — 도전 시작 picker와 동일 흐름. */
+/* ?��???picker??부�?.stadium-discover-my-picker-list)??flex-wrap 그�?�??�용.
+   �??�???�기 ?�스????�� 가?��?�??�치�??�음 줄로 ???�전 ?�작 picker?� ?�일 ?�름. */
 
-/* 도전 시작 모달 — 기본 lineup-confirm-modal-panel(340px)보다 넓혀서
-   "팀명 12자 + (W승 L패)" 칩 2개가 한 줄에 들어가게. */
+/* ?�전 ?�작 모달 ??기본 lineup-confirm-modal-panel(340px)보다 ?��???
+   "?��?12??+ (W??L??" �?2개�? ??줄에 ?�어가�? */
 .phone-frame-light .modal-panel.challenge-start-modal-panel {
   max-width: 540px;
 }
@@ -813,7 +813,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* ── 라이브 매치 (생성/참여/대기) ── */
+/* ?�?� ?�이�?매치 (?�성/참여/?��? ?�?� */
 .phone-frame-light .stadium-live,
 .phone-frame-light .stadium-live-create {
   display: flex;
@@ -832,7 +832,7 @@
   font-size: 12px;
 }
 
-/* 진행 속도 선택 — 빠른/보통/중계 라디오 그룹 */
+/* 진행 ?�도 ?�택 ??빠른/보통/중계 ?�디??그룹 */
 .phone-frame-light .stadium-live-speed {
   display: flex;
   flex-direction: column;
@@ -1011,7 +1011,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── 라이브 매치: 카운트다운 + PlayScreen 잠금 배지 ── */
+/* ?�?� ?�이�?매치: 카운?�다??+ PlayScreen ?�금 배�? ?�?� */
 .phone-frame-light .stadium-live-countdown {
   display: flex;
   flex-direction: column;
@@ -1055,7 +1055,7 @@
   font-weight: 700;
 }
 
-/* 친구 매치 상단 헤더 — 정식/연습 매치 뱃지. AppShell headerAction 슬롯에 노출. */
+/* 친구 매치 ?�단 ?�더 ???�식/?�습 매치 뱃�?. AppShell headerAction ?�롯???�출. */
 .phone-frame-light .stadium-play-tier-badge {
   display: inline-flex;
   align-items: center;
@@ -1095,7 +1095,7 @@
   100% { box-shadow: 0 0 0 0 rgba(232, 74, 138, 0); }
 }
 
-/* ── 코드로 참여 입력 폼 ── */
+/* ?�?� 코드�?참여 ?�력 ???�?� */
 .phone-frame-light .stadium-code-form {
   display: flex;
   flex-direction: column;
@@ -1146,7 +1146,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* ── 입장 ── */
+/* ?�?� ?�장 ?�?� */
 .phone-frame-light .stadium-enter {
   display: flex;
   flex-direction: column;
@@ -1176,7 +1176,7 @@
   text-align: center;
 }
 
-/* 친구 매치 라인업 카드 — 클릭 시 상세 모달 표시 */
+/* 친구 매치 ?�인??카드 ???�릭 ???�세 모달 ?�시 */
 .phone-frame-light .stadium-enter-team-clickable {
   background: transparent;
   border: 1px dashed transparent;
@@ -1234,8 +1234,8 @@
 }
 
 .phone-frame-light .stadium-enter-picker-item {
-  /* 한 줄에 2열로 압축 — 라인업 슬롯이 10개까지 늘어나도 picker + hint + 진행속도 +
-     매치 만들기 버튼이 한 화면에 들어오도록. 이름은 truncate 처리됨. */
+  /* ??줄에 2?�로 ?�축 ???�인???�롯??10개까지 ?�어?�도 picker + hint + 진행?�도 +
+     매치 만들�?버튼?????�면???�어?�도�? ?�름?� truncate 처리?? */
   flex: 1 1 calc(50% - 3px);
   min-width: 0;
   display: flex;
@@ -1309,12 +1309,12 @@
   font-size: 10px;
   font-weight: 700;
 }
-/* 공개 등록 뱃지 — 정식 매치 가능 신호. accent 보다 명료한 그린 톤. */
+/* 공개 ?�록 뱃�? ???�식 매치 가???�호. accent 보다 명료??그린 ?? */
 .phone-frame-light .stadium-enter-picker-tag-published {
   background: rgba(46, 184, 106, 0.18);
   color: #1f8a4f;
 }
-/* picker 하단 도움말 + CTA */
+/* picker ?�단 ?��?�?+ CTA */
 .phone-frame-light .stadium-enter-picker-hint {
   margin: 8px 4px 0;
   font-size: 11px;
@@ -1348,7 +1348,7 @@
   line-height: 1.5;
 }
 
-/* ── 시뮬레이션 (play) v2 ── */
+/* ?�?� ?��??�이??(play) v2 ?�?� */
 .phone-frame-light .stadium-play-v2 {
   display: flex;
   flex-direction: column;
@@ -1356,7 +1356,7 @@
   position: relative;
 }
 
-/* 라인스코어 */
+/* ?�인?�코??*/
 .phone-frame-light .stadium-linescore {
   padding: 4px 14px 14px;
   background: var(--bp-card);
@@ -1365,8 +1365,8 @@
   overflow-x: auto;
 }
 
-/* 상단 타이틀 사선 장식(brand-deco-slashes) — 경기 진행 화면 헤더 좌우에 핑크 사선.
-   이미지 1개를 좌측은 좌우반전(scaleX(-1))으로 사용해서 대칭 효과. */
+/* ?�단 ?�?��? ?�선 ?�식(brand-deco-slashes) ??경기 진행 ?�면 ?�더 좌우???�크 ?�선.
+   ?��?지 1개�? 좌측?� 좌우반전(scaleX(-1))?�로 ?�용?�서 ?��??�과. */
 .phone-frame-light .brand-deco-slashes {
   display: inline-flex;
   align-items: center;
@@ -1382,7 +1382,7 @@
   background-size: contain;
 }
 
-/* 좌·우 각각 전용 이미지 사용 (디자이너가 좌우 별도 제작) */
+/* 좌·우 각각 ?�용 ?��?지 ?�용 (?�자?�너가 좌우 별도 ?�작) */
 .phone-frame-light .brand-deco-slashes .brand-deco-side:first-of-type {
   background-image: url("/icons/decorations/inning-slashes-left.png");
 }
@@ -1392,7 +1392,7 @@
 }
 
 
-/* 테이블 본체 — 시스템 sans 폰트(monospace 아님) + 진한 네이비 톤 텍스트 */
+/* ?�이�?본체 ???�스??sans ?�트(monospace ?�님) + 진한 ?�이�????�스??*/
 .phone-frame-light .stadium-linescore table {
   width: 100%;
   border-collapse: separate;
@@ -1405,13 +1405,13 @@
 .phone-frame-light .stadium-linescore td {
   padding: 9px 4px;
   text-align: center;
-  /* 자릿수 폭 동일화 — 두 줄(원정/홈)의 숫자가 컬럼 중앙에 시각적으로 정렬되도록. */
+  /* ?�릿?????�일??????�??�정/?????�자가 컬럼 중앙???�각?�으�??�렬?�도�? */
   font-variant-numeric: tabular-nums;
   min-width: 24px;
   color: var(--bp-text);
 }
 
-/* 헤더 라인 — TEAM/1~9/R, 폰트 작고 회색 톤 + 하단에 가로 구분선 */
+/* ?�더 ?�인 ??TEAM/1~9/R, ?�트 ?�고 ?�색 ??+ ?�단??가�?구분??*/
 .phone-frame-light .stadium-linescore thead th {
   color: var(--bp-text-muted);
   font-weight: 700;
@@ -1427,8 +1427,8 @@
   padding-left: 4px;
 }
 
-/* 현재 이닝 헤더 — 핑크 라운드 박스 풀필 + 흰 텍스트.
-   background-clip: padding-box로 padding 영역에만 컬러 → 사실상 박스가 살짝 inset 된 느낌. */
+/* ?�재 ?�닝 ?�더 ???�크 ?�운??박스 ?�??+ ???�스??
+   background-clip: padding-box�?padding ?�역?�만 컬러 ???�실??박스가 ?�짝 inset ???�낌. */
 .phone-frame-light .stadium-linescore th.is-current {
   color: #ffffff;
   font-weight: 900;
@@ -1437,19 +1437,19 @@
   border-bottom-color: transparent;
 }
 
-/* 현재 이닝 데이터 셀 — 텍스트만 핑크 */
+/* ?�재 ?�닝 ?�이???� ???�스?�만 ?�크 */
 .phone-frame-light .stadium-linescore td.is-current {
   color: var(--bp-accent);
   font-weight: 900;
 }
 
-/* 본문 셀 — 굵은 네이비 톤 */
+/* 본문 ?� ??굵�? ?�이�???*/
 .phone-frame-light .stadium-linescore tbody td {
   font-weight: 800;
   color: var(--bp-text);
 }
 
-/* 팀 이름 셀 */
+/* ?� ?�름 ?� */
 .phone-frame-light .stadium-linescore .team-cell {
   text-align: left;
   font-weight: 900;
@@ -1463,9 +1463,9 @@
   font-size: 14px;
 }
 
-/* R 컬럼 — 굵은 숫자, 좌측에 가는 분할선 */
+/* R 컬럼 ??굵�? ?�자, 좌측??가??분할??*/
 .phone-frame-light .stadium-linescore .rh {
-  /* 좌우 padding 대칭으로 — 이전엔 left 10/right 4였어 R 셀 "0"이 우측 치우침. */
+  /* 좌우 padding ?��?���????�전??left 10/right 4?�??R ?� "0"???�측 치우�? */
   padding-left: 6px;
   padding-right: 6px;
   font-weight: 900;
@@ -1479,7 +1479,7 @@
   font-weight: 700;
 }
 
-/* 스코어보드 가운데 — 다이아몬드 + 아웃카운트 + 회차 */
+/* ?�코?�보??가?�데 ???�이?�몬??+ ?�웃카운??+ ?�차 */
 .phone-frame-light .stadium-play-state {
   display: flex;
   flex-direction: column;
@@ -1494,10 +1494,10 @@
   letter-spacing: 0.3px;
 }
 
-/* 다이아몬드 — playbase.png 일러스트를 배경으로 깔고, 주자 마커를 베이스 위치에 오버레이.
-   주자 마커: 평소엔 빈 상태(투명), 주자 있으면 핑크 원으로 점등.
-   원본 PNG가 흰색이라 흰 카드 위에서 안 보임 → ::before 가상요소에 이미지를 깔고
-   filter로 회색톤 변환 (invert + opacity 조합). */
+/* ?�이?�몬????playbase.png ?�러?�트�?배경?�로 깔고, 주자 마커�?베이???�치???�버?�이.
+   주자 마커: ?�소??�??�태(?�명), 주자 ?�으�??�크 ?�으�??�등.
+   ?�본 PNG가 ?�색?�라 ??카드 ?�에????보임 ??::before 가?�요?�에 ?��?지�?깔고
+   filter�??�색??변??(invert + opacity 조합). */
 .phone-frame-light .stadium-diamond {
   position: relative;
   width: 110px;
@@ -1526,16 +1526,16 @@
   transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* 주자 있을 때 — 핑크 채움 + 글로우 + 살짝 부풀어오름. */
+/* 주자 ?�을 ?????�크 채�? + 글로우 + ?�짝 부?�?�오�? */
 .phone-frame-light .stadium-base.is-on {
   background: var(--bp-accent);
   box-shadow: 0 0 6px rgba(232, 74, 138, 0.65);
   transform: rotate(45deg) scale(1.05);
 }
 
-/* 베이스 위치 — playbase.png(533×468) 일러스트의 베이스 사각형 위치 기준.
-   container가 정사각형이라 이미지가 contain되며 위·아래 여백 ~6%씩 발생.
-   그걸 보정한 값(베이스 중심에 마커 중심이 오도록 margin으로 미세 조정). */
+/* 베이???�치 ??playbase.png(533×468) ?�러?�트??베이???�각???�치 기�?.
+   container가 ?�사각형?�라 ?��?지가 contain?�며 ?�·아???�백 ~6%??발생.
+   그걸 보정??�?베이??중심??마커 중심???�도�?margin?�로 미세 조정). */
 .phone-frame-light .stadium-base-2nd {
   top: 15%;
   left: 50%;
@@ -1550,14 +1550,14 @@
   right: 19%;
 }
 .phone-frame-light .stadium-base-home {
-  /* 홈은 일러스트의 홈플레이트가 이미 표시되므로 표시 안 함 (주자 표시 없음) */
+  /* ?��? ?�러?�트???�플?�이?��? ?��? ?�시?��?�??�시 ????(주자 ?�시 ?�음) */
   display: none;
 }
 
 /* ============================================================
- * 안타 발사 이펙트 — 타자 row 위치에서 위쪽 + 좌우 랜덤 각도로 공이 날아감.
- * 시작: (left, top) = (fromX, fromY). transform translate(-50%,-50%) 로 마커 중심 맞춤.
- * 끝: 추가 translate(--ball-dx, --ball-dy) 적용. dx/dy 는 부모 컴포넌트 inline style 로 주입.
+ * ?��? 발사 ?�펙?????�??row ?�치?�서 ?�쪽 + 좌우 ?�덤 각도�?공이 ?�아�?
+ * ?�작: (left, top) = (fromX, fromY). transform translate(-50%,-50%) �?마커 중심 맞춤.
+ * ?? 추�? translate(--ball-dx, --ball-dy) ?�용. dx/dy ??부�?컴포?�트 inline style �?주입.
  * ============================================================ */
 .stadium-flying-ball {
   position: fixed;
@@ -1566,7 +1566,7 @@
   pointer-events: none;
   z-index: 9999;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
-  /* animation 은 inline style 의 longhand 로 주입 — duration 이 동적 */
+  /* animation ?� inline style ??longhand �?주입 ??duration ???�적 */
 }
 
 .stadium-flying-ball svg {
@@ -1576,12 +1576,12 @@
 }
 
 /* ============================================================
- * 삼진 K 효과 — 중계 텍스트(narration) 위치에 큰 빨간 K 가 슬램
+ * ?�진 K ?�과 ??중계 ?�스??narration) ?�치????빨간 K 가 ?�램
  * ============================================================ */
 .stadium-strikeout-k {
   position: fixed;
-  /* left/top 은 inline style 로 narration 중심 좌표 주입.
-     transform 으로 -50%, -50% 해서 K 의 중심이 그 좌표에 오도록. */
+  /* left/top ?� inline style �?narration 중심 좌표 주입.
+     transform ?�로 -50%, -50% ?�서 K ??중심??�?좌표???�도�? */
   font-size: 120px;
   font-weight: 900;
   color: #dc2626;
@@ -1594,13 +1594,13 @@
   user-select: none;
   pointer-events: none;
   line-height: 1;
-  /* 시스템 기본 두꺼운 sans-serif */
+  /* ?�스??기본 ?�꺼??sans-serif */
   font-family: Impact, "Arial Black", sans-serif;
   z-index: 9999;
 }
 
 @keyframes stadium-strikeout-slam {
-  /* translate(-50%, -50%) 로 K 중심을 inline left/top 좌표에 맞춤. 그 후 scale/rotate. */
+  /* translate(-50%, -50%) �?K 중심??inline left/top 좌표??맞춤. �???scale/rotate. */
   0% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(6) rotate(-25deg);
@@ -1609,7 +1609,7 @@
     opacity: 1;
     transform: translate(-50%, -50%) scale(1.6) rotate(-6deg);
   }
-  /* SLAM! 살짝 작아졌다가 다시 튕김 (impact bounce) */
+  /* SLAM! ?�짝 ?�아졌다가 ?�시 ?��? (impact bounce) */
   28% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(0.85) rotate(3deg);
@@ -1618,12 +1618,12 @@
     opacity: 1;
     transform: translate(-50%, -50%) scale(1.15) rotate(0deg);
   }
-  /* 박힌 상태 유지 */
+  /* 박힌 ?�태 ?��? */
   80% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1) rotate(0deg);
   }
-  /* 페이드아웃 */
+  /* ?�이?�아??*/
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(1.1) rotate(0deg);
@@ -1631,22 +1631,22 @@
 }
 
 /* ============================================================
- * 배트 스윙 이펙트 — 안타 발사 시 타자 위치에 동시 표시.
- * 500ms 짧은 스윙. 손잡이 끝(SVG 좌측 노브)을 회전축으로.
- * left/top = 타자 row 중심. transform translate(-50%,-50%) 로 SVG 중앙을 그 좌표에 정렬한 뒤,
- * transform-origin 을 손잡이 쪽(좌측 5%, 세로 중앙)으로 둬 손목 회전처럼 휘어짐.
- * --bat-rot-end: 우타 +135deg / 좌타 -135deg.
- * --bat-flip-x : 좌타 -1 (수평 반전) / 우타 1.
+ * 배트 ?�윙 ?�펙?????��? 발사 ???�???�치???�시 ?�시.
+ * 500ms 짧�? ?�윙. ?�잡????SVG 좌측 ?�브)???�전축으�?
+ * left/top = ?�??row 중심. transform translate(-50%,-50%) �?SVG 중앙??�?좌표???�렬????
+ * transform-origin ???�잡??�?좌측 5%, ?�로 중앙)?�로 ???�목 ?�전처럼 ?�어�?
+ * --bat-rot-end: ?��? +135deg / 좌�? -135deg.
+ * --bat-flip-x : 좌�? -1 (?�평 반전) / ?��? 1.
  * ============================================================ */
 .stadium-bat-swing {
   position: fixed;
   width: 70px;
   height: 70px;
   pointer-events: none;
-  z-index: 9998; /* FlyingBall(9999) 바로 아래 — 공이 배트 위로 보이도록 */
-  /* PNG 배트의 손잡이가 좌측에 있음 — 좌측 가장자리 부근을 회전축으로. */
+  z-index: 9998; /* FlyingBall(9999) 바로 ?�래 ??공이 배트 ?�로 보이?�록 */
+  /* PNG 배트???�잡?��? 좌측???�음 ??좌측 가?�자�?부근을 ?�전축으�? */
   transform-origin: 10% 50%;
-  /* 초기엔 보이지 않다가 keyframes 에서 ramp-in */
+  /* 초기??보이지 ?�다가 keyframes ?�서 ramp-in */
   opacity: 0;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
@@ -1658,25 +1658,25 @@
 }
 
 @keyframes stadium-bat-swing {
-  /* 0%: 시작 — 회전 0, opacity 0. translate 로 SVG 중심을 좌표에 정렬.
-     scaleX(var(--bat-flip-x)) 로 좌타 수평 반전 (손잡이가 오른쪽에 오도록).
-     주의: transform-origin 이 3% 50% 이므로 translate(-50%,-50%) 후에도
-     실제 회전축은 SVG 좌측 노브 부근. */
+  /* 0%: ?�작 ???�전 0, opacity 0. translate �?SVG 중심??좌표???�렬.
+     scaleX(var(--bat-flip-x)) �?좌�? ?�평 반전 (?�잡?��? ?�른쪽에 ?�도�?.
+     주의: transform-origin ??3% 50% ?��?�?translate(-50%,-50%) ?�에??
+     ?�제 ?�전축�? SVG 좌측 ?�브 부�? */
   0% {
     opacity: 0;
     transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(0deg);
   }
-  /* 10%: 빠르게 페이드 인 (50ms ramp-in 비슷) */
+  /* 10%: 빠르�??�이????(50ms ramp-in 비슷) */
   10% {
     opacity: 1;
     transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(calc(var(--bat-rot-end) * 0.1));
   }
-  /* 80%: 풀스윙 — 회전 끝 위치 도달 후 잔상 유지 */
+  /* 80%: ?�?�윙 ???�전 ???�치 ?�달 ???�상 ?��? */
   80% {
     opacity: 1;
     transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(var(--bat-rot-end));
   }
-  /* 100%: 페이드 아웃 (마지막 100ms = 400→500ms 구간 = 20%) */
+  /* 100%: ?�이???�웃 (마�?�?100ms = 400??00ms 구간 = 20%) */
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) scaleX(var(--bat-flip-x)) rotate(var(--bat-rot-end));
@@ -1684,29 +1684,29 @@
 }
 
 @keyframes stadium-ball-fly {
-  /* 0%: 시작점 — 원 크기 */
+  /* 0%: ?�작???????�기 */
   0% {
     opacity: 1;
     transform: translate(-50%, -50%) translate(0, 0) scale(1) rotate(0deg);
   }
-  /* 50%: 비행 정점 — 가장 크게 부풀어 "공이 떴다" 느낌 (안타 3배 / 홈런 4배) */
+  /* 50%: 비행 ?�점 ??가???�게 부?�??"공이 ?�다" ?�낌 (?��? 3�?/ ?�런 4�? */
   50% {
     opacity: 1;
     transform: translate(-50%, -50%) translate(calc(var(--ball-dx) * 0.5), calc(var(--ball-dy) * 0.5)) scale(var(--ball-max-scale)) rotate(360deg);
   }
-  /* 95%: 도착점 직전 — 다시 원 크기로 */
+  /* 95%: ?�착??직전 ???�시 ???�기�?*/
   95% {
     opacity: 1;
     transform: translate(-50%, -50%) translate(calc(var(--ball-dx) * 0.95), calc(var(--ball-dy) * 0.95)) scale(1) rotate(720deg);
   }
-  /* 100%: 도착점에서 페이드아웃 */
+  /* 100%: ?�착?�에???�이?�아??*/
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) translate(var(--ball-dx), var(--ball-dy)) scale(1) rotate(720deg);
   }
 }
 
-/* 아웃카운트 점 */
+/* ?�웃카운????*/
 .phone-frame-light .stadium-outs {
   display: flex;
   gap: 4px;
@@ -1727,7 +1727,7 @@
   border-color: #dc2626;
 }
 
-/* 1줄 상황판 (narration) — 좌측 정렬로 텍스트 깜빡임 방지 */
+/* 1�??�황??(narration) ??좌측 ?�렬�??�스??깜빡??방�? */
 .phone-frame-light .stadium-play-narration {
   display: flex;
   align-items: center;
@@ -1767,9 +1767,9 @@
   font-weight: 900;
 }
 
-/* 투수 교체 카드형 강조 배너 — narration 자리에 PITCHER_CHANGE phase 동안 노출.
-   라이트 카드 톤(다른 모달과 일관) + 핑크 보더 + 약한 글로우.
-   진입 애니메이션: 아래에서 슬라이드 + opacity. */
+/* ?�수 교체 카드??강조 배너 ??narration ?�리??PITCHER_CHANGE phase ?�안 ?�출.
+   ?�이??카드 ???�른 모달�??��?) + ?�크 보더 + ?�한 글로우.
+   진입 ?�니메이?? ?�래?�서 ?�라?�드 + opacity. */
 .phone-frame-light .stadium-pitcher-change-banner {
   display: flex;
   flex-direction: column;
@@ -1866,7 +1866,7 @@
   opacity: 0.85;
 }
 
-/* 양 팀 라인업 — 공격팀 큰 카드, 수비팀 작은 카드. transition으로 공수 교대 시 부드럽게. */
+/* ???� ?�인????공격?� ??카드, ?�비?� ?��? 카드. transition?�로 공수 교�? ??부?�럽�? */
 .phone-frame-light .stadium-play-lineups {
   display: grid;
   grid-template-columns: 1.85fr 1fr;
@@ -1878,7 +1878,7 @@
   grid-template-columns: 1fr 1.85fr;
 }
 
-/* 경기 종료 — 1:1 박스스코어 모드 */
+/* 경기 종료 ??1:1 박스?�코??모드 */
 .phone-frame-light .stadium-play-lineups.is-final {
   grid-template-columns: 1fr 1fr;
 }
@@ -1891,12 +1891,12 @@
   box-shadow: none;
 }
 
-/* 종료 모드에선 양쪽 다 today stats 보이게 */
+/* 종료 모드?�선 ?�쪽 ??today stats 보이�?*/
 .phone-frame-light .stadium-play-batting-card.is-final .stadium-play-lineup-today {
   display: inline-block;
 }
 
-/* 종료 모드 행 — 공격/수비 압축 해제, 균등 + 큰 폰트 (공간 여유 활용) */
+/* 종료 모드 ????공격/?�비 ?�축 ?�제, 균등 + ???�트 (공간 ?�유 ?�용) */
 .phone-frame-light .stadium-play-batting-card.is-final .stadium-play-lineup-row {
   font-size: 13px;
   padding: 7px 4px;
@@ -1922,13 +1922,13 @@
   margin-left: 8px;
 }
 
-/* 종료 모드 — 마지막 이닝 결과 뱃지는 숨김 (일부 타자만 보이면 일관성 부족).
-   대신 (안타/타수) 누적 스탯이 모든 9명에게 균일하게 보임. */
+/* 종료 모드 ??마�?�??�닝 결과 뱃�????��? (?��? ?�?�만 보이�??��???부�?.
+   ?�??(?��?/?�?? ?�적 ?�탯??모든 9명에�?균일?�게 보임. */
 .phone-frame-light .stadium-play-batting-card.is-final .stadium-play-lineup-outcome {
   display: none;
 }
 
-/* 종료 모드 — 현재 타석 강조도 제거 (이미 끝났으니 의미 없음) */
+/* 종료 모드 ???�재 ?�??강조???�거 (?��? ?�났?�니 ?��? ?�음) */
 .phone-frame-light .stadium-play-batting-card.is-final .stadium-play-lineup-row.is-current {
   background: transparent;
   border-left: none;
@@ -1945,7 +1945,7 @@
   transition: padding 0.4s ease, background 0.4s ease, border-color 0.4s ease;
 }
 
-/* 현재 공격 중인 팀 카드는 약간 강조 + 살짝 큰 패딩 */
+/* ?�재 공격 중인 ?� 카드???�간 강조 + ?�짝 ???�딩 */
 .phone-frame-light .stadium-play-batting-card.is-offense {
   border-color: rgba(232, 74, 138, 0.5);
   background: rgba(232, 74, 138, 0.06);
@@ -1953,7 +1953,7 @@
   box-shadow: 0 4px 14px rgba(232, 74, 138, 0.08);
 }
 
-/* 수비팀 카드 — 텍스트 압축 + 결과 뱃지 숨김 (단 경기 종료 모드는 제외) */
+/* ?�비?� 카드 ???�스???�축 + 결과 뱃�? ?��? (??경기 종료 모드???�외) */
 .phone-frame-light .stadium-play-batting-card:not(.is-offense):not(.is-final) {
   opacity: 0.78;
 }
@@ -1976,7 +1976,7 @@
   display: none;
 }
 
-/* 공격팀 카드 — 타순/이름 가독성 향상 */
+/* 공격?� 카드 ???�???�름 가?�성 ?�상 */
 .phone-frame-light .stadium-play-batting-card.is-offense .stadium-play-lineup-row {
   font-size: 14px;
   padding: 7px 4px;
@@ -2000,7 +2000,7 @@
   min-width: 0;
 }
 
-/* 라인업 상세 모달 트리거 — 카드 헤더를 버튼으로 만듦 */
+/* ?�인???�세 모달 ?�리�???카드 ?�더�?버튼?�로 만듦 */
 .phone-frame-light .stadium-play-batting-head-btn {
   width: 100%;
   background: transparent;
@@ -2051,7 +2051,7 @@
   min-width: 0;
 }
 
-/* 이번 경기 누적 (안타 / 타수) — 이름 옆 인라인. 공격팀 카드에만 표시 */
+/* ?�번 경기 ?�적 (?��? / ?�?? ???�름 ???�라?? 공격?� 카드?�만 ?�시 */
 .phone-frame-light .stadium-play-lineup-today {
   display: inline-block;
   margin-left: 6px;
@@ -2068,12 +2068,12 @@
   display: none;
 }
 
-/* 현재 타석 행에선 색상 강조 */
+/* ?�재 ?�???�에???�상 강조 */
 .phone-frame-light .stadium-play-lineup-row.is-current .stadium-play-lineup-today {
   color: var(--bp-accent);
 }
 
-/* 현재 타석 행 아래로 펼쳐지는 결과 중계 멘트 (2번째 grid row, 전 컬럼 span) */
+/* ?�재 ?�?????�래�??�쳐지??결과 중계 멘트 (2번째 grid row, ??컬럼 span) */
 .phone-frame-light .stadium-play-lineup-narration {
   grid-column: 1 / -1;
   margin-top: 4px;
@@ -2106,7 +2106,7 @@
   }
 }
 
-/* 수비팀 카드에선 표시 안 함 — 어차피 inlineOutcomeBatterId가 공격팀 타자라 매칭 안 되긴 함 */
+/* ?�비?� 카드?�선 ?�시 ???????�차??inlineOutcomeBatterId가 공격?� ?�?�라 매칭 ???�긴 ??*/
 .phone-frame-light .stadium-play-batting-card:not(.is-offense) .stadium-play-lineup-narration {
   display: none;
 }
@@ -2130,7 +2130,7 @@
   animation: stadium-ab-dot 0.8s ease-in-out infinite;
 }
 
-/* 안타 — 초록 뱃지, "확 커졌다가 살짝 줄어드는" bounce 효과 */
+/* ?��? ??초록 뱃�?, "??커졌?��? ?�짝 줄어?�는" bounce ?�과 */
 .phone-frame-light .stadium-play-lineup-outcome.is-hit {
   background: rgba(34, 197, 94, 0.25);
   color: var(--bp-success);
@@ -2138,7 +2138,7 @@
   transform-origin: center;
 }
 
-/* 홈런 — 오렌지 강조, 큰 폭으로 등장 + 글로우 펄스 + 흔들림. 뱃지 자체도 살짝 더 큼. */
+/* ?�런 ???�렌지 강조, ????���??�장 + 글로우 ?�스 + ?�들�? 뱃�? ?�체???�짝 ???? */
 .phone-frame-light .stadium-play-lineup-outcome.is-hr {
   background: rgba(232, 74, 138, 0.5);
   color: #fff;
@@ -2155,7 +2155,7 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* 안타 bounce — 1.0 → 1.6 → 1.0 */
+/* ?��? bounce ??1.0 ??1.6 ??1.0 */
 @keyframes stadium-outcome-hit {
   0% { transform: scale(0.6); opacity: 0; }
   35% { transform: scale(1.6); opacity: 1; }
@@ -2164,7 +2164,7 @@
   100% { transform: scale(1); }
 }
 
-/* 홈런 — 작게 → 크게 등장 + 미세 회전 흔들림 + 그림자 펄스 */
+/* ?�런 ???�게 ???�게 ?�장 + 미세 ?�전 ?�들�?+ 그림???�스 */
 @keyframes stadium-outcome-hr {
   0% {
     transform: scale(0.3) rotate(-8deg);
@@ -2229,7 +2229,7 @@
   text-overflow: ellipsis;
 }
 
-/* 레거시 v1 play 레이아웃 (남겨두기, 사용 X) */
+/* ?�거??v1 play ?�이?�웃 (?�겨?�기, ?�용 X) */
 .phone-frame-light .stadium-play {
   display: flex;
   flex-direction: column;
@@ -2241,7 +2241,7 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  /* 사이드 컬럼에 텍스트 공간을 더 주기 위해 gap·padding 최소화. */
+  /* ?�이??컬럼???�스??공간????주기 ?�해 gap·padding 최소?? */
   gap: 4px;
   padding: 4px 8px;
   background: var(--bp-card);
@@ -2249,13 +2249,13 @@
   border-radius: 14px;
 }
 
-/* 양쪽 팀 카드 — 가로 배치: [닉네임/뱃지 칼럼] | [라인업명/점수 칼럼].
-   왼쪽 카드는 [뱃지 | 정보], 오른쪽 카드는 [정보 | 뱃지] 거울 대칭. */
+/* ?�쪽 ?� 카드 ??가�?배치: [?�네??뱃�? 칼럼] | [?�인?�명/?�수 칼럼].
+   ?�쪽 카드??[뱃�? | ?�보], ?�른�?카드??[?�보 | 뱃�?] 거울 ?��? */
 .phone-frame-light .stadium-play-team {
   display: flex;
   align-items: center;
   gap: 10px;
-  /* grid 1fr 안에서 긴 팀명이 들어와도 컬럼이 grid 폭을 넘지 않도록. */
+  /* grid 1fr ?�에??�??�명이 ?�어?�??컬럼??grid ??�� ?��? ?�도�? */
   min-width: 0;
 }
 
@@ -2263,15 +2263,15 @@
   justify-content: flex-end;
 }
 
-/* 팀뱃지 위 닉네임 — 친구/공개 매치에서 양쪽 사람 식별용.
-   뱃지와 같은 칼럼이라 라인업명/점수 라인은 영향 없음. */
+/* ?�뱃�? ???�네????친구/공개 매치?�서 ?�쪽 ?�람 ?�별??
+   뱃�??� 같�? 칼럼?�라 ?�인?�명/?�수 ?�인?� ?�향 ?�음. */
 .phone-frame-light .stadium-play-team-badge-col {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   min-width: 0;
-  /* 긴 팀명이 들어와도 뱃지는 잘리지 않도록 — info만 줄어들게. */
+  /* �??�명이 ?�어?�??뱃�????�리지 ?�도�???info�?줄어?�게. */
   flex-shrink: 0;
 }
 
@@ -2286,14 +2286,14 @@
   letter-spacing: -0.2px;
 }
 
-/* 팀명+점수 그룹 — 뱃지 옆에 세로 스택, 왼쪽 카드는 left-align, 오른쪽 카드는 right-align. */
+/* ?��??�수 그룹 ??뱃�? ?�에 ?�로 ?�택, ?�쪽 카드??left-align, ?�른�?카드??right-align. */
 .phone-frame-light .stadium-play-team-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
   line-height: 1;
-  /* 자식(.stadium-play-team-name)의 ellipsis가 동작하려면 flex 칼럼이 줄어들 수 있어야 함. */
+  /* ?�식(.stadium-play-team-name)??ellipsis가 ?�작?�려�?flex 칼럼??줄어?????�어???? */
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -2307,9 +2307,9 @@
   color: var(--bp-text-secondary);
   font-weight: 700;
   letter-spacing: -0.2px;
-  /* 긴 팀명은 최대 2줄까지 자연스럽게 줄바꿈. 3줄 넘으면 ellipsis 처리.
-     한글은 default로 글자 단위로 wrap 되므로 word-break를 굳이 설정하지 않음.
-     width:100% 로 칼럼 폭을 다 차지해 텍스트가 좁게 wrap 되지 않도록. */
+  /* �??�명�? 최�? 2줄까지 ?�연?�럽�?줄바�? 3�??�으�?ellipsis 처리.
+     ?��??� default�?글???�위�?wrap ?��?�?word-break�?굳이 ?�정?��? ?�음.
+     width:100% �?칼럼 ??�� ??차�????�스?��? 좁게 wrap ?��? ?�도�? */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -2330,11 +2330,11 @@
   color: var(--bp-text);
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
-  /* 팀명은 좌/우 가장자리에 붙이되 점수는 컬럼 가운데로. column flex의 align-self는 cross-axis(수평). */
+  /* ?�명�? �???가?�자리에 붙이???�수??컬럼 가?�데�? column flex??align-self??cross-axis(?�평). */
   align-self: center;
 }
 
-/* 점수 변동 효과 — Scoreboard.tsx 내부에서 delta>=1 시 클래스 부여. */
+/* ?�수 변???�과 ??Scoreboard.tsx ?��??�서 delta>=1 ???�래??부?? */
 @keyframes stadium-score-roll {
   0%   { transform: translateY(55%) scale(0.92); opacity: 0.2; }
   35%  { transform: translateY(0) scale(1.08); opacity: 1; }
@@ -2366,7 +2366,7 @@
   animation: stadium-score-pump 900ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* (구) 기존 stadium-play-team 직속 자식 스타일 — 위 *-name/*-score로 대체. */
+/* (�? 기존 stadium-play-team 직속 ?�식 ?��???????*-name/*-score�??��? */
 .phone-frame-light .stadium-play-team > span:not(.team-badge-wrap):not(.stadium-play-team-name) {
   font-size: 13px;
   color: var(--bp-text-secondary);
@@ -2472,7 +2472,7 @@
   padding: 12px 16px;
 }
 
-/* 아이콘-only 버튼 (일시정지/재생) — 건너뛰기 버튼 가로폭 맞춤 */
+/* ?�이�?only 버튼 (?�시?��?/?�생) ??건너?�기 버튼 가로폭 맞춤 */
 .phone-frame-light .stadium-play-btn-icon {
   flex: 0 0 auto;
   padding: 12px 16px;
@@ -2480,7 +2480,7 @@
   justify-content: center;
 }
 
-/* 음소거 토글 — 오른쪽 끝으로 밀어내기. 정사각형. */
+/* ?�소�??��? ???�른�??�으�?밀?�내�? ?�사각형. */
 .phone-frame-light .stadium-play-btn-mute {
   flex: 0 0 auto;
   margin-left: auto;
@@ -2488,7 +2488,7 @@
   min-width: 44px;
   color: var(--bp-text-secondary);
 }
-/* 연속한 음소거 버튼(배경음악 + 효과음)은 붙어 있도록 — 첫 버튼만 auto 마진. */
+/* ?�속???�소�?버튼(배경?�악 + ?�과???� 붙어 ?�도�???�?버튼�?auto 마진. */
 .phone-frame-light .stadium-play-btn-mute + .stadium-play-btn-mute {
   margin-left: 4px;
 }
@@ -2497,7 +2497,7 @@
   background: rgba(20, 30, 50, 0.04);
 }
 
-/* 친구 대결 매치 생성 — 진행 모드 선택 카드 */
+/* 친구 ?��?매치 ?�성 ??진행 모드 ?�택 카드 */
 .phone-frame-light .stadium-live-mode-pick {
   display: flex;
   flex-direction: column;
@@ -2546,7 +2546,7 @@
   color: var(--bp-accent);
 }
 
-/* 진행 모드 라디오 (빠른/일반/중계) — PlayScreen 컨트롤 */
+/* 진행 모드 ?�디??(빠른/?�반/중계) ??PlayScreen 컨트�?*/
 .phone-frame-light .stadium-play-mode {
   display: inline-flex;
   background: rgba(20, 30, 50, 0.04);
@@ -2582,7 +2582,7 @@
   color: #ffffff;
 }
 
-/* ── 결과 ── */
+/* ?�?� 결과 ?�?� */
 .phone-frame-light .stadium-result {
   display: flex;
   flex-direction: column;
@@ -2622,7 +2622,7 @@
   gap: 8px;
 }
 
-/* 오른쪽(홈) 팀은 미러 — 점수 / 팀명 / 배지 순으로 보이게 */
+/* ?�른�??? ?�?� 미러 ???�수 / ?��?/ 배�? ?�으�?보이�?*/
 .phone-frame-light .stadium-result-team.is-right {
   flex-direction: row-reverse;
 }
@@ -2633,8 +2633,8 @@
   letter-spacing: -1px;
 }
 
-/* 결과 스코어보드 안의 팀 배지 — 기본 lg(58/20)는 안에 이니셜이 너무 작아 보여서
-   배지는 줄이고 이니셜은 키워서 시각적 균형 맞춤 (ratio ~55%). */
+/* 결과 ?�코?�보???�의 ?� 배�? ??기본 lg(58/20)???�에 ?�니?�이 ?�무 ?�아 보여??
+   배�???줄이�??�니?��? ?�워???�각??균형 맞춤 (ratio ~55%). */
 .phone-frame-light .stadium-result-team .team-badge {
   width: 44px;
   height: 44px;
@@ -2728,7 +2728,7 @@
   gap: 8px;
 }
 
-/* 자동 저장 상태 표시 — 결과 화면 footer 위에 작게 */
+/* ?�동 ?�???�태 ?�시 ??결과 ?�면 footer ?�에 ?�게 */
 .phone-frame-light .stadium-result-save-status {
   text-align: center;
   font-size: 11px;
@@ -2737,7 +2737,7 @@
   min-height: 18px;
 }
 
-/* ── 타격 이펙트 (안타/홈런) — narration bar 중앙에서 터짐 ── */
+/* ?�?� ?��??�펙??(?��?/?�런) ??narration bar 중앙?�서 ?�짐 ?�?� */
 .phone-frame-light .stadium-fx {
   position: absolute;
   left: 50%;
@@ -2783,7 +2783,7 @@
   }
 }
 
-/* 홈런 — 중앙 폭발 글로우 */
+/* ?�런 ??중앙 ??�� 글로우 */
 .phone-frame-light .stadium-fx-burst {
   position: absolute;
   left: 0;
@@ -2830,12 +2830,12 @@
 }
 
 /* ============================================================
- * 경기 종료 등장 연출 (is-final-reveal)
- *   GAME_END 진입 시 1회만 재생. 레이아웃은 그대로 두고 기존 요소들이
- *   위→아래로 순차 등장(staggered). 전체 ~1초 안팎의 경쾌한 연출.
- *   순서: 1) "경기 종료" 텍스트 → 2) 라인스코어 → 3) 스코어보드(점수 강조)
- *        → 4) 타자 리스트(타순 stagger) → 5) "결과 보기" 버튼.
- *   reveal 클래스는 한 번만 부여되므로 애니메이션은 1회만 재생됨.
+ * 경기 종료 ?�장 ?�출 (is-final-reveal)
+ *   GAME_END 진입 ??1?�만 ?�생. ?�이?�웃?� 그�?�??�고 기존 ?�소?�이
+ *   ?�→?�래�??�차 ?�장(staggered). ?�체 ~1�??�팎??경쾌???�출.
+ *   ?�서: 1) "경기 종료" ?�스????2) ?�인?�코????3) ?�코?�보???�수 강조)
+ *        ??4) ?�??리스???�??stagger) ??5) "결과 보기" 버튼.
+ *   reveal ?�래?�는 ??번만 부?�되므�??�니메이?��? 1?�만 ?�생??
  * ============================================================ */
 @keyframes stadium-final-pop {
   0% {
@@ -2908,26 +2908,26 @@
   }
 }
 
-/* 1) "경기 종료" 텍스트 — 강조 pop. 종료 모드 narration(=is-walkoff)에 적용.
-   진행 중에는 reveal 클래스가 없어 영향 0. */
-/* === 순차 등장: 경기종료 → 이닝점수 → 팀로고·팀명 → 점수 → 선수리스트 → 결과보기.
-   각 단계가 끝난 뒤 다음이 시작되도록 delay를 누적(겹치지 않게). === */
+/* 1) "경기 종료" ?�스????강조 pop. 종료 모드 narration(=is-walkoff)???�용.
+   진행 중에??reveal ?�래?��? ?�어 ?�향 0. */
+/* === ?�차 ?�장: 경기종료 ???�닝?�수 ???�로고·?��????�수 ???�수리스????결과보기.
+   �??�계가 ?�난 ???�음???�작?�도�?delay�??�적(겹치지 ?�게). === */
 
-/* 1) "경기 종료" 텍스트 — pop (0~0.45s) */
+/* 1) "경기 종료" ?�스????pop (0~0.45s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-narration {
   animation: stadium-final-pop 0.45s cubic-bezier(0.22, 1.2, 0.4, 1) both;
 }
 
-/* 2) 이닝 점수판 — 프레임/팀명·R 먼저(0.45s), 이닝 점수는 1→9 순차 페이드인(0.5~1.26s) */
+/* 2) ?�닝 ?�수?????�레???�명·R 먼�?(0.45s), ?�닝 ?�수??1?? ?�차 ?�이?�인(0.5~1.26s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore {
   animation: stadium-final-rise 0.3s ease-out both;
   animation-delay: 0.45s;
 }
-/* 이닝 칸(2~10번째 td = 1~9이닝)만 순차. both-fill 로 각자 delay 전엔 숨김.
-   team-cell(1)·R(11)은 프레임과 함께 등장. away/home 두 행의 같은 nth-child = 같은 이닝 → 함께. */
-/* 이닝 칸(2~10번째 td = 1~9이닝)만 순차. 각 규칙에 animation+delay 함께 둔다
-   (범위 선택자로 animation 따로 두면 pseudo 2개라 특이도가 높아 개별 delay를 덮어써 버림).
-   shorthand가 delay를 0으로 리셋하므로 animation-delay 를 뒤에 명시해 덮어쓴다. */
+/* ?�닝 �?2~10번째 td = 1~9?�닝)�??�차. both-fill �?각자 delay ?�엔 ?��?.
+   team-cell(1)·R(11)?� ?�레?�과 ?�께 ?�장. away/home ???�의 같�? nth-child = 같�? ?�닝 ???�께. */
+/* ?�닝 �?2~10번째 td = 1~9?�닝)�??�차. �?규칙??animation+delay ?�께 ?�다
+   (범위 ?�택?�로 animation ?�로 ?�면 pseudo 2개라 ?�이?��? ?�아 개별 delay�???��??버림).
+   shorthand가 delay�?0?�로 리셋?��?�?animation-delay �??�에 명시????��?�다. */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(2) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.5s; }
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(3) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.56s; }
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(4) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.62s; }
@@ -2938,14 +2938,14 @@
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(9) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.92s; }
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore tbody td:nth-child(10) { animation: stadium-final-rise 0.28s ease-out both; animation-delay: 0.98s; }
 
-/* 3) 팀 로고·팀명(스코어보드) — 점수판 후 등장. 점수(team-score)는 4단계에서 별도로
-   나오므로 여기선 숨김 유지(아래 both-fill). (0.87~1.29s) */
+/* 3) ?� 로고·?��??�코?�보?? ???�수?????�장. ?�수(team-score)??4?�계?�서 별도�?
+   ?�오므�??�기???��? ?��?(?�래 both-fill). (0.87~1.29s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard {
   animation: stadium-final-fade 0.18s ease-out both;
   animation-delay: 1.3s;
 }
 
-/* 4) 점수 — 로고·팀명 후 강조 pop. both-fill 로 그 전엔 숨겨져 있다 등장. (1.29~1.79s) */
+/* 4) ?�수 ??로고·?��???강조 pop. both-fill �?�??�엔 ?�겨???�다 ?�장. (1.29~1.79s) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-scoreboard > .stadium-play-team:first-child {
   animation: stadium-final-slide-from-left 0.46s cubic-bezier(0.16, 0.84, 0.3, 1) both;
   animation-delay: 1.3s;
@@ -2961,7 +2961,7 @@
   animation-delay: 1.72s;
 }
 
-/* 5) 타자 리스트 — 점수 후 타순 순서대로 빠르게 (1.79s~) */
+/* 5) ?�??리스?????�수 ???�???�서?��?빠르�?(1.79s~) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row {
   animation: stadium-final-rise 0.35s ease-out both;
 }
@@ -2976,13 +2976,13 @@
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(9) { animation-delay: 2.62s; }
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-lineups.is-final .stadium-play-lineup-row:nth-child(n+10) { animation-delay: 2.67s; }
 
-/* 6) "결과 보기" 버튼 — 맨 마지막 (3.0s~) */
+/* 6) "결과 보기" 버튼 ??�?마�?�?(3.0s~) */
 .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-controls .stadium-cta-primary {
   animation: stadium-final-rise 0.4s ease-out both;
   animation-delay: 3.0s;
 }
 
-/* 접근성 — 모션 최소화 설정 시 등장 애니메이션 끔(요소는 즉시 표시). */
+/* ?�근????모션 최소???�정 ???�장 ?�니메이?????�소??즉시 ?�시). */
 @media (prefers-reduced-motion: reduce) {
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-play-narration,
   .phone-frame-light .stadium-play-v2.is-final-reveal .stadium-linescore,
@@ -2998,9 +2998,9 @@
 }
 
 /* ============================================================
- * MatchOpeningSequence — 경기 시작 전 풀스크린 오프닝 (4 phase)
- *   phase 1: title (어웨이 vs 홈)
- *   phase 2: lineups (양팀 1~9번 fade-in)
+ * MatchOpeningSequence ??경기 ?�작 ???�?�크�??�프??(4 phase)
+ *   phase 1: title (?�웨??vs ??
+ *   phase 2: lineups (?��? 1~9�?fade-in)
  *   phase 3: countdown (3-2-1)
  *   phase 4: PLAY BALL!
  * ============================================================ */
@@ -3018,8 +3018,8 @@
   isolation: isolate;
 }
 
-/* Phase 1 (title) + Phase 2 (lineups) 에서만 백그라운드 블러 — 라인업 가독성 ↑.
- * Phase 3 (countdown) + Phase 4 (PLAY BALL) 에서는 깨끗한 투명 백그라운드 유지. */
+/* Phase 1 (title) + Phase 2 (lineups) ?�서�?백그?�운??블러 ???�인??가?�성 ??
+ * Phase 3 (countdown) + Phase 4 (PLAY BALL) ?�서??깨끗???�명 백그?�운???��?. */
 .phone-frame-light .match-opening[data-phase="title"],
 .phone-frame-light .match-opening[data-phase="lineups"] {
   background: rgba(0, 0, 0, 0.35);
@@ -3037,7 +3037,7 @@
 }
 
 .phone-frame-light .match-opening::before {
-  /* 미묘한 라이트 빔 — 백그라운드 텍스처 */
+  /* 미묘???�이??�???백그?�운???�스�?*/
   content: "";
   position: absolute;
   inset: -20%;
@@ -3058,7 +3058,7 @@
 /* ---------- skip 버튼 ---------- */
 .phone-frame-light .match-opening-skip {
   position: absolute;
-  /* iOS 노치/상태바와 겹치지 않도록 safe-area 가산. */
+  /* iOS ?�치/?�태바�? 겹치지 ?�도�?safe-area 가?? */
   top: calc(16px + env(safe-area-inset-top, 0px));
   right: calc(16px + env(safe-area-inset-right, 0px));
   z-index: 2;
@@ -3091,7 +3091,7 @@
 }
 
 /* ============================================================
- * Phase 1 — Title
+ * Phase 1 ??Title
  * ============================================================ */
 .phone-frame-light .match-opening-title {
   position: relative;
@@ -3184,26 +3184,26 @@
 }
 
 /* ============================================================
- * Phase 2 — Lineups
+ * Phase 2 ??Lineups
  * ------------------------------------------------------------
- * 컨테이너는 반투명 패널이 되어 어두운 백그라운드 위에 떠있도록.
- * 모바일/좁은 phone-frame: column stack
- * 데스크탑/태블릿(≥768px): side-by-side row
+ * 컨테?�너??반투�??�널???�어 ?�두??백그?�운???�에 ?�있?�록.
+ * 모바??좁�? phone-frame: column stack
+ * ?�스?�탑/?�블�???68px): side-by-side row
  *
- * 주의: 부모 .match-opening 은 이미 position:fixed; inset:0; flex center 이므로
- *       여기서는 width:auto + max-width 만 잡아주면 자연스럽게 가운데로 모인다.
+ * 주의: 부�?.match-opening ?� ?��? position:fixed; inset:0; flex center ?��?�?
+ *       ?�기?�는 width:auto + max-width �??�아주면 ?�연?�럽�?가?�데�?모인??
  * ============================================================ */
 .phone-frame-light .match-opening-lineups {
   position: relative;
   z-index: 1;
   display: flex;
-  /* 모바일에서도 항상 side-by-side — 어웨이 vs 홈 한 화면에 비교. */
+  /* 모바?�에?�도 ??�� side-by-side ???�웨??vs ?????�면??비교. */
   flex-direction: row;
   align-items: stretch;
   justify-content: center;
   gap: 8px;
-  /* width:auto 는 콘텐츠 너비에 hug 되어 좌/우 col 이 안쪽으로 shrink 됨.
-   * min(100%, ...) 로 가용 너비를 적극적으로 사용해 col 내부에 이름 공간을 확보. */
+  /* width:auto ??콘텐�??�비??hug ?�어 �???col ???�쪽?�로 shrink ??
+   * min(100%, ...) �?가???�비�??�극?�으�??�용??col ?��????�름 공간???�보. */
   width: min(100%, 720px);
   min-width: 0;
   max-width: 100%;
@@ -3222,9 +3222,9 @@
   .phone-frame-light .match-opening-lineups {
     gap: 32px;
     margin: 0;
-    /* 데스크탑: 훨씬 넓게 (1280 → 1920px, +50%). 부모 .match-opening 은 fixed inset:0 이라
-     * phone-frame width 에 묶이지 않고 뷰포트 전체에서 가운데 정렬된다.
-     * width 를 능동적으로 가용 영역을 사용하도록 지정 — 콘텐츠 hug 방지. */
+    /* ?�스?�탑: ?�씬 ?�게 (1280 ??1920px, +50%). 부�?.match-opening ?� fixed inset:0 ?�라
+     * phone-frame width ??묶이지 ?�고 뷰포???�체?�서 가?�데 ?�렬?�다.
+     * width �??�동?�으�?가???�역???�용?�도�?지????콘텐�?hug 방�?. */
     width: min(100%, 1920px);
     max-width: min(100%, 1920px);
     padding: 32px 44px;
@@ -3247,14 +3247,14 @@
   .phone-frame-light .match-opening-lineups-col {
     gap: 8px;
     padding: 20px 28px;
-    /* min-width 를 제거 — 뷰포트가 좁을 때(예: 800px) 두 col 합산이
-     * 뷰포트를 초과해 flex shrink 가 강제로 col 폭을 줄여 이름이 ellipsis 되던 문제 해결.
-     * flex: 1 1 0 만으로 두 col 이 가용 폭을 균등 분배. */
+    /* min-width �??�거 ??뷰포?��? 좁을 ???? 800px) ??col ?�산??
+     * 뷰포?��? 초과??flex shrink 가 강제�?col ??�� 줄여 ?�름??ellipsis ?�던 문제 ?�결.
+     * flex: 1 1 0 만으�???col ??가????�� 균등 분배. */
     min-width: 0;
   }
 }
 
-/* 오프닝 한정 — 어두운 배경에서 진한 로고가 묻히지 않도록 흰 원형 배경 처리 */
+/* ?�프???�정 ???�두??배경?�서 진한 로고가 묻히지 ?�도�????�형 배경 처리 */
 .phone-frame-light .match-opening .team-logo {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 50%;
@@ -3343,11 +3343,11 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* 부모 col 안에서 row 들이 col 폭을 넘지 않도록 — flex shrink 체인 보강 */
+  /* 부�?col ?�에??row ?�이 col ??�� ?��? ?�도�???flex shrink 체인 보강 */
   min-width: 0;
 }
 
-/* 라인업 빌더 스타일 — 흰 카드형 row + 핑크 번호 / 컬러 타격 pill / 회색 포지션 pill */
+/* ?�인??빌더 ?��???????카드??row + ?�크 번호 / 컬러 ?��?pill / ?�색 ?��???pill */
 .phone-frame-light .match-opening-lineups-row {
   display: flex;
   align-items: center;
@@ -3379,7 +3379,7 @@
   transform: translateY(0);
 }
 
-/* 번호 배지 — 어두운 패널 위에서 잘 읽히도록 밝은 중성톤 */
+/* 번호 배�? ???�두???�널 ?�에?????�히?�록 밝�? 중성??*/
 .phone-frame-light .match-opening-lineups-order {
   display: inline-flex;
   align-items: center;
@@ -3397,9 +3397,9 @@
 }
 
 .phone-frame-light .match-opening-lineups-name {
-  /* flex 1 1 auto + min-width:0 — 외국인 긴 이름(예: ALCANTARA)이
-   * 좌측 번호 배지와 우측 포지션 pill 사이의 가용 공간을 최대로 흡수.
-   * ellipsis 는 fallback 으로 유지. */
+  /* flex 1 1 auto + min-width:0 ???�국??�??�름(?? ALCANTARA)??
+   * 좌측 번호 배�??� ?�측 ?��???pill ?�이??가??공간??최�?�??�수.
+   * ellipsis ??fallback ?�로 ?��?. */
   flex: 1 1 auto;
   min-width: 0;
   font-size: 14px;
@@ -3410,8 +3410,8 @@
   text-overflow: ellipsis;
 }
 
-/* 포지션 pill — 우측 끝, 중성 회색.
- * 이름 공간 확보를 위해 패딩/폰트를 다이어트 — 한글 5자 이름이 ellipsis 없이 들어오도록. */
+/* ?��???pill ???�측 ?? 중성 ?�색.
+ * ?�름 공간 ?�보�??�해 ?�딩/?�트�??�이?�트 ???��? 5???�름??ellipsis ?�이 ?�어?�도�? */
 .phone-frame-light .match-opening-lineups-position {
   flex: 0 0 auto;
   margin-left: auto;
@@ -3425,7 +3425,7 @@
 }
 
 /* ============================================================
- * Phase 3 — Countdown
+ * Phase 3 ??Countdown
  * ============================================================ */
 .phone-frame-light .match-opening-countdown {
   position: relative;
@@ -3455,7 +3455,7 @@
 }
 
 /* ============================================================
- * Phase 4 — PLAY BALL!
+ * Phase 4 ??PLAY BALL!
  * ============================================================ */
 .phone-frame-light .match-opening-playball {
   position: relative;
@@ -3616,7 +3616,7 @@
   }
 }
 
-/* ── 경기장 상단 라인업 랭킹 TOP5 프리뷰 ── */
+/* ?�?� 경기???�단 ?�인????�� TOP5 ?�리�??�?� */
 .phone-frame-light .stadium-lobby-rank-preview {
   margin-top: 4px;
 }
@@ -3711,7 +3711,7 @@
   opacity: 0.8;
 }
 
-/* TOP5 행의 우측 "라인업" 버튼 — 작은 outline 칩 */
+/* TOP5 ?�의 ?�측 "?�인?? 버튼 ???��? outline �?*/
 .phone-frame-light .stadium-lobby-rank-preview-btn {
   display: inline-flex;
   align-items: center;
@@ -3738,7 +3738,7 @@
   cursor: wait;
 }
 
-/* TOP5 위젯 — 라인업/계정 누적 탭 */
+/* TOP5 ?�젯 ???�인??계정 ?�적 ??*/
 .phone-frame-light .stadium-lobby-rank-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3775,7 +3775,7 @@
   box-shadow: 0 1px 4px rgba(232, 74, 138, 0.28);
 }
 
-/* TOP5 위젯 — 5등 밑 "전체 보기" 행 (CTA 톤) */
+/* TOP5 ?�젯 ??5??�?"?�체 보기" ??(CTA ?? */
 .phone-frame-light .stadium-lobby-rank-preview-more {
   list-style: none;
 }

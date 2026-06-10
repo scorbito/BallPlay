@@ -10,6 +10,7 @@ import {
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
+import { getSimResultByGameId, type BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,13 @@ function kstToday(): string {
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
-export default async function AiWinnerRevealPage({ params }: { params: { gameId: string } }) {
+export default async function AiWinnerRevealPage({
+  params,
+  searchParams
+}: {
+  params: { gameId: string };
+  searchParams: { date?: string };
+}) {
   const supabase = createSupabaseServerClient();
 
   // game 자체는 listGamesFromDb 가 날짜 범위라 광범위. 한 행만 가져오는 게 더 적합한데
@@ -123,6 +130,33 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
       }))
     : [];
 
+  // 1000판 시뮬레이션 결과 및 라인업 패치
+  const simResult = await getSimResultByGameId(supabase, params.gameId, gameRow.game_date);
+  const sim: BpSimResultRow | null = simResult.ok ? simResult.row : null;
+
+  type RecentBatter = { order: number; name: string; position: string | null };
+  async function fetchLineup(teamId: string, sourceDate: string | null) {
+    if (!sourceDate) return null;
+    const { data } = await supabase
+      .from("bp_team_recent_lineups")
+      .select("batting")
+      .eq("team_id", teamId)
+      .eq("game_date", sourceDate)
+      .maybeSingle();
+    const batting = (data?.batting ?? null) as RecentBatter[] | null;
+    if (!batting || batting.length === 0) return null;
+    return [...batting]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((b) => ({ order: b.order, name: b.name, position: b.position }));
+  }
+
+  const [homeLineup, awayLineup] = sim
+    ? await Promise.all([
+        fetchLineup(sim.home_team_id, sim.lineup_source_home),
+        fetchLineup(sim.away_team_id, sim.lineup_source_away)
+      ])
+    : [null, null];
+
   const isToday = gameRow.game_date === kstToday();
 
   return (
@@ -142,6 +176,10 @@ export default async function AiWinnerRevealPage({ params }: { params: { gameId:
       }}
       predictions={predictions}
       isToday={isToday}
+      selectedDate={searchParams.date}
+      sim={sim}
+      homeLineup={homeLineup}
+      awayLineup={awayLineup}
     />
   );
 }

@@ -157,6 +157,7 @@ export async function GET(
       .select("id, game_date, home_team_id, away_team_id, home_score, away_score")
       .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
       .eq("status", "finished")
+      .lt("game_date", gameDate) // 경기 시점 이전의 최근 경기들만 필터링
       .order("game_date", { ascending: false })
       .limit(10);
 

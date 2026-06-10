@@ -1,8 +1,7 @@
 /* ============================================================
- * 승리팀 예측 (predict/winner) — 라이트 테마, 일정 페이지 행 스타일
- * ============================================================ */
+ * ?�리?� ?�측 (predict/winner) ???�이???�마, ?�정 ?�이지 ???��??? * ============================================================ */
 
-/* ── 상단 적중률 — 한 줄 컴팩트 (오늘 | 전체) ── */
+/* ?�?� ?�단 ?�중�?????�?컴팩??(?�늘 | ?�체) ?�?� */
 .phone-frame-light .predict-stats {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -59,7 +58,7 @@
   background: var(--bp-line);
 }
 
-/* ── 날짜 헤더 — [<] 날짜+안내 [>] ── */
+/* ?�?� ?�짜 ?�더 ??[<] ?�짜+?�내 [>] ?�?� */
 .phone-frame-light .predict-day-header {
   display: grid;
   grid-template-columns: 36px 1fr 36px;
@@ -76,7 +75,7 @@
   min-width: 0;
 }
 
-/* 오늘이 아닐 때 — 날짜 영역 자체가 "오늘로" Link */
+/* ?�늘???�닐 ?????�짜 ?�역 ?�체가 "?�늘�? Link */
 .phone-frame-light .predict-day-center-link {
   text-decoration: none;
   padding: 4px 12px;
@@ -134,7 +133,7 @@
   cursor: default;
 }
 
-/* ── 경기 행 리스트 ── */
+/* ?�?� 경기 ??리스???�?� */
 .phone-frame-light .predict-row-list {
   display: flex;
   flex-direction: column;
@@ -145,7 +144,7 @@
   border-radius: 14px;
 }
 
-/* 단일 행: [time] [away btn] [vs] [home btn] [status/결과 라벨] */
+/* ?�일 ?? [time] [away btn] [vs] [home btn] [status/결과 ?�벨] */
 .phone-frame-light .predict-row {
   position: relative;
   display: grid;
@@ -157,15 +156,15 @@
   transition: background 0.2s ease;
 }
 
-/* 팀명 + 선발 투수 묶음 — 팀 버튼 안 중앙에 배치 (가로 flex: 1로 남은 공간 차지).
-   팀명은 가운데 정렬, 선발 투수는 그 아래 한 줄. away/home 동일 처리. */
+/* ?��?+ ?�발 ?�수 묶음 ???� 버튼 ??중앙??배치 (가�?flex: 1�??��? 공간 차�?).
+   ?�명�? 가?�데 ?�렬, ?�발 ?�수??�??�래 ??�? away/home ?�일 처리. */
 .phone-frame-light .predict-row-team-block {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  min-width: 0; /* text-overflow 동작용 */
+  min-width: 0; /* text-overflow ?�작??*/
   line-height: 1.15;
 }
 
@@ -184,13 +183,13 @@
   background: transparent;
 }
 
-/* 카드 stagger 등장 — 페이지에 픽 한 경기가 있을 때만(JS에서 클래스 부여).
-   stagger delay는 inline style(animationDelay)로 카드별 다르게 적용. */
+/* 카드 stagger ?�장 ???�이지??????경기가 ?�을 ?�만(JS?�서 ?�래??부??.
+   stagger delay??inline style(animationDelay)�?카드�??�르�??�용. */
 .phone-frame-light .predict-row.is-staggered {
   animation: predict-row-judged-in 0.45s ease-out backwards;
 }
 
-/* 적중률 카드 페이드인 — 마지막 카드 등장 후 페이드 + 숫자 카운트업 시작 */
+/* ?�중�?카드 ?�이?�인 ??마�?�?카드 ?�장 ???�이??+ ?�자 카운?�업 ?�작 */
 @keyframes predict-stat-fade-in {
   0% {
     opacity: 0;
@@ -225,8 +224,8 @@
   letter-spacing: -0.2px;
 }
 
-/* ── 팀 사이드 (선택 가능 버튼) ──
-   grid 1fr auto 1fr — 양 사이드 콘텐츠(badge / trail) 유무 관계없이 team-block을 정중앙 고정.
+/* ?�?� ?� ?�이??(?�택 가??버튼) ?�?�
+   grid 1fr auto 1fr ?????�이??콘텐�?badge / trail) ?�무 관계없??team-block???�중??고정.
    AWAY: [badge] [team-block] [trail(score+check)]
    HOME: [trail(check+score)] [team-block] [badge] (DOM order 미러) */
 .phone-frame-light .predict-row-side {
@@ -244,7 +243,7 @@
   min-width: 0;
 }
 
-/* col 1은 시작쪽으로, col 3은 끝쪽으로 정렬 */
+/* col 1?� ?�작쪽으�? col 3?� ?�쪽?�로 ?�렬 */
 .phone-frame-light .predict-row-side > :first-child {
   justify-self: start;
 }
@@ -260,9 +259,9 @@
   gap: 3px;
 }
 
-/* HOME side는 미러로 grid 자동 배치되므로 별도 정렬 필요 X. 기존 class는 유지(다른 곳서 참조 가능). */
+/* HOME side??미러�?grid ?�동 배치?��?�?별도 ?�렬 ?�요 X. 기존 class???��?(?�른 곳서 참조 가??. */
 .phone-frame-light .predict-row-side-right {
-  /* 호환용 유지 — grid layout으로 충분 */
+  /* ?�환???��? ??grid layout?�로 충분 */
 }
 
 .phone-frame-light .predict-row-side:not(:disabled):hover {
@@ -278,13 +277,13 @@
   cursor: default;
 }
 
-/* 카드 자체는 모든 상태에서 동일 톤 유지 — 표시는 체크/X 마크 + 우측 결과 라벨로만.
-   기존 핑크/초록/빨강 테두리·배경은 시각적으로 정신없다는 피드백 반영해 제거. */
+/* 카드 ?�체??모든 ?�태?�서 ?�일 ???��? ???�시??체크/X 마크 + ?�측 결과 ?�벨로만.
+   기존 ?�크/초록/빨강 ?�두�?�배경�? ?�각?�으�??�신?�다???�드�?반영???�거. */
 .phone-frame-light .predict-row-side.is-picked,
 .phone-frame-light .predict-row-side.is-winner,
 .phone-frame-light .predict-row-side.is-picked.is-correct,
 .phone-frame-light .predict-row-side.is-picked.is-wrong {
-  /* no color override — 기본 .predict-row-side 스타일 그대로 */
+  /* no color override ??기본 .predict-row-side ?��???그�?�?*/
 }
 
 .phone-frame-light .predict-row-team {
@@ -296,7 +295,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  /* 양쪽 카드 모두 팀명 중앙 정렬 — 좌우 시각 대칭 */
+  /* ?�쪽 카드 모두 ?��?중앙 ?�렬 ??좌우 ?�각 ?��?*/
   text-align: center;
 }
 
@@ -321,8 +320,8 @@
   color: var(--bp-danger);
 }
 
-/* 채점 전 픽 마크 — 진한 핑크 + 두꺼운 stroke로 옅은 핑크 배경에서도 또렷하게 보임.
-   배경이 rgba(232,74,138,0.15)이라 같은 색상 변형으로는 대비 부족 → strong 톤 + stroke 2.5 */
+/* 채점 ????마크 ??진한 ?�크 + ?�꺼??stroke�??��? ?�크 배경?�서???�렷?�게 보임.
+   배경??rgba(232,74,138,0.15)?�라 같�? ?�상 변?�으로는 ?��?부�???strong ??+ stroke 2.5 */
 .phone-frame-light .predict-row-mark-pick {
   color: var(--bp-accent-strong, #d63b7a);
   stroke-width: 2.8;
@@ -337,7 +336,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ── 우측 상태 배지 ── */
+/* ?�?� ?�측 ?�태 배�? ?�?� */
 .phone-frame-light .predict-row-status {
   display: inline-flex;
   align-items: center;
@@ -370,7 +369,7 @@
   color: var(--bp-text-muted);
 }
 
-/* ── 채점된 본인 예측 — 큰 결과 배지 (적중!/아쉬워요) ── */
+/* ?�?� 채점??본인 ?�측 ????결과 배�? (?�중!/?�쉬?�요) ?�?� */
 .phone-frame-light .predict-row-result {
   display: inline-flex;
   align-items: center;
@@ -382,8 +381,8 @@
   letter-spacing: 0.2px;
   white-space: nowrap;
   color: #ffffff;
-  /* 배지 펄스 — 카드 등장 직후 3회 두근거림.
-     animationDelay는 inline style로 카드별 다르게 (`idx * 1000 + 450`ms). */
+  /* 배�? ?�스 ??카드 ?�장 직후 3???�근거림.
+     animationDelay??inline style�?카드�??�르�?(`idx * 1000 + 450`ms). */
   transform-origin: center;
   animation: predict-row-result-pulse 0.5s ease-in-out 0s 3 backwards;
 }
@@ -407,7 +406,7 @@
   }
 }
 
-/* ── 예측 완료 버튼 ── */
+/* ?�?� ?�측 ?�료 버튼 ?�?� */
 .phone-frame-light .predict-submit-bar {
   display: flex;
   flex-direction: column;
@@ -447,7 +446,7 @@
   color: var(--bp-text-muted);
 }
 
-/* ── 빈 상태 ── */
+/* ?�?� �??�태 ?�?� */
 .phone-frame-light .predict-empty {
   display: flex;
   flex-direction: column;
@@ -472,7 +471,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* ── 적중률 랭킹 페이지 진입 버튼 (예측 페이지 하단) ── */
+/* ?�?� ?�중�???�� ?�이지 진입 버튼 (?�측 ?�이지 ?�단) ?�?� */
 .phone-frame-light .predict-rank-link {
   display: inline-flex;
   align-items: center;
@@ -506,7 +505,7 @@
 }
 
 /* ============================================================
- * 적중률 랭킹
+ * ?�중�???��
  * ============================================================ */
 
 .phone-frame-light .predict-rank {
@@ -549,7 +548,7 @@
   color: var(--bp-text-muted);
 }
 
-/* ── 기간 탭 ── */
+/* ?�?� 기간 ???�?� */
 .phone-frame-light .predict-rank-tabs {
   display: inline-flex;
   gap: 2px;
@@ -583,7 +582,7 @@
   color: #fff;
 }
 
-/* ── 랭킹 리스트 ── */
+/* ?�?� ??�� 리스???�?� */
 .phone-frame-light .predict-rank-list {
   list-style: none;
   margin: 0;
@@ -687,7 +686,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 로딩 / 빈 상태 */
+/* 로딩 / �??�태 */
 .phone-frame-light .predict-rank-loading {
   display: inline-flex;
   align-items: center;
@@ -718,8 +717,8 @@
   border-radius: 10px;
 }
 
-/* ── PC 와이드 — 통계 카드 좀 더 키우고, 행 컬럼 폭 여유 ── */
-@media (min-width: 1025px) {
+/* ?�?� PC ?�?�드 ???�계 카드 좀 ???�우�? ??컬럼 ???�유 ?�?� */
+@media (min-width: 9999px) {
   .phone-frame-wide .predict-stat-value {
     font-size: 28px;
   }

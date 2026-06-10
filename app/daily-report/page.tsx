@@ -18,6 +18,8 @@ type Props = {
   searchParams: {
     date?: string; // YYYY-MM-DD
     nocache?: string; // "true" 이면 캐시를 무시하고 제미나이 강제 호출
+    focus?: string; // 특정 경기 ID
+    backHref?: string; // 뒤로가기 경로
   };
 };
 
@@ -80,6 +82,8 @@ export default async function DailyReportPage({ searchParams }: Props) {
         initialReport={cachedReport} 
         reportDate={targetDate}
         isAdmin={isAdmin}
+        focus={searchParams.focus}
+        backHref={searchParams.backHref}
       />
     );
   }
@@ -111,6 +115,8 @@ export default async function DailyReportPage({ searchParams }: Props) {
         reportDate={targetDate}
         isNoGames={true}
         isAdmin={isAdmin}
+        focus={searchParams.focus}
+        backHref={searchParams.backHref}
       />
     );
   }
@@ -124,6 +130,8 @@ export default async function DailyReportPage({ searchParams }: Props) {
         reportDate={targetDate}
         isPending={true}
         isAdmin={isAdmin}
+        focus={searchParams.focus}
+        backHref={searchParams.backHref}
       />
     );
   }
@@ -140,6 +148,8 @@ export default async function DailyReportPage({ searchParams }: Props) {
       initialIsGenerating={isAutoGenerateTarget}
       isNoReport={!isAutoGenerateTarget}
       isAdmin={isAdmin}
+      focus={searchParams.focus}
+      backHref={searchParams.backHref}
     />
   );
 }

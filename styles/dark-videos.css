@@ -1,6 +1,6 @@
-/* 재밌는 야구 영상 — 쇼츠(세로 9:16) 중심 그리드 + 모달. */
+/* ?�밌???�구 ?�상 ???�츠(?�로 9:16) 중심 그리??+ 모달. */
 
-/* 페이지 안내 텍스트 — 헤더 아래 (위쪽으로 끌어올림) */
+/* ?�이지 ?�내 ?�스?????�더 ?�래 (?�쪽?�로 ?�어?�림) */
 .phone-frame-light .videos-intro {
   margin: -8px 4px 2px;
   font-size: 12px;
@@ -10,7 +10,7 @@
   letter-spacing: -0.1px;
 }
 
-/* 영상 등록 버튼 — 헤더 우측 (AppShell headerAction 슬롯) */
+/* ?�상 ?�록 버튼 ???�더 ?�측 (AppShell headerAction ?�롯) */
 .phone-frame-light .videos-register-btn {
   display: inline-flex;
   align-items: center;
@@ -30,7 +30,7 @@
   opacity: 0.9;
 }
 
-/* 영상 등록 모달 — 화면 가운데 정렬 */
+/* ?�상 ?�록 모달 ???�면 가?�데 ?�렬 */
 .modal-backdrop:has(.videos-register-panel) {
   align-items: center;
   padding: 16px;
@@ -133,7 +133,7 @@
   font-weight: 600;
 }
 
-/* ── 행 단위 레이아웃 — 쇼츠 3개 행 + 가로 영상 단독 행 혼합 ── */
+/* ?�?� ???�위 ?�이?�웃 ???�츠 3�???+ 가�??�상 ?�독 ???�합 ?�?� */
 
 .phone-frame-light .videos-list {
   display: flex;
@@ -142,26 +142,26 @@
   margin-top: 4px;
 }
 
-/* 쇼츠 행 — 한 줄에 3개 (마지막 행 1~2개는 빈 칸으로 두기) */
+/* ?�츠 ??????줄에 3�?(마�?�???1~2개는 �?칸으�??�기) */
 .phone-frame-light .videos-row-shorts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-/* 가로 영상 행 — 풀폭 단독 (button 폭 강제 위해 grid 1열 사용) */
+/* 가�??�상 ?????�???�독 (button ??강제 ?�해 grid 1???�용) */
 .phone-frame-light .videos-row-horizontal {
   display: grid;
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 9999px) {
   .phone-frame-wide .videos-row-shorts {
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
   }
   .phone-frame-wide .videos-row-horizontal {
-    /* PC에선 가로 카드가 너무 커지지 않게 폭 제한 + 가운데 정렬 */
+    /* PC?�선 가�?카드가 ?�무 커�?지 ?�게 ???�한 + 가?�데 ?�렬 */
     max-width: 760px;
     margin: 0 auto;
   }
@@ -185,7 +185,7 @@
   transform: translateY(-1px);
 }
 
-/* ── 썸네일 — orientation별 비율 ── */
+/* ?�?� ?�네????orientation�?비율 ?�?� */
 
 .phone-frame-light .videos-card-thumb {
   position: relative;
@@ -216,7 +216,7 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* 플랫폼 아이콘 — 아주 작게, 좌상단 */
+/* ?�랫???�이�????�주 ?�게, 좌상??*/
 .phone-frame-light .videos-card-platform {
   position: absolute;
   top: 6px;
@@ -231,7 +231,7 @@
   border-radius: 999px;
 }
 
-/* 놀이터봇 자동 큐레이션 배지 — 우상단 */
+/* ?�?�터�??�동 ?�레?�션 배�? ???�상??*/
 .phone-frame-light .videos-card-bot {
   position: absolute;
   top: 6px;
@@ -247,7 +247,7 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
-/* "긴 영상" — 가로 영상 표시용 */
+/* "�??�상" ??가�??�상 ?�시??*/
 .phone-frame-light .videos-card-orient {
   position: absolute;
   top: 6px;
@@ -281,7 +281,7 @@
   height: 32px;
 }
 
-/* 본문 — 썸네일 위 그라데이션 오버레이 */
+/* 본문 ???�네????그라?�이???�버?�이 */
 .phone-frame-light .videos-card-overlay {
   position: absolute;
   inset: auto 0 0 0;
@@ -310,7 +310,7 @@
   font-weight: 700;
 }
 
-/* 가로 카드는 폭이 커서 본문도 키움 */
+/* 가�?카드????�� 커서 본문???��? */
 .phone-frame-light .videos-card-horizontal .videos-card-overlay {
   padding: 24px 14px 12px;
 }
@@ -327,8 +327,8 @@
   padding: 12px;
 }
 
-/* PC wide에서는 글자/플레이 버튼 조금 키움 */
-@media (min-width: 1025px) {
+/* PC wide?�서??글???�레??버튼 조금 ?��? */
+@media (min-width: 9999px) {
   .phone-frame-wide .videos-card-overlay strong {
     font-size: 12px;
   }
@@ -348,12 +348,12 @@
   }
 }
 
-/* ── 재생 모달 — 가로/세로 모두 viewport 풀화면 ── */
+/* ?�?� ?�생 모달 ??가�??�로 모두 viewport ?�?�면 ?�?� */
 
 .modal-backdrop:has(.video-player-panel) {
-  /* 영상 풀스크린 모달은 phone-frame을 벗어나 viewport 전체를 차지해야 함.
-     (기본 modal-backdrop은 position: absolute라 phone-frame에 갇혀, iPad
-     세로처럼 phone-frame이 540px로 제한될 때 닫기 버튼이 잘림.) */
+  /* ?�상 ?�?�크�?모달?� phone-frame??벗어??viewport ?�체�?차�??�야 ??
+     (기본 modal-backdrop?� position: absolute??phone-frame??갇�?, iPad
+     ?�로처럼 phone-frame??540px�??�한?????�기 버튼???�림.) */
   position: fixed;
   inset: 0;
   padding: 0;
@@ -365,7 +365,7 @@
   position: relative;
   width: 100vw;
   max-width: none;
-  /* dvh = dynamic viewport height (모바일 주소창 포함/제외 자동 반영) */
+  /* dvh = dynamic viewport height (모바??주소�??�함/?�외 ?�동 반영) */
   max-height: 100dvh;
   height: 100dvh;
   border-radius: 0;
@@ -377,13 +377,13 @@
   justify-content: center;
 }
 
-/* 모달 헤더 자체를 숨김 — 별도 floating 닫기 버튼으로 대체 */
+/* 모달 ?�더 ?�체�??��? ??별도 floating ?�기 버튼?�로 ?��?*/
 .video-player-panel .modal-header {
   display: none;
 }
 
-/* 본인 영상 삭제 버튼 — 모달 panel 좌상단 (소유자만 노출, 우상단은 닫기 차지).
-   iOS notch / dynamic island 안전 영역 고려해 safe-area-inset-top 이상으로 띄움. */
+/* 본인 ?�상 ??�� 버튼 ??모달 panel 좌상??(?�유?�만 ?�출, ?�상?��? ?�기 차�?).
+   iOS notch / dynamic island ?�전 ?�역 고려??safe-area-inset-top ?�상?�로 ?��?. */
 .video-player-delete {
   position: absolute;
   top: max(16px, env(safe-area-inset-top, 16px));
@@ -406,13 +406,13 @@
   background: rgba(217, 83, 79, 1);
 }
 
-/* Floating 닫기 버튼 — 모달 panel 우상단.
-   (YouTube 쇼츠는 좌상단에 채널 로고/타이틀 띠가 있어 좌상단은 가려짐 → 우상단으로 이동.)
-   iOS notch / status bar 안전 영역 고려해 safe-area-inset-top 이상으로 띄움.
-   음소거 버튼과 동일한 테두리·그림자 톤으로 어두운 영상 위에서도 잘 보이게. */
+/* Floating ?�기 버튼 ??모달 panel ?�상??
+   (YouTube ?�츠??좌상?�에 채널 로고/?�?��? ?��? ?�어 좌상?��? 가?�짐 ???�상?�으�??�동.)
+   iOS notch / status bar ?�전 ?�역 고려??safe-area-inset-top ?�상?�로 ?��?.
+   ?�소�?버튼�??�일???�두�?�그림자 ?�으�??�두???�상 ?�에?�도 ??보이�? */
 .video-player-close {
   position: absolute;
-  z-index: 2; /* swipe-capture overlay(z:1) 위로 */
+  z-index: 2; /* swipe-capture overlay(z:1) ?�로 */
   top: max(16px, env(safe-area-inset-top, 16px));
   right: max(16px, env(safe-area-inset-right, 16px));
   z-index: 20;
@@ -439,13 +439,13 @@
   transform: scale(0.96);
 }
 
-/* 음소거 토글 버튼 — 모달 panel 우하단.
-   브라우저 정책상 첫 재생은 muted. 사용자가 한 번 unmute하면 localStorage에 저장 →
-   다음 영상부터 자동 unmute 시도. 좌상단 닫기·우상단 삭제와 위치 겹치지 않게 우하단.
-   "재생 안 되면 ▶ 유튜브에서 보기" 폴백 안내 위로 띄워 잘 보이게 함. */
+/* ?�소�??��? 버튼 ??모달 panel ?�하??
+   브라?��? ?�책??�??�생?� muted. ?�용?��? ??�?unmute?�면 localStorage???�????
+   ?�음 ?�상부???�동 unmute ?�도. 좌상???�기·?�상????��?� ?�치 겹치지 ?�게 ?�하??
+   "?�생 ???�면 ???�튜브에??보기" ?�백 ?�내 ?�로 ?�워 ??보이�??? */
 .video-player-mute-toggle {
   position: absolute;
-  z-index: 2; /* swipe-capture overlay(z:1) 위로 */
+  z-index: 2; /* swipe-capture overlay(z:1) ?�로 */
   bottom: calc(max(72px, env(safe-area-inset-bottom, 72px)));
   right: max(24px, env(safe-area-inset-right, 24px));
   z-index: 20;
@@ -472,7 +472,7 @@
   transform: scale(0.96);
 }
 
-/* description은 풀화면에선 숨김 */
+/* description?� ?�?�면?�선 ?��? */
 .video-player-panel .video-player-meta {
   display: none;
 }
@@ -516,13 +516,13 @@
   margin: 0 auto;
 }
 
-/* 가로형 — 16:9, viewport 안에 fit. dvh로 모바일 주소창 변동 대응. */
+/* 가로형 ??16:9, viewport ?�에 fit. dvh�?모바??주소�?변???�?? */
 .video-player-panel-horizontal .video-player-iframe-wrap {
   width: min(100vw, calc(100dvh * 16 / 9));
   height: min(100dvh, calc(100vw * 9 / 16));
 }
 
-/* 세로형 — 9:16, viewport 안에 fit. */
+/* ?�로????9:16, viewport ?�에 fit. */
 .video-player-panel-vertical .video-player-iframe-wrap {
   width: min(100vw, calc(100dvh * 9 / 16));
   height: min(100dvh, calc(100vw * 16 / 9));
@@ -536,10 +536,10 @@
   border: 0;
 }
 
-/* 스와이프 캡처 overlay — iframe 위에 투명 레이어로 touch 가로채기.
-   z-index 1: iframe(0)보다 위, 닫기/음소거 버튼(별도 absolute, 자동 상위)보다 아래.
-   touch-action: pan-y가 아닌 none으로 두면 모바일 브라우저가 기본 스크롤로 가로채는 걸 막아
-   세로 swipe 임계값(50px) 안정적으로 측정 가능. iframe 내부 탭은 안 됨(트레이드오프). */
+/* ?��??�프 캡처 overlay ??iframe ?�에 ?�명 ?�이?�로 touch 가로채�?
+   z-index 1: iframe(0)보다 ?? ?�기/?�소�?버튼(별도 absolute, ?�동 ?�위)보다 ?�래.
+   touch-action: pan-y가 ?�닌 none?�로 ?�면 모바??브라?��?가 기본 ?�크롤로 가로채??�?막아
+   ?�로 swipe ?�계�?50px) ?�정?�으�?측정 가?? iframe ?��? ??? ?????�레?�드?�프). */
 .video-player-swipe-capture {
   position: absolute;
   inset: 0;
@@ -549,7 +549,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* iframe 임베드가 막힐 때 폴백 — 풀화면 모달에선 하단 floating */
+/* iframe ?�베?��? 막힐 ???�백 ???�?�면 모달?�선 ?�단 floating */
 .video-player-fallback {
   position: absolute;
   bottom: 16px;

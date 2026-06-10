@@ -31,6 +31,8 @@ type DailyReportScreenProps = {
   initialIsGenerating?: boolean;
   isNoReport?: boolean;
   isAdmin?: boolean;
+  focus?: string;
+  backHref?: string;
 };
 
 // YYYY-MM-DD 날짜 차감/가산 헬퍼
@@ -55,7 +57,9 @@ export function DailyReportScreen({
   isFailed: initialIsFailed = false,
   initialIsGenerating = false,
   isNoReport: initialIsNoReport = false,
-  isAdmin = false 
+  isAdmin = false,
+  focus,
+  backHref
 }: DailyReportScreenProps) {
   const [activeTab, setActiveTab] = useState<"brief" | "games">("brief");
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
@@ -80,6 +84,14 @@ export function DailyReportScreen({
     setIsNoReport(initialIsNoReport);
     setErrorMsg(null);
   }, [initialReport, initialIsGenerating, initialIsFailed, initialIsNoReport, reportDate]);
+
+  // 포커스 경기 자동 확장 및 탭 전환
+  useEffect(() => {
+    if (focus) {
+      setExpandedGame(focus);
+      setActiveTab("games");
+    }
+  }, [focus]);
 
   // 비동기 리포트 생성 API 호출
   useEffect(() => {
@@ -198,7 +210,7 @@ export function DailyReportScreen({
   };
 
   return (
-    <AppShell activeTab="home" title="일일 리포트" backHref="/" theme="light" wide>
+    <AppShell activeTab="home" title="일일 리포트" backHref={backHref ?? "/"} theme="light" wide>
       <div className="daily-report-container">
         
         {/* 날짜 선택 네비게이션 카드 */}

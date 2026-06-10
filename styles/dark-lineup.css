@@ -1,9 +1,9 @@
 /* ============================================================
- * Play hub + Lineup builder — dark theme
+ * Play hub + Lineup builder ??dark theme
  * ============================================================ */
 
-/* ── /play 허브 ── */
-/* 헤더 — flex 컨테이너로 h1과 설정 버튼이 자동으로 세로 가운데 정렬됨 */
+/* ?�?� /play ?�브 ?�?� */
+/* ?�더 ??flex 컨테?�너�?h1�??�정 버튼???�동?�로 ?�로 가?�데 ?�렬??*/
 .phone-frame-light .play-hub-header {
   position: relative;
   padding: 24px 4px 0;
@@ -13,7 +13,7 @@
   gap: 12px;
 }
 
-/* 헤더 우측 액션 묶음 — 공지(메가폰) + 설정 아이콘 나란히 */
+/* ?�더 ?�측 ?�션 묶음 ??공�?(메�??? + ?�정 ?�이�??��???*/
 .phone-frame-light .play-hub-header-actions {
   flex-shrink: 0;
   display: inline-flex;
@@ -30,7 +30,7 @@
   height: 46px;
   border-radius: 50%;
   color: var(--bp-text-secondary);
-  /* 3D 일러스트 아이콘 사용 — 배경/색 hover 없음, 살짝 떠오르는 인터랙션만. */
+  /* 3D ?�러?�트 ?�이�??�용 ??배경/??hover ?�음, ?�짝 ?�오르는 ?�터?�션�? */
   transition: transform 120ms ease, filter 120ms ease;
 }
 .phone-frame-light .play-hub-settings:hover,
@@ -39,14 +39,14 @@
   filter: drop-shadow(0 2px 4px rgba(232, 74, 138, 0.2));
 }
 
-/* 헤더 3D 일러스트 아이콘 — Image 컴포넌트의 intrinsic 크기 무시하고 컨테이너에 맞춤 */
+/* ?�더 3D ?�러?�트 ?�이�???Image 컴포?�트??intrinsic ?�기 무시?�고 컨테?�너??맞춤 */
 .phone-frame-light .play-hub-header-icon {
   width: 100% !important;
   height: auto !important;
   display: block;
 }
 
-/* 공지 아이콘 — 신규 공지 빨간점 배지 */
+/* 공�? ?�이�????�규 공�? 빨간??배�? */
 .phone-frame-light .play-hub-notice {
   position: relative;
 }
@@ -59,12 +59,12 @@
   height: 8px;
   border-radius: 50%;
   background: var(--bp-danger, #ef4444);
-  /* 아이콘 위에서 도드라지게 배경색 링 */
+  /* ?�이�??�에???�드?��?�?배경??�?*/
   box-shadow: 0 0 0 2px var(--bp-bg, #fff);
 }
 
 .phone-frame-light .play-hub-header h1 {
-  /* header flex 컨테이너의 좌측 슬롯 — 로고 + 제목그룹(제목/태그라인 세로 스택) */
+  /* header flex 컨테?�너??좌측 ?�롯 ??로고 + ?�목그룹(?�목/?�그?�인 ?�로 ?�택) */
   flex: 1;
   min-width: 0;
   margin: 0;
@@ -73,7 +73,7 @@
   gap: 10px;
 }
 
-/* 제목 + 태그라인 세로 스택 — 로고 우측. 태그라인을 제목 아래로 내려 헤더 가로 공간 확보. */
+/* ?�목 + ?�그?�인 ?�로 ?�택 ??로고 ?�측. ?�그?�인???�목 ?�래�??�려 ?�더 가�?공간 ?�보. */
 .phone-frame-light .play-hub-title-group {
   display: flex;
   flex-direction: column;
@@ -103,7 +103,7 @@
   font-weight: 600;
 }
 
-/* 태그라인 — 제목 바로 아래 작게. 제목과 세로 스택이라 가로 경쟁 없음. */
+/* ?�그?�인 ???�목 바로 ?�래 ?�게. ?�목�??�로 ?�택?�라 가�?경쟁 ?�음. */
 .phone-frame-light .play-hub-tagline {
   font-size: 12px;
   font-weight: 600;
@@ -116,11 +116,11 @@
   min-width: 0;
 }
 
-/* 카드 그리드 — 섹션별 열 수가 다름.
-   .play-hub-grid-3: 메뉴 3개 (라인업·예측·정보) — 3열 균등.
-   .play-hub-grid-2: 메뉴 2개 (콘텐츠) — 2열.
-   .play-hub-grid-1: 메뉴 1개 (외부 앱) — 1열 풀폭.
-   카드는 아이콘+제목만 — 설명은 우상단 ! 버튼 탭 시 툴팁으로 노출. */
+/* 카드 그리?????�션�????��? ?�름.
+   .play-hub-grid-3: 메뉴 3�?(?�인?�·예측·정�? ??3??균등.
+   .play-hub-grid-2: 메뉴 2�?(콘텐�? ??2??
+   .play-hub-grid-1: 메뉴 1�?(?��? ?? ??1???�??
+   카드???�이�??�목�????�명?� ?�상??! 버튼 ?????�팁?�로 ?�출. */
 .phone-frame-light .play-hub-grid {
   display: grid;
   gap: 8px;
@@ -135,14 +135,14 @@
   grid-template-columns: 1fr;
 }
 
-/* 섹션 쌍 wrapper — 기본은 display: contents (자식 섹션이 부모의 flex 자식으로 동작해 stack됨).
-   PC(≥1025px)에서만 grid 2-col로 가로 배치 (파일 끝 PC media query에서 override). */
+/* ?�션 ??wrapper ??기본?� display: contents (?�식 ?�션??부모의 flex ?�식?�로 ?�작??stack??.
+   PC(??025px)?�서�?grid 2-col�?가�?배치 (?�일 ??PC media query?�서 override). */
 .phone-frame-light .play-hub-section-pair {
   display: contents;
 }
 
-/* 2-col 카드(야구 콘텐츠 등) — 3-col 메뉴와 동일한 세로 형식(아이콘 위·제목 아래·중앙정렬).
-   2열이라 3열보다 카드가 넓어 비중도 더 커진다. */
+/* 2-col 카드(?�구 콘텐�??? ??3-col 메뉴?� ?�일???�로 ?�식(?�이�??�·제�??�래·중앙?�렬).
+   2?�이??3?�보??카드가 ?�어 비중????커진?? */
 .phone-frame-light .play-hub-grid-2 .play-hub-card {
   flex-direction: column;
   align-items: center;
@@ -169,14 +169,14 @@
   line-height: 1.3;
 }
 
-/* 섹션 그룹 — 라벨 + 카드 묶음.
-   .app-content의 flex gap이 18px이라 그대로 두면 섹션 간격이 너무 큼.
-   음수 margin -4로 상쇄 → 실효 간격 ~14px (적당히 호흡 공간 있음). */
+/* ?�션 그룹 ???�벨 + 카드 묶음.
+   .app-content??flex gap??18px?�라 그�?�??�면 ?�션 간격???�무 ??
+   ?�수 margin -4�??�쇄 ???�효 간격 ~14px (?�당???�흡 공간 ?�음). */
 .phone-frame-light .play-hub-section + .play-hub-section {
   margin-top: -4px;
 }
 
-/* 페이지 헤더 → 첫 섹션 간격 축소 — .app-content flex gap 18px를 음수 margin으로 상쇄 */
+/* ?�이지 ?�더 ??�??�션 간격 축소 ??.app-content flex gap 18px�??�수 margin?�로 ?�쇄 */
 .phone-frame-light .play-hub-header + .play-hub-section {
   margin-top: -10px;
 }
@@ -193,8 +193,8 @@
   gap: 7px;
 }
 
-/* 섹션 라벨 좌측 아이콘 — 무채색 라인 아이콘 (배경 없음).
-   카드 메뉴 아이콘(핑크 배경)과 시각적으로 구분해 헤더가 시선을 뺏지 않게 한다. */
+/* ?�션 ?�벨 좌측 ?�이�???무채???�인 ?�이�?(배경 ?�음).
+   카드 메뉴 ?�이�??�크 배경)�??�각?�으�?구분???�더가 ?�선??뺏�? ?�게 ?�다. */
 .phone-frame-light .play-hub-section-icon {
   display: inline-flex;
   align-items: center;
@@ -207,8 +207,8 @@
   height: 16px;
 }
 
-/* 이미지 아이콘 변형 — 무채색 lucide 대신 컬러 일러스트.
-   카드의 iconImage와 동일 패턴: 컨테이너는 투명, 이미지가 contain으로 채움. */
+/* ?��?지 ?�이�?변????무채??lucide ?�??컬러 ?�러?�트.
+   카드??iconImage?� ?�일 ?�턴: 컨테?�너???�명, ?��?지가 contain?�로 채�?. */
 .phone-frame-light .play-hub-section-icon-image {
   width: 22px;
   height: 22px;
@@ -220,11 +220,11 @@
   object-fit: contain;
 }
 
-/* ── 히어로 섹션 (내 라인업 플레이) ──
-   배경 이미지가 해상도별로 깨져 보여 핑크 단색으로 대체. 일러스트는 absolute로 유지.
-   헤더(텍스트만) + 카드들이 한 컨테이너.
-   모바일: 카드가 비대칭 (1 big + 2 small). PC/태블릿: 3-col 균등. */
-/* 가을야구 모드 오픈 뱃지 — 경기장 들어가기 카드 상단에 겹쳐 강조 (탭 시 가을야구로) */
+/* ?�?� ?�어�??�션 (???�인???�레?? ?�?�
+   배경 ?��?지가 ?�상?�별�?깨져 보여 ?�크 ?�색?�로 ?��? ?�러?�트??absolute�??��?.
+   ?�더(?�스?�만) + 카드?�이 ??컨테?�너.
+   모바?? 카드가 비�?�?(1 big + 2 small). PC/?�블�? 3-col 균등. */
+/* 가?�야�?모드 ?�픈 뱃�? ??경기???�어가�?카드 ?�단??겹쳐 강조 (????가?�야구로) */
 .phone-frame-light .home-fall-badge {
   position: absolute;
   top: -9px;
@@ -244,7 +244,7 @@
   filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.32));
 }
 
-/* 뱃지 위를 지나가는 빛 — 뱃지 알약 모양(PNG 알파)으로 마스크해 알약 안에서만 흐름 */
+/* 뱃�? ?��? 지?��???�???뱃�? ?�약 모양(PNG ?�파)?�로 마스?�해 ?�약 ?�에?�만 ?�름 */
 .phone-frame-light .home-fall-badge::after {
   content: "";
   position: absolute;
@@ -275,7 +275,7 @@
   }
 }
 
-/* translateX(-50%)를 유지하면서 살짝 떠오르는 연출 */
+/* translateX(-50%)�??��??�면???�짝 ?�오르는 ?�출 */
 @keyframes home-fall-badge-bob {
   0%,
   100% {
@@ -298,29 +298,29 @@
   padding: 14px 14px 14px;
   border-radius: 20px;
   background-color: #fde6ee;
-  /* overflow: hidden 시 카드의 ! 버튼 툴팁이 잘림 + 일러스트 top:-50px도 잘림.
-     visible로 두면 모두 정상 노출. 둥근 모서리는 배경에 적용되어 그대로 유지됨. */
+  /* overflow: hidden ??카드??! 버튼 ?�팁???�림 + ?�러?�트 top:-50px???�림.
+     visible�??�면 모두 ?�상 ?�출. ?�근 모서리는 배경???�용?�어 그�?�??��??? */
   overflow: visible;
 }
 
-/* 헤더 (텍스트만) — 일러스트는 absolute로 분리돼 flex row 높이를 늘리지 않음 → 텍스트 ↔ 카드 사이 갭 작게 유지.
-   ⚠️ z-index 설정 금지: 안 그러면 header가 새 stacking context를 만들어,
-   안에 들어있는 illust(z-index:2)가 외부 cards를 덮을 수 없게 됨. */
+/* ?�더 (?�스?�만) ???�러?�트??absolute�?분리??flex row ?�이�??�리지 ?�음 ???�스????카드 ?�이 �??�게 ?��?.
+   ?�️ z-index ?�정 금�?: ??그러�?header가 ??stacking context�?만들??
+   ?�에 ?�어?�는 illust(z-index:2)가 ?��? cards�???�� ???�게 ?? */
 .phone-frame-light .play-hub-hero-header {
   display: block;
   margin-bottom: 10px;
   padding: 4px 0 0 4px;
-  /* 일러스트가 헤더 하단을 넘겨 아래 카드 그리드(경기장 버튼)에 시각적/클릭상으로 침범하지 않도록 클립 */
+  /* ?�러?�트가 ?�더 ?�단???�겨 ?�래 카드 그리??경기??버튼)???�각???�릭?�으�?침범?��? ?�도�??�립 */
   overflow: hidden;
 }
 
 .phone-frame-light .play-hub-hero-text {
-  /* 일러스트는 데코 배경으로 뱃지 아래에 깔리므로 텍스트는 hero 전체 폭 사용.
-     뱃지가 hero 카드 우측 끝까지 닿고, 일러스트는 그 뒤 z-index에 위치. */
+  /* ?�러?�트???�코 배경?�로 뱃�? ?�래??깔리므�??�스?�는 hero ?�체 ???�용.
+     뱃�?가 hero 카드 ?�측 ?�까지 ?�고, ?�러?�트??�???z-index???�치. */
   padding-right: 0;
 }
 
-/* 부제 + 매치 기록 뱃지 항상 한 줄 — 좁아지면 부제가 ellipsize, 뱃지는 유지. */
+/* 부??+ 매치 기록 뱃�? ??�� ??�???좁아지�?부?��? ellipsize, 뱃�????��?. */
 .phone-frame-light .play-hub-hero-subtitle-row {
   display: flex;
   flex-wrap: nowrap;
@@ -329,9 +329,9 @@
   gap: 8px 12px;
   margin-top: 4px;
 }
-/* 뱃지가 row 안에 있을 때는 자체 margin-top 무효화 (gap이 간격 담당).
-   position: relative + z-index: 1 → 뒤에 깔린 일러스트(z-index: 0) 위로 노출.
-   flex-shrink: 0 + white-space: nowrap → 좁은 화면에서도 뱃지가 깨지지 않음. */
+/* 뱃�?가 row ?�에 ?�을 ?�는 ?�체 margin-top 무효??(gap??간격 ?�당).
+   position: relative + z-index: 1 ???�에 깔린 ?�러?�트(z-index: 0) ?�로 ?�출.
+   flex-shrink: 0 + white-space: nowrap ??좁�? ?�면?�서??뱃�?가 깨�?지 ?�음. */
 .phone-frame-light .play-hub-hero-subtitle-row .home-hero-record-badge,
 .phone-frame-dark .play-hub-hero-subtitle-row .home-hero-record-badge {
   margin-top: 0;
@@ -342,8 +342,8 @@
   white-space: nowrap;
 }
 
-/* 일러스트 — 우상단 데코 배경. z-index: 0으로 뱃지(z-index: 1) 뒤에 위치.
-   pointer-events: none으로 뱃지 클릭 방해 안 함. opacity로 뱃지 텍스트 가독성 확보. */
+/* ?�러?�트 ???�상???�코 배경. z-index: 0?�로 뱃�?(z-index: 1) ?�에 ?�치.
+   pointer-events: none?�로 뱃�? ?�릭 방해 ???? opacity�?뱃�? ?�스??가?�성 ?�보. */
 .phone-frame-light .play-hub-hero-illust {
   position: absolute;
   top: -22px;
@@ -362,21 +362,21 @@
   filter: drop-shadow(0 6px 12px rgba(232, 74, 138, 0.18));
 }
 
-/* 카드는 일러스트 위로 z-index 처리. 일러스트 하단부와 우측 카드 1번이 겹치면 카드가 앞으로 표시. */
+/* 카드???�러?�트 ?�로 z-index 처리. ?�러?�트 ?�단부?� ?�측 카드 1번이 겹치�?카드가 ?�으�??�시. */
 .phone-frame-light .play-hub-hero-cards {
   position: relative;
   z-index: 1;
 }
 
-/* 히어로 카드 그리드 — 모바일 비대칭 (1 big right + 2 small left)
-   레이아웃:
-   ┌──────────┬──────────┐
-   │ 작은(2)  │          │
-   ├──────────┤  큰(1)   │
-   │ 작은(3)  │          │
-   └──────────┴──────────┘
-   첫 카드(경기장 들어가기)는 우측 + 세로 2칸 span.
-   2/3번 카드(라인업 짜기 / 라인업 랭킹)는 좌측 컬럼에 위·아래로 스택. */
+/* ?�어�?카드 그리????모바??비�?�?(1 big right + 2 small left)
+   ?�이?�웃:
+   ?��??�?�?�?�?�?�?�?�?�?��??�?�?�?�?�?�?�?�?�??
+   ???��?(2)  ??         ??
+   ?��??�?�?�?�?�?�?�?�?�?? ??1)   ??
+   ???��?(3)  ??         ??
+   ?��??�?�?�?�?�?�?�?�?�?��??�?�?�?�?�?�?�?�?�??
+   �?카드(경기???�어가�????�측 + ?�로 2�?span.
+   2/3�?카드(?�인??짜기 / ?�인????��)??좌측 컬럼???�·아?�로 ?�택. */
 .phone-frame-light .play-hub-hero-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -384,19 +384,19 @@
   gap: 8px;
 }
 
-/* 첫 카드(경기장 들어가기) — 우측 컬럼 전체 + 세로 2-row span으로 크게 */
+/* �?카드(경기???�어가�? ???�측 컬럼 ?�체 + ?�로 2-row span?�로 ?�게 */
 .phone-frame-light .play-hub-hero-cards > :first-child {
   grid-column: 2;
   grid-row: 1 / 3;
 }
 
-/* 좌상단: 라인업 짜기 (featured=핑크) */
+/* 좌상?? ?�인??짜기 (featured=?�크) */
 .phone-frame-light .play-hub-hero-cards > :nth-child(2) {
   grid-column: 1;
   grid-row: 1;
 }
 
-/* 좌하단: 라인업 랭킹 */
+/* 좌하?? ?�인????�� */
 .phone-frame-light .play-hub-hero-cards > :nth-child(3) {
   grid-column: 1;
   grid-row: 2;
@@ -418,18 +418,18 @@
   color: var(--bp-text-secondary);
   line-height: 1.4;
   letter-spacing: -0.1px;
-  /* flex 자식 — 뱃지와 한 줄 유지를 위해 좁아지면 ellipsize. */
+  /* flex ?�식 ??뱃�??� ??�??��?�??�해 좁아지�?ellipsize. */
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* (구) 일러스트 사이즈 오버라이드 자리 — 새 분리 자산 적용으로 위의 .play-hub-hero-illust 정의가 유효. */
+/* (�? ?�러?�트 ?�이�??�버?�이???�리 ????분리 ?�산 ?�용?�로 ?�의 .play-hub-hero-illust ?�의가 ?�효. */
 
-/* ── 작은 카드 (경기장 들어가기, 내 라인업 기록) ──
-   가로 배치 (아이콘 좌 + 텍스트 우). 흰 배경 카드.
-   카드 자체 높이는 유지하되 아이콘 컨테이너를 키울 수 있도록 padding 축소. */
+/* ?�?� ?��? 카드 (경기???�어가�? ???�인??기록) ?�?�
+   가�?배치 (?�이�?�?+ ?�스????. ??배경 카드.
+   카드 ?�체 ?�이???��??�되 ?�이�?컨테?�너�??�울 ???�도�?padding 축소. */
 .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
   background: #ffffff;
   border-color: rgba(232, 74, 138, 0.08);
@@ -446,8 +446,8 @@
   flex: 1;
   align-items: flex-start;
   text-align: left;
-  /* ! 버튼은 top-right 코너만 차지 (22px), 텍스트는 vertical center라 padding-right 최소화 →
-     "경기장 들어가기" "내 라인업 기록" 등 5~6자 제목이 1줄에 들어감 */
+  /* ! 버튼?� top-right 코너�?차�? (22px), ?�스?�는 vertical center??padding-right 최소????
+     "경기???�어가�? "???�인??기록" ??5~6???�목??1줄에 ?�어�?*/
   padding-right: 4px;
 }
 
@@ -456,7 +456,7 @@
   font-weight: 800;
   line-height: 1.25;
   text-align: left;
-  /* 좁은 카드 폭에서 5~6자 제목이 2줄로 떨어지지 않게 1줄 강제 */
+  /* 좁�? 카드 ??��??5~6???�목??2줄로 ?�어지지 ?�게 1�?강제 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -468,9 +468,9 @@
   background: rgba(232, 74, 138, 0.12);
 }
 
-/* ── 큰 카드 "경기장 들어가기" (우측 세로 2칸) ──
-   일반 톤 (흰 배경 + 다크 텍스트). 아이콘 상단 + 제목 하단 (세로 강조 레이아웃).
-   카드 자체 크기는 유지하되 아이콘 컨테이너를 키우기 위해 padding/gap 축소. */
+/* ?�?� ??카드 "경기???�어가�? (?�측 ?�로 2�? ?�?�
+   ?�반 ??(??배경 + ?�크 ?�스??. ?�이�??�단 + ?�목 ?�단 (?�로 강조 ?�이?�웃).
+   카드 ?�체 ?�기???��??�되 ?�이�?컨테?�너�??�우�??�해 padding/gap 축소. */
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
   background: #ffffff;
   border: 1px solid rgba(232, 74, 138, 0.08);
@@ -496,20 +496,20 @@
   background: rgba(232, 74, 138, 0.10);
   color: var(--bp-accent, #e84a8a);
   border-radius: 14px;
-  /* 위·아래로 마이너스 margin → 카드 상단에 살짝 걸치고 텍스트 위로도 살짝 오버랩. */
+  /* ?�·아?�로 마이?�스 margin ??카드 ?�단???�짝 걸치�??�스???�로???�짝 ?�버?? */
   margin-top: -4px;
   margin-bottom: -8px;
   position: relative;
   z-index: 1;
 }
 
-/* iconImage 변형 — 투명 PNG라 배경 박스 제거 → 일러스트가 카드에 직접 노출. */
+/* iconImage 변?????�명 PNG??배경 박스 ?�거 ???�러?�트가 카드??직접 ?�출. */
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon.play-hub-card-icon-image {
   background: transparent;
   border-radius: 0;
 }
 
-/* svg 폴백용 사이즈 — 새 컨테이너에 맞게 키움 */
+/* svg ?�백???�이�?????컨테?�너??맞게 ?��? */
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon > svg {
   width: 76px;
   height: 76px;
@@ -530,10 +530,10 @@
   line-height: 1.2;
 }
 
-/* ── 핑크 강조 (featured = 팀 라인업 짜기) ──
-   featured 카드는 좌상단 작은 카드 위치에 들어가지만, 핑크 톤으로 시각 강조.
-   기본 작은 카드 스타일(가로 레이아웃 — 아이콘 좌 + 텍스트 우)은 그대로 유지하면서
-   배경/보더/아이콘 컬러만 핑크로 오버라이드. */
+/* ?�?� ?�크 강조 (featured = ?� ?�인??짜기) ?�?�
+   featured 카드??좌상???��? 카드 ?�치???�어가지�? ?�크 ?�으�??�각 강조.
+   기본 ?��? 카드 ?��???가�??�이?�웃 ???�이�?�?+ ?�스?????� 그�?�??��??�면??
+   배경/보더/?�이�?컬러�??�크�??�버?�이?? */
 .phone-frame-light .play-hub-card-featured-style {
   background: linear-gradient(135deg, #f04681, var(--bp-accent, #e84a8a)) !important;
   border-color: transparent !important;
@@ -560,17 +560,17 @@
 .phone-frame-light .play-hub-card-featured-style .play-hub-card-icon {
   background: rgba(255, 255, 255, 0.96) !important;
   color: var(--bp-accent, #e84a8a);
-  /* featured 카드는 아이콘 살짝 크게 — 같은 작은 카드 톤에서 강조. */
+  /* featured 카드???�이�??�짝 ?�게 ??같�? ?��? 카드 ?�에??강조. */
   width: 64px !important;
   height: 64px !important;
 }
 
-/* iconImage(투명 PNG) 변형은 흰 박스 제거하고 일러스트만 노출 — 다른 작은 카드와 동일. */
+/* iconImage(?�명 PNG) 변?��? ??박스 ?�거?�고 ?�러?�트�??�출 ???�른 ?��? 카드?� ?�일. */
 .phone-frame-light .play-hub-card-featured-style .play-hub-card-icon.play-hub-card-icon-image {
   background: transparent !important;
 }
 
-/* 태블릿 — 작은 카드 64 기준, featured 는 +8 */
+/* ?�블�????��? 카드 64 기�?, featured ??+8 */
 @media (min-width: 481px) {
   .phone-frame-light .play-hub-card-featured-style .play-hub-card-icon {
     width: 72px !important;
@@ -578,15 +578,15 @@
   }
 }
 
-/* PC — 작은 카드 72 기준, featured 는 +12 */
-@media (min-width: 1025px) {
+/* PC ???��? 카드 72 기�?, featured ??+12 */
+@media (min-width: 9999px) {
   .phone-frame-light .play-hub-card-featured-style .play-hub-card-icon {
     width: 84px !important;
     height: 84px !important;
   }
 }
 
-/* PC/태블릿: hero 패딩/카드 그리드 변경 — 비대칭 → 3-col 균등 */
+/* PC/?�블�? hero ?�딩/카드 그리??변�???비�?�???3-col 균등 */
 @media (min-width: 481px) {
   .phone-frame-light .play-hub-hero {
     padding: 18px 20px 18px;
@@ -606,12 +606,12 @@
     width: 110px;
     height: 110px;
   }
-  /* 태블릿: 일러스트가 데코 배경이라 텍스트 padding-right 불필요 — 뱃지가 우측 끝까지. */
+  /* ?�블�? ?�러?�트가 ?�코 배경?�라 ?�스??padding-right 불필????뱃�?가 ?�측 ?�까지. */
   .phone-frame-light .play-hub-hero-text {
     padding-right: 0;
   }
 
-  /* PC/태블릿: 비대칭 레이아웃 유지 (시안과 동일 룩), 사이즈만 키움. */
+  /* PC/?�블�? 비�?�??�이?�웃 ?��? (?�안�??�일 �?, ?�이즈만 ?��?. */
   .phone-frame-light .play-hub-hero-cards {
     gap: 10px;
   }
@@ -633,8 +633,8 @@
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
     font-size: 22px;
   }
-  /* 태블릿+ : 추천 카드(팀 라인업 짜기) 내부를 중앙 정렬로.
-     모바일은 그대로 좌측 정렬 유지. */
+  /* ?�블�? : 추천 카드(?� ?�인??짜기) ?��?�?중앙 ?�렬�?
+     모바?��? 그�?�?좌측 ?�렬 ?��?. */
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
     align-items: center;
     text-align: center;
@@ -660,7 +660,7 @@
   }
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 9999px) {
   .phone-frame-light .play-hub-hero {
     padding: 24px 30px 24px;
   }
@@ -679,20 +679,20 @@
     width: 120px;
     height: 120px;
   }
-  /* PC: 일러스트가 데코 배경이라 텍스트 padding-right 불필요 — 뱃지가 우측 끝까지. */
+  /* PC: ?�러?�트가 ?�코 배경?�라 ?�스??padding-right 불필????뱃�?가 ?�측 ?�까지. */
   .phone-frame-light .play-hub-hero-text {
     padding-right: 0;
   }
-  /* ── PC 전용: 시안 매칭 ──
-     1) Hero 카드: 동일한 비대칭 2-col 유지 (우측 큰 카드 + 좌측 2개 스택), 사이즈만 키움.
-     2) 모든 카드 ! 버튼 숨김 (PC는 description이 본문에 항상 노출)
-     3) description 노출, > chevron 우측 가운데 */
+  /* ?�?� PC ?�용: ?�안 매칭 ?�?�
+     1) Hero 카드: ?�일??비�?�?2-col ?��? (?�측 ??카드 + 좌측 2�??�택), ?�이즈만 ?��?.
+     2) 모든 카드 ! 버튼 ?��? (PC??description??본문????�� ?�출)
+     3) description ?�출, > chevron ?�측 가?�데 */
 
-  /* hero cards — 모바일/태블릿과 동일한 2-col 비대칭 레이아웃 유지 */
+  /* hero cards ??모바???�블릿과 ?�일??2-col 비�?�??�이?�웃 ?��? */
   .phone-frame-light .play-hub-hero-cards {
     gap: 14px;
   }
-  /* 우측 큰 카드 (경기장 들어가기) — 사이즈만 PC용으로 키움. align center 유지. */
+  /* ?�측 ??카드 (경기???�어가�? ???�이즈만 PC?�으�??��?. align center ?��?. */
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
     padding: 14px 22px 24px;
     min-height: 200px;
@@ -711,14 +711,14 @@
   .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-title {
     font-size: 20px;
   }
-  /* 좌측 작은 카드 2개 — 가로 레이아웃 그대로, 사이즈만 키움 */
+  /* 좌측 ?��? 카드 2�???가�??�이?�웃 그�?�? ?�이즈만 ?��? */
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card {
     padding: 10px 16px 10px 12px;
     min-height: 90px;
     gap: 14px;
   }
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-text {
-    padding-right: 28px; /* chevron 자리 */
+    padding-right: 28px; /* chevron ?�리 */
   }
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {
     width: 72px;
@@ -733,13 +733,13 @@
     text-align: left;
   }
 
-  /* PC: 모든 카드의 ! 버튼 숨김 (모바일/태블릿 전용으로 유지) */
+  /* PC: 모든 카드??! 버튼 ?��? (모바???�블�??�용?�로 ?��?) */
   .phone-frame-light .play-hub-card-info {
     display: none;
   }
 
-  /* PC: chevron(>) 노출 — 카드 본체에 absolute로 우측 가운데 위치.
-     vertical layout(hero cards on PC, 3-col cards)에서도 우측에 일관되게 떠 있음. */
+  /* PC: chevron(>) ?�출 ??카드 본체??absolute�??�측 가?�데 ?�치.
+     vertical layout(hero cards on PC, 3-col cards)?�서???�측???��??�게 ???�음. */
   .phone-frame-light .play-hub-card {
     position: relative;
   }
@@ -752,7 +752,7 @@
     color: var(--bp-text-muted, #94a3b8);
     pointer-events: none;
   }
-  /* PC: description을 카드 본문에 2줄까지 노출 (ellipsis) */
+  /* PC: description??카드 본문??2줄까지 ?�출 (ellipsis) */
   .phone-frame-light .play-hub-card-description {
     display: -webkit-box;
     font-size: 12.5px;
@@ -766,8 +766,8 @@
     overflow: hidden;
   }
 
-  /* ! 버튼 없어졌으므로 텍스트 영역 우측 padding 회수.
-     단, 배지/마크 있는 카드는 padding-right 유지해 텍스트와 안 겹치게. */
+  /* ! 버튼 ?�어졌으므�??�스???�역 ?�측 padding ?�수.
+     ?? 배�?/마크 ?�는 카드??padding-right ?��????�스?��? ??겹치�? */
   .phone-frame-light .play-hub-card-text {
     padding-right: 0;
   }
@@ -778,8 +778,8 @@
   }
 }
 
-/* PC 와이드 모드 — 그리드 gap만 약간 키움 */
-@media (min-width: 1025px) {
+/* PC ?�?�드 모드 ??그리??gap�??�간 ?��? */
+@media (min-width: 9999px) {
   .phone-frame-wide .play-hub-grid {
     gap: 12px;
   }
@@ -795,12 +795,12 @@
   }
 }
 
-/* 카드 래퍼 — 카드 + 우상단 ! 버튼/배지 + 툴팁 컨테이너 */
+/* 카드 ?�퍼 ??카드 + ?�상??! 버튼/배�? + ?�팁 컨테?�너 */
 .phone-frame-light .play-hub-card-wrap {
   position: relative;
 }
 
-/* 카드 본체 — 아이콘 + 제목, 세로 정렬. 누르면 navigate */
+/* 카드 본체 ???�이�?+ ?�목, ?�로 ?�렬. ?�르�?navigate */
 .phone-frame-light .play-hub-card {
   display: flex;
   align-items: center;
@@ -840,10 +840,10 @@
   height: 24px;
 }
 
-/* 이미지 아이콘 — 투명 PNG 일러스트용. 배경/테두리 없이 이미지만 노출.
-   카드 배경(흰색·핑크 그라데이션 등)이 그대로 비치도록.
-   히어로 카드 등 더 구체적인 셀렉터에서 .play-hub-card-icon에 배경을 칠하므로
-   icon-image 변형에 대해서도 같은 특이도로 한 번 더 투명 처리를 해줘야 함. */
+/* ?��?지 ?�이�????�명 PNG ?�러?�트?? 배경/?�두�??�이 ?��?지�??�출.
+   카드 배경(?�색·?�크 그라?�이??????그�?�?비치?�록.
+   ?�어�?카드 ????구체?�인 ?�?�터?�서 .play-hub-card-icon??배경??칠하므�?
+   icon-image 변?�에 ?�?�서??같�? ?�이?�로 ??�????�명 처리�??�줘???? */
 .phone-frame-light .play-hub-card-icon-image,
 .phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon-image,
 .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon-image {
@@ -858,7 +858,7 @@
   object-fit: contain;
 }
 
-/* 제목 + 부제 컬럼 래퍼 — flex로 카드 가로 공간 차지, 우상단 ! / ↗ 자리 확보용 padding */
+/* ?�목 + 부??컬럼 ?�퍼 ??flex�?카드 가�?공간 차�?, ?�상??! / ???�리 ?�보??padding */
 .phone-frame-light .play-hub-card-text {
   flex: 1;
   min-width: 0;
@@ -868,12 +868,12 @@
   padding-right: 18px;
 }
 
-/* description은 기본 숨김 — PC(≥1025px)에서만 카드 본문에 노출. 모바일/태블릿은 ! 툴팁으로만. */
+/* description?� 기본 ?��? ??PC(??025px)?�서�?카드 본문???�출. 모바???�블릿�? ! ?�팁?�로�? */
 .phone-frame-light .play-hub-card-description {
   display: none;
 }
 
-/* chevron(>)도 기본 숨김 — PC(≥1025px)에서만 우측에 노출. */
+/* chevron(>)??기본 ?��? ??PC(??025px)?�서�??�측???�출. */
 .phone-frame-light .play-hub-card-chevron {
   display: none;
 }
@@ -905,7 +905,7 @@
   cursor: not-allowed;
 }
 
-/* 우상단 ! 버튼 — 카드 wrap 기준 absolute */
+/* ?�상??! 버튼 ??카드 wrap 기�? absolute */
 .phone-frame-light .play-hub-card-info {
   position: absolute;
   top: 6px;
@@ -931,8 +931,8 @@
   color: var(--bp-accent);
 }
 
-/* 추천 카드는 ★추천 배지가 우상단을 차지하므로, !버튼은 우하단으로 이동.
-   핑크 솔리드 배경 위라 흰색 동그라미로 대비 강조. */
+/* 추천 카드???�추�?배�?가 ?�상?�을 차�??��?�? !버튼?� ?�하?�으�??�동.
+   ?�크 ?�리??배경 ?�라 ?�색 ?�그?��?�??��?강조. */
 .phone-frame-light .play-hub-card-info-bottom {
   top: auto;
   bottom: 10px;
@@ -948,7 +948,7 @@
   color: var(--bp-accent);
 }
 
-/* 외부 링크 마크 — ! 자리에 ↗ 표시 (버튼 아님, 시각 표시용) */
+/* ?��? 링크 마크 ??! ?�리?????�시 (버튼 ?�님, ?�각 ?�시?? */
 .phone-frame-light .play-hub-card-external-mark {
   position: absolute;
   top: 6px;
@@ -963,7 +963,7 @@
   z-index: 2;
 }
 
-/* 외부 링크 카드 — 일반 카드와 시각 차이를 살짝만 (배경 톤 + 호버) */
+/* ?��? 링크 카드 ???�반 카드?� ?�각 차이�??�짝�?(배경 ??+ ?�버) */
 .phone-frame-light .play-hub-card-external {
   background: var(--bp-bg);
   border-style: dashed;
@@ -979,7 +979,7 @@
   color: var(--bp-accent);
 }
 
-/* 비활성 카드 배지 — 같은 우상단 위치, 카드 자체엔 ! 없음 */
+/* 비활??카드 배�? ??같�? ?�상???�치, 카드 ?�체??! ?�음 */
 .phone-frame-light .play-hub-card-badge {
   position: absolute;
   top: 6px;
@@ -995,9 +995,9 @@
   z-index: 2;
 }
 
-/* 펄스 CTA 점 — 좌상단. 사용자에게 메뉴 클릭 유도.
-   - 기본: 그라데이션 점 + 바깥쪽 ring 펄스 애니메이션 (눈에 띔).
-   - .play-hub-card-pulse-soft: stadium 카드용 — 항상 떠있어 더 조용하게(불투명도/주기 둔화). */
+/* ?�스 CTA ????좌상?? ?�용?�에�?메뉴 ?�릭 ?�도.
+   - 기본: 그라?�이????+ 바깥�?ring ?�스 ?�니메이??(?�에 ??.
+   - .play-hub-card-pulse-soft: stadium 카드??????�� ?�있????조용?�게(불투명도/주기 ?�화). */
 .phone-frame-light .play-hub-card-pulse {
   position: absolute;
   top: 8px;
@@ -1048,7 +1048,7 @@
   }
 }
 
-/* 추천 카드 우상단 코너 행 — ★추천 배지 + !버튼을 가로로 나란히 배치 */
+/* 추천 카드 ?�상??코너 ?????�추�?배�? + !버튼??가로로 ?��???배치 */
 .phone-frame-light .play-hub-card-corner-row {
   position: absolute;
   top: 10px;
@@ -1059,8 +1059,8 @@
   z-index: 2;
 }
 
-/* "추천" 배지 — 강조 카드 우상단. 핑크 배경 위(추천 카드)에 올라가므로 흰 배경 + 핑크 텍스트로 대비 강조.
-   ! 정보 아이콘 제거(2026-05-27)로 corner-row 래퍼가 사라져, 배지가 직접 우상단 absolute 배치. */
+/* "추천" 배�? ??강조 카드 ?�상?? ?�크 배경 ??추천 카드)???�라가므�???배경 + ?�크 ?�스?�로 ?��?강조.
+   ! ?�보 ?�이�??�거(2026-05-27)�?corner-row ?�퍼가 ?�라?? 배�?가 직접 ?�상??absolute 배치. */
 .phone-frame-light .play-hub-card-featured {
   position: absolute;
   top: 10px;
@@ -1083,7 +1083,7 @@
   margin-right: 1px;
 }
 
-/* 추천 카드의 !버튼 — corner-row 안에서 추천 배지 옆에 위치. 흰 동그라미로 핑크 카드 위 대비. */
+/* 추천 카드??!버튼 ??corner-row ?�에??추천 배�? ?�에 ?�치. ???�그?��?�??�크 카드 ???��? */
 .phone-frame-light .play-hub-card-info-on-featured {
   position: static;
   width: 22px;
@@ -1099,9 +1099,9 @@
   color: var(--bp-accent);
 }
 
-/* ── 3열 카드 컴팩트 변형 ──
-   3열 그리드 내에선 카드 가로 폭이 좁아서 (모바일 ~90px) 가로 배치 불가.
-   아이콘 위 + 텍스트 아래로 세로 정렬해 짧은 카드로 표시. */
+/* ?�?� 3??카드 컴팩??변???�?�
+   3??그리???�에??카드 가�???�� 좁아??(모바??~90px) 가�?배치 불�?.
+   ?�이�???+ ?�스???�래�??�로 ?�렬??짧�? 카드�??�시. */
 .phone-frame-light .play-hub-grid-3 .play-hub-card {
   flex-direction: column;
   align-items: center;
@@ -1132,7 +1132,7 @@
   line-height: 1.3;
 }
 
-/* PC/태블릿 wide에서 2·3열 카드 폰트 살짝 키움 (동일 형식 유지) */
+/* PC/?�블�?wide?�서 2·3??카드 ?�트 ?�짝 ?��? (?�일 ?�식 ?��?) */
 @media (min-width: 481px) {
   .phone-frame-light .play-hub-grid-3 .play-hub-card,
   .phone-frame-light .play-hub-grid-2 .play-hub-card {
@@ -1156,7 +1156,7 @@
   }
 }
 
-/* 툴팁 — 카드 아래쪽에 absolute로 띄움 */
+/* ?�팁 ??카드 ?�래쪽에 absolute�??��? */
 .phone-frame-light .play-hub-card-tooltip {
   position: absolute;
   top: calc(100% + 6px);
@@ -1172,7 +1172,7 @@
   line-height: 1.45;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
   letter-spacing: -0.1px;
-  /* 위쪽 꼬리 */
+  /* ?�쪽 꼬리 */
 }
 
 .phone-frame-light .play-hub-card-tooltip::before {
@@ -1187,7 +1187,7 @@
   border-radius: 1px;
 }
 
-/* ── 라인업 페이지 헤더 — [< 뒤로] [팀 드롭다운 중앙] [타자/투수 토글] ── */
+/* ?�?� ?�인???�이지 ?�더 ??[< ?�로] [?� ?�롭?�운 중앙] [?�???�수 ?��?] ?�?� */
 .phone-frame-light .lineup-header {
   position: relative;
   z-index: 40;
@@ -1196,13 +1196,13 @@
   align-items: center;
   gap: 8px;
   padding: 0;
-  /* .app-content의 18px gap을 상쇄 + 상단을 위로 끌어올림 */
+  /* .app-content??18px gap???�쇄 + ?�단???�로 ?�어?�림 */
   margin-top: -10px;
   margin-bottom: -14px;
 }
 
-/* 뒤로가기 버튼이 없는 모드 — 팀 선택을 헤더 정중앙에 두고, 모드 토글은 오른쪽에 절대 배치.
-   1fr-auto 그리드로는 팀 피커가 모드 토글 너비만큼 왼쪽으로 밀려 중앙이 안 됨. */
+/* ?�로가�?버튼???�는 모드 ???� ?�택???�더 ?�중?�에 ?�고, 모드 ?��??� ?�른쪽에 ?��? 배치.
+   1fr-auto 그리?�로???� ?�커가 모드 ?��? ?�비만큼 ?�쪽?�로 밀??중앙?????? */
 .phone-frame-light .lineup-header-no-back {
   display: flex;
   position: relative;
@@ -1217,7 +1217,7 @@
   transform: translateY(-50%);
 }
 
-/* ── 동기화 상태 배지 (헤더 좌측 absolute — 이전 공개 토글 자리) ── */
+/* ?�?� ?�기???�태 배�? (?�더 좌측 absolute ???�전 공개 ?��? ?�리) ?�?� */
 .phone-frame-light .lineup-sync-badge {
   position: absolute;
   left: 0;
@@ -1236,7 +1236,7 @@
   white-space: nowrap;
 }
 
-/* ── 헤더 우측 프리셋 드롭다운 (이전 공유 버튼 자리) ── */
+/* ?�?� ?�더 ?�측 ?�리???�롭?�운 (?�전 공유 버튼 ?�리) ?�?� */
 .phone-frame-light .lineup-header-preset {
   position: absolute;
   right: 0;
@@ -1245,15 +1245,15 @@
   z-index: 41;
 }
 
-/* 전역 button:active { transform: scale(0.97) } 무효화 —
-   absolute + translateY(-50%)로 세로 중앙 정렬된 헤더 버튼은 scale이 끼면
-   중앙 정렬이 깨져 "움직임"으로 보임. 그냥 상태만 변하도록 유지. */
+/* ?�역 button:active { transform: scale(0.97) } 무효????
+   absolute + translateY(-50%)�??�로 중앙 ?�렬???�더 버튼?� scale???�면
+   중앙 ?�렬??깨져 "?�직임"?�로 보임. 그냥 ?�태�?변?�도�??��?. */
 .phone-frame-light .lineup-publish-toggle:not(:disabled):active {
   transform: translateY(-50%);
   filter: none;
 }
 
-/* 공유 버튼 옆에 들어가는 인라인 모드 토글 — 헤더용 absolute 스타일을 상속하지 않도록 */
+/* 공유 버튼 ?�에 ?�어가???�라??모드 ?��? ???�더??absolute ?��??�을 ?�속?��? ?�도�?*/
 .phone-frame-light .lineup-mode-toggle-inline {
   position: static;
   transform: none;
@@ -1293,7 +1293,7 @@
   display: block;
 }
 
-/* 타자/투수 세그먼트 토글 */
+/* ?�???�수 ?�그먼트 ?��? */
 .phone-frame-light .lineup-mode-toggle {
   display: inline-flex;
   background: rgba(20, 30, 50, 0.04);
@@ -1326,7 +1326,7 @@
   color: #ffffff;
 }
 
-/* 정적 라벨 (선발/불펜) — 클릭 안 되는 표시용 */
+/* ?�적 ?�벨 (?�발/불펜) ???�릭 ???�는 ?�시??*/
 .phone-frame-light .lineup-slot-pos-static {
   padding: 2px 6px;
   background: rgba(20, 30, 50, 0.05);
@@ -1338,7 +1338,7 @@
   flex-shrink: 0;
 }
 
-/* 선발 라벨/순서는 오렌지 강조 */
+/* ?�발 ?�벨/?�서???�렌지 강조 */
 .phone-frame-light .lineup-slot-pos-starter,
 .phone-frame-light .lineup-slot-order-starter {
   background: rgba(232, 74, 138, 0.18);
@@ -1363,12 +1363,12 @@
   background: rgba(20, 30, 50, 0.04);
 }
 
-/* ── 라인업 페이지 레이아웃 (다이아몬드/힌트/타순/대기 — grid-area로 PC에서 재배치 가능) ── */
+/* ?�?� ?�인???�이지 ?�이?�웃 (?�이?�몬???�트/?�???��???grid-area�?PC?�서 ?�배�?가?? ?�?� */
 .phone-frame-light .lineup-layout {
   display: grid;
   column-gap: 8px;
   row-gap: 2px;
-  /* 모바일/태블릿 기본: 다이아몬드(전체폭) → 힌트(전체폭) → [타순|대기] */
+  /* 모바???�블�?기본: ?�이?�몬???�체?? ???�트(?�체?? ??[?�???��? */
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "diamond diamond"
@@ -1382,13 +1382,13 @@
   z-index: 1;
   grid-area: diamond;
 }
-/* .lineup-action-hint는 .lineup-action-row 안으로 들어가므로 grid-area는 행에서 지정 */
+/* .lineup-action-hint??.lineup-action-row ?�으�??�어가므�?grid-area???�에??지??*/
 .phone-frame-light .lineup-slots-card { grid-area: slots; }
 .phone-frame-light .lineup-pool-card-side { grid-area: pool; }
 .phone-frame-light .lineup-pool-share-btn { grid-area: share; }
 
-/* 다이아몬드와 타순/대기 사이 사용법 안내 — 텍스트만, 좌측 정렬.
-   안내 텍스트 + 우측 액션 버튼(저장/공유)을 한 줄에 배치 */
+/* ?�이?�몬?��? ?�???��??�이 ?�용�??�내 ???�스?�만, 좌측 ?�렬.
+   ?�내 ?�스??+ ?�측 ?�션 버튼(?�??공유)????줄에 배치 */
 .phone-frame-light .lineup-action-row {
   grid-area: hint;
   display: flex;
@@ -1397,7 +1397,7 @@
   min-width: 0;
 }
 
-/* lead 영역 — 불러오기 버튼(또는 출전중 hint)이 단독으로 전체 폭 차지 */
+/* lead ?�역 ??불러?�기 버튼(?�는 출전�?hint)???�독?�로 ?�체 ??차�? */
 .phone-frame-light .lineup-action-lead {
   flex: 1;
   min-width: 0;
@@ -1426,7 +1426,7 @@
 .phone-frame-light .lineup-action-buttons {
   display: inline-flex;
   align-items: center;
-  gap: 14px; /* 타자/투수 토글과 공유 버튼 오인 클릭 방지 */
+  gap: 14px; /* ?�???�수 ?��?�?공유 버튼 ?�인 ?�릭 방�? */
   flex-shrink: 0;
 }
 
@@ -1467,7 +1467,7 @@
   background: rgba(232, 74, 138, 0.26);
 }
 
-/* 공개/비공개 토글 — 공개 중일 땐 초록색 강조, 비공개일 땐 회색 */
+/* 공개/비공�??��? ??공개 중일 ??초록??강조, 비공개일 ???�색 */
 .phone-frame-light .lineup-action-btn-publish {
   background: rgba(20, 30, 50, 0.04);
   border-color: var(--bp-line-soft);
@@ -1485,7 +1485,7 @@
   cursor: not-allowed;
 }
 
-/* 액션 행 안의 "대기 N" 라벨 — 기본 숨김, PC 와이드에서만 표시 */
+/* ?�션 ???�의 "?��?N" ?�벨 ??기본 ?��?, PC ?�?�드?�서�??�시 */
 .phone-frame-light .lineup-action-pool-badge {
   display: none;
   align-items: center;
@@ -1507,10 +1507,10 @@
   color: var(--bp-text-secondary);
 }
 
-/* PC 와이드 모드 — 그라운드 밑에 액션 행(타자/투수·공유·대기 N)을 두고, 타순은 우측 2행 차지,
-   대기 선수는 하단 풀폭. 그라운드 밑 여백을 없애서 좌측 공간 효율 ↑.
-   타순 ↔ 대기 사이 행 간격은 좁게(8px) 두어 시각적 묶음감. */
-@media (min-width: 1025px) {
+/* PC ?�?�드 모드 ??그라?�드 밑에 ?�션 ???�???�수·공유·?��?N)???�고, ?�?��? ?�측 2??차�?,
+   ?��??�수???�단 ?�?? 그라?�드 �??�백???�애??좌측 공간 ?�율 ??
+   ?�?????��??�이 ??간격?� 좁게(8px) ?�어 ?�각??묶음�? */
+@media (min-width: 9999px) {
   .phone-frame-wide .lineup-layout {
     grid-template-columns: minmax(360px, 1.3fr) minmax(280px, 1fr);
     grid-template-areas:
@@ -1521,13 +1521,13 @@
     column-gap: 14px;
     row-gap: 4px;
   }
-  /* 액션 행 ↔ 대기 카드 사이 간격 최소화 — 대기 카드 상단 padding 축소 */
+  /* ?�션 ?????��?카드 ?�이 간격 최소?????��?카드 ?�단 padding 축소 */
   .phone-frame-wide .lineup-pool-card-side {
     padding-top: 6px;
   }
-  /* 액션 행 2줄 레이아웃:
-     1줄: hint (전체 폭)
-     2줄: [대기 N] (왼쪽) ······ [타자/투수] [공유] (오른쪽) */
+  /* ?�션 ??2�??�이?�웃:
+     1�? hint (?�체 ??
+     2�? [?��?N] (?�쪽) ······ [?�???�수] [공유] (?�른�? */
   .phone-frame-wide .lineup-action-row {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -1542,7 +1542,7 @@
   .phone-frame-wide .lineup-action-pool-badge { grid-area: badge; justify-self: start; }
   .phone-frame-wide .lineup-action-buttons { grid-area: buttons; justify-self: end; }
 
-  /* PC에서 대기 라벨 노출 + 풀 카드 자체 헤더는 숨김 (공간 절약) */
+  /* PC?�서 ?��??�벨 ?�출 + ?� 카드 ?�체 ?�더???��? (공간 ?�약) */
   .phone-frame-wide .lineup-action-pool-badge {
     display: inline-flex;
   }
@@ -1550,7 +1550,7 @@
     display: none;
   }
   .phone-frame-wide .lineup-pool-list {
-    /* 대기 선수는 그리드로 펼쳐서 한 번에 많이 노출 */
+    /* ?��??�수??그리?�로 ?�쳐????번에 많이 ?�출 */
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     max-height: none;
@@ -1558,7 +1558,7 @@
   }
 }
 
-/* ── 라인업 슬롯 카드 ── */
+/* ?�?� ?�인???�롯 카드 ?�?� */
 .phone-frame-light .lineup-slots-card,
 .phone-frame-light .lineup-pool-card,
 .phone-frame-light .lineup-diamond-card {
@@ -1569,7 +1569,7 @@
   min-width: 0;
 }
 
-/* 액션 행 바로 아래 카드는 위쪽 padding 축소 — 액션 행과의 시각적 간격 좁힘 */
+/* ?�션 ??바로 ?�래 카드???�쪽 padding 축소 ???�션 ?�과???�각??간격 좁힘 */
 .phone-frame-light .lineup-layout .lineup-slots-card,
 .phone-frame-light .lineup-layout .lineup-pool-card-side {
   padding-top: 6px;
@@ -1698,7 +1698,7 @@
   transition: background 0.12s ease, box-shadow 0.12s ease;
 }
 
-/* 슬롯 선택 버튼 — 번호 + 이름 통합 클릭 영역 */
+/* ?�롯 ?�택 버튼 ??번호 + ?�름 ?�합 ?�릭 ?�역 */
 .phone-frame-light .lineup-slot-main {
   flex: 1;
   min-width: 0;
@@ -1718,13 +1718,13 @@
   background: rgba(232, 74, 138, 0.28);
 }
 
-/* 선택된 슬롯 전체 — 옅은 노란 배경 + 보더로 강조 */
+/* ?�택???�롯 ?�체 ???��? ?��? 배경 + 보더�?강조 */
 .phone-frame-light .lineup-slot-selected {
   background: rgba(255, 221, 51, 0.1) !important;
   border-color: rgba(255, 221, 51, 0.4) !important;
 }
 
-/* 타순 교체 source 선택 — 노란색 강조 (다이아몬드 선택과 동일 톤) */
+/* ?�??교체 source ?�택 ???��???강조 (?�이?�몬???�택�??�일 ?? */
 .phone-frame-light .lineup-slot-order-selected {
   background: #ffdd33 !important;
   color: #1a2640 !important;
@@ -1737,7 +1737,7 @@
   background: #ffdd33 !important;
 }
 
-/* 타순 swap 직후 슬롯 행 — 위/아래에서 들어오는 듯한 모션 + 노란 플래시 */
+/* ?�??swap 직후 ?�롯 ???????�래?�서 ?�어?�는 ??�� 모션 + ?��? ?�래??*/
 .phone-frame-light .lineup-slot-swap-from-down {
   animation: lineup-slot-swap-from-down 0.42s cubic-bezier(0.45, 0, 0.25, 1);
 }
@@ -1808,7 +1808,7 @@
   flex-shrink: 0;
 }
 
-/* 슬롯 우측 X 제거 버튼 — 명확하게 분리된 액션 */
+/* ?�롯 ?�측 X ?�거 버튼 ??명확?�게 분리???�션 */
 .phone-frame-light .lineup-slot-remove {
   width: 22px;
   height: 22px;
@@ -1861,7 +1861,7 @@
   font-weight: 600;
 }
 
-/* ── 야구장 (이미지 배경 + 절대좌표 마커) ── */
+/* ?�?� ?�구??(?��?지 배경 + ?��?좌표 마커) ?�?� */
 .phone-frame-light .lineup-field {
   position: relative;
   width: 100%;
@@ -1883,17 +1883,17 @@
 .phone-frame-light .lineup-field-marker {
   position: absolute;
   transform: translate(-50%, -50%);
-  /* flex column 제거 — 이름이 있을 때도 원의 중심이 좌표에 고정되도록.
-   * 이름은 .lineup-field-marker-name이 absolute로 빠져나가 레이아웃에 영향 없음. */
+  /* flex column ?�거 ???�름???�을 ?�도 ?�의 중심??좌표??고정?�도�?
+   * ?�름?� .lineup-field-marker-name??absolute�?빠져?��? ?�이?�웃???�향 ?�음. */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   z-index: 2;
-  /* button(인터랙티브)과 div(정적) 양쪽에서 동일한 padding을 가져야 이름 라벨의
-   * top: calc(100% - 6px) 기준이 일치한다. 모드 전환 시 이름 위치 흔들림 방지. */
+  /* button(?�터?�티�?�?div(?�적) ?�쪽?�서 ?�일??padding??가?�야 ?�름 ?�벨??
+   * top: calc(100% - 6px) 기�????�치?�다. 모드 ?�환 ???�름 ?�치 ?�들�?방�?. */
   padding: 8px;
   box-sizing: content-box;
 }
 
-/* 클릭 가능한 마커 — 브라우저 기본 동작 완전 차단 (padding은 base에서 통일됨) */
+/* ?�릭 가?�한 마커 ??브라?��? 기본 ?�작 ?�전 차단 (padding?� base?�서 ?�일?? */
 .phone-frame-light button.lineup-field-marker {
   background: transparent !important;
   border: 0 !important;
@@ -1907,7 +1907,7 @@
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
-  /* 위치는 항상 고정 — 어떤 pseudo-class도 transform 못 바꿈 */
+  /* ?�치????�� 고정 ???�떤 pseudo-class??transform �?바꿈 */
   transform: translate(-50%, -50%) !important;
 }
 
@@ -1924,7 +1924,7 @@
   transition: none;
 }
 
-/* 첫 번째로 선택된 포지션 — 정적 노란 강조 (애니메이션/transform 일체 없음) */
+/* �?번째�??�택???��??????�적 ?��? 강조 (?�니메이??transform ?�체 ?�음) */
 .phone-frame-light .lineup-field-marker-selected .lineup-field-marker-circle {
   background: #ffdd33 !important;
   color: #1a2640 !important;
@@ -1939,9 +1939,9 @@
   font-weight: 900;
 }
 
-/* ── swap 애니메이션 고스트 ──
- * 두 포지션을 교환할 때 한 선수가 from 좌표에서 to 좌표로 날아가는 캡슐.
- * 정적 마커의 이름 라벨은 from/to 위치에서 일시적으로 숨겨지고, 끝나면 다시 노출. */
+/* ?�?� swap ?�니메이??고스???�?�
+ * ???��??�을 교환???????�수가 from 좌표?�서 to 좌표�??�아가??캡슐.
+ * ?�적 마커???�름 ?�벨?� from/to ?�치?�서 ?�시?�으�??�겨지�? ?�나�??�시 ?�출. */
 .phone-frame-light .lineup-swap-ghost {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1984,7 +1984,7 @@
   }
 }
 
-/* 선택 상태 안내 배너 — 다이아몬드 카드 하단에 표시 */
+/* ?�택 ?�태 ?�내 배너 ???�이?�몬??카드 ?�단???�시 */
 .phone-frame-light .lineup-field-hint {
   display: flex;
   align-items: center;
@@ -2041,7 +2041,7 @@
 
 .phone-frame-light .lineup-field-marker-name {
   position: absolute;
-  /* 버튼 padding 8px + 텍스트 line-box 여백 보정. 원 바로 아래에 붙음. */
+  /* 버튼 padding 8px + ?�스??line-box ?�백 보정. ??바로 ?�래??붙음. */
   top: calc(100% - 6px);
   left: 50%;
   transform: translateX(-50%);
@@ -2055,12 +2055,12 @@
 }
 
 .phone-frame-light .lineup-field-marker-dh {
-  /* DH는 다이아몬드 외곽에 표시 (POS_COORDS 좌표로 배치).
-     색은 다른 포지션과 동일하게 base .lineup-field-marker-circle 의
-     var(--marker-color) = teamColor 가 그대로 적용됨 — 의도적으로 override 없음. */
+  /* DH???�이?�몬???�곽???�시 (POS_COORDS 좌표�?배치).
+     ?��? ?�른 ?��??�과 ?�일?�게 base .lineup-field-marker-circle ??
+     var(--marker-color) = teamColor 가 그�?�??�용?????�도?�으�?override ?�음. */
 }
 
-/* ── 대기 선수 세로 리스트 (타순 옆) ── */
+/* ?�?� ?��??�수 ?�로 리스??(?�???? ?�?� */
 .phone-frame-light .lineup-pool-list {
   list-style: none;
   margin: 0;
@@ -2068,7 +2068,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  /* 타순 9슬롯 높이에 맞춰 스크롤 */
+  /* ?�??9?�롯 ?�이??맞춰 ?�크�?*/
   max-height: 370px;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -2114,7 +2114,7 @@
   cursor: not-allowed;
 }
 
-/* ── 투/타 뱃지 (좌타/우타/양타, 좌투/우투) ── */
+/* ?�?� ???� 뱃�? (좌�?/?��?/?��?, 좌투/?�투) ?�?� */
 .phone-frame-light .lineup-hand-badge {
   display: inline-flex;
   align-items: center;
@@ -2142,17 +2142,17 @@
   color: var(--bp-accent-2);
 }
 
-/* 슬롯 안의 hand badge — 이름 옆에 살짝 떨어져 표시 */
+/* ?�롯 ?�의 hand badge ???�름 ?�에 ?�짝 ?�어???�시 */
 .phone-frame-light .lineup-slot-player .lineup-hand-badge {
   margin-left: 6px;
 }
 
-/* 풀 row의 hand badge — 우측 끝으로 밀어내기 */
+/* ?� row??hand badge ???�측 ?�으�?밀?�내�?*/
 .phone-frame-light .lineup-pool-row .lineup-hand-badge {
   margin-left: auto;
 }
 
-/* ── 라인업 등록 모달 ── */
+/* ?�?� ?�인???�록 모달 ?�?� */
 .modal-panel.lineup-register-modal-panel,
 .phone-frame-light .modal-panel.lineup-register-modal-panel {
   width: calc(100% - 32px);
@@ -2269,7 +2269,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* 등록 완료 토스트 */
+/* ?�록 ?�료 ?�스??*/
 .phone-frame-light .lineup-register-toast {
   position: fixed;
   left: 50%;
@@ -2290,7 +2290,7 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* ── 슬롯 picker 드롭다운 — 공개/비공개 배지 + 전적 ── */
+/* ?�?� ?�롯 picker ?�롭?�운 ??공개/비공�?배�? + ?�적 ?�?� */
 .phone-frame-light .lineup-slot-menu-badge {
   display: inline-flex;
   align-items: center;
@@ -2304,7 +2304,7 @@
   border: 1px solid var(--bp-line-soft);
   flex-shrink: 0;
   white-space: nowrap;
-  /* 이름 바로 옆에 붙어서 표시 (왼쪽 묶음) */
+  /* ?�름 바로 ?�에 붙어???�시 (?�쪽 묶음) */
 }
 
 .phone-frame-light .lineup-slot-menu-badge.is-public {
@@ -2319,16 +2319,16 @@
   color: var(--bp-accent);
   white-space: nowrap;
   flex-shrink: 0;
-  /* 공개 배지 옆에 자연스럽게 — auto 제거 (배지가 이미 margin-left:auto로 우측 묶음 시작) */
+  /* 공개 배�? ?�에 ?�연?�럽�???auto ?�거 (배�?가 ?��? margin-left:auto�??�측 묶음 ?�작) */
 }
 
-/* 액션 행의 공개 상태 hint — 녹색 강조 */
+/* ?�션 ?�의 공개 ?�태 hint ???�색 강조 */
 .phone-frame-light .lineup-action-hint.lineup-action-hint-published {
   color: #1a7f3a;
   font-weight: 800;
 }
 
-/* 원정/방어 전적 — 홈(녹색 강조) 옆에 중립색으로 톤다운 */
+/* ?�정/방어 ?�적 ?????�색 강조) ?�에 중립?�으�??�다??*/
 .phone-frame-light .lineup-action-hint-away {
   color: var(--bp-text-muted);
   font-weight: 700;
@@ -2337,25 +2337,25 @@
 .phone-frame-light .lineup-layout.is-locked .lineup-slots-card,
 .phone-frame-light .lineup-layout.is-locked .lineup-pool-card,
 .phone-frame-light .lineup-layout.is-locked .lineup-diamond-card {
-  /* 카드 자체는 클릭 받아 안내 모달 — 자식만 비활성화 */
+  /* 카드 ?�체???�릭 받아 ?�내 모달 ???�식�?비활?�화 */
   opacity: 0.65;
   filter: saturate(0.7);
   cursor: pointer;
 }
 
-/* 슬롯/다이아몬드: 모든 자식 인터랙션 차단 (클릭 이벤트는 부모 카드로 전파) */
+/* ?�롯/?�이?�몬?? 모든 ?�식 ?�터?�션 차단 (?�릭 ?�벤?�는 부�?카드�??�파) */
 .phone-frame-light .lineup-layout.is-locked .lineup-slots-card > *,
 .phone-frame-light .lineup-layout.is-locked .lineup-diamond-card > * {
   pointer-events: none;
 }
 
-/* 대기 카드는 스크롤 허용, 개별 선수 클릭만 차단 */
+/* ?��?카드???�크�??�용, 개별 ?�수 ?�릭�?차단 */
 .phone-frame-light .lineup-layout.is-locked .lineup-pool-row {
   pointer-events: none;
   cursor: not-allowed;
 }
 
-/* 공개 중 — 공개 버튼 톤 */
+/* 공개 �???공개 버튼 ??*/
 .phone-frame-light .lineup-action-btn.lineup-action-btn-published {
   background: rgba(34, 197, 94, 0.18);
   border: 1px solid rgba(34, 197, 94, 0.5);
@@ -2366,7 +2366,7 @@
   background: rgba(34, 197, 94, 0.28);
 }
 
-/* 본인 라인업 표시 — 도전 불가 안내 */
+/* 본인 ?�인???�시 ???�전 불�? ?�내 */
 .phone-frame-light .stadium-mine-tag {
   display: inline-flex;
   align-items: center;
@@ -2399,7 +2399,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── 기존 가로 풀 (사용 안 함, 호환용 보존) ── */
+/* ?�?� 기존 가�??� (?�용 ???? ?�환??보존) ?�?� */
 .phone-frame-light .lineup-pool {
   display: flex;
   flex-wrap: wrap;
@@ -2477,7 +2477,7 @@
   cursor: not-allowed;
 }
 
-/* ── 확인 모달 (라이트 카드형) ── */
+/* ?�?� ?�인 모달 (?�이??카드?? ?�?� */
 .modal-backdrop:has(.lineup-confirm-modal-panel) {
   align-items: center;
   padding: 16px;
@@ -2493,7 +2493,7 @@
   box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
 }
 
-/* 타이틀 ↔ 본문 간격 압축. modal-body 기본 16px 인데 라인업 confirm 류는 위만 8px 로. */
+/* ?�?��? ??본문 간격 ?�축. modal-body 기본 16px ?�데 ?�인??confirm 류는 ?�만 8px �? */
 .modal-panel.lineup-confirm-modal-panel .modal-body {
   padding-top: 8px;
 }
@@ -2504,7 +2504,7 @@
   color: var(--bp-text);
 }
 
-/* 라인업 삭제 진행/결과 모달 */
+/* ?�인????�� 진행/결과 모달 */
 .lineup-delete-status {
   display: flex;
   flex-direction: column;
@@ -2620,7 +2620,7 @@
   filter: brightness(1.05);
 }
 
-/* ── 포지션 변경 모달 (다크 카드형, phone-frame 밖에서도 동작) ── */
+/* ?�?� ?��???변�?모달 (?�크 카드?? phone-frame 밖에?�도 ?�작) ?�?� */
 .modal-backdrop:has(.lineup-pos-modal-panel) {
   align-items: center;
   padding: 16px;
@@ -2713,7 +2713,7 @@
   color: var(--bp-accent);
 }
 
-/* ── 라인업 공유 모달 ── */
+/* ?�?� ?�인??공유 모달 ?�?� */
 .modal-backdrop:has(.share-lineup-modal-panel) {
   align-items: center;
   padding: 16px;
@@ -2835,14 +2835,14 @@
 }
 
 /* ============================================================
- * 라인업 슬롯 picker — 헤더 좌측 드롭다운 (다중 슬롯 선택/생성/이름/삭제)
+ * ?�인???�롯 picker ???�더 좌측 ?�롭?�운 (?�중 ?�롯 ?�택/?�성/?�름/??��)
  * ============================================================ */
 .phone-frame-light .lineup-slot-picker {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
   max-width: 240px;
-  /* picker 컨테이너 안에서 trigger 버튼이 가운데로 정렬되도록 */
+  /* picker 컨테?�너 ?�에??trigger 버튼??가?�데�??�렬?�도�?*/
   display: flex;
   justify-content: center;
 }
@@ -2984,7 +2984,7 @@
   font-weight: 800;
 }
 
-/* 비로그인 슬롯 한도 도달 — "로그인해서 슬롯 추가" (새 슬롯 버튼과 같은 모양 + 핑크 강조) */
+/* 비로그인 ?�롯 ?�도 ?�달 ??"로그?�해???�롯 추�?" (???�롯 버튼�?같�? 모양 + ?�크 강조) */
 .phone-frame-light .lineup-slot-menu-login {
   text-decoration: none;
   background: rgba(232, 74, 138, 0.08);
@@ -3011,7 +3011,7 @@
   text-align: center;
 }
 
-/* ── 은퇴한 팀 — 읽기 전용 목록 (드롭다운 하단) ── */
+/* ?�?� ?�?�한 ?� ???�기 ?�용 목록 (?�롭?�운 ?�단) ?�?� */
 .phone-frame-light .lineup-slot-archived-head {
   margin-top: 4px;
   padding: 6px 10px 2px;
@@ -3028,7 +3028,7 @@
   gap: 6px;
   padding: 7px 10px;
   min-width: 0;
-  /* 읽기 전용 — 클릭/호버 강조 없음, 살짝 흐리게 */
+  /* ?�기 ?�용 ???�릭/?�버 강조 ?�음, ?�짝 ?�리�?*/
   opacity: 0.7;
 }
 
@@ -3038,7 +3038,7 @@
   border-color: var(--bp-line-soft);
 }
 
-/* ── 새 슬롯 만들기: 팀 선택 grid ── */
+/* ?�?� ???�롯 만들�? ?� ?�택 grid ?�?� */
 .phone-frame-light .lineup-slot-team-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -3071,7 +3071,7 @@
   cursor: not-allowed;
 }
 
-/* ── 이름 변경 input ── */
+/* ?�?� ?�름 변�?input ?�?� */
 .phone-frame-light .lineup-rename-input {
   width: 100%;
   padding: 10px 12px;
@@ -3108,9 +3108,9 @@
   line-height: 1.5;
 }
 
-/* ── confirm modal primary 액션 (새 슬롯·이름 저장·가이드 확인) ── */
-/* cancel 버튼과 같은 너비/높이로 정렬되도록 flex: 1 + 동일 padding 적용.
-   inline-flex로 아이콘+텍스트 가로 정렬 (아이콘 없는 케이스도 그대로 OK). */
+/* ?�?� confirm modal primary ?�션 (???�롯·?�름 ?�?�·�??�드 ?�인) ?�?� */
+/* cancel 버튼�?같�? ?�비/?�이�??�렬?�도�?flex: 1 + ?�일 padding ?�용.
+   inline-flex�??�이�??�스??가�??�렬 (?�이�??�는 케?�스??그�?�?OK). */
 .phone-frame-light .lineup-confirm-primary {
   flex: 1;
   display: inline-flex;
@@ -3133,12 +3133,12 @@
 }
 
 /* ============================================================
- * PC 전용 오버라이드 — 파일 가장 끝에 배치해서 모든 기본 정의를 덮어씀.
- * 이 블록을 중간에 두면 base .play-hub-card-info / .play-hub-card-description
- * 정의(파일 아래쪽)가 specificity 동률에서 늦은 순서로 이겨서 PC 변경이 무효화됨.
+ * PC ?�용 ?�버?�이?????�일 가???�에 배치?�서 모든 기본 ?�의�???��?�.
+ * ??블록??중간???�면 base .play-hub-card-info / .play-hub-card-description
+ * ?�의(?�일 ?�래�?가 specificity ?�률?�서 ??? ?�서�??�겨??PC 변경이 무효?�됨.
  * ============================================================ */
-@media (min-width: 1025px) {
-  /* PC: 3-col 일반 카드 (예측, 정보) — 모바일에선 가운데 정렬이었지만 PC에선 좌측 정렬로 시안 매칭 */
+@media (min-width: 9999px) {
+  /* PC: 3-col ?�반 카드 (?�측, ?�보) ??모바?�에??가?�데 ?�렬?�었지�?PC?�선 좌측 ?�렬�??�안 매칭 */
   .phone-frame-light .play-hub-grid-3 .play-hub-card {
     align-items: flex-start;
     text-align: left;
@@ -3146,32 +3146,32 @@
   .phone-frame-light .play-hub-grid-3 .play-hub-card-text {
     align-items: flex-start;
     text-align: left;
-    padding-right: 32px; /* chevron 자리 */
+    padding-right: 32px; /* chevron ?�리 */
   }
   .phone-frame-light .play-hub-grid-3 .play-hub-card-title {
     text-align: left;
   }
-  /* 2-col 카드 (콘텐츠)도 chevron 자리 확보 */
+  /* 2-col 카드 (콘텐�???chevron ?�리 ?�보 */
   .phone-frame-light .play-hub-grid-2 .play-hub-card-text {
     padding-right: 32px;
   }
   .phone-frame-light .play-hub-grid-2 .play-hub-card-title {
-    white-space: normal; /* PC에서는 1줄 강제 해제, description도 보이므로 */
+    white-space: normal; /* PC?�서??1�?강제 ?�제, description??보이므�?*/
     text-overflow: clip;
     overflow: visible;
   }
-  /* 1-col 카드 (외부 앱)도 chevron 자리 확보 */
+  /* 1-col 카드 (?��? ????chevron ?�리 ?�보 */
   .phone-frame-light .play-hub-grid-1 .play-hub-card-text {
     padding-right: 32px;
   }
-  /* PC: ! 버튼 완전 숨김 (모바일/태블릿 전용으로만 노출). 모든 variant 포함. */
+  /* PC: ! 버튼 ?�전 ?��? (모바???�블�??�용?�로�??�출). 모든 variant ?�함. */
   .phone-frame-light .play-hub-card-info,
   .phone-frame-light .play-hub-card-info-on-featured,
   .phone-frame-light .play-hub-card-info-bottom {
     display: none;
   }
 
-  /* PC: description 카드 본문에 1줄 노출. 너무 길면 ellipsis. base의 display:none 보다 늦게 적용. */
+  /* PC: description 카드 본문??1�??�출. ?�무 길면 ellipsis. base??display:none 보다 ??�� ?�용. */
   .phone-frame-light .play-hub-card-description {
     display: block;
     font-size: 11.5px;
@@ -3184,7 +3184,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* PC: chevron(>) — 설명 라인과 같은 높이로 우측 하단에 표시. 카드 내부 padding-bottom과 비슷한 위치. */
+  /* PC: chevron(>) ???�명 ?�인�?같�? ?�이�??�측 ?�단???�시. 카드 ?��? padding-bottom�?비슷???�치. */
   .phone-frame-light .play-hub-card-chevron {
     display: inline-block;
     position: absolute;
@@ -3196,22 +3196,22 @@
     pointer-events: none;
   }
 
-  /* PC 전용: 승부 예측 + 프로야구 정보 섹션을 한 줄에 가로 배치 (총 6 카드 한 행).
-     ⚠️ display: contents는 위에서 정의했고 이 PC override는 그 뒤에 와야 cascade에서 이김.
-     PC 미디어쿼리가 파일 끝(2776 이후)이라 OK. */
+  /* PC ?�용: ?��? ?�측 + ?�로?�구 ?�보 ?�션????줄에 가�?배치 (�?6 카드 ????.
+     ?�️ display: contents???�에???�의?�고 ??PC override??�??�에 ?�??cascade?�서 ?��?.
+     PC 미디?�쿼리�? ?�일 ??2776 ?�후)?�라 OK. */
   .phone-frame-light .play-hub-section-pair {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
-  /* pair 안의 섹션끼리 사이 음수 margin은 비활성화 (가로 배치라서 불필요) */
+  /* pair ?�의 ?�션?�리 ?�이 ?�수 margin?� 비활?�화 (가�?배치?�서 불필?? */
   .phone-frame-light .play-hub-section-pair > .play-hub-section + .play-hub-section {
     margin-top: 0;
   }
 }
 
 /* ============================================================
- * 야구 뉴스 (/news) — 팀 필터 칩 + 날짜·제목 리스트
+ * ?�구 ?�스 (/news) ???� ?�터 �?+ ?�짜·?�목 리스??
  * ============================================================ */
 .phone-frame-light .news-filter {
   display: flex;
@@ -3267,7 +3267,7 @@
   color: var(--bp-text);
 }
 
-/* 썸네일 — og:image. 없거나 깨지면 플레이스홀더 아이콘 노출 */
+/* ?�네????og:image. ?�거??깨�?�??�레?�스?�???�이�??�출 */
 .phone-frame-light .news-thumb-wrap {
   position: relative;
   flex: 0 0 auto;
@@ -3304,7 +3304,7 @@
   font-weight: 600;
   line-height: 1.4;
   color: var(--bp-text);
-  /* 긴 제목은 2줄까지 — 썸네일 높이와 균형 */
+  /* �??�목?� 2줄까지 ???�네???�이?� 균형 */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -3337,7 +3337,7 @@
   color: var(--bp-text-muted);
 }
 
-/* "더 보기" 버튼 + 종료 안내 */
+/* "??보기" 버튼 + 종료 ?�내 */
 .phone-frame-light .news-more {
   margin: 16px 0 8px;
   display: flex;
@@ -3384,8 +3384,8 @@
   color: var(--bp-text-muted);
 }
 
-/* ── 최근 라인업 불러오기 ───────────────────────────────────────
-   액션 행의 힌트 텍스트 자리를 대체하는 버튼 + 모달 안 리스트 스타일 */
+/* ?�?� 최근 ?�인??불러?�기 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+   ?�션 ?�의 ?�트 ?�스???�리�??�체하??버튼 + 모달 ??리스???��???*/
 .phone-frame-light .lineup-recent-load-btn {
   flex: 1;
   min-width: 0;
@@ -3418,7 +3418,7 @@
   background: rgba(232, 74, 138, 0.22);
 }
 
-/* ── 공유 버튼 (대기 풀 카드 아래로 강등 — 자주 안 쓰는 부가 기능) ── */
+/* ?�?� 공유 버튼 (?��??� 카드 ?�래�?강등 ???�주 ???�는 부가 기능) ?�?� */
 .phone-frame-light .lineup-pool-share-btn {
   display: inline-flex;
   align-items: center;
@@ -3449,9 +3449,9 @@
   background: rgba(232, 74, 138, 0.10);
 }
 
-/* ── 라인업 프리셋 드롭다운 ─────────────────────────────────────
-   헤더 우측 칩 (팀 선택 드롭다운 톤과 어울리는 컴팩트 버튼).
-   패널은 헤더 기준 우측 하향 전개. */
+/* ?�?� ?�인???�리???�롭?�운 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+   ?�더 ?�측 �?(?� ?�택 ?�롭?�운 ?�과 ?�울리는 컴팩??버튼).
+   ?�널?� ?�더 기�? ?�측 ?�향 ?�개. */
 .phone-frame-light .lineup-preset-picker {
   position: relative;
   min-width: 0;
@@ -3504,7 +3504,7 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  /* 팀 선택 드롭다운(z-index:9999)과 동일하게 — 그라운드 이미지에 가려지지 않게. */
+  /* ?� ?�택 ?�롭?�운(z-index:9999)�??�일?�게 ??그라?�드 ?��?지??가?��?지 ?�게. */
   z-index: 9999;
   min-width: 240px;
   max-width: 300px;
@@ -3646,7 +3646,7 @@
   text-align: center;
 }
 
-/* 타순/투수 카드 하단에 작게 표시되는 사용법 힌트 — 슬롯이 1개 이상일 때만 노출 */
+/* ?�???�수 카드 ?�단???�게 ?�시?�는 ?�용�??�트 ???�롯??1�??�상???�만 ?�출 */
 .phone-frame-light .lineup-slot-foot-hint {
   margin: 8px 2px 0;
   padding: 0;
@@ -3662,14 +3662,14 @@
   font-weight: 800;
 }
 
-/* 모달 — 최근 라인업 리스트 */
+/* 모달 ??최근 ?�인??리스??*/
 .recent-lineup-modal-panel {
   width: min(420px, 92vw);
   max-height: 80vh;
 }
 
-/* ModalShell의 .modal-body가 이미 overflow-y: auto + padding:16px 를 가지므로
-   여기선 추가 패딩 없이 그대로 사용 (이중 스크롤·이중 여백 방지) */
+/* ModalShell??.modal-body가 ?��? overflow-y: auto + padding:16px �?가지므�?
+   ?�기??추�? ?�딩 ?�이 그�?�??�용 (?�중 ?�크롤·이�??�백 방�?) */
 .recent-lineup-modal-body {
   padding: 0;
 }
@@ -3805,7 +3805,7 @@
 }
 
 /* =========================================================
-   라인업 랭킹 페이지 — /play/lineup/ranking
+   ?�인????�� ?�이지 ??/play/lineup/ranking
    ========================================================= */
 
 .phone-frame-light .lineup-rank-tabs {
@@ -3836,8 +3836,8 @@
   color: #fff;
 }
 
-/* 안내 + 팀 필터 드롭다운을 한 줄에 배치하는 래퍼.
-   .lineup-rank-hint 자체의 margin은 래퍼로 옮겼다. */
+/* ?�내 + ?� ?�터 ?�롭?�운????줄에 배치?�는 ?�퍼.
+   .lineup-rank-hint ?�체??margin?� ?�퍼�???��?? */
 .phone-frame-light .lineup-rank-hint-row {
   display: flex;
   justify-content: space-between;
@@ -3855,7 +3855,7 @@
   flex: 1;
 }
 
-/* 팀 필터 드롭다운 — 우측 끝. 트리거 + 절대 위치 팝오버. */
+/* ?� ?�터 ?�롭?�운 ???�측 ?? ?�리�?+ ?��? ?�치 ?�오�? */
 .phone-frame-light .lineup-rank-team-dropdown {
   position: relative;
   flex-shrink: 0;
@@ -3885,7 +3885,7 @@
   background: rgba(232, 74, 138, 0.08);
 }
 
-/* 팝오버 메뉴 — 트리거 아래 우측 정렬. */
+/* ?�오�?메뉴 ???�리�??�래 ?�측 ?�렬. */
 .phone-frame-light .lineup-rank-team-dropdown-menu {
   position: absolute;
   top: 100%;
@@ -3941,9 +3941,9 @@
 }
 
 .phone-frame-light .lineup-rank-item {
-  /* flex 행: 좌측 클러스터(랭크칩+팀뱃지+라인업명+닉네임)와 우측 클러스터(전적+승률)가
-     양 끝에 붙고, 중앙 빈 공간은 auto-fill. 가운데 정렬은 align-items: center.
-     행 전체가 클릭 가능 — 라인업 미리보기 모달을 연다. */
+  /* flex ?? 좌측 ?�러?�터(??���??�뱃�?+?�인?�명+?�네???� ?�측 ?�러?�터(?�적+?�률)가
+     ???�에 붙고, 중앙 �?공간?� auto-fill. 가?�데 ?�렬?� align-items: center.
+     ???�체가 ?�릭 가?????�인??미리보기 모달???�다. */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -3991,13 +3991,13 @@
   color: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
-/* 상위 3위 칩 안의 lucide SVG는 currentColor(#fff) 상속.
-   인라인 SVG가 가끔 baseline 정렬로 살짝 아래로 떨어지므로 block + 가운데 정렬 강제. */
+/* ?�위 3??�??�의 lucide SVG??currentColor(#fff) ?�속.
+   ?�라??SVG가 가??baseline ?�렬�??�짝 ?�래�??�어지므�?block + 가?�데 ?�렬 강제. */
 .phone-frame-light .lineup-rank-position.is-top svg {
   display: block;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
 }
-/* 상위 3위는 색 + 크기 모두 차등. 1위가 가장 큼 → 자연스러운 hierarchy. */
+/* ?�위 3?�는 ??+ ?�기 모두 차등. 1?��? 가???????�연?�러??hierarchy. */
 .phone-frame-light .lineup-rank-position.is-top-1 {
   background: #f4b400;   /* gold */
   width: 44px;
@@ -4017,8 +4017,8 @@
   font-size: 16px;
 }
 
-/* 본문 텍스트 컬럼: 라인업명(위) + 닉네임(아래) 2줄 세로 스택.
-   팀뱃지는 형제 요소로 분리되어 .lineup-rank-item flex row에서 좌측에 배치됨. */
+/* 본문 ?�스??컬럼: ?�인?�명(?? + ?�네???�래) 2�??�로 ?�택.
+   ?�뱃�????�제 ?�소�?분리?�어 .lineup-rank-item flex row?�서 좌측??배치?? */
 .phone-frame-light .lineup-rank-body {
   flex: 1;
   min-width: 0;
@@ -4027,7 +4027,7 @@
   gap: 2px;
 }
 
-/* 라인업 이름이 메인 (큰 폰트). 너무 길면 ellipsis. */
+/* ?�인???�름??메인 (???�트). ?�무 길면 ellipsis. */
 .phone-frame-light .lineup-rank-lineup-name {
   font-size: 15px;
   font-weight: 700;
@@ -4038,7 +4038,7 @@
   min-width: 0;
 }
 
-/* 닉네임 — 보조 텍스트(아래 줄). 괄호 없이 단독 표시. */
+/* ?�네????보조 ?�스???�래 �?. 괄호 ?�이 ?�독 ?�시. */
 .phone-frame-light .lineup-rank-nickname {
   display: block;
   font-size: 12.5px;
@@ -4049,8 +4049,8 @@
   min-width: 0;
 }
 
-/* 우측 stats — 한 줄 inline: [7승 4패] [(.636)].
-   행 전체가 클릭 가능해진 이후로는 별도 미리보기 버튼 없이 stats만 노출. */
+/* ?�측 stats ????�?inline: [7??4?? [(.636)].
+   ???�체가 ?�릭 가?�해�??�후로는 별도 미리보기 버튼 ?�이 stats�??�출. */
 .phone-frame-light .lineup-rank-stats {
   display: inline-flex;
   align-items: baseline;
@@ -4070,7 +4070,7 @@
   margin-right: 2px;
 }
 
-/* 승률 — 보조 텍스트 (괄호 포함). */
+/* ?�률 ??보조 ?�스??(괄호 ?�함). */
 .phone-frame-light .lineup-rank-rate {
   font-size: 12.5px;
   color: var(--bp-text-muted, #9aa0a6);
@@ -4097,14 +4097,14 @@
   color: var(--bp-text-muted, #9aa0a6) !important;
 }
 
-/* 팀 필터 결과 비어있을 때 — 전역 empty보다 슬림하게. */
+/* ?� ?�터 결과 비어?�을 ?????�역 empty보다 ?�림?�게. */
 .phone-frame-light .lineup-rank-empty-team {
   padding: 28px 16px;
 }
 
 /* =========================================================
-   계정 누적 랭킹 페이지 — /play/account-ranking
-   라인업 랭킹과 동일 톤. 팀 배지 / 라인업명 컬럼 없음 — 닉네임 중심.
+   계정 ?�적 ??�� ?�이지 ??/play/account-ranking
+   ?�인????���??�일 ?? ?� 배�? / ?�인?�명 컬럼 ?�음 ???�네??중심.
    ========================================================= */
 
 .phone-frame-light .account-rank-hint-row {
@@ -4134,8 +4134,8 @@
 }
 
 .phone-frame-light .account-rank-item {
-  /* flex 행: 좌측 랭크칩 + 닉네임, 우측 전적/승률.
-     라인업 랭킹과 달리 행 자체는 클릭 불가(상세 모달 없음) → cursor: default. */
+  /* flex ?? 좌측 ??���?+ ?�네?? ?�측 ?�적/?�률.
+     ?�인????���??�리 ???�체???�릭 불�?(?�세 모달 ?�음) ??cursor: default. */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -4146,7 +4146,7 @@
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-/* 본인 행 — 핑크 배경 + 보더로 강조. */
+/* 본인 ?????�크 배경 + 보더�?강조. */
 .phone-frame-light .account-rank-item.is-me {
   background: rgba(232, 74, 138, 0.08);
   border-color: rgba(232, 74, 138, 0.4);
@@ -4196,7 +4196,7 @@
   font-size: 16px;
 }
 
-/* 본문 — 닉네임 한 줄 + 본인 표시 칩. */
+/* 본문 ???�네????�?+ 본인 ?�시 �? */
 .phone-frame-light .account-rank-body {
   flex: 1;
   min-width: 0;
@@ -4218,7 +4218,7 @@
   min-width: 0;
 }
 
-/* 본인 행에 붙는 "나" 칩 — 보조 강조. */
+/* 본인 ?�에 붙는 "?? �???보조 강조. */
 .phone-frame-light .account-rank-me-tag {
   display: inline-flex;
   align-items: center;
@@ -4231,7 +4231,7 @@
   letter-spacing: 0.3px;
 }
 
-/* 우측 stats — 한 줄: [N승 M패] [(.xxx)]. */
+/* ?�측 stats ????�? [N??M?? [(.xxx)]. */
 .phone-frame-light .account-rank-stats {
   display: inline-flex;
   align-items: baseline;
@@ -4277,8 +4277,8 @@
   color: var(--bp-text-muted, #9aa0a6) !important;
 }
 
-/* 본인 순위 카드 — 100위 밖일 때 리스트 하단에 강조. sticky 느낌(border-top + 핑크 배경).
-   리스트와 시각적으로 분리하려고 mt 충분히. */
+/* 본인 ?�위 카드 ??100??밖일 ??리스???�단??강조. sticky ?�낌(border-top + ?�크 배경).
+   리스?��? ?�각?�으�?분리?�려�?mt 충분?? */
 .phone-frame-light .account-rank-my-card {
   margin: 16px 0 4px;
   padding: 12px 14px;
@@ -4336,7 +4336,7 @@
   align-items: center;
 }
 
-/* 비로그인 안내 카드 — 하단 로그인 CTA. */
+/* 비로그인 ?�내 카드 ???�단 로그??CTA. */
 .phone-frame-light .account-rank-login-cta {
   margin: 16px 0 4px;
   padding: 16px;
@@ -4375,7 +4375,7 @@
   opacity: 0.92;
 }
 
-/* 라인업 랭킹 행 우측 "라인업" 버튼 — 작은 outline 칩 */
+/* ?�인????�� ???�측 "?�인?? 버튼 ???��? outline �?*/
 .phone-frame-light .lineup-rank-preview-btn {
   display: inline-flex;
   align-items: center;

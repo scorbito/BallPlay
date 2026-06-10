@@ -1,6 +1,6 @@
-/* 내 기록 탭 — 기록 목록 + 카드 + 빈 상태 */
+/* ??기록 ????기록 목록 + 카드 + �??�태 */
 
-/* AppShell 헤더 타이틀 "내 기록" 옆에 인라인으로 붙는 보조 라벨 — 괄호 부제처럼 톤다운. */
+/* AppShell ?�더 ?�?��? "??기록" ?�에 ?�라?�으�?붙는 보조 ?�벨 ??괄호 부?�처???�다?? */
 .phone-frame-light .records-title-suffix-inline {
   margin-left: 4px;
   font-size: 12px;
@@ -9,7 +9,7 @@
   letter-spacing: -0.1px;
 }
 
-/* ── 등급 뱃지 ── */
+/* ?�?� ?�급 뱃�? ?�?� */
 .phone-frame-light .tier-badge {
   display: inline-flex;
   align-items: center;
@@ -53,7 +53,7 @@
   border: 1px solid rgba(239, 68, 68, 0.45);
 }
 
-/* 내 기록 헤더 — 첫 줄: 제목+뱃지 가로 배치, 두 번째 줄: 설명 전체 폭으로 자유롭게 */
+/* ??기록 ?�더 ??�?�? ?�목+뱃�? 가�?배치, ??번째 �? ?�명 ?�체 ??���??�유�?�� */
 .phone-frame-light .records-header-titlebar {
   display: flex;
   align-items: center;
@@ -109,10 +109,9 @@
   text-decoration: none;
 }
 
-/* ── 라인업 필터 (chip 가로 스크롤) ──
-   - 모바일: native touch scroll
-   - PC: 마우스 드래그로 스크롤 (RecordsScreen useEffect에서 핸들러 부착) + 휠 스크롤
-   - chip 끝 잘림 인지 hint: 우측 mask fade */
+/* ?�?� ?�인???�터 (chip 가�??�크�? ?�?�
+   - 모바?? native touch scroll
+   - PC: 마우???�래그로 ?�크�?(RecordsScreen useEffect?�서 ?�들??부�? + ???�크�?   - chip ???�림 ?��? hint: ?�측 mask fade */
 
 .phone-frame-light .records-filter {
   display: flex;
@@ -125,7 +124,7 @@
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
   cursor: grab;
-  user-select: none; /* 드래그 시 텍스트 선택 방지 */
+  user-select: none; /* ?�래�????�스???�택 방�? */
   mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
 }
@@ -164,7 +163,7 @@
   color: #fff;
 }
 
-/* chip 텍스트 — 2줄(라인업명 위, 승패무 아래) */
+/* chip ?�스????2�??�인?�명 ?? ?�패�??�래) */
 .phone-frame-light .records-filter-chip-text {
   display: flex;
   flex-direction: column;
@@ -190,8 +189,8 @@
   opacity: 0.95;
 }
 
-/* "전체" chip — 다른 chip(2줄)과 시각 무게 맞추기 위해 폰트 크고 굵게.
-   승패 sub-text 없이 단일 라벨만 노출. */
+/* "?�체" chip ???�른 chip(2�?�??�각 무게 맞추�??�해 ?�트 ?�고 굵게.
+   ?�패 sub-text ?�이 ?�일 ?�벨�??�출. */
 .phone-frame-light .records-filter-chip.is-all {
   padding: 5px 14px;
 }
@@ -206,7 +205,7 @@
   letter-spacing: -0.2px;
 }
 
-/* ── 카드 목록 ── */
+/* ?�?� 카드 목록 ?�?� */
 
 .phone-frame-light .records-list {
   display: grid;
@@ -214,8 +213,8 @@
   gap: 10px;
 }
 
-/* PC wide / 태블릿 가로 wide — 기록 카드 2열 */
-@media (min-width: 1025px) {
+/* PC wide / ?�블�?가�?wide ??기록 카드 2??*/
+@media (min-width: 9999px) {
   .phone-frame-light.phone-frame-wide .records-list {
     grid-template-columns: 1fr 1fr;
   }
@@ -267,7 +266,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* 정식/연습 매치 뱃지 — source 뱃지 옆. 정식=accent, 연습=중성 톤. */
+/* ?�식/?�습 매치 뱃�? ??source 뱃�? ?? ?�식=accent, ?�습=중성 ?? */
 .phone-frame-light .records-card-tier {
   padding: 3px 8px;
   border-radius: 999px;
@@ -313,7 +312,7 @@
   font-weight: 700;
 }
 
-/* 점수판 */
+/* ?�수??*/
 
 .phone-frame-light .records-card-score {
   display: grid;
@@ -352,8 +351,7 @@
   flex-direction: row-reverse;
 }
 
-/* 팀명 라벨만 노리도록 좁힘 — TeamBadge 안의 이니셜 span(.team-badge-initial)이
-   회색으로 덮이는 문제 방지. */
+/* ?��??�벨�??�리?�록 좁힘 ??TeamBadge ?�의 ?�니??span(.team-badge-initial)??   ?�색?�로 ??��??문제 방�?. */
 .phone-frame-light .records-card-team > span:not(.team-badge-wrap) {
   font-size: 12px;
   font-weight: 700;
@@ -383,7 +381,7 @@
   color: var(--bp-text-muted);
 }
 
-/* 액션 버튼 */
+/* ?�션 버튼 */
 
 .phone-frame-light .records-card-actions {
   display: flex;
@@ -462,8 +460,8 @@
   border-color: rgba(220, 38, 38, 0.4);
 }
 
-/* ── 누적 공개 매치 요약 카드 (페이지 최상단) ──
-   서버에서 집계한 전적을 카드로 보여줌. 익명 사용자에겐 로그인 CTA 추가. */
+/* ?�?� ?�적 공개 매치 ?�약 카드 (?�이지 최상?? ?�?�
+   ?�버?�서 집계???�적??카드�?보여�? ?�명 ?�용?�에�?로그??CTA 추�?. */
 .phone-frame-light .records-summary-card {
   display: flex;
   flex-direction: column;
@@ -547,8 +545,8 @@
   border-color: rgba(232, 74, 138, 0.5);
 }
 
-/* 누적 카드 첫 줄 — 좌측 통계 + 우측 "랭킹 보기" 보조 버튼을 한 행에 배치.
-   기존 .records-summary-stats 가 단독일 때 영향 없도록 row 래퍼를 새로 둠. */
+/* ?�적 카드 �?�???좌측 ?�계 + ?�측 "??�� 보기" 보조 버튼?????�에 배치.
+   기존 .records-summary-stats 가 ?�독?????�향 ?�도�?row ?�퍼�??�로 ?? */
 .phone-frame-light .records-summary-row {
   display: flex;
   align-items: center;
@@ -561,8 +559,8 @@
   flex: 1;
 }
 
-/* "랭킹 보기" — 작은 보조 버튼 톤. 누적 카드 우측 상단에 알약형.
-   accent 컬러 outline 스타일, 호버 시 살짝 채워짐. */
+/* "??�� 보기" ???��? 보조 버튼 ?? ?�적 카드 ?�측 ?�단???�약??
+   accent 컬러 outline ?��??? ?�버 ???�짝 채워�? */
 .phone-frame-light .records-ranking-link {
   display: inline-flex;
   align-items: center;

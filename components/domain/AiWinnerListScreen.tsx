@@ -639,21 +639,31 @@ export function AiWinnerListScreen({
                     ) : hasPredictions ? (
                       <div className="ai-winner-card-actions">
                         <Link
-                          href={`/predict/ai-winner/${g.id}`}
+                          href={`/predict/ai-winner/${g.id}?date=${selectedDate}`}
                           className="ai-winner-card-cta ai-winner-card-cta-main"
                         >
                           결과 보기
                           <ArrowRight size={12} strokeWidth={2.5} />
                         </Link>
-                        <VirtualMatchButton
-                          game={{
-                            homeTeamId: g.homeTeamId,
-                            awayTeamId: g.awayTeamId,
-                            homeStarter: g.homeStarter,
-                            awayStarter: g.awayStarter
-                          }}
-                          className="ai-winner-card-cta ai-winner-card-cta-sim"
-                        />
+                        {finished ? (
+                          <Link
+                            href={`/daily-report?date=${selectedDate}&focus=${g.id}&backHref=${encodeURIComponent(`/predict/ai-winner?date=${selectedDate}`)}`}
+                            className="ai-winner-card-cta ai-winner-card-cta-report"
+                          >
+                            리포트 보기
+                            <ArrowRight size={12} strokeWidth={2.5} />
+                          </Link>
+                        ) : (
+                          <VirtualMatchButton
+                            game={{
+                              homeTeamId: g.homeTeamId,
+                              awayTeamId: g.awayTeamId,
+                              homeStarter: g.homeStarter,
+                              awayStarter: g.awayStarter
+                            }}
+                            className="ai-winner-card-cta ai-winner-card-cta-sim"
+                          />
+                        )}
                       </div>
                     ) : null}
                   </li>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { ChevronDown, ChevronUp, RotateCcw, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -13,10 +14,16 @@ const AiWinnerStatsTab = dynamic(
   () => import("./AiWinnerStatsTab").then((m) => m.AiWinnerStatsTab),
   { ssr: false }
 );
+const AiWinnerSimTab = dynamic(
+  () => import("./AiWinnerSimTab").then((m) => m.AiWinnerSimTab),
+  { ssr: false }
+);
 import type {
   AiProvider,
   BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
+import type { BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
+import type { Sim1000LineupBatter } from "./AiWinnerSimTab";
 
 type GameInfo = {
   gameDate: string;
@@ -37,6 +44,10 @@ type Props = {
   predictions: BpAiPredictionRow[];
   /** 오늘 경기인가 — 과거 경기면 연출 없이 즉시 펼친 상태로 노출. */
   isToday?: boolean;
+  selectedDate?: string;
+  sim: BpSimResultRow | null;
+  homeLineup: Sim1000LineupBatter[] | null;
+  awayLineup: Sim1000LineupBatter[] | null;
 };
 
 const AI_LABEL: Record<AiProvider, string> = {
@@ -76,7 +87,16 @@ function summarize(predictions: BpAiPredictionRow[], homeTeamId: string, awayTea
   return { homeVotes, awayVotes, homePct, awayPct: 100 - homePct, majorityTeamId, isUnanimous };
 }
 
-export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true }: Props) {
+export function AiWinnerRevealScreen({
+  gameId,
+  game,
+  predictions,
+  isToday = true,
+  selectedDate,
+  sim,
+  homeLineup,
+  awayLineup
+}: Props) {
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
 
@@ -91,7 +111,7 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   // 전력 비교 탭 관련 상태 및 fetch 로직
-  const [activeTab, setActiveTab] = useState<"ai" | "stats">("ai");
+  const [activeTab, setActiveTab] = useState<"ai" | "stats" | "sim">("ai");
   const [statsData, setStatsData] = useState<any | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
@@ -156,7 +176,11 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
   };
 
   const summary = summarize(orderedPredictions, game.homeTeamId, game.awayTeamId);
-  const finished = game.status === "finished";
+  const isPastDate = !isToday;
+  const finished =
+    game.status === "finished" ||
+    (game.status !== "in_progress" && game.homeScore !== null && game.awayScore !== null) ||
+    isPastDate;
   const actualWinnerId =
     finished && game.homeScore !== null && game.awayScore !== null
       ? game.homeScore > game.awayScore
@@ -170,8 +194,9 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
     <AppShell
       activeTab="home"
       title="AI 분석 결과"
-      backHref="/predict/ai-winner"
+      backHref={selectedDate ? `/predict/ai-winner?date=${selectedDate}` : `/predict/ai-winner?date=${game.gameDate}`}
       theme="light"
+      wide={activeTab === "sim"}
       headerAction={
         visibleStage >= 4 ? (
           <button
@@ -222,18 +247,27 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
           ) : null}
         </header>
 
-        {/* ── 돌려보기 버튼 ── */}
-        <VirtualMatchButton
-          game={{
-            homeTeamId: game.homeTeamId,
-            awayTeamId: game.awayTeamId,
-            homeStarter: game.homeStarter,
-            awayStarter: game.awayStarter
-          }}
-          className="ai-reveal-sim-btn"
-          idleLabel={`${home.shortName} vs ${away.shortName} 가상경기 해보기`}
-          busyLabel="준비 중"
-        />
+        {/* ── 돌려보기 / 경기 리포트 버튼 ── */}
+        {finished ? (
+          <Link
+            href={`/daily-report?date=${game.gameDate}&focus=${gameId}&backHref=${encodeURIComponent(`/predict/ai-winner/${gameId}?date=${selectedDate ?? game.gameDate}`)}`}
+            className="ai-reveal-report-btn"
+          >
+            경기 분석 리포트 보기
+          </Link>
+        ) : (
+          <VirtualMatchButton
+            game={{
+              homeTeamId: game.homeTeamId,
+              awayTeamId: game.awayTeamId,
+              homeStarter: game.homeStarter,
+              awayStarter: game.awayStarter
+            }}
+            className="ai-reveal-sim-btn"
+            idleLabel={`${home.shortName} vs ${away.shortName} 가상경기 해보기`}
+            busyLabel="준비 중"
+          />
+        )}
 
         <div className="ai-reveal-tab-bar">
           <button
@@ -243,13 +277,24 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
           >
             AI 예측 결과
           </button>
-          <button
-            type="button"
-            className={`ai-reveal-tab-btn ${activeTab === "stats" ? "is-active" : ""}`}
-            onClick={() => setActiveTab("stats")}
-          >
-            정밀 데이터 비교
-          </button>
+          {isToday && (
+            <button
+              type="button"
+              className={`ai-reveal-tab-btn ${activeTab === "stats" ? "is-active" : ""}`}
+              onClick={() => setActiveTab("stats")}
+            >
+              정밀 데이터 비교
+            </button>
+          )}
+          {sim && (
+            <button
+              type="button"
+              className={`ai-reveal-tab-btn ${activeTab === "sim" ? "is-active" : ""}`}
+              onClick={() => setActiveTab("sim")}
+            >
+              1000판 시뮬
+            </button>
+          )}
         </div>
 
         {activeTab === "ai" ? (
@@ -345,7 +390,7 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
               </section>
             </>
           )
-        ) : (
+        ) : activeTab === "stats" ? (
           <div className="ai-reveal-stats-section">
             {statsLoading && (
               <div className="ai-stats-loading">
@@ -378,6 +423,27 @@ export function AiWinnerRevealScreen({ gameId, game, predictions, isToday = true
               />
             )}
           </div>
+        ) : (
+          sim && (
+            <AiWinnerSimTab
+              game={{
+                gameId,
+                gameDate: game.gameDate,
+                gameTime: game.gameTime,
+                stadium: game.stadium,
+                homeTeamId: game.homeTeamId,
+                awayTeamId: game.awayTeamId,
+                homeStarter: game.homeStarter,
+                awayStarter: game.awayStarter,
+                homeScore: game.homeScore,
+                awayScore: game.awayScore,
+                status: game.status
+              }}
+              sim={sim}
+              homeLineup={homeLineup}
+              awayLineup={awayLineup}
+            />
+          )
         )}
       </section>
     </AppShell>
