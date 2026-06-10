@@ -316,7 +316,7 @@ export function DailyReportScreen({
                   ) : (
                     <span>일시적인 분석 오류 혹은 데이터 누락으로 리포트가 발행되지 않았습니다.</span>
                   )}
-                  {isAdmin && <span>운영자이신 경우 상단의 '강제 발행' 버튼으로 재생성을 시도하실 수 있습니다.</span>}
+                  {isAdmin && <span>운영자이신 경우 상단의 &apos;강제 발행&apos; 버튼으로 재생성을 시도하실 수 있습니다.</span>}
                 </p>
               </>
             )}
