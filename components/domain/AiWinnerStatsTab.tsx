@@ -245,7 +245,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
   return (
     <div className="ai-stats-tab-container">
       {/* ── [섹션 1] 선발 투수 지표 대조 ── */}
-      <section className="ai-stats-section" ref={startersSectionRef}>
+      <section className="ai-stats-section">
         <h3 className="ai-stats-section-title">선발 투수 매치업 지표</h3>
         <div className="ai-stats-starter-header">
           <div className="ai-stats-starter-profile text-left">
@@ -263,7 +263,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
           </div>
         </div>
 
-        <div className="ai-stats-starter-metrics">
+        <div className="ai-stats-starter-metrics" ref={startersSectionRef}>
           {(["era", "whip", "k9", "bb9"] as const).map((metric, idx) => {
             const label =
               metric === "era"
@@ -312,7 +312,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
       </section>
 
       {/* ── [섹션 2] 팀 타선 지표 대조 ── */}
-      <section className="ai-stats-section" ref={battingSectionRef}>
+      <section className="ai-stats-section">
         <h3 className="ai-stats-section-title">오늘 출전 타선 전력 분석</h3>
         <p className="ai-stats-section-subtitle">
           * 최근 9인 선발 타순의 시즌 종합 성적을 대칭 지표로 나타낸 것입니다.
@@ -331,7 +331,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
           </div>
         </div>
 
-        <div className="ai-stats-starter-metrics">
+        <div className="ai-stats-starter-metrics" ref={battingSectionRef}>
           {(["avg", "obp", "slg", "ops", "contact"] as const).map((metric, idx) => {
             const label =
               metric === "avg"
@@ -388,7 +388,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
       </section>
 
       {/* ── [섹션 3] 최근 10경기 승리 누적 흐름 ── */}
-      <section className="ai-stats-section" ref={recentFlowSectionRef}>
+      <section className="ai-stats-section">
         <h3 className="ai-stats-section-title">최근 10경기 승리 누적 흐름</h3>
         <p className="ai-stats-section-subtitle" style={{ marginBottom: "10px" }}>
           * 10경기 전부터 최근 경기까지의 누적 승리 횟수 추이(상승 곡선)입니다.
@@ -397,7 +397,7 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
           <span style={{ color: homeColor }}>{homeTeamName}: {homeSummary}</span>
           <span style={{ color: awayColor }}>{awayTeamName}: {awaySummary}</span>
         </div>
-        <div className="ai-stats-line-wrapper">
+        <div className="ai-stats-line-wrapper" ref={recentFlowSectionRef}>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart
               key={animateRecentFlow ? "active" : "inactive"}
