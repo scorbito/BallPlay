@@ -117,14 +117,23 @@
 }
 
 .phone-frame-light .home-fall-badge.home-lineup-badge::after {
-  -webkit-mask: url("/badges/국가대표라인업추가.png") center / 100% 100% no-repeat;
-  mask: url("/badges/국가대표라인업추가.png") center / 100% 100% no-repeat;
+  -webkit-mask: url("/badges/국가대표라인업추가.png") center / 100% auto no-repeat;
+  mask: url("/badges/국가대표라인업추가.png") center / 100% auto no-repeat;
 }
 
 .phone-frame-light .home-fall-badge.home-lineup-badge {
-  top: -36px;
+  top: -12px;
   width: 76%;
   max-width: 210px;
+  aspect-ratio: 1117 / 223;
+  overflow: hidden;
+}
+
+.phone-frame-light .home-fall-badge.home-lineup-badge .home-fall-badge-img {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
 }
 
 @keyframes home-badge-even-bob {
