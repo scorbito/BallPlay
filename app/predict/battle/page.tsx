@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { AiBattleListScreen } from "@/components/domain/AiBattleListScreen";
 import { redirect } from "next/navigation";
 
+
 export const dynamic = "force-dynamic";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

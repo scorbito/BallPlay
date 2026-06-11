@@ -10,6 +10,7 @@ import {
 import { getUserTier } from "@/lib/auth/userTier";
 import { Sim1000ListScreen, type Sim1000GameCard } from "@/components/domain/Sim1000ListScreen";
 
+
 export const dynamic = "force-dynamic";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

@@ -803,3 +803,150 @@
   color: #0f172a;
 }
 
+/* 맞대결 승률 리뉴얼 스타일 */
+.power-card-h2h-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 14px;
+  margin-top: 20px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+}
+
+.h2h-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.h2h-title-label {
+  font-size: 13.5px;
+  font-weight: 850;
+  color: #475569;
+}
+
+.h2h-draw-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.h2h-gauge-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.h2h-team-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.h2h-team-name-small {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.h2h-stats-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.h2h-stats-wrap.justify-end {
+  justify-content: flex-end;
+}
+
+.h2h-rate {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.h2h-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.h2h-bar-container {
+  display: flex;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.h2h-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease-out;
+}
+
+.h2h-bar-gap {
+  width: 4px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* 상대 전적 스코어보드 스타일 */
+.h2h-gauge-info-row-v3 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.h2h-score-board {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.h2h-team-score {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.h2h-team-score strong {
+  font-size: 19px;
+  font-weight: 950;
+}
+
+.h2h-pct-small {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.h2h-team-score.text-left .h2h-pct-small {
+  margin-left: 4px;
+}
+
+.h2h-team-score.text-right .h2h-pct-small {
+  margin-right: 4px;
+}
+
+.h2h-colon {
+  font-size: 16px;
+  font-weight: 900;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 2px 10px;
+  border-radius: 999px;
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+
+

@@ -6,6 +6,7 @@ import { generateDailyReportWithGemini } from "@/lib/server/kbo/geminiDailyRepor
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { getUserTier } from "@/lib/auth/userTier";
 
+
 export const metadata: Metadata = {
   title: "일일 리포트",
   description: "실제 KBO 경기 결과와 뉴스를 종합하여 제미나이 AI가 승리/패배 요인 및 오늘의 판도를 요약 분석한 고품질 일일 리포트입니다.",

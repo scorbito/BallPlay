@@ -135,7 +135,7 @@ export default async function WeeklyReportPage({ searchParams }: Props) {
   // 룰베이스 기본 리포트 뼈대 생성
   const basicRankings = buildWeeklyReport(games, weekName);
 
-  // 제미나이 Pro API 연동하여 스포츠 분석 기사 스타일의 풍부한 텍스트로 보강
+  // 제미나이 Flash API 연동하여 스포츠 분석 기사 스타일의 텍스트로 보강
   const aiRankings = await generateWeeklyReportWithGemini(basicRankings, newsTitles, weekName);
 
   // 생성 완료된 데이터를 캐시 테이블에 저장

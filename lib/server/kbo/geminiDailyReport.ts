@@ -234,7 +234,7 @@ async function generateSingleGameReport(
   }
 }
 
-// 2. 일일 종합 리포트 생성 및 취합 (Gemini 2.5 Pro 사용, 실패 시 Flash 대체)
+// 2. 일일 종합 리포트 생성 및 취합 (Gemini 2.5 Flash 사용)
 export async function generateDailyReportWithGemini(
   skeleton: KboDailyReport,
   newsTitles: string[],
@@ -255,8 +255,8 @@ export async function generateDailyReportWithGemini(
       skeleton.gameReports.map(g => generateSingleGameReport(ai, g, newsTitles, skeleton.reportDate))
     );
 
-    // 2단계: KBO 판도 종합 브리핑 생성 (Gemini 2.5 Pro -> 실패 시 Flash)
-    console.log("[Daily AI Report] 2단계: KBO 전체 종합 분석 시작 (Gemini Pro)");
+    // 2단계: KBO 판도 종합 브리핑 생성 (Gemini 2.5 Flash)
+    console.log("[Daily AI Report] 2단계: KBO 전체 종합 분석 시작 (Gemini Flash)");
 
     const simplifiedGameResults = analyzedGameReports.map(g => {
       const homeShort = teams.find(t => t.id === g.homeTeamId)?.shortName ?? g.homeTeamId;
@@ -289,7 +289,7 @@ export async function generateDailyReportWithGemini(
     try {
       proResponse = await callGeminiWithRetry(() =>
         ai.models.generateContent({
-          model: "gemini-2.5-pro",
+          model: "gemini-2.5-flash",
           contents: proPrompt,
           config: {
             systemInstruction: PRO_SYSTEM_INSTRUCTION,
@@ -300,13 +300,13 @@ export async function generateDailyReportWithGemini(
       );
     } catch (proErr: any) {
       const errMsg = proErr instanceof Error ? proErr.message : String(proErr);
-      console.warn(`[Daily AI Report] 2단계: Gemini Pro 리포트 생성 중 에러 발생: ${errMsg.slice(0, 150)}`);
-      console.warn("[Daily AI Report] 2단계: Gemini 2.5 Flash 모델로 대체(Fallback)하여 종합 분석 생성을 시도합니다.");
+      console.warn(`[Daily AI Report] 2단계: Gemini Flash 리포트 생성 중 에러 발생: ${errMsg.slice(0, 150)}`);
+      console.warn("[Daily AI Report] 2단계: Gemini 2.5 Flash 모델로 종합 분석 생성을 재시도합니다.");
       
       try {
         proResponse = await callGeminiWithRetry(() =>
           ai.models.generateContent({
-            model: "gemini-2.5-flash", // 대체 모델로 Flash 사용
+            model: "gemini-2.5-flash",
             contents: proPrompt,
             config: {
               systemInstruction: PRO_SYSTEM_INSTRUCTION,
@@ -316,13 +316,13 @@ export async function generateDailyReportWithGemini(
           })
         );
       } catch (flashErr: any) {
-        console.error("[Daily AI Report] 2단계: 대체 Flash 모델 생성도 실패했습니다:", (flashErr as Error).message);
+        console.error("[Daily AI Report] 2단계: Flash 모델 재시도도 실패했습니다:", (flashErr as Error).message);
         throw flashErr;
       }
     }
 
     const proResultText = proResponse.text;
-    if (!proResultText) throw new Error("Pro/Flash API response is empty");
+    if (!proResultText) throw new Error("Flash API response is empty");
 
     const parsedPro = JSON.parse(proResultText) as {
       headlines: string[];

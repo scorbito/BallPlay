@@ -17,6 +17,8 @@ import type {
   BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import type { AiWeeklySeries } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
+import { PageViewCounter } from "@/components/domain/PageViewCounter";
+
 
 export type AiWinnerGame = {
   id: string;
@@ -674,6 +676,7 @@ export function AiWinnerListScreen({
           })()}
         </section>
       </section>
+      <PageViewCounter />
     </AppShell>
   );
 }

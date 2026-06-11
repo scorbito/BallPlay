@@ -12,6 +12,7 @@ import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import { getSimResultByGameId, type BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
 
+
 export const dynamic = "force-dynamic";
 
 function kstToday(): string {

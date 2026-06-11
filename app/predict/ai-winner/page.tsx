@@ -12,6 +12,7 @@ import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
 
+
 export const dynamic = "force-dynamic";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

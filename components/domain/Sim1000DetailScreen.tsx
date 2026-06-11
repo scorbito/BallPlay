@@ -12,6 +12,8 @@ import type {
   SimMvpFreq,
   SimPitcherAggregate
 } from "@/lib/supabase/query-parts/bpSimResults";
+import { PageViewCounter } from "@/components/domain/PageViewCounter";
+
 
 export type Sim1000GameInfo = {
   gameId: string;
@@ -764,6 +766,7 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
           </span>
         </footer>
       </section>
+      <PageViewCounter />
     </AppShell>
   );
 }

@@ -5,6 +5,7 @@ import { AiBattleRevealScreen } from "@/components/domain/AiBattleRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type { BattlePredictionRow } from "@/components/domain/AiWinnerBattleTab";
 
+
 export const dynamic = "force-dynamic";
 
 export default async function AiBattleRevealPage({ params }: { params: { gameId: string } }) {

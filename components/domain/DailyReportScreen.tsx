@@ -21,6 +21,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
 import type { KboDailyReport, GameReport } from "@/lib/utils/dailyReportHelper";
+import { PageViewCounter } from "@/components/domain/PageViewCounter";
+
 
 type DailyReportScreenProps = {
   initialReport: KboDailyReport;
@@ -541,6 +543,7 @@ export function DailyReportScreen({
         )}
 
       </div>
+      <PageViewCounter />
     </AppShell>
   );
 }

@@ -44,6 +44,7 @@ export function AiTeamPowerComparison({
   h2hRecord
 }: Props) {
   const [animate, setAnimate] = useState(false);
+  const [remountKey, setRemountKey] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export function AiTeamPowerComparison({
       clearTimeout(timer);
       if (observer) observer.disconnect();
     };
-  }, []);
+  }, [remountKey]);
 
   // 승률 계산 (승 / (승 + 패))
   const getWinRate = (standing: TeamStandingData) => {
@@ -154,9 +155,24 @@ export function AiTeamPowerComparison({
     }
   ];
 
+  const handleTitleClick = () => {
+    setAnimate(false);
+    setRemountKey(prev => prev + 1);
+  };
+
   return (
-    <section className="ai-stats-section team-power-comparison-card" ref={sectionRef}>
-      <h3 className="ai-stats-section-title">팀 전력 비교</h3>
+    <section
+      key={remountKey}
+      className="ai-stats-section team-power-comparison-card"
+      ref={sectionRef}
+    >
+      <h3
+        className="ai-stats-section-title"
+        onClick={handleTitleClick}
+        style={{ cursor: "pointer", userSelect: "none" }}
+      >
+        팀 전력 비교
+      </h3>
       
       {/* ── 양 팀 순위 & 시즌 전적 ── */}
       <div className="power-card-header">
@@ -225,15 +241,61 @@ export function AiTeamPowerComparison({
       </div>
 
       {/* ── 시즌 상대 전적 ── */}
-      <div className="power-card-h2h">
-        <span className="h2h-label">이번 시즌 상대 전적</span>
-        <span className="h2h-value">
-          <strong style={{ color: homeColor }}>{homeTeamName}</strong> 기준{" "}
-          <strong>
-            {h2hRecord.wins}승 {h2hRecord.draws}무 {h2hRecord.losses}패
-          </strong>
-        </span>
-      </div>
+      {(() => {
+        const totalH2hWins = h2hRecord.wins + h2hRecord.losses;
+        const homeH2hRate = totalH2hWins > 0 ? (h2hRecord.wins / totalH2hWins) * 100 : 50;
+        const awayH2hRate = totalH2hWins > 0 ? (h2hRecord.losses / totalH2hWins) * 100 : 50;
+
+        const homeH2hRateDisplay = homeH2hRate.toFixed(0);
+        const awayH2hRateDisplay = awayH2hRate.toFixed(0);
+
+        // 게이지 최소/최대값 보정
+        const homeH2hPct = Math.max(15, Math.min(85, Math.round(homeH2hRate)));
+        const awayH2hPct = 100 - homeH2hPct;
+
+        return (
+          <div className="power-card-h2h-v2">
+            <div className="metric-row-info">
+              <div className="h2h-team-score text-left" style={{ color: homeColor }}>
+                {homeTeamName} <strong>{h2hRecord.wins}승</strong>
+              </div>
+              
+              <div className="metric-label" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                <span>이번 시즌 맞대결 승률</span>
+                {h2hRecord.draws > 0 && (
+                  <span className="h2h-draw-badge">{h2hRecord.draws}무승부</span>
+                )}
+              </div>
+              
+              <div className="h2h-team-score text-right" style={{ color: awayColor }}>
+                {awayTeamName} <strong>{h2hRecord.losses}승</strong>
+              </div>
+            </div>
+
+            <div className="h2h-bar-container">
+              <div
+                className="h2h-bar home-h2h-bar"
+                style={{
+                  width: animate ? `${homeH2hPct}%` : "0%",
+                  background: homeColor,
+                  transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                  transitionDelay: "240ms"
+                }}
+              />
+              <div className="h2h-bar-gap" style={{ marginLeft: "auto" }} />
+              <div
+                className="h2h-bar away-h2h-bar"
+                style={{
+                  width: animate ? `${awayH2hPct}%` : "0%",
+                  background: awayFill,
+                  transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                  transitionDelay: "240ms"
+                }}
+              />
+            </div>
+          </div>
+        );
+      })()}
     </section>
   );
 }

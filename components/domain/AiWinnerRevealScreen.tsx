@@ -24,6 +24,8 @@ import type {
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import type { BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
 import type { Sim1000LineupBatter } from "./AiWinnerSimTab";
+import { PageViewCounter } from "@/components/domain/PageViewCounter";
+
 
 type GameInfo = {
   gameDate: string;
@@ -446,6 +448,7 @@ export function AiWinnerRevealScreen({
           )
         )}
       </section>
+      <PageViewCounter />
     </AppShell>
   );
 }

@@ -14,3 +14,4 @@ export default async function AiWeeklySeriesRevealPage({
   const series = result.ok ? result.row : null;
   return <AiWeeklySeriesRevealScreen series={series} backDate={series?.weekStartDate} />;
 }
+

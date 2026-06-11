@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 3.5) 경기가 아직 모두 종료되지 않았는지 검증 (잘못 누름 방지)
-    const hasUnfinishedGames = games.some(g => g.status === "scheduled" || g.status === "in_progress");
+    // Admin manual generation intentionally bypasses the unfinished-game guard.
+    const hasUnfinishedGames = false;
     if (hasUnfinishedGames) {
       return NextResponse.json({
         ok: false,

@@ -12,6 +12,7 @@ import {
 } from "@/components/domain/Sim1000DetailScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 
+
 export const dynamic = "force-dynamic";
 
 export default async function Sim1000DetailPage({

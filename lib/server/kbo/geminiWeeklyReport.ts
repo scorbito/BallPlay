@@ -65,7 +65,7 @@ ${newsTitles.slice(0, 150).join("\n")} -- 프롬프트 토큰 조절을 위해 �
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro", // 고성능 대형 모델 사용
+      model: "gemini-2.5-flash", // 비용 절감을 위해 Flash 모델 사용
       contents: [
         {
           role: "user",

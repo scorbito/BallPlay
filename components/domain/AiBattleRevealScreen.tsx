@@ -8,6 +8,8 @@ import { getTeam } from "@/lib/constants/teams";
 import { AiWinnerBattleTab, type BattlePredictionRow } from "./AiWinnerBattleTab";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import type { GameStatus } from "@/lib/types/api-contracts";
+import { PageViewCounter } from "@/components/domain/PageViewCounter";
+
 
 type GameInfo = {
   gameDate: string;
@@ -111,6 +113,7 @@ export function AiBattleRevealScreen({ gameId, game, predictions }: Props) {
           />
         </div>
       </section>
+      <PageViewCounter pullUp />
     </AppShell>
   );
 }
