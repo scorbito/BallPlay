@@ -38,7 +38,11 @@ export function VirtualMatchButton({
   const handleClick = async () => {
     if (starting) return;
     setStarting(true);
-    const res = await startSpectatorMatch(game);
+    const returnHref =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+        : undefined;
+    const res = await startSpectatorMatch(game, { returnHref });
     if (!res.ok) {
       showToast(res.reason);
       setStarting(false);

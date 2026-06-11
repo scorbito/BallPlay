@@ -20,10 +20,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { simulateGame, buildSimTeamInput, SIM_ENGINE_VERSION } from "@/lib/sim";
 import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import { getRoster } from "@/lib/rosters";
 import type { SavedLineup, Position, LineupOrder, LineupSlot } from "@/lib/types/lineup";
 import type { SimGameResult, SimTeamInput } from "@/lib/sim/types";
+import type { StatsDirectory } from "@/lib/sim/lineupAdapter";
 
 const N_DEFAULT = 1000;
 
@@ -152,6 +153,7 @@ function buildTeam(
   teamId: string,
   recent: RecentLineupRow,
   todayStarterName: string | null,
+  stats: StatsDirectory,
   displayName: string
 ): SimTeamInput {
   // 타순: bp_team_recent_lineups.batting 의 rosterId 우선, 없으면 이름 매칭 폴백.
@@ -184,7 +186,6 @@ function buildTeam(
     throw new Error(`fillMissingPitcherSlots 실패: ${teamId}`);
   }
 
-  const stats = buildStatsDirectory([teamId]);
   const built = buildSimTeamInput(teamId, batting, pitching, stats, displayName);
   if (!built.ok) {
     throw new Error(`buildSimTeamInput 실패[${teamId}]: ${JSON.stringify(built.issues)}`);
@@ -202,17 +203,23 @@ export async function runBatchSim(
       getLatestLineup(client, input.homeTeamId, input.gameDate),
       getLatestLineup(client, input.awayTeamId, input.gameDate)
     ]);
+    const stats = await buildStatsDirectoryWithRecentForm(client, [
+      input.homeTeamId,
+      input.awayTeamId
+    ]);
 
     const homeTeam = buildTeam(
       input.homeTeamId,
       homeRecent,
       input.homeStarter,
+      stats,
       `${input.homeTeamId} (홈)`
     );
     const awayTeam = buildTeam(
       input.awayTeamId,
       awayRecent,
       input.awayStarter,
+      stats,
       `${input.awayTeamId} (원정)`
     );
 

@@ -3,20 +3,8 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { fetchOnDemandStarterStats } from "@/lib/server/kbo/fetchOnDemandStarterStats";
 import { getRoster } from "@/lib/rosters";
 import { makeFallbackBatter, makeFallbackPitcher } from "@/lib/sim/leagueAverage";
+import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import type { SimBatter, SimPitcher } from "@/lib/sim/types";
-import statsData from "@/data/kbo_players_2026.json";
-
-type StatsFile = {
-  teams: Record<
-    string,
-    {
-      batters: SimBatter[];
-      pitchers: SimPitcher[];
-    }
-  >;
-};
-
-const STATS = statsData as unknown as StatsFile;
 
 function findRosterPlayerIdByName(teamId: string, name: string | null, isPitcher: boolean): string | null {
   if (!name) return null;
@@ -62,32 +50,19 @@ export async function GET(
 
   // 2. 선발 투수 온디맨드 크롤링 수행
   await fetchOnDemandStarterStats(adminClient, [homeTeamId, awayTeamId], gameDate);
+  const stats = await buildStatsDirectoryWithRecentForm(adminClient, [homeTeamId, awayTeamId], {
+    asOfDate: gameDate
+  });
 
   // 3. 선발 투수 스탯 획득
   const homeStarterId = findRosterPlayerIdByName(homeTeamId, homeStarterName, true);
   const awayStarterId = findRosterPlayerIdByName(awayTeamId, awayStarterName, true);
 
-  const starterIds = [homeStarterId, awayStarterId].filter(Boolean) as string[];
-  
-  let dbStarters: any[] = [];
-  if (starterIds.length > 0) {
-    const { data: dbData } = await adminClient
-      .from("bp_player_stats_snapshots")
-      .select("player_id, sim_payload")
-      .in("player_id", starterIds)
-      .eq("snapshot_date", gameDate)
-      .eq("kind", "pitcher");
-    dbStarters = dbData ?? [];
-  }
-
   const getStarterPayload = (teamId: string, id: string | null, name: string | null): SimPitcher => {
-    const dbMatch = dbStarters.find((s) => s.player_id === id);
-    if (dbMatch?.sim_payload) return dbMatch.sim_payload as SimPitcher;
-
-    // 로컬 JSON 백업 조회
+    // DB 스냅샷 디렉터리에서 경기일 기준 최신 스탯 조회.
     if (id) {
-      const jsonMatch = STATS.teams[teamId]?.pitchers.find((p) => p.playerId === id);
-      if (jsonMatch) return jsonMatch;
+      const dbSnapshot = stats.pitchers.get(id);
+      if (dbSnapshot) return dbSnapshot;
     }
 
     // 최종 fallback
@@ -110,7 +85,6 @@ export async function GET(
       .maybeSingle();
 
     const batting = lineupRow?.batting || [];
-    const batters = STATS.teams[teamId]?.batters || [];
     const roster = getRoster(teamId);
 
     let totalAvg = 0, totalObp = 0, totalSlg = 0, totalOps = 0, totalContact = 0;
@@ -119,7 +93,7 @@ export async function GET(
     for (const slot of batting) {
       const pid = slot.rosterId;
       if (!pid) continue;
-      let stat = batters.find((b) => b.playerId === pid);
+      let stat: SimBatter | undefined = stats.batters.get(pid);
       if (!stat) {
         const p = roster.find((x) => x.id === pid);
         stat = makeFallbackBatter(pid, slot.name, p?.battingHand || "R");
@@ -231,7 +205,8 @@ export async function GET(
 
   // 팀 평균자책점(ERA) 가중평균 계산
   const getTeamEra = (teamId: string) => {
-    const pitchers = STATS.teams[teamId]?.pitchers || [];
+    const rosterIds = new Set(getRoster(teamId).filter((p) => p.primaryPosition === "P").map((p) => p.id));
+    const pitchers = Array.from(stats.pitchers.values()).filter((p) => rosterIds.has(p.playerId));
     let totalIp = 0;
     let totalEarnedRuns = 0;
     for (const p of pitchers) {
@@ -244,7 +219,8 @@ export async function GET(
 
   // 시즌 전체 팀 타율 계산
   const getTeamBattingAvgAll = (teamId: string) => {
-    const batters = STATS.teams[teamId]?.batters || [];
+    const rosterIds = new Set(getRoster(teamId).filter((p) => p.primaryPosition !== "P").map((p) => p.id));
+    const batters = Array.from(stats.batters.values()).filter((b) => rosterIds.has(b.playerId));
     let totalAb = 0;
     let totalHits = 0;
     for (const b of batters) {

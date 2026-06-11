@@ -9,6 +9,12 @@ import {
   enhanceStatsDirectoryByPlayerIds
 } from "./statsLoaderWithRecent";
 
+type RecentFormOptions = {
+  asOfDate?: string;
+  comparisonDays?: number;
+  previousLookbackDays?: number;
+};
+
 function unique<T>(items: T[]): T[] {
   return Array.from(new Set(items));
 }
@@ -47,7 +53,8 @@ export function getLineupValidPlayerIds(teamId: string, batting: SavedLineup): S
 export async function buildStatsDirectoryWithRecentFormForEntries(
   client: SupabaseClient,
   entries: LineupEntry[],
-  extraTeamIds: string[] = []
+  extraTeamIds: string[] = [],
+  opts?: RecentFormOptions
 ): Promise<StatsDirectory> {
   const playerIds = unique(
     entries.flatMap((entry) => [
@@ -56,8 +63,8 @@ export async function buildStatsDirectoryWithRecentFormForEntries(
     ])
   );
   const teamIds = unique([...getSourceTeamIdsForPlayerIds(playerIds), ...extraTeamIds]);
-  const directory = await buildStatsDirectoryWithRecentForm(client, teamIds);
-  return enhanceStatsDirectoryByPlayerIds(client, directory, playerIds);
+  const directory = await buildStatsDirectoryWithRecentForm(client, teamIds, opts);
+  return enhanceStatsDirectoryByPlayerIds(client, directory, playerIds, opts);
 }
 
 export async function buildStatsDirectoryWithRecentFormForLineups(
@@ -67,7 +74,8 @@ export async function buildStatsDirectoryWithRecentFormForLineups(
     batting: SavedLineup;
     pitching?: SavedPitcherLineup | null;
   }>,
-  extraTeamIds: string[] = []
+  extraTeamIds: string[] = [],
+  opts?: RecentFormOptions
 ): Promise<StatsDirectory> {
   const playerIds = unique(
     lineups.flatMap((lineup) => [
@@ -76,8 +84,8 @@ export async function buildStatsDirectoryWithRecentFormForLineups(
     ])
   );
   const teamIds = unique([...getSourceTeamIdsForPlayerIds(playerIds), ...extraTeamIds]);
-  const directory = await buildStatsDirectoryWithRecentForm(client, teamIds);
-  return enhanceStatsDirectoryByPlayerIds(client, directory, playerIds);
+  const directory = await buildStatsDirectoryWithRecentForm(client, teamIds, opts);
+  return enhanceStatsDirectoryByPlayerIds(client, directory, playerIds, opts);
 }
 
 export function buildStatsDirectoryForLineups(

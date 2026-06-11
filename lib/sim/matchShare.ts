@@ -5,10 +5,12 @@ import { buildSimTeamInput, type StatsDirectory } from "./lineupAdapter";
 import { fillMissingPitcherSlotsFromStatsDirectory } from "./autoPitcherLineup";
 import {
   buildStatsDirectoryForLineups,
+  buildStatsDirectoryWithRecentFormForLineups,
   getEntryValidPlayerIds,
   getSourceTeamIdsForPlayerIds
 } from "./lineupStatsDirectory";
 import type { SimGameInput, SimTeamInput } from "./types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type SharedBatter = {
   p: string;
@@ -194,6 +196,24 @@ export function restoreSimTeamFromShared(
       ...shared.b.map((batter) => batter.p),
       ...shared.ps.filter((id): id is string => Boolean(id))
     ])
+  );
+  return restoreTeam(shared, stats);
+}
+
+export async function restoreSimTeamFromSharedWithRecentForm(
+  client: SupabaseClient,
+  shared: SharedTeam,
+  opts?: { asOfDate?: string }
+): Promise<{ ok: true; team: SimTeamInput } | { ok: false; reason: string }> {
+  const lineups = sharedToSavedLineups(shared);
+  const stats = await buildStatsDirectoryWithRecentFormForLineups(
+    client,
+    [lineups],
+    getSourceTeamIdsForPlayerIds([
+      ...shared.b.map((batter) => batter.p),
+      ...shared.ps.filter((id): id is string => Boolean(id))
+    ]),
+    opts
   );
   return restoreTeam(shared, stats);
 }

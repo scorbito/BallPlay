@@ -32,6 +32,9 @@ import type { StatsDirectory } from "./lineupAdapter";
 type Options = {
   /** 최근 비중. 기본 0.3 = 시즌:최근 = 0.7:0.3. */
   recentWeight?: number;
+  asOfDate?: string;
+  comparisonDays?: number;
+  previousLookbackDays?: number;
 };
 
 /** 팀 ID 기준 — 그 팀의 모든 선수에 대해 시즌+최근 블렌드 적용. */
@@ -41,7 +44,11 @@ export async function buildStatsDirectoryWithRecentForm(
   opts?: Options
 ): Promise<StatsDirectory> {
   const baseline = buildStatsDirectory(teamIds);
-  const res = await getPlayerSnapshotsForTeams(client, teamIds);
+  const res = await getPlayerSnapshotsForTeams(client, teamIds, {
+    asOfDate: opts?.asOfDate,
+    comparisonDays: opts?.comparisonDays,
+    previousLookbackDays: opts?.previousLookbackDays
+  });
   if (!res.ok) {
     // DB 실패 시 baseline 그대로 (게임은 진행 가능해야 함)
     if (typeof console !== "undefined") {
@@ -61,7 +68,11 @@ export async function enhanceStatsDirectoryByPlayerIds(
   playerIds: string[],
   opts?: Options
 ): Promise<StatsDirectory> {
-  const res = await getPlayerSnapshotsForIds(client, playerIds);
+  const res = await getPlayerSnapshotsForIds(client, playerIds, {
+    asOfDate: opts?.asOfDate,
+    comparisonDays: opts?.comparisonDays,
+    previousLookbackDays: opts?.previousLookbackDays
+  });
   if (!res.ok) {
     if (typeof console !== "undefined") {
       console.warn("[statsLoaderWithRecent] snapshot fetch failed, using directory as-is:", res.error);

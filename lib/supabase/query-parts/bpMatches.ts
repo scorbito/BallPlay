@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { getStatsSnapshotDate } from "@/lib/sim/statsLoader";
 import type { SharedTeam } from "@/lib/sim/matchShare";
+import { getLatestPlayerStatsSnapshotDate } from "./bpPlayerStatsSnapshots";
 
 export type BpMatchStatus = "pending" | "ready" | "playing" | "finished" | "cancelled";
 
@@ -61,13 +62,18 @@ export async function createMatch(
     .rpc("generate_bp_match_invite_code");
   if (codeErr) return { ok: false, error: codeErr.message };
   const inviteCode = codeData as string;
+  const latestSnapshot = await getLatestPlayerStatsSnapshotDate(client);
+  const statsSnapshotDate =
+    latestSnapshot.ok && latestSnapshot.snapshotDate
+      ? latestSnapshot.snapshotDate
+      : getStatsSnapshotDate();
 
   const insert: Partial<BpMatchRow> = {
     invite_code: inviteCode,
     status: "pending",
     seed: input.seed,
     engine_version: SIM_ENGINE_VERSION,
-    stats_snapshot_date: getStatsSnapshotDate(),
+    stats_snapshot_date: statsSnapshotDate,
     mode: input.mode ?? "fast",
     away_team_id: input.ownerSide === "away" ? input.team.t : null,
     home_team_id: input.ownerSide === "home" ? input.team.t : null,
@@ -146,10 +152,6 @@ export async function joinMatch(
   if (current.engine_version !== SIM_ENGINE_VERSION) {
     return { ok: false, error: `엔진 버전 불일치 (${current.engine_version} ≠ ${SIM_ENGINE_VERSION})` };
   }
-  if (current.stats_snapshot_date !== getStatsSnapshotDate()) {
-    return { ok: false, error: "선수 데이터 스냅샷이 다릅니다." };
-  }
-
   const emptySide: "home" | "away" | null = current.away_lineup_snapshot
     ? current.home_lineup_snapshot ? null : "home"
     : "away";

@@ -30,6 +30,10 @@ export type SpectatorMatchResult =
   | { ok: true }
   | { ok: false; reason: string };
 
+type StartSpectatorMatchOptions = {
+  returnHref?: string;
+};
+
 /** 이름으로 로스터의 rosterId 를 역추적. 정확 일치 → 부분 일치 순. */
 function findRosterIdByName(teamId: string, name: string | null): string | null {
   if (!name) return null;
@@ -62,7 +66,8 @@ function toRecentLineupHint(
  * 실패는 throw 없이 { ok:false, reason } 으로 돌려준다(호출부가 토스트로 노출).
  */
 export async function startSpectatorMatch(
-  game: SpectatorMatchGame
+  game: SpectatorMatchGame,
+  options: StartSpectatorMatchOptions = {}
 ): Promise<SpectatorMatchResult> {
   try {
     const seed = generateSeed();
@@ -93,7 +98,8 @@ export async function startSpectatorMatch(
       seed,
       input: { home, away, context: {} },
       startedAt: new Date().toISOString(),
-      source: "ai"
+      source: "ai",
+      returnHref: options.returnHref
     });
     return { ok: true };
   } catch {

@@ -226,11 +226,13 @@ export function ResultScreen() {
   // 플레이오프는 결과 기록을 반드시 거치게 하려고 헤더 뒤로가기를 숨기고(undefined)
   // "대진표로" 버튼(기록 await 후 이동)만 노출한다.
   const backHrefForSource =
-    session?.source === "public"
+    session?.source === "playoff"
+      ? undefined
+      : session?.returnHref
+        ? session.returnHref
+        : session?.source === "public"
       ? "/stadium/lobby"
-      : session?.source === "playoff"
-        ? undefined
-        : "/play/practice";
+      : "/play/practice";
 
   // 플레이오프 — 결과 기록(승=다음 라운드/패=탈락/4R승=우승)을 await한 뒤 대진표로.
   const handlePlayoffReturn = async () => {
@@ -313,7 +315,8 @@ export function ResultScreen() {
       seed: newSeed,
       input: session.input,
       startedAt: new Date().toISOString(),
-      source: isPublic ? "public" : "ai"
+      source: isPublic ? "public" : "ai",
+      returnHref: session.returnHref
     };
     if (isPublic) {
       next.userSide = session.userSide;

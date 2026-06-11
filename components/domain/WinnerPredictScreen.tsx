@@ -10,10 +10,11 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Crown, Lock, X } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Crown, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -358,11 +359,6 @@ export function WinnerPredictScreen({
 
               // 페이지에 픽이 하나라도 있으면 모든 카드 stagger로 등장 (예측 페이지 톤).
               // 픽이 전혀 없는 날(일반 경기 둘러보기)에선 다 정적.
-              const isPicked = picked !== null;
-              const isPredictedAndJudged = isPicked && game.isJudged;
-              const isCorrect = isPredictedAndJudged && game.isCorrect === true;
-              const isWrong = isPredictedAndJudged && game.isCorrect === false;
-
               const rowClasses = ["predict-row"];
               if (editable) rowClasses.push("is-editable");
               if (hasAnyJudgedPick) rowClasses.push("is-staggered");
@@ -384,11 +380,14 @@ export function WinnerPredictScreen({
                   }
                 : undefined;
               // 결과 라벨 펄스 = 카드 등장 시점 + 카드 슬라이드 완료(0.45s)
-              const resultDelayMs = hasAnyJudgedPick ? idx * 500 + 450 : 0;
-
               return (
                 <article key={game.id} className={rowClasses.join(" ")} style={animationStyle}>
-                  <span className="predict-row-time">{shortTime(game.gameTime)}</span>
+                  <span className="predict-row-meta">
+                    <span className="predict-row-time">{shortTime(game.gameTime)}</span>
+                    <span className={`predict-row-status predict-row-status-${game.status}`}>
+                      {game.status === "in_progress" ? "진행중" : game.status === "finished" ? "종료" : game.status === "canceled" ? "취소" : "예정"}
+                    </span>
+                  </span>
 
                   {/* Away — grid 1fr auto 1fr로 team-block을 카드 정중앙에 고정 */}
                   <button
@@ -448,36 +447,20 @@ export function WinnerPredictScreen({
                     <TeamBadge teamId={game.homeTeamId} size="sm" />
                   </button>
 
-                  {/* 우측 상태 — 채점된 본인 예측이면 적중/실패 큰 배지, 그 외엔 기본 상태.
-                      펄스 delay를 카드별 stagger에 맞춰 inline으로 — 늦게 등장한 카드도 등장 직후 펄스. */}
-                  {isCorrect ? (
-                    <span
-                      className="predict-row-result predict-row-result-correct"
-                      style={{ animationDelay: `${resultDelayMs}ms` }}
-                    >
-                      적중!
-                    </span>
-                  ) : isWrong ? (
-                    <span
-                      className="predict-row-result predict-row-result-wrong"
-                      style={{ animationDelay: `${resultDelayMs}ms` }}
-                    >
-                      아쉬워요
-                    </span>
+                  {game.status !== "canceled" ? (
+                    <VirtualMatchButton
+                      game={{
+                        homeTeamId: game.homeTeamId,
+                        awayTeamId: game.awayTeamId,
+                        homeStarter: game.homeStarter,
+                        awayStarter: game.awayStarter
+                      }}
+                      className="predict-row-play-btn"
+                      idleLabel="경기해보기"
+                      busyLabel="준비중"
+                    />
                   ) : (
-                    <span className={`predict-row-status predict-row-status-${game.status}`}>
-                      {locked && game.status === "scheduled" ? (
-                        <Lock size={11} />
-                      ) : game.status === "in_progress" ? (
-                        "진행중"
-                      ) : game.status === "finished" ? (
-                        "종료"
-                      ) : game.status === "canceled" ? (
-                        "취소"
-                      ) : (
-                        "예정"
-                      )}
-                    </span>
+                    <span className="predict-row-play-placeholder" aria-hidden />
                   )}
 
                 </article>

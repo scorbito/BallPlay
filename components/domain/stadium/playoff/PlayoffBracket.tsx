@@ -11,6 +11,7 @@ import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { saveMatchSession } from "@/lib/sim/matchSession";
+import { applyBlendedStatsToTeam } from "@/lib/sim/statsLoaderWithRecent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { beginPlayoffGame } from "@/lib/actions/playoff";
 import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
@@ -21,7 +22,7 @@ import {
   type PlayoffRun
 } from "@/lib/supabase/query-parts/bpPlayoff";
 import {
-  buildStatsDirectoryForLineups,
+  buildStatsDirectoryWithRecentFormForLineups,
   getLineupValidPlayerIds
 } from "@/lib/sim/lineupStatsDirectory";
 
@@ -80,7 +81,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const startGame = async () => {
     if (!opp) return;
 
-    const openSavedGame = (runForGame: PlayoffRun): boolean => {
+    const openSavedGame = async (runForGame: PlayoffRun): Promise<boolean> => {
       const pending = runForGame.state.pendingGame;
       const savedLineup = runForGame.state.myLineup;
       if (!pending || !savedLineup) {
@@ -92,9 +93,12 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         showToast("\uC0C1\uB300 \uD300 \uC815\uBCF4\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC5B4\uC694.");
         return false;
       }
-      const dir = buildStatsDirectoryForLineups([
-        { teamId: runForGame.teamId, batting: savedLineup.batting, pitching: savedLineup.pitching }
-      ]);
+      const client = createSupabaseBrowserClient();
+      const dir = await buildStatsDirectoryWithRecentFormForLineups(
+        client,
+        [{ teamId: runForGame.teamId, batting: savedLineup.batting, pitching: savedLineup.pitching }],
+        [savedOpp.teamId]
+      );
       const pitching = fillMissingPitcherSlotsFromStatsDirectory(
         runForGame.teamId,
         savedLineup.pitching.slots,
@@ -116,15 +120,16 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         showToast("\uB0B4 \uB77C\uC778\uC5C5 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
         return false;
       }
-      const opponent = buildFakeOpponentTeam(
+      const opponentRaw = buildFakeOpponentTeam(
         savedOpp.teamId,
         savedOpp.lineupSeed,
         pending.oppLineupHint ?? savedOpp.lineupHint ?? null
       );
-      if (!opponent) {
+      if (!opponentRaw) {
         showToast("\uC0C1\uB300 \uD300 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
         return false;
       }
+      const opponent = applyBlendedStatsToTeam(opponentRaw, dir);
       // 한국시리즈: 이 경기를 이기면 우승 확정(이미 1승)인지 → 결과 화면 우승 연출 트리거.
       const seriesWins = runForGame.state.games.filter(
         (g) => g.round === PLAYOFF_TOTAL_ROUNDS && g.win
@@ -147,7 +152,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
     };
 
     if (run.state.pendingGame) {
-      openSavedGame(run);
+      await openSavedGame(run);
       return;
     }
 
@@ -175,9 +180,12 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       lineupType: batting.lineupType,
       rosterSourceId: batting.rosterSourceId
     };
-    const dir = buildStatsDirectoryForLineups([
-      { teamId: run.teamId, batting, pitching: pitchingSeed }
-    ]);
+    const client = createSupabaseBrowserClient();
+    const dir = await buildStatsDirectoryWithRecentFormForLineups(
+      client,
+      [{ teamId: run.teamId, batting, pitching: pitchingSeed }],
+      [opp.teamId]
+    );
     const pitching = fillMissingPitcherSlotsFromStatsDirectory(
       run.teamId,
       pitchingSlots,
@@ -202,7 +210,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       showToast(result.error);
       return;
     }
-    openSavedGame(result.run);
+    await openSavedGame(result.run);
   };
 
   return (

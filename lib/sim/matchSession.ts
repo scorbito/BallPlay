@@ -6,6 +6,13 @@ import { ensureNamespacedInput } from "./namespace";
 
 const KEY = "ballplay:match:current";
 
+function currentReturnHref(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const href = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (href.startsWith("/stadium/play") || href.startsWith("/stadium/result")) return undefined;
+  return href;
+}
+
 export type MatchSession = {
   myTeamId: string;
   opponentTeamId: string;
@@ -37,6 +44,8 @@ export type MatchSession = {
   replayOfRecordId?: string;
   // 경기 종료 시 PlayScreen에서 저장한 record id. ResultScreen 중복 저장 방지에 사용.
   savedRecordId?: string;
+  // 관전/시뮬레이션 진입 전 페이지. 결과보기와 결과 화면 뒤로가기에 사용.
+  returnHref?: string;
   // 기록 저장 시 opponent_nickname 스냅샷 — 공개 매칭 owner / 친구 대전 profiles lookup.
   opponentNickname?: string;
 };
@@ -56,9 +65,13 @@ export function saveMatchSession(session: MatchSession): void {
   if (typeof window === "undefined") return;
   // 양쪽 팀이 같은 KBO 팀일 때 playerId 충돌 방지 — input의 모든 playerId에 H:/A: prefix.
   // idempotent라 중복 save 호출에도 안전.
-  const normalized: MatchSession = session.input
-    ? { ...session, input: ensureNamespacedInput(session.input) }
-    : session;
+  const withReturnHref: MatchSession =
+    session.returnHref || session.result
+      ? session
+      : { ...session, returnHref: currentReturnHref() };
+  const normalized: MatchSession = withReturnHref.input
+    ? { ...withReturnHref, input: ensureNamespacedInput(withReturnHref.input) }
+    : withReturnHref;
   try {
     window.sessionStorage.setItem(KEY, JSON.stringify(normalized));
   } catch {

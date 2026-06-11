@@ -11,7 +11,10 @@ import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
-import { buildSharedTeamFromEntry, restoreSimTeamFromShared } from "@/lib/sim/matchShare";
+import {
+  buildSharedTeamFromEntry,
+  restoreSimTeamFromSharedWithRecentForm
+} from "@/lib/sim/matchShare";
 import { getOrCreateGuestId } from "@/lib/sim/guestId";
 import { saveMatchSession } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -171,8 +174,14 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
     redirectedRef.current = true;
 
     void (async () => {
-      const home = restoreSimTeamFromShared(row.home_lineup_snapshot!);
-      const away = restoreSimTeamFromShared(row.away_lineup_snapshot!);
+      const [home, away] = await Promise.all([
+        restoreSimTeamFromSharedWithRecentForm(client, row.home_lineup_snapshot!, {
+          asOfDate: row.stats_snapshot_date
+        }),
+        restoreSimTeamFromSharedWithRecentForm(client, row.away_lineup_snapshot!, {
+          asOfDate: row.stats_snapshot_date
+        })
+      ]);
       if (!home.ok || !away.ok) {
         setError(`라인업 복원 실패: ${home.ok ? "" : `홈 ${home.reason}`} ${away.ok ? "" : `원정 ${away.reason}`}`);
         redirectedRef.current = false;
@@ -320,9 +329,12 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   // 스냅샷 → SimTeamInput 변환 후 모달 오픈
   const openSnapshotPreview = (snapshot: typeof hostSnapshot) => {
     if (!snapshot) return;
-    const restored = restoreSimTeamFromShared(snapshot);
-    if (!restored.ok) return;
-    setPreviewTeam(restored.team);
+    void restoreSimTeamFromSharedWithRecentForm(client, snapshot, {
+      asOfDate: row.stats_snapshot_date
+    }).then((restored) => {
+      if (!restored.ok) return;
+      setPreviewTeam(restored.team);
+    });
   };
 
   const bothReady = row.status === "ready" || row.status === "playing";

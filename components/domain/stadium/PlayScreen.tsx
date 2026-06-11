@@ -706,11 +706,13 @@ export function PlayScreen() {
   // 뒤로가기 목적지 — public 매치(공식)는 경기장, 그 외(친구/AI/내 라인업)는 연습경기장.
   // 가을야구는 backHref 대신 onBack(포기 확인 모달)으로 가로챈다.
   const backHrefForSource: string | undefined =
-    session?.source === "public"
+    session?.source === "playoff"
+      ? undefined
+      : session?.returnHref
+        ? session.returnHref
+        : session?.source === "public"
       ? "/stadium/lobby"
-      : session?.source === "playoff"
-        ? undefined
-        : "/play/practice";
+      : "/play/practice";
 
   // 가을야구 경기 중 뒤로가기 = 포기(패배). 모달 확인 후 forfeit → 대진표(탈락 화면)로.
   const handleLeavePlayoff = () => {
@@ -921,7 +923,7 @@ export function PlayScreen() {
           canSkip={session.source !== "playoff"}
           onToggleMuted={toggleMuted}
           onToggleBgmMuted={toggleBgmMuted}
-          onGoResult={() => router.push("/stadium/result")}
+          onGoResult={() => router.replace("/stadium/result")}
         />
       </section>
 

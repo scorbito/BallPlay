@@ -148,7 +148,7 @@
 .phone-frame-light .predict-row {
   position: relative;
   display: grid;
-  grid-template-columns: 44px 1fr 22px 1fr 52px;
+  grid-template-columns: 48px minmax(0, 1fr) 22px minmax(0, 1fr) 76px;
   align-items: center;
   gap: 6px;
   padding: 4px 6px 4px 10px;
@@ -222,6 +222,15 @@
   color: var(--bp-text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.2px;
+}
+
+.phone-frame-light .predict-row-meta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
 }
 
 /* ?Ä?Ä ?Ä ?¨Ïù¥??(?†ÌÉù Í∞Ä??Î≤ÑÌäº) ?Ä?Ä
@@ -341,11 +350,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
+  padding: 3px 6px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.2px;
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
@@ -367,6 +376,44 @@
 .phone-frame-light .predict-row-status-canceled {
   background: rgba(20, 30, 50, 0.04);
   color: var(--bp-text-muted);
+}
+
+.phone-frame-light .predict-row-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  min-height: 32px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.12s ease, transform 0.1s ease;
+}
+
+.phone-frame-light .predict-row-play-btn:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+
+.phone-frame-light .predict-row-play-btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.phone-frame-light .predict-row-play-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.phone-frame-light .predict-row-play-placeholder {
+  width: 76px;
+  min-height: 32px;
 }
 
 /* ?Ä?Ä Ï±ÑÏ†ê??Î≥∏Ïù∏ ?àÏ∏° ????Í≤∞Í≥º Î∞∞Ï? (?ÅÏ§ë!/?ÑÏâ¨?åÏöî) ?Ä?Ä */
@@ -723,9 +770,13 @@
     font-size: 28px;
   }
   .phone-frame-wide .predict-row {
-    grid-template-columns: 56px 1fr 28px 1fr 52px;
+    grid-template-columns: 58px minmax(0, 1fr) 28px minmax(0, 1fr) 88px;
     gap: 10px;
     padding: 6px 10px;
+  }
+  .phone-frame-wide .predict-row-play-btn,
+  .phone-frame-wide .predict-row-play-placeholder {
+    width: 88px;
   }
   .phone-frame-wide .predict-row-team {
     font-size: 14px;
