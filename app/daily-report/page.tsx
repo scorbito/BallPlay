@@ -54,7 +54,7 @@ export default async function DailyReportPage({ searchParams }: Props) {
 
   // 1. Supabase 캐시 테이블(daily_ai_reports)에서 데이터 조회 시도 (nocache가 아닐 때만)
   let cachedReport = null;
-  if (!isNoCache && !isTodayOrFuture) {
+  if (!isNoCache) {
     try {
       const { data: cacheRow, error: cacheErr } = await supabase
         .from("daily_ai_reports")
