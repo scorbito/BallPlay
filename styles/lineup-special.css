@@ -111,3 +111,28 @@
   background: rgba(15, 76, 129, 0.1);
   color: #0f4c81;
 }
+
+.phone-frame-light .home-fall-badge {
+  animation-name: home-badge-even-bob;
+}
+
+.phone-frame-light .home-fall-badge.home-lineup-badge::after {
+  -webkit-mask: url("/badges/국가대표라인업추가.png") center / 100% 100% no-repeat;
+  mask: url("/badges/국가대표라인업추가.png") center / 100% 100% no-repeat;
+}
+
+.phone-frame-light .home-fall-badge.home-lineup-badge {
+  top: -36px;
+  width: 76%;
+  max-width: 210px;
+}
+
+@keyframes home-badge-even-bob {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px);
+  }
+}

@@ -447,6 +447,23 @@ export function HomeScreen({
                     />
                   </Link>
                 ) : null}
+                {card.id === "lineup" ? (
+                  <Link
+                    href="/play/lineup"
+                    className="home-fall-badge home-lineup-badge"
+                    aria-label="국가대표 라인업 추가"
+                    prefetch
+                  >
+                    <Image
+                      src="/badges/국가대표라인업추가.png"
+                      alt="국가대표 라인업 추가"
+                      width={695}
+                      height={359}
+                      className="home-fall-badge-img"
+                      priority
+                    />
+                  </Link>
+                ) : null}
               </div>
             );
           };

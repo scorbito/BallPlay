@@ -72,6 +72,15 @@ function getPlayoffEditorRoster(run: PlayoffRun): Player[] {
   return getRoster(run.teamId);
 }
 
+function isKboTeamId(teamId: string): boolean {
+  try {
+    getTeam(teamId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** 가을야구 전용 라인업 편집기 — 팀 관리 빌더의 편집 모듈을 격리해 재사용.
  *  state.myLineup(플레이오프 전용)만 수정. 실제 팀·경기장 출전 라인업 무영향. */
 export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
@@ -79,6 +88,9 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
   const { showToast } = useAppState();
   const teamId = run.teamId;
   const team = getPlayoffEditorTeam(teamId, run.teamName);
+  const canLoadRecentKboLineup = isKboTeamId(teamId);
+  const lineupType = run.state.myLineup?.batting.lineupType ?? (teamId === "national" ? "national" : "kbo");
+  const rosterSourceId = run.state.myLineup?.batting.rosterSourceId ?? (teamId === "national" ? "national" : teamId);
   const roster = useMemo(() => getPlayoffEditorRoster(run), [run]);
   const playersById = useMemo(() => new Map(roster.map((p) => [p.id, p])), [roster]);
   // 이름 → 로스터 매핑 — 최근 라인업의 rosterId 매칭 실패 시 이름으로 fallback.
@@ -172,12 +184,14 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
     return {
       batting: {
         teamId,
+        lineupType,
+        rosterSourceId,
         slots: filledSlots,
         useDH: true,
         updatedAt: now
       },
       pitching: hasAnyPitcher
-        ? { teamId, slots: pitcherSlots, updatedAt: now }
+        ? { teamId, lineupType, rosterSourceId, slots: pitcherSlots, updatedAt: now }
         : null
     };
   };
@@ -484,11 +498,13 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
     const now = new Date().toISOString();
     const batting: SavedLineup = {
       teamId,
+      lineupType,
+      rosterSourceId,
       slots: slots.filter((s): s is LineupSlot => s !== null),
       useDH: true,
       updatedAt: now
     };
-    const pitching: SavedPitcherLineup = { teamId, slots: pitcherSlots, updatedAt: now };
+    const pitching: SavedPitcherLineup = { teamId, lineupType, rosterSourceId, slots: pitcherSlots, updatedAt: now };
     void (async () => {
       const res = await updatePlayoffLineup({ runId: run.id, batting, pitching });
       setSaving(false);
@@ -542,6 +558,7 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
               onDelete={(preset) => setDeletingPreset(preset)}
             />
           </div>
+          {canLoadRecentKboLineup ? (
           <button
             type="button"
             className="lineup-recent-load-btn"
@@ -551,6 +568,7 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
             <History size={12} />
             <span>실제 경기 라인업 불러오기</span>
           </button>
+          ) : null}
           <div className="lineup-action-buttons">
             <div
               className="lineup-mode-toggle lineup-mode-toggle-inline"
@@ -633,12 +651,14 @@ export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
       />
 
       {/* 팀 최근 라인업 불러오기 — bp_team_recent_lineups의 최근 경기 표시. 편집기 임시 라인업에만 적용. */}
+      {canLoadRecentKboLineup ? (
       <RecentLineupPickerModal
         open={recentPickerOpen}
         teamId={teamId}
         onClose={() => setRecentPickerOpen(false)}
         onPick={handleRecentLineupPick}
       />
+      ) : null}
 
       <ConfirmOverwriteRecentModal
         open={pendingRecentLineup !== null}
