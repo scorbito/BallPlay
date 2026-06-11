@@ -5,6 +5,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LineupEntry, SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
+import { getLineupType, getRosterSourceId } from "@/lib/lineup/lineupSource";
 
 const TABLE = "bp_lineups";
 
@@ -43,10 +44,17 @@ export type LineupStats = {
 // ============================================================
 
 export function rowToEntry(row: BpLineupRow): LineupEntry {
+  const base = {
+    entryId: row.entry_id,
+    teamId: row.team_id,
+    batting: row.batting
+  };
   return {
     entryId: row.entry_id,
     name: row.name,
     teamId: row.team_id,
+    lineupType: getLineupType(base),
+    rosterSourceId: getRosterSourceId(base),
     batting: row.batting,
     pitching: row.pitching,
     updatedAt: row.updated_at,
@@ -55,13 +63,27 @@ export function rowToEntry(row: BpLineupRow): LineupEntry {
 }
 
 function entryToInsert(entry: LineupEntry, userId: string): Omit<BpLineupRow, "id" | "created_at" | "updated_at"> {
+  const lineupType = getLineupType(entry);
+  const rosterSourceId = getRosterSourceId(entry);
+  const batting: SavedLineup = {
+    ...entry.batting,
+    lineupType,
+    rosterSourceId
+  };
+  const pitching: SavedPitcherLineup | null = entry.pitching
+    ? {
+        ...entry.pitching,
+        lineupType,
+        rosterSourceId
+      }
+    : null;
   return {
     owner_user_id: userId,
     entry_id: entry.entryId,
     name: entry.name,
     team_id: entry.teamId,
-    batting: entry.batting,
-    pitching: entry.pitching,
+    batting,
+    pitching,
     is_published: entry.isPublished ?? false
   };
 }

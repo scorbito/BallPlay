@@ -45,6 +45,7 @@ import "@/styles/dark-playoff.css";
 import "@/styles/dark-profile-popover.css";
 import "@/styles/dark-season-level.css";
 import "@/styles/dark-lineup.css";
+import "@/styles/lineup-special.css";
 import "@/styles/dark-stadium.css";
 import "@/styles/dark-records.css";
 import "@/styles/dark-lineup-detail.css";

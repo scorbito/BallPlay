@@ -9,6 +9,7 @@ import {
   MY_LINEUPS_STORAGE_KEY,
   PITCHER_STORAGE_PREFIX,
   type LineupEntry,
+  type LineupType,
   type SavedLineup,
   type SavedPitcherLineup
 } from "@/lib/types/lineup";
@@ -105,18 +106,50 @@ export function newEntryId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createEmptyEntry(teamId: string, nameSuggestion?: string, nicknameForDefault?: string): LineupEntry {
-  const team = getTeam(teamId);
+type CreateEntryOptions = {
+  lineupType?: LineupType;
+  rosterSourceId?: string;
+};
+
+export function createEmptyEntry(
+  teamId: string,
+  nameSuggestion?: string,
+  nicknameForDefault?: string,
+  options: CreateEntryOptions = {}
+): LineupEntry {
+  const team = (() => {
+    try {
+      return getTeam(teamId);
+    } catch {
+      return { id: teamId, name: teamId, shortName: teamId, initial: "?", color: "#475569" };
+    }
+  })();
   const now = new Date().toISOString();
   // 기본 팀명: "{닉네임}의 {팀 약칭}" (예: "야구노리의 두산").
   // 신규 생성에서는 같은 팀 중복을 막으므로 별도 번호를 붙이지 않는다.
   const trimmedNick = nicknameForDefault?.trim();
-  const base = trimmedNick ? `${trimmedNick}의 ${team.shortName}` : team.name;
+  const defaultName = options.lineupType === "national"
+    ? "아시안게임 국가대표팀"
+    : options.lineupType === "custom"
+      ? "커스텀팀"
+      : team?.name ?? teamId;
+  const base = options.lineupType && options.lineupType !== "kbo"
+    ? defaultName
+    : trimmedNick ? `${trimmedNick}의 ${team.shortName}` : team.name;
   return {
     entryId: newEntryId(),
     name: nameSuggestion?.trim() || base,
     teamId,
-    batting: { teamId, slots: [], useDH: true, updatedAt: now },
+    lineupType: options.lineupType,
+    rosterSourceId: options.rosterSourceId,
+    batting: {
+      teamId,
+      slots: [],
+      useDH: true,
+      updatedAt: now,
+      lineupType: options.lineupType,
+      rosterSourceId: options.rosterSourceId
+    },
     pitching: null,
     updatedAt: now,
     isPublished: false // 경기장 노출은 라인업 완성 후 등록한다. 팀 자체는 슬롯 생성 즉시 운영 시작.

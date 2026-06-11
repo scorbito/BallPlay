@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Share2 } from "lucide-react";
+import { Share2, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { ShareLineupModal } from "@/components/domain/modals/ShareLineupModal";
 import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
 import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
-import { getRoster, getSeededTeamIds } from "@/lib/rosters";
+import { getEditableRoster, getSeededTeamIds } from "@/lib/rosters";
 import {
   POSITION_SHORT,
   PITCHER_CLOSER_INDEX,
@@ -30,7 +30,17 @@ import { useLineupSync } from "@/lib/storage/useLineupSync";
 import { useUserTier } from "@/lib/auth/useUserTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
 import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import {
+  fillMissingPitcherSlots,
+  fillMissingPitcherSlotsFromStatsDirectory
+} from "@/lib/sim/autoPitcherLineup";
+import { buildStatsDirectoryForLineups } from "@/lib/sim/lineupStatsDirectory";
+import {
+  NATIONAL_LINEUP_ENTRY_ID,
+  NATIONAL_LINEUP_ROSTER_SOURCE_ID,
+  NATIONAL_LINEUP_TEAM_ID,
+  getLineupType
+} from "@/lib/lineup/lineupSource";
 import {
   EMPTY_SLOTS,
   EMPTY_PITCHER_SLOTS,
@@ -103,9 +113,18 @@ export function LineupBuilderScreen() {
     () => entries.find((e) => e.entryId === selectedEntryId) ?? null,
     [entries, selectedEntryId]
   );
+  const regularEntries = useMemo(
+    () => entries.filter((entry) => getLineupType(entry) === "kbo"),
+    [entries]
+  );
+  const nationalEntry = useMemo(
+    () => entries.find((entry) => entry.entryId === NATIONAL_LINEUP_ENTRY_ID || getLineupType(entry) === "national") ?? null,
+    [entries]
+  );
   const selectedTeamId = currentEntry?.teamId ?? initialTeamId;
 
   const [slotMenuOpen, setSlotMenuOpen] = useState(false);
+  const [clientReady, setClientReady] = useState(false);
   // 프리셋 드롭다운 — 팀 선택 드롭다운과 동시에 안 열리도록 하나만 연다.
   const [presetMenuOpen, setPresetMenuOpen] = useState(false);
   const [newSlotOpen, setNewSlotOpen] = useState(false);
@@ -163,11 +182,43 @@ export function LineupBuilderScreen() {
   const [swapOrderAnimation, setSwapOrderAnimation] = useState<{ a: number; b: number } | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
 
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
+
   // entries가 로드되면 첫 entry 자동 선택 (이미 선택된 게 있으면 유지)
   useEffect(() => {
     if (selectedEntryId) return;
-    if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
-  }, [entries, selectedEntryId]);
+    if (regularEntries.length > 0) setSelectedEntryId(regularEntries[0].entryId);
+    else if (entries.length > 0) setSelectedEntryId(entries[0].entryId);
+  }, [entries, regularEntries, selectedEntryId]);
+
+  useEffect(() => {
+    if (!clientReady || syncStatus === "loading") return;
+    if (nationalEntry) {
+      if (nationalEntry.name === "국가대표팀") {
+        localUpsertEntry({
+          ...nationalEntry,
+          name: "아시안게임 국가대표팀",
+          updatedAt: new Date().toISOString()
+        });
+      }
+      return;
+    }
+    const national = {
+      ...createEmptyEntry(
+        NATIONAL_LINEUP_TEAM_ID,
+        "아시안게임 국가대표팀",
+        undefined,
+        {
+          lineupType: "national",
+          rosterSourceId: NATIONAL_LINEUP_ROSTER_SOURCE_ID
+        }
+      ),
+      entryId: NATIONAL_LINEUP_ENTRY_ID
+    };
+    localUpsertEntry(national);
+  }, [clientReady, localUpsertEntry, nationalEntry, syncStatus]);
 
   // 첫 진입(슬롯 0개) 시 "새 팀 슬롯" 모달 자동 오픈.
   // - sync 완료(loading 외) + 진짜 entries 0개일 때만.
@@ -188,7 +239,7 @@ export function LineupBuilderScreen() {
     }
   }, [syncStatus, entries.length, newSlotOpen]);
 
-  const roster = useMemo(() => getRoster(selectedTeamId), [selectedTeamId]);
+  const roster = useMemo(() => getEditableRoster(currentEntry, selectedTeamId), [currentEntry, selectedTeamId]);
   const playersById = useMemo(() => {
     const map = new Map<string, Player>();
     roster.forEach((p) => map.set(p.id, p));
@@ -308,10 +359,18 @@ export function LineupBuilderScreen() {
         teamId: currentEntry.teamId,
         slots: filledSlots,
         useDH,
-        updatedAt: now
+        updatedAt: now,
+        lineupType: currentEntry.lineupType,
+        rosterSourceId: currentEntry.rosterSourceId
       },
       pitching: hasAnyPitcher
-        ? { teamId: currentEntry.teamId, slots: pitcherSlots, updatedAt: now }
+        ? {
+            teamId: currentEntry.teamId,
+            slots: pitcherSlots,
+            updatedAt: now,
+            lineupType: currentEntry.lineupType,
+            rosterSourceId: currentEntry.rosterSourceId
+          }
         : null,
       updatedAt: now
     };
@@ -533,10 +592,18 @@ export function LineupBuilderScreen() {
         teamId: selectedTeamId,
         slots: filledSlots,
         useDH,
-        updatedAt: now
+        updatedAt: now,
+        lineupType: currentEntry?.lineupType,
+        rosterSourceId: currentEntry?.rosterSourceId
       },
       pitching: hasAnyPitcher
-        ? { teamId: selectedTeamId, slots: pitcherSlots, updatedAt: now }
+        ? {
+            teamId: selectedTeamId,
+            slots: pitcherSlots,
+            updatedAt: now,
+            lineupType: currentEntry?.lineupType,
+            rosterSourceId: currentEntry?.rosterSourceId
+          }
         : null
     };
   };
@@ -729,7 +796,22 @@ export function LineupBuilderScreen() {
   };
 
 
-  const selectedTeam = getTeam(selectedTeamId);
+  const currentLineupType = currentEntry ? getLineupType(currentEntry) : "kbo";
+  const isKboLineup = currentLineupType === "kbo";
+  const selectedTeam = (() => {
+    try {
+      return getTeam(selectedTeamId);
+    } catch {
+      return {
+        id: selectedTeamId,
+        name: currentLineupType === "national" ? "아시안게임 국가대표팀" : "커스텀팀",
+        shortName: currentLineupType === "national" ? "국대" : "커스텀",
+        initial: currentLineupType === "national" ? "N" : "C",
+        color: currentLineupType === "national" ? "#0f4c81" : "#475569",
+        accent: currentLineupType === "national" ? "#d71920" : "#f59e0b"
+      };
+    }
+  })();
   // stale ID(로스터에서 빠진 선수)는 UI에서 "(자동)" 으로 보이므로 카운트에서도 제외.
   const filledCount = slots.filter((s) => s !== null && playersById.has(s.playerId)).length;
   const pitcherFilled = pitcherSlots.filter((id) => id !== null && playersById.has(id)).length;
@@ -746,6 +828,26 @@ export function LineupBuilderScreen() {
   const canPublish = publishRequirementMessage === null;
   // 마무리/불펜 중 하나라도 비어있으면 출전 등록 시 자동 채움 안내가 필요한 상태.
   const needsAutoFillNotice = canPublish && pitcherSlots.slice(PITCHER_CLOSER_INDEX).some((id) => !id);
+
+  const fillPitchersForCurrentEntry = () => {
+    if (!currentEntry) return null;
+    if (isKboLineup) {
+      return fillMissingPitcherSlots(
+        currentEntry.teamId,
+        pitcherSlots,
+        new Set(playersById.keys())
+      );
+    }
+    const stats = buildStatsDirectoryForLineups([
+      { teamId: currentEntry.teamId, batting: currentEntry.batting, pitching: currentEntry.pitching }
+    ]);
+    return fillMissingPitcherSlotsFromStatsDirectory(
+      currentEntry.teamId,
+      pitcherSlots,
+      stats,
+      new Set(playersById.keys())
+    );
+  };
 
   // 슬롯별 가이드 트리거 상태 추적 — transition(0~8→9, false→true)만 캐치.
   // 첫 마운트(prev 없음)는 무시 → 기존 슬롯이 페이지 진입 시 즉시 popup되는 것 차단.
@@ -847,11 +949,7 @@ export function LineupBuilderScreen() {
   // 자동 채움 모달의 "자동 채움 + 출전" 클릭 — 빈 자리 채움 + entry 직접 upsert + 출전 등록.
   const handleAutoFillAndPublish = async () => {
     if (!currentEntry) return;
-    const filled = fillMissingPitcherSlots(
-      currentEntry.teamId,
-      pitcherSlots,
-      new Set(playersById.keys())
-    );
+    const filled = fillPitchersForCurrentEntry();
     if (!filled) {
       showToast("투수 자동 채움 실패");
       return;
@@ -886,11 +984,7 @@ export function LineupBuilderScreen() {
     if (!currentEntry) return;
     setPublishProcessing(true);
     if (needsAutoFillNotice) {
-      const filled = fillMissingPitcherSlots(
-        currentEntry.teamId,
-        pitcherSlots,
-        new Set(playersById.keys())
-      );
+      const filled = fillPitchersForCurrentEntry();
       if (filled) {
         setPitcherSlots(filled.slots);
         const now = new Date().toISOString();
@@ -922,7 +1016,7 @@ export function LineupBuilderScreen() {
 
   const isLocked = false;
   const noop = () => {};
-  const usedTeamIds = useMemo(() => new Set(entries.map((entry) => entry.teamId)), [entries]);
+  const usedTeamIds = useMemo(() => new Set(regularEntries.map((entry) => entry.teamId)), [regularEntries]);
 
   return (
     <AppShell activeTab="play" title="팀 관리" theme="light" backHref="/" wide>
@@ -932,7 +1026,8 @@ export function LineupBuilderScreen() {
 
         {/* 팀 슬롯 picker — 현재 팀 + 드롭다운으로 다른 팀 / 새 팀 / 이름 편집 / 삭제 */}
         <LineupSlotPicker
-          entries={entries}
+          entries={regularEntries}
+          specialEntries={clientReady && nationalEntry ? [nationalEntry] : []}
           selectedEntryId={selectedEntryId}
           statsByEntryId={statsByEntryId}
           archivedTeams={archivedTeams}
@@ -1020,6 +1115,7 @@ export function LineupBuilderScreen() {
           currentEntryStats={currentEntry ? statsByEntryId[currentEntry.entryId] : undefined}
           currentEntryAwayStats={currentEntry ? awayStatsByEntryId[currentEntry.entryId] : undefined}
           selectedTeamShortName={selectedTeam.shortName}
+          enableTeamMatchActions
           onModeChange={(nextMode) => {
             setMode(nextMode);
             setSwapSource(null);
@@ -1076,6 +1172,37 @@ export function LineupBuilderScreen() {
         </button>
       </div>
 
+      {clientReady && nationalEntry ? (
+        <section className="lineup-special-card" aria-label="아시안게임 국가대표팀 특별 라인업">
+          <div className="lineup-special-main">
+            <span className="lineup-special-icon" aria-hidden="true">
+              <Trophy size={18} />
+            </span>
+            <div className="lineup-special-copy">
+              <strong>{nationalEntry.name}</strong>
+              <span>여러 팀 선수로 구성하는 특별 라인업</span>
+            </div>
+          </div>
+          <div className="lineup-special-meta">
+            <span>타자 {nationalEntry.batting.slots.length}/9</span>
+            <span>투수 {nationalEntry.pitching?.slots.filter(Boolean).length ?? 0}/9</span>
+          </div>
+          <button
+            type="button"
+            className={`lineup-special-select ${selectedEntryId === nationalEntry.entryId ? "is-active" : ""}`}
+            onClick={() => {
+              setSelectedEntryId(nationalEntry.entryId);
+              setMode("batter");
+              setSwapSource(null);
+              setSlotMenuOpen(false);
+              setPresetMenuOpen(false);
+            }}
+          >
+            {selectedEntryId === nationalEntry.entryId ? "편집 중" : "편집하기"}
+          </button>
+        </section>
+      ) : null}
+
       <ConfirmResetModal
         open={confirmResetOpen}
         onCancel={() => setConfirmResetOpen(false)}
@@ -1089,7 +1216,7 @@ export function LineupBuilderScreen() {
         onPick={handleChangePosition}
       />
 
-      <ShareLineupModal
+      {isKboLineup ? <ShareLineupModal
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         teamId={selectedTeamId}
@@ -1097,15 +1224,15 @@ export function LineupBuilderScreen() {
         slots={slots}
         pitcherSlots={pitcherSlots}
         playersById={playersById}
-      />
+      /> : null}
 
       {/* 팀 최근 라인업 불러오기 — bp_team_recent_lineups의 최근 10경기 표시 */}
-      <RecentLineupPickerModal
+      {isKboLineup ? <RecentLineupPickerModal
         open={recentPickerOpen}
         teamId={selectedTeamId}
         onClose={() => setRecentPickerOpen(false)}
         onPick={handleRecentLineupPick}
-      />
+      /> : null}
 
       {/* 마무리/불펜 자동 채움 안내 모달 — 빈 자리만 자동 채워서 출전 등록 */}
       <AutoFillPublishModal

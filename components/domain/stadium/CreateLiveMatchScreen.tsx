@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
-import { getTeam } from "@/lib/constants/teams";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { buildSharedTeamFromEntry } from "@/lib/sim/matchShare";
@@ -124,7 +123,7 @@ export function CreateLiveMatchScreen() {
                     onClick={() => setSelectedEntryId(entry.entryId)}
                     title={entry.name}
                   >
-                    <TeamBadge teamId={entry.teamId} size="sm" />
+                    <TeamLogo teamId={entry.teamId} size="sm" />
                     <span className="stadium-enter-picker-name">{entry.name}</span>
                     {isPublished ? (
                       <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">출전 등록</span>

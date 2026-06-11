@@ -1,0 +1,113 @@
+.phone-frame-light .lineup-special-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(15, 76, 129, 0.1), rgba(215, 25, 32, 0.08));
+  border: 1px solid rgba(15, 76, 129, 0.18);
+  border-radius: 8px;
+}
+
+.phone-frame-light .lineup-special-main {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+}
+
+.phone-frame-light .lineup-special-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #0f4c81;
+  color: #fff;
+}
+
+.phone-frame-light .lineup-special-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.phone-frame-light .lineup-special-copy strong {
+  color: var(--bp-text);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.phone-frame-light .lineup-special-copy span,
+.phone-frame-light .lineup-special-meta {
+  color: var(--bp-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.phone-frame-light .lineup-special-meta {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-frame-light .lineup-special-select {
+  grid-column: 2;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 7px 10px;
+  border: 1px solid rgba(15, 76, 129, 0.28);
+  border-radius: 8px;
+  background: #fff;
+  color: #0f4c81;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.phone-frame-light .lineup-special-select.is-active {
+  background: #0f4c81;
+  color: #fff;
+}
+
+.phone-frame-light .lineup-special-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #0f4c81;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(15, 76, 129, 0.18);
+}
+
+.phone-frame-light .lineup-slot-special-head {
+  margin: 8px 6px 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(15, 76, 129, 0.14);
+  color: var(--bp-text-secondary);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.phone-frame-light .lineup-slot-menu-special {
+  background: rgba(15, 76, 129, 0.05);
+}
+
+.phone-frame-light .lineup-slot-menu-badge.is-special {
+  background: rgba(15, 76, 129, 0.1);
+  color: #0f4c81;
+}

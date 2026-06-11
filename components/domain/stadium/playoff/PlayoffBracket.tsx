@@ -7,11 +7,9 @@ import { TeamLogo } from "@/components/common/TeamLogo";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { useAppState } from "@/lib/state/AppState";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
-import { getRoster } from "@/lib/rosters";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { saveMatchSession } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { beginPlayoffGame } from "@/lib/actions/playoff";
@@ -22,6 +20,10 @@ import {
   PLAYOFF_FINAL_WINS_NEEDED,
   type PlayoffRun
 } from "@/lib/supabase/query-parts/bpPlayoff";
+import {
+  buildStatsDirectoryForLineups,
+  getLineupValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 
 /** 진행 중 run 의 대진표 — 현재 라운드 매치업 + 경기 시작 + 결과 히스토리. */
 export function PlayoffBracket({ run }: { run: PlayoffRun }) {
@@ -90,17 +92,19 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         showToast("\uC0C1\uB300 \uD300 \uC815\uBCF4\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC5B4\uC694.");
         return false;
       }
-      const validIds = new Set(getRoster(runForGame.teamId).map((p) => p.id));
-      const pitching = fillMissingPitcherSlots(
+      const dir = buildStatsDirectoryForLineups([
+        { teamId: runForGame.teamId, batting: savedLineup.batting, pitching: savedLineup.pitching }
+      ]);
+      const pitching = fillMissingPitcherSlotsFromStatsDirectory(
         runForGame.teamId,
         savedLineup.pitching.slots,
-        validIds
+        dir,
+        getLineupValidPlayerIds(runForGame.teamId, savedLineup.batting)
       );
       if (!pitching) {
         showToast("\uD22C\uC218 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
         return false;
       }
-      const dir = buildStatsDirectory([runForGame.teamId]);
       const myAdapt = buildSimTeamInput(
         runForGame.teamId,
         savedLineup.batting,
@@ -164,8 +168,22 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       pitchingSlots = entry.pitching.slots;
       displayName = entry.name;
     }
-    const validIds = new Set(getRoster(run.teamId).map((p) => p.id));
-    const pitching = fillMissingPitcherSlots(run.teamId, pitchingSlots, validIds);
+    const pitchingSeed = {
+      teamId: run.teamId,
+      slots: pitchingSlots,
+      updatedAt: new Date().toISOString(),
+      lineupType: batting.lineupType,
+      rosterSourceId: batting.rosterSourceId
+    };
+    const dir = buildStatsDirectoryForLineups([
+      { teamId: run.teamId, batting, pitching: pitchingSeed }
+    ]);
+    const pitching = fillMissingPitcherSlotsFromStatsDirectory(
+      run.teamId,
+      pitchingSlots,
+      dir,
+      getLineupValidPlayerIds(run.teamId, batting)
+    );
     if (!pitching) {
       showToast("\uD22C\uC218 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
       return;

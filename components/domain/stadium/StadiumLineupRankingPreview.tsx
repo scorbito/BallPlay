@@ -3,18 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Crown, Medal, Award, Trophy, ChevronRight, List } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { PublicLineupChallenge } from "@/components/domain/stadium/PublicLineupChallenge";
-import { getTeam } from "@/lib/constants/teams";
-import { getRoster } from "@/lib/rosters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchPublishedLineupsByIds } from "@/lib/supabase/query-parts/bpLineups";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import {
+  buildStatsDirectoryWithRecentFormForLineups,
+  getLineupValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 import type { SimTeamInput } from "@/lib/sim/types";
 import type { LineupRankingRow } from "@/lib/supabase/query-parts/bpLineupRankings";
 import type { AccountStatsRankingRow } from "@/lib/supabase/query-parts/bpAccountStats";
@@ -52,10 +52,16 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
       const fetched = await fetchPublishedLineupsByIds(client, [row.lineupId]);
       if (!fetched.ok || fetched.rows.length === 0) return;
       const lineup = fetched.rows[0];
-      const validIds = new Set(getRoster(lineup.team_id).map((p) => p.id));
-      const pitching = fillMissingPitcherSlots(lineup.team_id, lineup.pitching?.slots ?? [], validIds);
+      const stats = await buildStatsDirectoryWithRecentFormForLineups(client, [
+        { teamId: lineup.team_id, batting: lineup.batting, pitching: lineup.pitching }
+      ]);
+      const pitching = fillMissingPitcherSlotsFromStatsDirectory(
+        lineup.team_id,
+        lineup.pitching?.slots ?? [],
+        stats,
+        getLineupValidPlayerIds(lineup.team_id, lineup.batting)
+      );
       if (!pitching) return;
-      const stats = buildStatsDirectory([lineup.team_id]);
       const built = buildSimTeamInput(lineup.team_id, lineup.batting, pitching, stats, lineup.name);
       if (!built.ok) return;
       setPreviewTeam(built.team);
@@ -105,7 +111,6 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
         ) : (
           <ol className="stadium-lobby-rank-preview-list">
             {lineupRows.slice(0, 3).map((row) => {
-              const team = row.teamId ? getTeam(row.teamId) : null;
               const isLoading = previewLoadingId === row.lineupId;
               return (
                 <li key={`${row.lineupId}-${row.ownerUserId}`} className="stadium-lobby-rank-preview-item">
@@ -115,9 +120,7 @@ export function StadiumLineupRankingPreview({ lineupRows, accountRows }: Props) 
                   >
                     {renderRankBadge(row.rank)}
                   </span>
-                  {team ? (
-                    row.rank <= 3 ? <TeamLogo teamId={team.id} size="sm" /> : <TeamBadge teamId={team.id} size="sm" />
-                  ) : null}
+                  {row.teamId ? <TeamLogo teamId={row.teamId} size="sm" /> : null}
                   <div className="stadium-lobby-rank-preview-body">
                     <span className="stadium-lobby-rank-preview-name">{row.lineupName}</span>
                     <span className="stadium-lobby-rank-preview-nick">{row.nickname}</span>

@@ -15,7 +15,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LogIn, Swords } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { ModalShell } from "@/components/common/ModalShell";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -29,11 +28,14 @@ import {
 } from "@/lib/supabase/query-parts/bpLineups";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
-import { getRoster } from "@/lib/rosters";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
+import {
+  buildStatsDirectoryWithRecentFormForLineups,
+  getEntryValidPlayerIds,
+  getLineupValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 
 type Props = {
   opponentLineupId: string | null;
@@ -167,17 +169,24 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
       return;
     }
 
-    const opponentValidIds = new Set(getRoster(opponent.team_id).map((p) => p.id));
-    const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
-    const opponentPitching = fillMissingPitcherSlots(
+    const stats = await buildStatsDirectoryWithRecentFormForLineups(
+      client,
+      [
+        { teamId: myEntry.teamId, batting: myEntry.batting, pitching: myEntry.pitching },
+        { teamId: opponent.team_id, batting: opponent.batting, pitching: opponent.pitching }
+      ]
+    );
+    const opponentPitching = fillMissingPitcherSlotsFromStatsDirectory(
       opponent.team_id,
       opponent.pitching?.slots ?? [],
-      opponentValidIds
+      stats,
+      getLineupValidPlayerIds(opponent.team_id, opponent.batting)
     );
-    const myPitching = fillMissingPitcherSlots(
+    const myPitching = fillMissingPitcherSlotsFromStatsDirectory(
       myEntry.teamId,
       myEntry.pitching?.slots ?? [],
-      myValidIds
+      stats,
+      getEntryValidPlayerIds(myEntry)
     );
     if (!opponentPitching || !myPitching) {
       setStarting(false);
@@ -185,7 +194,6 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
       return;
     }
 
-    const stats = await buildStatsDirectoryWithRecentForm(client, [myEntry.teamId, opponent.team_id]);
     const mine = buildSimTeamInput(myEntry.teamId, myEntry.batting, myPitching, stats, myEntry.name);
     if (!mine.ok) {
       setStarting(false);
@@ -359,7 +367,7 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
                         className={`stadium-discover-my-pick ${entry.entryId === myEntryId ? "is-active" : ""}`}
                         onClick={() => setMyEntryId(entry.entryId)}
                       >
-                        <TeamBadge teamId={entry.teamId} size="sm" />
+                        <TeamLogo teamId={entry.teamId} size="sm" />
                         <span>
                           {entry.name}
                           {recordTxt}

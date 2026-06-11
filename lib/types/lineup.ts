@@ -71,6 +71,8 @@ export type SavedLineup = {
   slots: LineupSlot[];
   useDH: boolean;
   updatedAt: string;
+  lineupType?: LineupType;
+  rosterSourceId?: string;
 };
 
 export const LINEUP_STORAGE_PREFIX = "ballplay:lineup:";
@@ -90,6 +92,8 @@ export type SavedPitcherLineup = {
   teamId: string;
   slots: (string | null)[]; // playerId × 9, [0]=선발, [1]=마무리, [2..8]=불펜
   updatedAt: string;
+  lineupType?: LineupType;
+  rosterSourceId?: string;
 };
 
 export const PITCHER_STORAGE_PREFIX = "ballplay:lineup:pitcher:";
@@ -101,6 +105,8 @@ export type LineupEntry = {
   entryId: string;
   name: string;             // 사용자 지정 (또는 기본값: KBO 정식 팀명)
   teamId: string;
+  lineupType?: LineupType;
+  rosterSourceId?: string;
   batting: SavedLineup;
   pitching: SavedPitcherLineup | null;
   updatedAt: string;
@@ -115,6 +121,10 @@ export const MY_LINEUPS_STORAGE_KEY = "ballplay:my-lineups";
 export const MAX_LINEUP_ENTRIES = 50;
 
 export type LineupMode = "batter" | "pitcher";
+
+export type LineupType = "kbo" | "national" | "custom";
+
+export const DEFAULT_LINEUP_TYPE: LineupType = "kbo";
 
 /** 대기 풀에 표시할 그룹 라벨 — KBO 명단의 분류(투수/포수/내야수/외야수/지명)
  *  그대로 노출. 세부 포지션은 라인업 슬롯에서만 표시.

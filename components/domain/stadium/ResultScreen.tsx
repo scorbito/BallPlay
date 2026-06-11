@@ -24,6 +24,15 @@ import { PLAYOFF_TOTAL_ROUNDS } from "@/lib/supabase/query-parts/bpPlayoff";
 import { TierUpHost } from "@/components/common/TierUpHost";
 import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
 
+function getPlayableTeamMeta(teamId: string, displayName?: string) {
+  try {
+    return getTeam(teamId);
+  } catch {
+    const name = displayName?.trim() || (teamId === "national" ? "국가대표" : teamId);
+    return { id: teamId, name, shortName: name, initial: name.charAt(0) || "?", color: "#475569" };
+  }
+}
+
 export function ResultScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -270,8 +279,8 @@ export function ResultScreen() {
 
   const { home, away } = session.input;
   const { finalScore, mvp, innings, engineVersion, seed } = session.result;
-  const homeTeam = getTeam(home.teamId);
-  const awayTeam = getTeam(away.teamId);
+  const homeTeam = getPlayableTeamMeta(home.teamId, home.displayName);
+  const awayTeam = getPlayableTeamMeta(away.teamId, away.displayName);
   // 사용자 지정 팀명(라인업 이름) 우선
   const homeLabel = home.displayName?.trim() || homeTeam.shortName;
   const awayLabel = away.displayName?.trim() || awayTeam.shortName;

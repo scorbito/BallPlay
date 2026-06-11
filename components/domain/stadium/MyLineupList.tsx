@@ -7,22 +7,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List, Plus, Swords } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
-import { getRoster } from "@/lib/rosters";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { LINEUP_ENTRIES_CHANGED_EVENT, loadLineupEntries } from "@/lib/storage/lineupEntries";
 import type { LineupEntry } from "@/lib/types/lineup";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
-import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
+import {
+  buildStatsDirectoryWithRecentFormForEntries,
+  getEntryValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 
 function formatRelativeDate(iso: string): string {
   const t = Date.parse(iso);
@@ -39,6 +39,14 @@ function formatRelativeDate(iso: string): string {
 type Props = {
   maxItems?: number;
 };
+
+function getTeamShortName(teamId: string): string {
+  try {
+    return getTeam(teamId).shortName;
+  } catch {
+    return teamId === "national" ? "국가대표" : teamId;
+  }
+}
 
 export function MyLineupList({ maxItems = 10 }: Props) {
   const router = useRouter();
@@ -124,12 +132,17 @@ export function MyLineupList({ maxItems = 10 }: Props) {
     [opponentCandidates, opponentEntryId]
   );
 
-  const openLineupPreview = (entry: LineupEntry) => {
+  const openLineupPreview = async (entry: LineupEntry) => {
     // partial pitching(선발만 있는 경우 등)도 안전하게 9슬롯으로 보강
-    const validIds = new Set(getRoster(entry.teamId).map((p) => p.id));
-    const pitching = fillMissingPitcherSlots(entry.teamId, entry.pitching?.slots ?? [], validIds);
+    const client = createSupabaseBrowserClient();
+    const stats = await buildStatsDirectoryWithRecentFormForEntries(client, [entry]);
+    const pitching = fillMissingPitcherSlotsFromStatsDirectory(
+      entry.teamId,
+      entry.pitching?.slots ?? [],
+      stats,
+      getEntryValidPlayerIds(entry)
+    );
     if (!pitching) return;
-    const stats = buildStatsDirectory([entry.teamId]);
     const built = buildSimTeamInput(entry.teamId, entry.batting, pitching, stats, entry.name);
     if (!built.ok) return;
     setPreviewTeam(built.team);
@@ -158,17 +171,19 @@ export function MyLineupList({ maxItems = 10 }: Props) {
     setStarting(true);
     setError(null);
 
-    const myValidIds = new Set(getRoster(myEntry.teamId).map((p) => p.id));
-    const oppValidIds = new Set(getRoster(opponentEntry.teamId).map((p) => p.id));
-    const myPitching = fillMissingPitcherSlots(
+    const client = createSupabaseBrowserClient();
+    const stats = await buildStatsDirectoryWithRecentFormForEntries(client, [myEntry, opponentEntry]);
+    const myPitching = fillMissingPitcherSlotsFromStatsDirectory(
       myEntry.teamId,
       myEntry.pitching?.slots ?? [],
-      myValidIds
+      stats,
+      getEntryValidPlayerIds(myEntry)
     );
-    const oppPitching = fillMissingPitcherSlots(
+    const oppPitching = fillMissingPitcherSlotsFromStatsDirectory(
       opponentEntry.teamId,
       opponentEntry.pitching?.slots ?? [],
-      oppValidIds
+      stats,
+      getEntryValidPlayerIds(opponentEntry)
     );
     if (!myPitching || !oppPitching) {
       setStarting(false);
@@ -177,8 +192,6 @@ export function MyLineupList({ maxItems = 10 }: Props) {
     }
 
     // DB 스냅샷 기반 시즌+최근 폼 블렌드. fetch 실패 시 baseline 폴백.
-    const client = createSupabaseBrowserClient();
-    const stats = await buildStatsDirectoryWithRecentForm(client, [myEntry.teamId, opponentEntry.teamId]);
     const mine = buildSimTeamInput(myEntry.teamId, myEntry.batting, myPitching, stats, myEntry.name);
     if (!mine.ok) {
       setStarting(false);
@@ -236,7 +249,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
 
       <section className="stadium-discover-list">
         {list.map((entry) => {
-          const team = getTeam(entry.teamId);
+          const team = { shortName: getTeamShortName(entry.teamId) };
           return (
             <div key={entry.entryId} className="stadium-discover-card">
               <TeamLogo teamId={entry.teamId} size="md" />
@@ -322,7 +335,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
                           className={`stadium-discover-my-pick ${entry.entryId === opponentEntryId ? "is-active" : ""}`}
                           onClick={() => setOpponentEntryId(entry.entryId)}
                         >
-                          <TeamBadge teamId={entry.teamId} size="sm" />
+                          <TeamLogo teamId={entry.teamId} size="sm" />
                           <span>{entry.name}{recordTxt}</span>
                         </button>
                       );

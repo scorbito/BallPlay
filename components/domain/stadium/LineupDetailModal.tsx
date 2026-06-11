@@ -5,7 +5,7 @@
 
 import { Swords } from "lucide-react";
 import { ModalShell } from "@/components/common/ModalShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
 import type { SimTeamInput } from "@/lib/sim/types";
@@ -37,6 +37,15 @@ const POSITION_LABEL: Record<string, string> = {
   DH: "DH"
 };
 
+function getPreviewTeamMeta(teamId: string, displayName?: string) {
+  try {
+    return getTeam(teamId);
+  } catch {
+    const name = displayName?.trim() || (teamId === "national" ? "국가대표" : teamId);
+    return { id: teamId, name, shortName: name, initial: name.charAt(0) || "?", color: "#475569" };
+  }
+}
+
 export function LineupDetailModal({ open, team, onClose, onChallenge }: LineupDetailModalProps) {
   if (!team) {
     return (
@@ -52,7 +61,7 @@ export function LineupDetailModal({ open, team, onClose, onChallenge }: LineupDe
     );
   }
 
-  const teamMeta = getTeam(team.teamId);
+  const teamMeta = getPreviewTeamMeta(team.teamId, team.displayName);
   const lineupName = team.displayName?.trim() || teamMeta.shortName;
 
   const handleChallengeClick = () => {
@@ -75,7 +84,7 @@ export function LineupDetailModal({ open, team, onClose, onChallenge }: LineupDe
       ariaLabel={lineupName}
       title={
         <span className="lineup-detail-title">
-          <TeamBadge teamId={team.teamId} size="sm" />
+          <TeamLogo teamId={team.teamId} size="sm" />
           <span>{lineupName}</span>
           {onChallenge ? (
             <button

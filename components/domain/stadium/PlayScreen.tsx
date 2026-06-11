@@ -43,6 +43,15 @@ import { useLiveCountdown } from "./play/hooks/useLiveCountdown";
 import { useMatchSession } from "./play/hooks/useMatchSession";
 import type { SimPitcher } from "@/lib/sim/types";
 
+function getPlayableTeamMeta(teamId: string, displayName?: string) {
+  try {
+    return getTeam(teamId);
+  } catch {
+    const name = displayName?.trim() || (teamId === "national" ? "국가대표" : teamId);
+    return { id: teamId, name, shortName: name, initial: name.charAt(0) || "?", color: "#475569" };
+  }
+}
+
 export function PlayScreen() {
   const router = useRouter();
   const { showToast, profile } = useAppState();
@@ -724,8 +733,8 @@ export function PlayScreen() {
   }
 
   const input = session.input!;
-  const homeTeam = getTeam(input.home.teamId);
-  const awayTeam = getTeam(input.away.teamId);
+  const homeTeam = getPlayableTeamMeta(input.home.teamId, input.home.displayName);
+  const awayTeam = getPlayableTeamMeta(input.away.teamId, input.away.displayName);
   const homeLabel = deriveTeamLabel(input.home.displayName, homeTeam.shortName);
   const awayLabel = deriveTeamLabel(input.away.displayName, awayTeam.shortName);
   const myNickname = profile?.nickname?.trim() || "나";

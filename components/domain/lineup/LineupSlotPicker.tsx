@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronDown, LogIn, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, LogIn, Pencil, Plus, Trash2, Trophy } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { TIER_LABEL, type UserTier } from "@/lib/auth/userTier";
 import { getLineupSlotLimit } from "@/lib/auth/tierLimits";
@@ -12,6 +12,7 @@ import type { ArchivedTeam } from "@/lib/lineup/useArchivedTeams";
 
 type LineupSlotPickerProps = {
   entries: LineupEntry[];
+  specialEntries?: LineupEntry[];
   selectedEntryId: string | null;
   statsByEntryId: Record<string, LineupStats>;
   archivedTeams: ArchivedTeam[];
@@ -28,6 +29,7 @@ type LineupSlotPickerProps = {
 /** 팀 슬롯 picker — 현재 팀 + 드롭다운으로 다른 팀 / 새 팀 / 이름 편집 / 삭제 */
 export function LineupSlotPicker({
   entries,
+  specialEntries = [],
   selectedEntryId,
   statsByEntryId,
   archivedTeams,
@@ -41,7 +43,9 @@ export function LineupSlotPicker({
   onDelete
 }: LineupSlotPickerProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const currentEntry = entries.find((e) => e.entryId === selectedEntryId) ?? null;
+  const allEntries = [...entries, ...specialEntries];
+  const currentEntry = allEntries.find((e) => e.entryId === selectedEntryId) ?? null;
+  const currentIsSpecial = specialEntries.some((e) => e.entryId === selectedEntryId);
 
   // 외부 클릭 시 슬롯 드롭다운 닫기
   useEffect(() => {
@@ -67,7 +71,11 @@ export function LineupSlotPicker({
       >
         {currentEntry ? (
           <>
-            <TeamBadge teamId={currentEntry.teamId} size="sm" />
+            {currentIsSpecial ? (
+              <span className="lineup-special-mini-badge" aria-hidden="true">N</span>
+            ) : (
+              <TeamBadge teamId={currentEntry.teamId} size="sm" />
+            )}
             <strong className="lineup-slot-trigger-name">{currentEntry.name}</strong>
           </>
         ) : (
@@ -135,6 +143,36 @@ export function LineupSlotPicker({
             );
           })}
           {/* 슬롯 여유 있으면 "새 팀 슬롯" (정상 추가) */}
+          {specialEntries.length > 0 ? (
+            <>
+              <li className="lineup-slot-special-head">특별 라인업</li>
+              {specialEntries.map((entry) => {
+                const active = entry.entryId === selectedEntryId;
+                return (
+                  <li key={entry.entryId} className="lineup-slot-menu-item-wrap">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={`lineup-slot-menu-item lineup-slot-menu-special ${active ? "is-active" : ""}`}
+                      onClick={() => {
+                        onSelect(entry.entryId);
+                        setOpen(false);
+                      }}
+                    >
+                      <span className="lineup-special-mini-badge" aria-hidden="true">
+                        <Trophy size={13} />
+                      </span>
+                      <span className="lineup-slot-menu-name">{entry.name}</span>
+                      <span className="lineup-slot-menu-record">타자 {entry.batting.slots.length}/9</span>
+                      <span className="lineup-slot-menu-badge is-special">특별</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </>
+          ) : null}
+
           {entries.length < lineupLimit ? (
             <li>
               <button

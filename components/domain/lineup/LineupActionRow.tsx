@@ -16,6 +16,7 @@ type LineupActionRowProps = {
   poolCount: number;
   filledCount: number;
   pitcherFilled: number;
+  enableTeamMatchActions?: boolean;
   /** 현재 entry의 홈 전적 (없으면 undefined) — 출전 상태 hint에서 사용 */
   currentEntryStats: LineupStats | undefined;
   /** 현재 entry의 원정/방어 전적 (다른 유저가 도전한 경기). 기록 있을 때만 표시 */
@@ -40,6 +41,7 @@ export function LineupActionRow({
   needsAutoFillNotice,
   publishProcessing,
   poolCount,
+  enableTeamMatchActions = true,
   currentEntryStats,
   currentEntryAwayStats,
   selectedTeamShortName,
@@ -52,7 +54,11 @@ export function LineupActionRow({
     <div className="lineup-action-row">
       {/* lead 영역 — 불러오기 버튼(또는 출전중 hint)이 단독으로 넓게 차지 */}
       <div className="lineup-action-lead">
-        {currentEntry?.isPublished ? (() => {
+        {!enableTeamMatchActions && currentEntry ? (
+          <p className="lineup-action-hint">
+            특별 라인업 · 여러 팀 선수 풀에서 자유롭게 편집할 수 있어요.
+          </p>
+        ) : currentEntry?.isPublished ? (() => {
           const wins = currentEntryStats?.wins ?? 0;
           const losses = currentEntryStats?.losses ?? 0;
           // 원정/방어 전적은 도전받은 적 있을 때(matches>0)만 노출 — 평소엔 간결하게.
@@ -101,7 +107,7 @@ export function LineupActionRow({
           </button>
         </div>
         {/* 경기장 출전 등록 */}
-        {(() => {
+        {enableTeamMatchActions ? (() => {
           if (!currentEntry) return null;
           const isOn = !!currentEntry.isPublished;
           // 익명도 DB sync되므로 syncStatus가 "synced"면 통과. "local-only"는 sync 실패 fallback.
@@ -125,7 +131,7 @@ export function LineupActionRow({
               {isOn ? "출전 중" : "출전 등록"}
             </button>
           );
-        })()}
+        })() : null}
       </div>
       {/* PC 와이드 모드에서만 노출 — 대기 선수 카드 헤더 자리 절약. 모바일은 풀 카드 자체에 헤더 유지. */}
       <div className="lineup-action-pool-badge" aria-hidden="true">

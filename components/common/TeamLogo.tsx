@@ -1,5 +1,7 @@
 import Image from "next/image";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import nationalLogoSrc from "@/data/Images/국가대표팀로고.png";
+import type { StaticImageData } from "next/image";
+import type { CSSProperties } from "react";
 import { getTeam } from "@/lib/constants/teams";
 
 type TeamLogoProps = {
@@ -8,7 +10,7 @@ type TeamLogoProps = {
   showName?: boolean;
 };
 
-const logoSrcByTeamId: Record<string, string> = {
+const logoSrcByTeamId: Record<string, string | StaticImageData> = {
   doosan: "/team-logos/doosan.png",
   lg: "/team-logos/lg.png",
   kt: "/team-logos/kt.png",
@@ -18,7 +20,8 @@ const logoSrcByTeamId: Record<string, string> = {
   samsung: "/team-logos/samsung.png",
   lotte: "/team-logos/lotte.png",
   kia: "/team-logos/kia.png",
-  hanwha: "/team-logos/hanwha.png"
+  hanwha: "/team-logos/hanwha.png",
+  national: nationalLogoSrc
 };
 
 const sizeClass = {
@@ -34,11 +37,31 @@ const pixelSize = {
 };
 
 export function TeamLogo({ teamId, size = "md", showName = false }: TeamLogoProps) {
-  const team = getTeam(teamId);
+  const team = (() => {
+    try {
+      return getTeam(teamId);
+    } catch {
+      if (teamId === "national") {
+        return { id: teamId, name: "아시안게임 국가대표팀", shortName: "국가대표", initial: "N", color: "#0f4c81" };
+      }
+      return { id: teamId, name: teamId, shortName: teamId, initial: "?", color: "#475569" };
+    }
+  })();
   const src = logoSrcByTeamId[teamId];
 
   if (!src) {
-    return <TeamBadge teamId={teamId} size={size} showName={showName} />;
+    return (
+      <span className="team-badge-wrap">
+        <span
+          className={`team-badge team-badge-${size}`}
+          style={{ background: team.color } as CSSProperties}
+          aria-label={team.name}
+        >
+          <span className="team-badge-initial">{team.initial}</span>
+        </span>
+        {showName ? <span className="team-badge-name">{team.shortName}</span> : null}
+      </span>
+    );
   }
 
   return (

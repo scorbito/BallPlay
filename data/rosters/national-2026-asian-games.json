@@ -1,0 +1,31 @@
+{
+  "id": "national-2026-asian-games",
+  "name": "2026 아이치-나고야 아시안게임 야구 국가대표팀",
+  "source": "uploaded image: 야구국가대표명단.jpg",
+  "players": [
+    { "teamId": "lg", "playerId": "lg-67", "name": "김영우", "role": "pitcher" },
+    { "teamId": "lg", "playerId": "lg-2", "name": "문보경", "role": "infielder", "wildcard": true },
+    { "teamId": "hanwha", "playerId": "hanwha-8", "name": "노시환", "role": "infielder", "wildcard": true },
+    { "teamId": "hanwha", "playerId": "hanwha-51", "name": "문현빈", "role": "outfielder" },
+    { "teamId": "ssg", "playerId": "ssg-19", "name": "조병현", "role": "pitcher" },
+    { "teamId": "ssg", "playerId": "ssg-20", "name": "조형우", "role": "catcher" },
+    { "teamId": "ssg", "playerId": "ssg-p54812", "name": "정준재", "role": "infielder" },
+    { "teamId": "samsung", "playerId": "samsung-55", "name": "배찬승", "role": "pitcher" },
+    { "teamId": "samsung", "playerId": "samsung-7", "name": "이재현", "role": "infielder" },
+    { "teamId": "samsung", "playerId": "samsung-58", "name": "김지찬", "role": "outfielder" },
+    { "teamId": "nc", "playerId": "nc-7", "name": "김주원", "role": "infielder" },
+    { "teamId": "kt", "playerId": "kt-60", "name": "박영현", "role": "pitcher" },
+    { "teamId": "kt", "playerId": "kt-30", "name": "소형준", "role": "pitcher" },
+    { "teamId": "kt", "playerId": "kt-47", "name": "오원석", "role": "pitcher" },
+    { "teamId": "lotte", "playerId": "lotte-56", "name": "최준용", "role": "pitcher" },
+    { "teamId": "lotte", "playerId": "lotte-15", "name": "김진욱", "role": "pitcher" },
+    { "teamId": "lotte", "playerId": "lotte-91", "name": "윤동희", "role": "outfielder" },
+    { "teamId": "kia", "playerId": "kia-65", "name": "성영탁", "role": "pitcher" },
+    { "teamId": "kia", "playerId": "kia-5", "name": "김도영", "role": "infielder" },
+    { "teamId": "kia", "playerId": "kia-15", "name": "박재현", "role": "outfielder" },
+    { "teamId": "doosan", "playerId": "doosan-47", "name": "곽빈", "role": "pitcher", "wildcard": true },
+    { "teamId": "doosan", "playerId": "doosan-68", "name": "최민석", "role": "pitcher" },
+    { "teamId": "doosan", "playerId": "doosan-52", "name": "박준순", "role": "infielder" },
+    { "teamId": "kiwoom", "playerId": "kiwoom-12", "name": "김건희", "role": "catcher" }
+  ]
+}

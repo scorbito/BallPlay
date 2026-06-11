@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowRight, Check, Copy, Loader2, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
 import type { SimTeamInput } from "@/lib/sim/types";
@@ -54,6 +54,15 @@ function identifyMe(
   const awayEmpty = !row.away_lineup_snapshot;
   if (homeEmpty || awayEmpty) return { role: "joinable" };
   return { role: "spectator" };
+}
+
+function getLiveTeamName(teamId: string | null): string {
+  if (!teamId) return "";
+  try {
+    return getTeam(teamId).name;
+  } catch {
+    return teamId === "national" ? "국가대표" : teamId;
+  }
 }
 
 export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
@@ -305,8 +314,8 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
   // 사용자 지정 팀명(SharedTeam.n) 우선 — 없으면 KBO 팀명 폴백
   const hostSnapshot = hostSide === "home" ? row.home_lineup_snapshot : row.away_lineup_snapshot;
   const guestSnapshot = hostSide === "home" ? row.away_lineup_snapshot : row.home_lineup_snapshot;
-  const hostLabel = hostSnapshot?.n?.trim() || (hostTeam ? getTeam(hostTeam).name : "");
-  const guestLabel = guestSnapshot?.n?.trim() || (guestTeam ? getTeam(guestTeam).name : "");
+  const hostLabel = hostSnapshot?.n?.trim() || getLiveTeamName(hostTeam);
+  const guestLabel = guestSnapshot?.n?.trim() || getLiveTeamName(guestTeam);
 
   // 스냅샷 → SimTeamInput 변환 후 모달 오픈
   const openSnapshotPreview = (snapshot: typeof hostSnapshot) => {
@@ -332,7 +341,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
               aria-label={`${hostLabel} 라인업 보기`}
             >
               <span className="stadium-enter-team-label">{hostSide === "home" ? "홈" : "원정"}</span>
-              <TeamBadge teamId={hostTeam} size="lg" />
+              <TeamLogo teamId={hostTeam} size="lg" />
               <strong>{hostLabel}</strong>
             </button>
           ) : (
@@ -350,7 +359,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
               aria-label={`${guestLabel} 라인업 보기`}
             >
               <span className="stadium-enter-team-label">{hostSide === "home" ? "원정" : "홈"}</span>
-              <TeamBadge teamId={guestTeam} size="lg" />
+              <TeamLogo teamId={guestTeam} size="lg" />
               <strong>{guestLabel}</strong>
             </button>
           ) : (
@@ -423,7 +432,7 @@ export function LiveMatchScreen({ inviteCode }: { inviteCode: string }) {
                         onClick={() => setSelectedEntryId(entry.entryId)}
                         title={entry.name}
                       >
-                        <TeamBadge teamId={entry.teamId} size="sm" />
+                        <TeamLogo teamId={entry.teamId} size="sm" />
                         <span className="stadium-enter-picker-name">{entry.name}</span>
                         {isPublished ? (
                           <span className="stadium-enter-picker-tag stadium-enter-picker-tag-published">출전 등록</span>

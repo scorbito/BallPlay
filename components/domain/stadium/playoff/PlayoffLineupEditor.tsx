@@ -17,7 +17,7 @@ import { PresetNameModal } from "@/components/domain/lineup/modals/PresetNameMod
 import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
 import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
-import { getRoster } from "@/lib/rosters";
+import { getCustomRoster, getNationalRoster, getRoster } from "@/lib/rosters";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import {
   deletePreset,
@@ -49,14 +49,37 @@ import {
 } from "@/lib/lineup/swapHelpers";
 import type { PlayoffRun } from "@/lib/supabase/query-parts/bpPlayoff";
 
+function getPlayoffEditorTeam(teamId: string, teamName: string) {
+  try {
+    return getTeam(teamId);
+  } catch {
+    const name = teamName || (teamId === "national" ? "국가대표" : teamId);
+    return {
+      id: teamId,
+      name,
+      shortName: teamId === "national" ? "국가대표" : name,
+      initial: teamId === "national" ? "N" : name.charAt(0) || "?",
+      color: teamId === "national" ? "#0f4c81" : "#475569",
+      accent: teamId === "national" ? "#d71920" : "#f59e0b"
+    };
+  }
+}
+
+function getPlayoffEditorRoster(run: PlayoffRun): Player[] {
+  const type = run.state.myLineup?.batting.lineupType ?? (run.teamId === "national" ? "national" : "kbo");
+  if (type === "national") return getNationalRoster();
+  if (type === "custom") return getCustomRoster(run.state.myLineup?.batting.rosterSourceId);
+  return getRoster(run.teamId);
+}
+
 /** 가을야구 전용 라인업 편집기 — 팀 관리 빌더의 편집 모듈을 격리해 재사용.
  *  state.myLineup(플레이오프 전용)만 수정. 실제 팀·경기장 출전 라인업 무영향. */
 export function PlayoffLineupEditor({ run }: { run: PlayoffRun }) {
   const router = useRouter();
   const { showToast } = useAppState();
   const teamId = run.teamId;
-  const team = getTeam(teamId);
-  const roster = useMemo(() => getRoster(teamId), [teamId]);
+  const team = getPlayoffEditorTeam(teamId, run.teamName);
+  const roster = useMemo(() => getPlayoffEditorRoster(run), [run]);
   const playersById = useMemo(() => new Map(roster.map((p) => [p.id, p])), [roster]);
   // 이름 → 로스터 매핑 — 최근 라인업의 rosterId 매칭 실패 시 이름으로 fallback.
   const playersByName = useMemo(() => new Map(roster.map((p) => [p.name, p])), [roster]);

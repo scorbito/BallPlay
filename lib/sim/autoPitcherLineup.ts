@@ -6,6 +6,8 @@ import {
   type SavedPitcherLineup
 } from "@/lib/types/lineup";
 import { getTeamStats } from "./statsLoader";
+import type { StatsDirectory } from "./lineupAdapter";
+import type { SimPitcher } from "./types";
 
 /** 사용자가 직접 선택한 자리는 보존하고 빈 슬롯만 자동으로 채운다.
  *  - 선발(slot 0): role="SP" 중 stamina 높은 순 (SP 없으면 stamina 1위 폴백)
@@ -106,4 +108,92 @@ export function autoFillPitcherLineup(
     Array.from({ length: PITCHER_SLOTS_COUNT }, () => null),
     validIds
   );
+}
+
+export function fillMissingPitcherSlotsFromStatsDirectory(
+  teamId: string,
+  current: (string | null)[],
+  stats: StatsDirectory,
+  validIds?: Set<string>
+): SavedPitcherLineup | null {
+  return fillMissingPitcherSlotsFromPitchers(
+    teamId,
+    current,
+    Array.from(stats.pitchers.values()),
+    validIds
+  );
+}
+
+function fillMissingPitcherSlotsFromPitchers(
+  teamId: string,
+  current: (string | null)[],
+  pitchers: SimPitcher[],
+  validIds?: Set<string>
+): SavedPitcherLineup | null {
+  const pool = validIds ? pitchers.filter((p) => validIds.has(p.playerId)) : pitchers;
+  if (pool.length < 1) return null;
+
+  const slots = Array.from({ length: PITCHER_SLOTS_COUNT }, (_, i) => current[i] ?? null);
+  const used = new Set<string>();
+  slots.forEach((id) => id && used.add(id));
+
+  if (!slots[PITCHER_STARTER_INDEX]) {
+    const byStamina = (list: typeof pool) =>
+      [...list].sort((a, b) => b.staminaPitches - a.staminaPitches)[0];
+    const starterPick =
+      byStamina(pool.filter((p) => p.role === "SP" && !used.has(p.playerId))) ??
+      byStamina(pool.filter((p) => !used.has(p.playerId)));
+    if (starterPick) {
+      slots[PITCHER_STARTER_INDEX] = starterPick.playerId;
+      used.add(starterPick.playerId);
+    }
+  }
+
+  if (!slots[PITCHER_CLOSER_INDEX]) {
+    const closerPick = [...pool]
+      .filter((p) => !used.has(p.playerId))
+      .sort((a, b) => {
+        if (b.saves !== a.saves) return b.saves - a.saves;
+        return b.staminaPitches - a.staminaPitches;
+      })[0];
+    if (closerPick) {
+      slots[PITCHER_CLOSER_INDEX] = closerPick.playerId;
+      used.add(closerPick.playerId);
+    }
+  }
+
+  const byEra = (list: typeof pool) =>
+    [...list].sort((a, b) => {
+      const ea = a.era || 99;
+      const eb = b.era || 99;
+      if (ea !== eb) return ea - eb;
+      return (a.whip || 99) - (b.whip || 99);
+    });
+  const rpPool = byEra(pool.filter((p) => p.role === "RP" && !used.has(p.playerId)));
+  let rpIdx = 0;
+  for (let slot = PITCHER_REQUIRED_BULLPEN_INDEX; slot < PITCHER_SLOTS_COUNT; slot += 1) {
+    if (slots[slot]) continue;
+    const pitcher = rpPool[rpIdx];
+    if (!pitcher) break;
+    slots[slot] = pitcher.playerId;
+    used.add(pitcher.playerId);
+    rpIdx += 1;
+  }
+
+  const fallbackPool = byEra(pool.filter((p) => !used.has(p.playerId)));
+  let fbIdx = 0;
+  for (let slot = PITCHER_REQUIRED_BULLPEN_INDEX; slot < PITCHER_SLOTS_COUNT; slot += 1) {
+    if (slots[slot]) continue;
+    const pitcher = fallbackPool[fbIdx];
+    if (!pitcher) break;
+    slots[slot] = pitcher.playerId;
+    used.add(pitcher.playerId);
+    fbIdx += 1;
+  }
+
+  return {
+    teamId,
+    slots,
+    updatedAt: new Date().toISOString()
+  };
 }

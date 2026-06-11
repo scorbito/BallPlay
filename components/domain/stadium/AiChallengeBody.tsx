@@ -7,14 +7,17 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Bot, Sparkles } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam, teams as ALL_TEAMS } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
 import type { LineupEntry } from "@/lib/types/lineup";
 import { loadLineupEntries } from "@/lib/storage/lineupEntries";
 import { autoFillBattingLineup } from "@/lib/sim/autoBattingLineup";
-import { autoFillPitcherLineup, fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import {
+  autoFillPitcherLineup,
+  fillMissingPitcherSlots,
+  fillMissingPitcherSlotsFromStatsDirectory
+} from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { buildFakeOpponentTeam } from "@/lib/sim/fakeOpponent";
 import {
@@ -25,6 +28,10 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getLatestLineupForTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
+import {
+  buildStatsDirectoryWithRecentFormForEntries,
+  getEntryValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 
 type Props = {
   opponentTeamId: string;
@@ -91,23 +98,23 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
     setStarting(true);
     const seed = generateSeed();
 
-    const validIds = new Set(getRoster(selectedEntry.teamId).map((p) => p.id));
-    const pitchingToUse = fillMissingPitcherSlots(
+    const client = createSupabaseBrowserClient();
+    const enhancedDir = await buildStatsDirectoryWithRecentFormForEntries(
+      client,
+      [selectedEntry],
+      [opponentTeamId]
+    );
+    const pitchingToUse = fillMissingPitcherSlotsFromStatsDirectory(
       selectedEntry.teamId,
       selectedEntry.pitching?.slots ?? [],
-      validIds
+      enhancedDir,
+      getEntryValidPlayerIds(selectedEntry)
     );
     if (!pitchingToUse) {
       setError("투수 라인업을 자동 생성하지 못했습니다.");
       setStarting(false);
       return;
     }
-
-    const client = createSupabaseBrowserClient();
-    const enhancedDir = await buildStatsDirectoryWithRecentForm(
-      client,
-      [selectedEntry.teamId, opponentTeamId]
-    );
 
     const myAdapt = buildSimTeamInput(
       selectedEntry.teamId,
@@ -285,7 +292,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
                   className={`stadium-discover-my-pick ${active ? "is-active" : ""}`}
                   onClick={() => setSelectedEntryId(entry.entryId)}
                 >
-                  <TeamBadge teamId={entry.teamId} size="sm" />
+                  <TeamLogo teamId={entry.teamId} size="sm" />
                   <span>{entry.name}{recordTxt}</span>
                   {pitcherAuto ? (
                     <span className="stadium-enter-picker-tag">투수 자동</span>
