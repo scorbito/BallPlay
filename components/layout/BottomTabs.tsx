@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type TabId = "home" | "play" | "stadium" | "my";
@@ -30,7 +30,6 @@ const tabs: readonly TabDef[] = [
 ] as const;
 
 export function BottomTabs({ activeTab }: BottomTabsProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const pendingTimerRef = useRef<number | null>(null);
@@ -47,13 +46,6 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
   }, [pathname]);
 
   useEffect(() => clearPendingTimer, []);
-
-  useEffect(() => {
-    for (const tab of tabs) {
-      if (tab.disabled) continue;
-      router.prefetch(tab.href);
-    }
-  }, [router]);
 
   useEffect(() => {
     if (!pendingHref) return;
@@ -84,7 +76,6 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
             );
           }
 
-          const warmRoute = () => router.prefetch(tab.href);
           const markPending = () => {
             clearPendingTimer();
             setPendingHref(null);
@@ -103,10 +94,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
               href={tab.href}
               key={tab.id}
               onClick={markPending}
-              onFocus={warmRoute}
-              onMouseEnter={warmRoute}
-              onTouchStart={warmRoute}
-              prefetch
+              prefetch={false}
             >
               <span className="tab-item-icon">
                 <Image src={tab.iconSrc} alt="" width={32} height={32} priority={isActive} />

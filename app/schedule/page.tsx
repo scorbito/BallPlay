@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ScheduleScreen } from "@/components/domain/ScheduleScreen";
 import { listGamesFromDb } from "@/lib/supabase/queries";
-import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
 import type { Game } from "@/lib/types/domain";
 
 export const metadata: Metadata = {
@@ -34,9 +33,6 @@ function toDomainGame(game: Awaited<ReturnType<typeof listGamesFromDb>>[number])
 }
 
 export default async function SchedulePage() {
-  // 진입 시 일일 sync 트리거 (throttle). 동시 사용자가 와도 KBO 호출은 1번.
-  void triggerDailyDataSync();
-
   // KBO 정규시즌 전체 + 시범경기/포스트시즌까지 커버 (2~12월)
   const today = new Date();
   const year = today.getFullYear();

@@ -1,5 +1,4 @@
 import { HomeScreen } from "@/components/domain/HomeScreen";
-import { triggerDailyDataSync } from "@/lib/server/kbo/triggerSync";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { getAccountStats, getMyAccountStatsRank } from "@/lib/supabase/query-parts/bpAccountStats";
 

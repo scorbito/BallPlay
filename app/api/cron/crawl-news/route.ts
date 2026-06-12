@@ -232,10 +232,13 @@ async function fetchOgImage(url: string): Promise<string | null> {
 /** 이미지 없는 최신 기사의 og:image를 제한적으로 채운다.
  *  크롤당 상한(MAX)·동시성·타임아웃으로 Vercel 60초 안에 끝나게 통제. */
 async function backfillImages(
-  supabase: ReturnType<typeof createSupabaseAdminClient>
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  limit: number
 ): Promise<number> {
-  const MAX = 30; // 1회 크롤당 이미지 채울 최대 기사 수
-  const CONCURRENCY = 6;
+  const MAX = Math.max(0, Math.min(limit, 10));
+  const CONCURRENCY = 3;
+
+  if (MAX === 0) return 0;
 
   const { data: rows, error } = await supabase
     .from("bp_news")
@@ -265,6 +268,12 @@ export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  const url = new URL(request.url);
+  const shouldBackfillImages =
+    url.searchParams.get("images") === "1" || url.searchParams.get("images") === "true";
+  const imageLimitParam = Number(url.searchParams.get("imageLimit") ?? "5");
+  const imageLimit = Number.isFinite(imageLimitParam) ? imageLimitParam : 5;
 
   const supabase = createSupabaseAdminClient();
 
@@ -302,13 +311,14 @@ export async function GET(request: NextRequest) {
   if (rpcErr) console.warn("[NEWS] bp_delete_old_news RPC 경고:", rpcErr.message);
 
   // og:image 채우기 — 이미지 없는 최신 기사 일부만 (크롤당 제한)
-  const imagesFilled = await backfillImages(supabase);
+  const imagesFilled = shouldBackfillImages ? await backfillImages(supabase, imageLimit) : 0;
 
   return NextResponse.json({
     success: true,
     strategy,
     fetched: newsItems.length,
     imagesFilled,
+    imageBackfillEnabled: shouldBackfillImages,
     timestamp: new Date().toISOString()
   });
 }

@@ -21,7 +21,6 @@ import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { HomeCardPulse } from "@/components/domain/HomeCardPulse";
 import { HomeRecordBadge } from "@/components/domain/HomeRecordBadge";
 import { NoticeButton } from "@/components/domain/NoticeButton";
-import { DailySyncTrigger } from "@/components/domain/DailySyncTrigger";
 import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
@@ -328,7 +327,7 @@ export function HomeScreen({
         </h1>
         <div className="play-hub-header-actions">
           <NoticeButton />
-          <Link href="/my/settings" className="play-hub-settings" prefetch aria-label="설정">
+          <Link href="/my/settings" className="play-hub-settings" prefetch={false} aria-label="설정">
             <Image
               src="/icons/header/settings.png"
               alt=""
@@ -407,7 +406,7 @@ export function HomeScreen({
                   <Link
                     className={`play-hub-card play-hub-card-${card.id}${card.featured ? " play-hub-card-featured-style" : ""}`}
                     href={card.href}
-                    prefetch
+                    prefetch={false}
                   >
                     {cardInner}
                   </Link>
@@ -435,7 +434,7 @@ export function HomeScreen({
                     href="/stadium/playoff"
                     className="home-fall-badge"
                     aria-label="가을야구 모드 오픈 — 도전하러 가기"
-                    prefetch
+                    prefetch={false}
                   >
                     <Image
                       src="/badges/fall-baseball-open.png"
@@ -452,7 +451,7 @@ export function HomeScreen({
                     href="/play/lineup"
                     className="home-fall-badge home-lineup-badge"
                     aria-label="국가대표 라인업 추가"
-                    prefetch
+                    prefetch={false}
                   >
                     <Image
                       src="/badges/국가대표라인업추가.png"
@@ -578,7 +577,6 @@ export function HomeScreen({
       })()}
       {/* 승급 모달 — 홈 진입 시 자동 감지. 익명/0승은 detector 내부에서 no-op. */}
       <TierUpHost wins={userRecord.wins} />
-      <DailySyncTrigger />
     </AppShell>
   );
 }
