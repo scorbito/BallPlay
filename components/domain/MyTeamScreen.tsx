@@ -63,6 +63,151 @@ type MyTeamLineup = {
   pitching: (string | null)[];
 };
 
+type PlayerCardStats = { label: string; value: string }[];
+type PlayerDetailSection = {
+  title: string;
+  stats: { label: string; value: string }[];
+};
+
+function formatRateStat(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value)
+    ? value.toFixed(3).replace(/^0/, "")
+    : "-";
+}
+
+function formatDecimalStat(value: unknown, digits = 2): string {
+  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
+}
+
+function formatCountStat(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString() : "-";
+}
+
+function formatPercentStat(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : "-";
+}
+
+function getPlayerCardStats(player: Player, batter?: SimBatter, pitcher?: SimPitcher): PlayerCardStats {
+  if (player.primaryPosition === "P") {
+    return [
+      { label: "ERA", value: formatDecimalStat(pitcher?.era) },
+      { label: "WHIP", value: formatDecimalStat(pitcher?.whip) },
+      { label: "K/9", value: formatDecimalStat(pitcher?.k9) }
+    ];
+  }
+
+  const ops =
+    typeof batter?.ops === "number"
+      ? batter.ops
+      : typeof batter?.obp === "number" && typeof batter?.slg === "number"
+        ? batter.obp + batter.slg
+        : undefined;
+
+  return [
+    { label: "AVG", value: formatRateStat(batter?.avg) },
+    { label: "OBP", value: formatRateStat(batter?.obp) },
+    { label: "OPS", value: formatRateStat(ops) }
+  ];
+}
+
+function getTeamShortName(teamId: string): string {
+  return KBO_TEAMS_LIST.find((team) => team.id === teamId)?.shortName ?? teamId.toUpperCase();
+}
+
+function getPlayerPositionGroupLabel(position: Position): string {
+  if (position === "P") return "투수";
+  if (position === "C") return "포수";
+  if (position === "LF" || position === "CF" || position === "RF") return "외야";
+  if (position === "DH") return "지명";
+  return "내야";
+}
+
+function getPlayerDetailSections(player: Player, batter?: SimBatter, pitcher?: SimPitcher): PlayerDetailSection[] {
+  if (player.primaryPosition === "P") {
+    return [
+      {
+        title: "핵심 지표",
+        stats: [
+          { label: "ERA", value: formatDecimalStat(pitcher?.era) },
+          { label: "WHIP", value: formatDecimalStat(pitcher?.whip) },
+          { label: "K/9", value: formatDecimalStat(pitcher?.k9) },
+          { label: "BB/9", value: formatDecimalStat(pitcher?.bb9) },
+          { label: "HR/9", value: formatDecimalStat(pitcher?.hr9) },
+          { label: "역할", value: pitcher?.role ?? "-" }
+        ]
+      },
+      {
+        title: "누적 기록",
+        stats: [
+          { label: "이닝", value: formatDecimalStat(pitcher?.ip, 1) },
+          { label: "삼진", value: formatCountStat(pitcher?.k) },
+          { label: "볼넷", value: formatCountStat(pitcher?.bb) },
+          { label: "피홈런", value: formatCountStat(pitcher?.hr) },
+          { label: "피안타", value: formatCountStat(pitcher?.hitsAllowed) },
+          { label: "자책", value: formatCountStat(pitcher?.earnedRuns) }
+        ]
+      },
+      {
+        title: "결과 기록",
+        stats: [
+          { label: "승", value: formatCountStat(pitcher?.wins) },
+          { label: "패", value: formatCountStat(pitcher?.losses) },
+          { label: "세이브", value: formatCountStat(pitcher?.saves) },
+          { label: "홀드", value: formatCountStat(pitcher?.holds) },
+          { label: "투구 체력", value: formatCountStat(pitcher?.staminaPitches) },
+          { label: "등판", value: formatCountStat(player.seasonGames) }
+        ]
+      }
+    ];
+  }
+
+  const ops =
+    typeof batter?.ops === "number"
+      ? batter.ops
+      : typeof batter?.obp === "number" && typeof batter?.slg === "number"
+        ? batter.obp + batter.slg
+        : undefined;
+
+  return [
+    {
+      title: "핵심 지표",
+      stats: [
+        { label: "AVG", value: formatRateStat(batter?.avg) },
+        { label: "OBP", value: formatRateStat(batter?.obp) },
+        { label: "SLG", value: formatRateStat(batter?.slg) },
+        { label: "OPS", value: formatRateStat(ops) },
+        { label: "ISO", value: formatRateStat(batter?.iso) },
+        { label: "BABIP", value: formatRateStat(batter?.babip) }
+      ]
+    },
+    {
+      title: "누적 기록",
+      stats: [
+        { label: "경기", value: formatCountStat(player.seasonGames) },
+        { label: "타석", value: formatCountStat(batter?.pa) },
+        { label: "타수", value: formatCountStat(batter?.ab) },
+        { label: "안타", value: formatCountStat(batter?.hits) },
+        { label: "2루타", value: formatCountStat(batter?.doubles) },
+        { label: "3루타", value: formatCountStat(batter?.triples) },
+        { label: "홈런", value: formatCountStat(batter?.homers) },
+        { label: "볼넷", value: formatCountStat(batter?.walks) },
+        { label: "삼진", value: formatCountStat(batter?.strikeouts) }
+      ]
+    },
+    {
+      title: "상세 지표",
+      stats: [
+        { label: "BB%", value: formatPercentStat(batter?.bbRate) },
+        { label: "K%", value: formatPercentStat(batter?.kRate) },
+        { label: "컨택", value: formatPercentStat(batter?.contactScore) },
+        { label: "vs좌 OPS", value: formatRateStat(batter?.vsLhpOps) },
+        { label: "vs우 OPS", value: formatRateStat(batter?.vsRhpOps) },
+        { label: "타격", value: player.battingHand ?? "-" }
+      ]
+    }
+  ];
+}
+
 export function MyTeamScreen() {
   const router = useRouter();
   const { showToast } = useAppState();
@@ -93,6 +238,8 @@ export function MyTeamScreen() {
   const [positionPickerForOrder, setPositionPickerForOrder] = useState<LineupOrder | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [drawnPlayer, setDrawnPlayer] = useState<Player | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [rosterFilter, setRosterFilter] = useState<"all" | "batters" | "pitchers">("all");
 
   // 로컬 스토리지 데이터 로드
   useEffect(() => {
@@ -364,6 +511,34 @@ export function MyTeamScreen() {
   const playersMap = useMemo(() => {
     return new Map<string, Player>(players.map(p => [p.id, p]));
   }, [players]);
+
+  const playerStatsById = useMemo(() => {
+    const byId = new Map<string, { batter?: SimBatter; pitcher?: SimPitcher }>();
+    const typedStatsData = statsData as any;
+
+    for (const team of Object.values(typedStatsData.teams ?? {}) as any[]) {
+      for (const batter of team.batters ?? []) {
+        const current = byId.get(batter.playerId) ?? {};
+        byId.set(batter.playerId, { ...current, batter: batter as SimBatter });
+      }
+      for (const pitcher of team.pitchers ?? []) {
+        const current = byId.get(pitcher.playerId) ?? {};
+        byId.set(pitcher.playerId, { ...current, pitcher: pitcher as SimPitcher });
+      }
+    }
+
+    return byId;
+  }, []);
+
+  const filteredRosterPlayers = useMemo(() => {
+    if (rosterFilter === "batters") {
+      return players.filter((p) => p.primaryPosition !== "P");
+    }
+    if (rosterFilter === "pitchers") {
+      return players.filter((p) => p.primaryPosition === "P");
+    }
+    return players;
+  }, [players, rosterFilter]);
 
   // 로스터 변경 시 stale ID 클렌징 (로스터에 없는 선수가 라인업에 남아 오류를 유발하는 현상 방지)
   useEffect(() => {
@@ -791,7 +966,57 @@ export function MyTeamScreen() {
     <AppShell activeTab="home" title="나만의 팀" backHref="/" wide theme="light">
       
       {/* 구단 헤더 */}
-      <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-slate-100 mb-2 mt-4">
+      <div className="w-full max-w-3xl mx-auto mt-4 mb-0 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <BadgeIcon initials={teamInfo.initials} style={teamInfo.badgeStyle} color={teamInfo.color} />
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-black text-slate-900">{teamInfo.name}</h2>
+              <p className="text-xs font-semibold text-slate-400">보유 선수 {players.length}명</p>
+            </div>
+          </div>
+          <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-600">
+            {points.toLocaleString()} BP
+          </span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("players");
+              setRosterFilter("all");
+            }}
+            className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
+              activeTab !== "lineup"
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-700"
+            }`}
+          >
+            보유선수
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("lineup")}
+            className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
+              activeTab === "lineup"
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-700"
+            }`}
+          >
+            라인업관리
+          </button>
+          <button
+            type="button"
+            onClick={handleDrawPlayer}
+            className="rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-3 text-xs font-black text-white shadow-sm transition-all active:scale-95"
+          >
+            선수 영입
+          </button>
+        </div>
+      </div>
+
+      <div className="hidden">
         <div className="flex items-center gap-3">
           <BadgeIcon initials={teamInfo.initials} style={teamInfo.badgeStyle} color={teamInfo.color} />
           <div>
@@ -824,7 +1049,122 @@ export function MyTeamScreen() {
 
       {/* 탭: 대시보드(선수단 & 뽑기) 혹은 라인업 빌더 */}
       {activeTab !== "lineup" ? (
-        <div className="max-w-md mx-auto space-y-4">
+        <>
+          <div className="w-full max-w-4xl mx-auto space-y-3 px-2 sm:px-4">
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setRosterFilter("batters")}
+                className={`rounded-2xl border p-3 text-center shadow-sm transition-all active:scale-95 ${
+                  rosterFilter === "batters"
+                    ? "border-pink-200 bg-pink-50"
+                    : "border-slate-100 bg-white"
+                }`}
+              >
+                <p className="text-[10px] font-bold text-slate-400">타자</p>
+                <strong className="mt-1 block text-lg font-black text-slate-900">
+                  {players.filter((p) => p.primaryPosition !== "P").length}
+                </strong>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRosterFilter("pitchers")}
+                className={`rounded-2xl border p-3 text-center shadow-sm transition-all active:scale-95 ${
+                  rosterFilter === "pitchers"
+                    ? "border-pink-200 bg-pink-50"
+                    : "border-slate-100 bg-white"
+                }`}
+              >
+                <p className="text-[10px] font-bold text-slate-400">투수</p>
+                <strong className="mt-1 block text-lg font-black text-slate-900">
+                  {players.filter((p) => p.primaryPosition === "P").length}
+                </strong>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("lineup")}
+                className="rounded-2xl border border-slate-100 bg-white p-3 text-center shadow-sm transition-all active:scale-95"
+              >
+                <p className="text-[10px] font-bold text-slate-400">라인업</p>
+                <strong className="mt-1 block text-lg font-black text-slate-900">
+                  {filledCount}/9
+                </strong>
+              </button>
+            </div>
+
+            <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">보유 선수</h3>
+                  <p className="text-[10px] font-semibold text-slate-400">내 구단에 등록된 선수단입니다.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("lineup")}
+                  className="hidden"
+                >
+                  라인업 관리
+                </button>
+              </div>
+              <ul className="grid max-h-[560px] grid-cols-3 gap-2 overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {filteredRosterPlayers.map((p) => {
+                  const stats = playerStatsById.get(p.id);
+                  const cardStats = getPlayerCardStats(p, stats?.batter, stats?.pitcher);
+                  const teamShortName = getTeamShortName(p.teamId);
+
+                  return (
+                    <li
+                      key={p.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedPlayer(p)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedPlayer(p);
+                        }
+                      }}
+                      className="relative cursor-pointer overflow-hidden rounded-2xl border border-pink-100 bg-white p-2.5 shadow-sm transition-transform active:scale-[0.98]"
+                    >
+                      <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-r from-pink-50 to-white" aria-hidden="true" />
+                      <div className="relative flex items-start justify-between gap-1">
+                        <span className="flex min-w-0 items-center gap-1">
+                          <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 shadow-sm ring-1 ring-pink-100 [&_.team-logo]:!h-4 [&_.team-logo]:!w-4 [&_.team-logo-img]:!h-4 [&_.team-logo-img]:!w-4 [&_.team-logo-wrap]:!inline-flex">
+                            <TeamLogo teamId={p.teamId} size="sm" />
+                          </span>
+                          <span className="truncate text-[9px] font-black text-pink-500">{teamShortName}</span>
+                        </span>
+                        <span className="rounded-full border border-pink-100 bg-pink-50 px-1.5 py-0.5 text-[9px] font-black text-pink-500">
+                          {getPlayerPositionGroupLabel(p.primaryPosition)}
+                        </span>
+                      </div>
+                      <div className="relative mt-3 text-center">
+                        <p className="text-[10px] font-black text-slate-400">
+                          #{Number.isFinite(p.jerseyNumber) ? p.jerseyNumber : "-"}
+                        </p>
+                        <p className="mt-1 truncate text-[13px] font-black text-slate-900">{p.name}</p>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 pt-2">
+                        {cardStats.map((stat) => (
+                          <div key={stat.label} className="min-w-0 px-1 text-center">
+                            <p className="truncate text-[8px] font-bold text-slate-400">{stat.label}</p>
+                            <p className="mt-0.5 truncate text-[10px] font-black text-pink-500">{stat.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-4 border-t border-slate-100 pt-4 text-center">
+                <button onClick={handleResetTeam} className="text-[10px] font-semibold text-red-500 hover:underline">
+                  구단 해체 및 모든 데이터 리셋
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden">
           <nav className="flex bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => setActiveTab("players")}
@@ -907,8 +1247,26 @@ export function MyTeamScreen() {
             </div>
           )}
         </div>
+        </>
       ) : (
-        /* 라인업 빌더 UI 이식 (기존 LineupBuilderScreen 마크업 복제) */
+        <>
+        <div className="hidden">
+          <button
+            type="button"
+            onClick={() => setActiveTab("players")}
+            className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-black text-slate-700 shadow-sm"
+          >
+            보유 선수 보기
+          </button>
+          <button
+            type="button"
+            onClick={handleDrawPlayer}
+            className="rounded-2xl bg-amber-500 px-3 py-3 text-sm font-black text-white shadow-sm"
+          >
+            선수 영입
+          </button>
+        </div>
+        {/* 라인업 빌더 UI 이식 (기존 LineupBuilderScreen 마크업 복제) */}
         <div className="lineup-layout">
           
           {/* 야구장 다이아몬드 */}
@@ -1008,6 +1366,7 @@ export function MyTeamScreen() {
           />
 
         </div>
+        </>
       )}
 
       {/* 모달 연동 */}
@@ -1025,6 +1384,78 @@ export function MyTeamScreen() {
       />
 
       {/* 선수 뽑기 성공 모달 */}
+      {selectedPlayer !== null && (() => {
+        const stats = playerStatsById.get(selectedPlayer.id);
+        const detailSections = getPlayerDetailSections(selectedPlayer, stats?.batter, stats?.pitcher);
+        const originalTeamName = getTeamShortName(selectedPlayer.teamId);
+        const positionLabel = getPlayerPositionGroupLabel(selectedPlayer.primaryPosition);
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+            <div className="max-h-[86vh] w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-pink-100 bg-white shadow-2xl">
+              <div className="max-h-[86vh] overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black text-pink-500">현재팀</p>
+                    <h3 className="mt-0.5 truncate text-sm font-black text-slate-900">{teamInfo.name}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlayer(null)}
+                    className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-black text-slate-500 shadow-sm"
+                  >
+                    닫기
+                  </button>
+                </div>
+
+                <div className="mt-3 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-white p-4">
+                  <div className="min-w-0">
+                    <p className="text-3xl font-black tracking-normal text-pink-500">
+                      #{Number.isFinite(selectedPlayer.jerseyNumber) ? selectedPlayer.jerseyNumber : "-"}
+                    </p>
+                    <h4 className="mt-1 truncate text-xl font-black tracking-normal text-slate-900">
+                      {selectedPlayer.name}
+                    </h4>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-pink-100 bg-white px-2 py-0.5 text-[9px] font-black text-pink-500">
+                        <span className="flex h-3.5 w-3.5 items-center justify-center overflow-hidden rounded-full [&_.team-logo]:!h-3.5 [&_.team-logo]:!w-3.5 [&_.team-logo-img]:!h-3.5 [&_.team-logo-img]:!w-3.5">
+                          <TeamLogo teamId={selectedPlayer.teamId} size="sm" />
+                        </span>
+                        원래팀 {originalTeamName}
+                      </span>
+                      <span className="rounded-full border border-pink-100 bg-white px-2 py-0.5 text-[9px] font-black text-pink-500">
+                        {positionLabel}
+                      </span>
+                      <span className="rounded-full border border-slate-100 bg-white px-2 py-0.5 text-[9px] font-black text-slate-500">
+                        {selectedPlayer.primaryPosition === "P"
+                          ? `투구 ${selectedPlayer.throwingHand ?? "-"}`
+                          : `타격 ${selectedPlayer.battingHand ?? "-"}`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {detailSections.map((section) => (
+                    <section key={section.title} className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+                      <h5 className="text-xs font-black text-slate-900">{section.title}</h5>
+                      <div className="mt-2 grid grid-cols-3 gap-1.5">
+                        {section.stats.map((stat) => (
+                          <div key={`${section.title}-${stat.label}`} className="rounded-xl bg-slate-50 p-1.5 text-center">
+                            <p className="truncate text-[8px] font-bold text-slate-400">{stat.label}</p>
+                            <p className="mt-0.5 truncate text-[10px] font-black text-slate-900">{stat.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {drawnPlayer !== null && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-xs rounded-3xl shadow-2xl p-6 text-center animate-in fade-in zoom-in duration-300">

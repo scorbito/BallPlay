@@ -264,6 +264,16 @@ const sections: HomeSection[] = [
         icon: Brain,
         iconImage: "/icons/menu/baseball-quiz.png",
         available: true
+      },
+      {
+        id: "my-team",
+        href: "/my-team",
+        title: "나만의 팀",
+        description: "선수를 모아 만드는 커스텀 구단",
+        icon: Users,
+        iconImage: "/icons/menu/lineup-builder.png",
+        available: true,
+        badge: "BETA"
       }
     ]
   },
