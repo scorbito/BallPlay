@@ -293,8 +293,6 @@ type HomeScreenProps = {
   user?: any;
   /** 현재 사용자의 공개 매치 누적 전적 (히어로 뱃지용). 미로그인 시 zeros. */
   userRecord?: UserPublicMatchRecord;
-  /** 계정 누적 랭킹 내 본인 순위. 매치 기록 없거나 미로그인 시 null. */
-  myRank?: number | null;
   /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
   isAnonymous?: boolean;
 };
@@ -302,7 +300,6 @@ type HomeScreenProps = {
 export function HomeScreen({
   user = null,
   userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
-  myRank = null,
   isAnonymous = false
 }: HomeScreenProps = {}) {
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
@@ -497,7 +494,6 @@ export function HomeScreen({
                             <HomeRecordBadge
                               initialWins={userRecord.wins}
                               initialLosses={userRecord.losses}
-                              initialRank={myRank}
                             />
                           ) : null}
                         </div>
