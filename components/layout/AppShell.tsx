@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BottomTabs } from "@/components/layout/BottomTabs";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
+import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 
 type AppShellProps = {
   activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
@@ -22,6 +23,8 @@ type AppShellProps = {
   /** 하단 BottomTabs를 숨김. 시뮬 진행·친구 대결 등 몰입 화면에서 사용해
    *  실수 탭으로 매치를 잃지 않게 한다. 뒤로가기는 유지되므로 명시적 이탈만 가능. */
   hideBottomTabs?: boolean;
+  hidePointChip?: boolean;
+  hideFloatingPointChip?: boolean;
   /** PC(≥1025px)에서 phone-frame을 와이드로 확장. 콘텐츠가 가로로 더 펼쳐져야 하는 페이지(라인업 등)용. */
   wide?: boolean;
   children: ReactNode;
@@ -38,6 +41,8 @@ export function AppShell({
   onBack,
   hideHeader = false,
   hideBottomTabs = false,
+  hidePointChip = false,
+  hideFloatingPointChip = false,
   wide = false,
   children
 }: AppShellProps) {
@@ -52,6 +57,11 @@ export function AppShell({
   return (
     <main className="app-backdrop">
       <section className={frameClasses} aria-label="야구놀이터 앱 화면">
+        {hideHeader && !hideFloatingPointChip && !hidePointChip ? (
+          <div className="app-floating-point-chip">
+            <PointBalanceChip />
+          </div>
+        ) : null}
         <div className="app-scroll">
           {hideHeader ? null : (
             <header className="app-header">
@@ -76,7 +86,10 @@ export function AppShell({
                 ) : null}
                 {showBeta ? <span className="brand-beta">BETA</span> : null}
               </Link>
-              <div className="app-header-right">{headerAction}</div>
+              <div className="app-header-right">
+                {headerAction}
+                {hidePointChip ? null : <PointBalanceChip />}
+              </div>
             </header>
           )}
           <div className={`app-content${hideHeader ? " app-content-no-header" : ""}`}>

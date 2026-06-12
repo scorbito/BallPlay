@@ -245,6 +245,8 @@ export async function GET(
     starters: {
       home: {
         name: homeStarterStats.name,
+        wins: homeStarterStats.wins ?? 0,
+        losses: homeStarterStats.losses ?? 0,
         era: homeStarterStats.era,
         whip: homeStarterStats.whip,
         k9: homeStarterStats.k9,
@@ -252,6 +254,8 @@ export async function GET(
       },
       away: {
         name: awayStarterStats.name,
+        wins: awayStarterStats.wins ?? 0,
+        losses: awayStarterStats.losses ?? 0,
         era: awayStarterStats.era,
         whip: awayStarterStats.whip,
         k9: awayStarterStats.k9,

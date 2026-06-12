@@ -1,6 +1,6 @@
 // 시뮬레이션 엔진 메인 진입점. docs/sim-engine-spec.md 참조.
 
-import { MAX_INNINGS } from "./constants";
+import { MAX_INNINGS, STEAL_PROB } from "./constants";
 import { canBeSacFly, drawAtBatOutcome, shouldPromoteToDoublePlay } from "./atBat";
 import { applyOutcome, EMPTY_BASE } from "./baseRunning";
 import { selectMvp } from "./mvp";
@@ -18,6 +18,7 @@ import type {
   InningLog,
   PitcherBoxLine,
   Rng,
+  SimPreAtBatEvent,
   SimBatter,
   SimGameInput,
   SimGameResult,
@@ -119,6 +120,14 @@ function playHalfInning(
     state.batterIdxByTeam[battingSide] = (batterIdx + 1) % battingTeam.batters.length;
 
     const pitcher = bullpen.currentPitcher;
+    const preEvents: SimPreAtBatEvent[] = [];
+    const stealEvent = maybeAttemptStealSecond(battingTeam.batters, base, outs, rng);
+    if (stealEvent) {
+      preEvents.push(stealEvent);
+      base = stealEvent.baseStateAfter;
+      outs = stealEvent.outsAfter >= 3 ? 0 : (stealEvent.outsAfter as 0 | 1 | 2);
+    }
+
     let outcome = drawAtBatOutcome(batter, pitcher, rng, state.park);
 
     // SF는 3루 주자 + 아웃<2 조건일 때만 유지, 아니면 외야 플라이로 강등
@@ -169,6 +178,7 @@ function playHalfInning(
     const atBat: AtBatLog = {
       batterId: batter.playerId,
       pitcherId: pitcher.playerId,
+      preEvents: preEvents.length > 0 ? preEvents : undefined,
       outcome,
       baseStateBefore,
       baseStateAfter: result.baseAfter,
@@ -186,6 +196,58 @@ function playHalfInning(
   }
 
   return { runs, hits, atBats };
+}
+
+function maybeAttemptStealSecond(
+  batters: SimBatter[],
+  base: BaseState,
+  outs: 0 | 1 | 2,
+  rng: Rng
+): SimPreAtBatEvent | null {
+  if (!base.first || base.second || outs >= 2) return null;
+
+  const runner = batters.find((b) => b.playerId === base.first);
+  if (!runner) return null;
+
+  const sb = Math.max(0, runner.sb ?? 0);
+  const cs = Math.max(0, runner.cs ?? 0);
+  const attempts = Math.max(runner.sba ?? 0, sb + cs);
+  if (attempts < STEAL_PROB.MIN_ATTEMPTS || runner.pa <= 0) return null;
+
+  const seasonAttemptRate = attempts / runner.pa;
+  const attemptProb = clamp(
+    seasonAttemptRate * STEAL_PROB.OPPORTUNITY_MULTIPLIER,
+    STEAL_PROB.MIN_ATTEMPT_PROB,
+    STEAL_PROB.MAX_ATTEMPT_PROB
+  );
+  if (rng() >= attemptProb) return null;
+
+  const observedSuccess = attempts > 0 ? sb / attempts : STEAL_PROB.LEAGUE_SUCCESS_RATE;
+  const sampleWeight = attempts / (attempts + STEAL_PROB.SUCCESS_REGRESSION_ATTEMPTS);
+  const successProb = clamp(
+    observedSuccess * sampleWeight + STEAL_PROB.LEAGUE_SUCCESS_RATE * (1 - sampleWeight),
+    0.55,
+    0.9
+  );
+  const success = rng() < successProb;
+  const nextBase: BaseState = success
+    ? { first: null, second: base.first, third: base.third }
+    : { first: null, second: null, third: base.third };
+  const nextOuts = Math.min(3, outs + (success ? 0 : 1)) as 0 | 1 | 2 | 3;
+
+  return {
+    kind: "STEAL_2B",
+    runnerId: base.first,
+    success,
+    baseStateBefore: base,
+    baseStateAfter: nextBase,
+    outsBefore: outs,
+    outsAfter: nextOuts
+  };
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
 function isHit(outcome: AtBatOutcome): boolean {

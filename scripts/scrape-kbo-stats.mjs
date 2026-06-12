@@ -69,6 +69,7 @@ const TEAMS = [
 const PAGES = {
   hitterBasic1_1g: "https://www.koreabaseball.com/Record/Player/HitterBasic/Basic1.aspx",
   hitterBasic2_1g: "https://www.koreabaseball.com/Record/Player/HitterBasic/Basic2.aspx",
+  runnerBasic_1g: "https://www.koreabaseball.com/Record/Player/Runner/Basic.aspx",
   pitcherBasic1_1g: "https://www.koreabaseball.com/Record/Player/PitcherBasic/Basic1.aspx",
   pitcherBasic2_1g: "https://www.koreabaseball.com/Record/Player/PitcherBasic/Basic2.aspx",
   // 2군은 Basic1+Basic2 통합 단일 페이지. URL 패턴도 1군과 다름.
@@ -141,7 +142,9 @@ async function main() {
     const hit1Rows1g = await scrapeStatsPage(PAGES.hitterBasic1_1g, team.kboCode, team.shortName, flags.year, parseHitterBasic1Row);
     await sleep(FETCH_DELAY_MS);
     const hit2Rows1g = await scrapeStatsPage(PAGES.hitterBasic2_1g, team.kboCode, team.shortName, flags.year, parseHitterBasic2Row);
-    const merged1gHit = mergeRowsByName(hit1Rows1g, hit2Rows1g);
+    await sleep(FETCH_DELAY_MS);
+    const runnerRows1g = await scrapeStatsPage(PAGES.runnerBasic_1g, team.kboCode, team.shortName, flags.year, parseRunnerBasicRow);
+    const merged1gHit = mergeRowsByName(hit1Rows1g, hit2Rows1g, runnerRows1g);
     console.log(`  1군 타자: ${merged1gHit.length}명`);
     for (const row of merged1gHit) {
       const sim = makeSimBatter(row, roster);
@@ -520,6 +523,19 @@ function parseHitterBasic2Row(c) {
 }
 
 /** Basic1: 순위 / 선수명 / 팀명 / ERA / G / W / L / SV / HLD / WPCT / IP / H / HR / BB / HBP / SO / R / ER / WHIP */
+function parseRunnerBasicRow(c) {
+  if (c.length < 8) return null;
+  return {
+    name: c[1],
+    teamName: c[2],
+    g: numOr0(c[3]),
+    sba: numOr0(c[4]),
+    sb: numOr0(c[5]),
+    cs: numOr0(c[6]),
+    sbPct: numOr0(c[7])
+  };
+}
+
 function parsePitcherBasic1Row(c) {
   if (c.length < 19) return null;
   return {
@@ -634,15 +650,17 @@ function parseIp(s) {
 // ============================================================
 // 행 병합 — 같은 (이름, 팀명) → 하나로 합침
 // ============================================================
-function mergeRowsByName(rowsA, rowsB) {
+function mergeRowsByName(...rowGroups) {
   const keyOf = (r) => `${r.name}|${r.teamName}`;
-  const map = new Map(rowsA.map((r) => [keyOf(r), { ...r }]));
-  for (const r of rowsB) {
-    const k = keyOf(r);
-    if (map.has(k)) {
-      Object.assign(map.get(k), r);
-    } else {
-      map.set(k, { ...r });
+  const map = new Map();
+  for (const rows of rowGroups) {
+    for (const r of rows) {
+      const k = keyOf(r);
+      if (map.has(k)) {
+        Object.assign(map.get(k), r);
+      } else {
+        map.set(k, { ...r });
+      }
     }
   }
   return [...map.values()];
@@ -698,6 +716,9 @@ function makeSimBatter(row, roster) {
   const bb = row.bb || 0;
   const hbp = row.hbp || 0;
   const so = row.so || 0;
+  const sb = row.sb || 0;
+  const cs = row.cs || 0;
+  const sba = Math.max(row.sba || 0, sb + cs);
 
   // KBO 페이지의 AVG/OBP/SLG는 그대로 사용 (이미 계산된 값)
   // 누락된 부수 지표는 계산
@@ -723,6 +744,9 @@ function makeSimBatter(row, roster) {
     walks: bb,
     hbp,
     strikeouts: so,
+    sb,
+    cs,
+    sba,
     avg: round3(avg),
     obp: round3(obp),
     slg: round3(slg),

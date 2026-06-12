@@ -21,6 +21,8 @@ import {
   type PlayoffGame,
   type PlayoffStatus
 } from "@/lib/supabase/query-parts/bpPlayoff";
+import { POINT_REWARDS } from "@/lib/points/config";
+import { awardPoints, kstDateString } from "@/lib/server/points";
 
 function randomSeed(): number {
   return Math.floor(Math.random() * 2 ** 31);
@@ -58,6 +60,17 @@ async function recordChampion(
       pitching: run.state.myLineup?.pitching ?? null,
       run_id: run.id,
       completed_at: completedAt
+    });
+    const rewardDate = kstDateString(new Date(completedAt));
+    await awardPoints({
+      userId,
+      amount: POINT_REWARDS.playoffChampion,
+      reason: "playoff_champion",
+      referenceType: "playoff_run",
+      referenceId: run.id,
+      rewardKey: "playoff_champion",
+      rewardDate,
+      metadata: { teamId: run.teamId, teamName: run.teamName }
     });
   } catch (e) {
     console.warn("[playoff] recordChampion 실패(무시):", (e as Error).message);

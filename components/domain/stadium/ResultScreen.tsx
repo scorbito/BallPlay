@@ -23,6 +23,8 @@ import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bp
 import { PLAYOFF_TOTAL_ROUNDS } from "@/lib/supabase/query-parts/bpPlayoff";
 import { TierUpHost } from "@/components/common/TierUpHost";
 import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
+import { claimStadiumRecordPoints, formatStadiumPointToast } from "@/components/domain/points/claimStadiumRecordPoints";
 
 function getPlayableTeamMeta(teamId: string, displayName?: string) {
   try {
@@ -44,6 +46,7 @@ export function ResultScreen() {
   const [savedId, setSavedId] = useState<string | null>(null);
   // 동기 ref 가드 — useEffect가 두 번 실행돼도 INSERT 1회만 시도하도록 차단.
   const saveAttemptedRef = useRef(false);
+  const pointAwardAttemptedRef = useRef(false);
   // 플레이오프 결과 기록+이동 진행 중 (버튼 중복 클릭 차단).
   const [playoffReturning, setPlayoffReturning] = useState(false);
   // 매치 종료 직후 승급 모달 트리거용 — 본인 누적 승수.
@@ -210,6 +213,14 @@ export function ResultScreen() {
         setSavedId(recordId);
         const cur = loadMatchSession();
         if (cur) saveMatchSession({ ...cur, savedRecordId: recordId });
+        if (session.source === "public" && recordId !== "mirrored") {
+          pointAwardAttemptedRef.current = true;
+          const pointData = await claimStadiumRecordPoints(recordId).catch(() => null);
+          if (pointData?.ok && pointData.awarded) {
+            emitPointBalanceUpdated(pointData.balance);
+            showToast(formatStadiumPointToast(pointData));
+          }
+        }
       } catch {
         if (!cancelled) showToast("기록 저장 중 오류가 발생했어요.");
       } finally {
@@ -221,6 +232,22 @@ export function ResultScreen() {
       cancelled = true;
     };
   }, [hydrated, canSave, session, mvpPlayer, savedId, saving, showToast]);
+
+  useEffect(() => {
+    if (!hydrated || !session || session.source !== "public") return;
+    const recordId = savedId ?? session.savedRecordId ?? null;
+    if (!recordId || recordId === "saving" || recordId === "mirrored") return;
+    if (pointAwardAttemptedRef.current) return;
+    pointAwardAttemptedRef.current = true;
+
+    void (async () => {
+      const pointData = await claimStadiumRecordPoints(recordId).catch(() => null);
+      if (pointData?.ok && pointData.awarded) {
+        emitPointBalanceUpdated(pointData.balance);
+        showToast(formatStadiumPointToast(pointData));
+      }
+    })();
+  }, [hydrated, savedId, session, showToast]);
 
   // 뒤로가기 — public 매치는 경기장, 그 외는 연습경기장.
   // 플레이오프는 결과 기록을 반드시 거치게 하려고 헤더 뒤로가기를 숨기고(undefined)

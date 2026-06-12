@@ -22,6 +22,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
 import type { KboDailyReport, GameReport } from "@/lib/utils/dailyReportHelper";
 import { PageViewCounter } from "@/components/domain/PageViewCounter";
+import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
 
 
 type DailyReportScreenProps = {
@@ -543,6 +544,9 @@ export function DailyReportScreen({
         )}
 
       </div>
+      {hasReport ? (
+        <ContentPointClaimButton contentType="daily_report" contentId={reportDate} />
+      ) : null}
       <PageViewCounter />
     </AppShell>
   );

@@ -7,7 +7,6 @@
 // visibilitychange 마다 bp_account_stats 를 직접 다시 읽어 항상 최신 전적을 표시한다.
 //
 // bp_account_stats RLS: select to anon, authenticated using(true) → 브라우저에서 읽기 가능.
-// 순위는 wins 가 더 높은 user 수 +1 로 근사 (badge 용 — 정확 순위는 랭킹 페이지).
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -17,13 +16,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 type Props = {
   initialWins: number;
   initialLosses: number;
-  initialRank: number | null;
 };
 
-export function HomeRecordBadge({ initialWins, initialLosses, initialRank }: Props) {
+export function HomeRecordBadge({ initialWins, initialLosses }: Props) {
   const [wins, setWins] = useState(initialWins);
   const [losses, setLosses] = useState(initialLosses);
-  const [rank, setRank] = useState<number | null>(initialRank);
 
   useEffect(() => {
     const client = createSupabaseBrowserClient();
@@ -47,17 +44,6 @@ export function HomeRecordBadge({ initialWins, initialLosses, initialRank }: Pro
         const l = data?.losses ?? 0;
         setWins(w);
         setLosses(l);
-
-        if (w + l > 0) {
-          // 순위 근사 — wins 가 더 높은 user 수 + 1. (정확 tiebreak 은 랭킹 페이지)
-          const { count } = await client
-            .from("bp_account_stats")
-            .select("user_id", { count: "exact", head: true })
-            .gt("wins", w);
-          if (!cancelled) setRank((count ?? 0) + 1);
-        } else if (!cancelled) {
-          setRank(null);
-        }
       } catch {
         // ignore — 실패 시 기존(서버 초기값) 유지
       }
@@ -85,7 +71,7 @@ export function HomeRecordBadge({ initialWins, initialLosses, initialRank }: Pro
         <>
           <AccountTierBadge wins={wins} size={24} />
           <span>
-            내 매치 기록: {wins}승 {losses}패{rank !== null ? ` · ${rank}위` : ""}
+            내 매치 기록: {wins}승 {losses}패
           </span>
         </>
       ) : (

@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, ChevronRight, Settings } from "lucide-react";
+import { Camera, ChevronRight, Gift, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
@@ -22,6 +22,7 @@ import type { TeamSummary } from "@/lib/supabase/query-parts/bpLineups";
 import type { PlayoffSummary } from "@/lib/supabase/query-parts/bpPlayoff";
 
 const menuItems = [
+  { label: "경품 응모", href: "/rewards", icon: Gift },
   { label: "설정", href: "/my/settings", icon: Settings }
 ];
 
@@ -81,7 +82,7 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
   };
 
   return (
-    <AppShell activeTab="my" title="마이" theme="light" hideHeader>
+    <AppShell activeTab="my" title="마이" theme="light" backHref="/">
       <Card className="profile-card">
         <div className="profile-card-bg" aria-hidden="true" />
         <div className="profile-hero">

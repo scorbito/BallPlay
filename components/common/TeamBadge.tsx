@@ -13,23 +13,82 @@ const sizeClass = {
   lg: "team-badge-lg"
 };
 
+const trophySize = {
+  sm: 15,
+  md: 18,
+  lg: 22
+};
+
 export function TeamBadge({ teamId, size = "md", showName = false }: TeamBadgeProps) {
-  const team = getTeam(teamId);
+  const team = getTeamMeta(teamId);
+  const isNational = teamId === "national";
+  const badgeColor = isNational ? "linear-gradient(180deg, #d71920 0%, #e84a8a 49%, #1d4ed8 51%, #0f4c81 100%)" : team.color;
+  const badgeAccent = isNational ? "#fb7185" : team.accent ?? team.color;
 
   return (
     <span className="team-badge-wrap">
       <span
         className={`team-badge ${sizeClass[size]}`}
         style={{
-          background: team.color,
-          "--team-color": team.color,
-          "--team-accent": team.accent ?? team.color
+          background: badgeColor,
+          "--team-color": badgeColor,
+          "--team-accent": badgeAccent
         } as CSSProperties}
         aria-label={team.name}
       >
-        <span className="team-badge-initial">{team.initial}</span>
+        <span className="team-badge-initial">
+          {isNational ? <TrophyIcon size={trophySize[size]} /> : team.initial}
+        </span>
       </span>
       {showName ? <span className="team-badge-name">{team.shortName}</span> : null}
     </span>
   );
+}
+
+function TrophyIcon({ size }: { size: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" />
+      <path d="M7 6H4a2 2 0 0 0 2 4h1" />
+      <path d="M17 6h3a2 2 0 0 1-2 4h-1" />
+    </svg>
+  );
+}
+
+function getTeamMeta(teamId: string) {
+  try {
+    return getTeam(teamId);
+  } catch {
+    if (teamId === "national") {
+      return {
+        id: teamId,
+        name: "아시안게임 국가대표팀",
+        shortName: "국가대표",
+        initial: "N",
+        color: "#0f4c81",
+        accent: "#d71920"
+      };
+    }
+    return {
+      id: teamId,
+      name: teamId,
+      shortName: teamId,
+      initial: teamId.charAt(0).toUpperCase() || "?",
+      color: "#475569",
+      accent: "#94a3b8"
+    };
+  }
 }

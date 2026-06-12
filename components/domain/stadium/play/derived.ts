@@ -54,6 +54,13 @@ export function deriveBaseState(
   showOutcome: boolean
 ): { baseState: BaseState; outs: 0 | 1 | 2 | 3 } {
   const lastInInning = currentInningEvents[currentInningEvents.length - 1];
+  const hasCurrentPreEvent = !showOutcome && !!lastInInning?.ab.preEvents?.length;
+  if (hasCurrentPreEvent) {
+    return {
+      baseState: lastInInning.ab.baseStateBefore,
+      outs: lastInInning.ab.outsBefore
+    };
+  }
   const stateRefAb =
     !showOutcome && currentInningEvents.length >= 2
       ? currentInningEvents[currentInningEvents.length - 2].ab

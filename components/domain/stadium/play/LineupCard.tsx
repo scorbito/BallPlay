@@ -1,11 +1,36 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
+import type { BaseState } from "@/lib/sim/types";
 
 type LineupBatter = { playerId: string; name: string; battingHand?: "L" | "R" | "S" };
 
-type InningOutcome = { label: string; isHit: boolean; isHr: boolean };
+type InningOutcome = { label: string; isHit: boolean; isHr: boolean; isSteal?: boolean; isStealFail?: boolean };
 type TodayStat = { ab: number; hits: number };
+
+const BASE_BADGE_STYLE = {
+  marginLeft: 0,
+  padding: "2px 6px",
+  borderRadius: 999,
+  background: "rgba(14, 165, 233, 0.14)",
+  color: "#0284c7",
+  fontSize: 11,
+  fontWeight: 800,
+  fontStyle: "normal",
+  lineHeight: 1
+} as const;
+
+const STEAL_OUTCOME_STYLE = {
+  background: "rgba(34, 197, 94, 0.25)",
+  color: "var(--bp-success)",
+  boxShadow: "0 6px 14px rgba(34, 197, 94, 0.16)"
+} as const;
+
+const STEAL_FAIL_OUTCOME_STYLE = {
+  background: "rgba(232, 74, 138, 0.18)",
+  color: "var(--bp-accent)",
+  boxShadow: "0 6px 14px rgba(232, 74, 138, 0.12)"
+} as const;
 
 export function LineupCard({
   side,
@@ -16,7 +41,8 @@ export function LineupCard({
   showOutcome,
   isDone,
   inningOutcomes,
-  todayStats
+  todayStats,
+  baseState
 }: {
   side: "home" | "away";
   pitcherName: string;
@@ -27,6 +53,7 @@ export function LineupCard({
   isDone: boolean;
   inningOutcomes: Map<string, InningOutcome>;
   todayStats: Map<string, TodayStat>;
+  baseState: BaseState;
 }) {
   return (
     <div
@@ -47,7 +74,8 @@ export function LineupCard({
             battingSide,
             showOutcome,
             inningOutcomes,
-            todayStats
+            todayStats,
+            baseState
           )
         )}
       </ol>
@@ -63,7 +91,8 @@ function renderLineupRow(
   battingSide: "home" | "away",
   showOutcome: boolean,
   inningOutcomes: Map<string, InningOutcome>,
-  todayStats: Map<string, TodayStat>
+  todayStats: Map<string, TodayStat>,
+  baseState: BaseState
 ) {
   const isCurrent = battingSide === side && idx === currentIdx;
   const stored = inningOutcomes.get(batter.playerId);
@@ -73,9 +102,15 @@ function renderLineupRow(
     // 진행 중인 현재 타석 — 이전 결과가 있어도 새 타석이므로 ··· 표시
     outcomeNode = <span className="stadium-play-lineup-outcome is-pending">···</span>;
   } else if (stored) {
+    const outcomeStyle: CSSProperties | undefined = stored.isSteal
+      ? STEAL_OUTCOME_STYLE
+      : stored.isStealFail
+        ? STEAL_FAIL_OUTCOME_STYLE
+        : undefined;
     outcomeNode = (
       <span
-        className={`stadium-play-lineup-outcome ${stored.isHr ? "is-hr" : ""} ${stored.isHit ? "is-hit" : ""}`}
+        className={`stadium-play-lineup-outcome ${stored.isHr ? "is-hr" : ""} ${stored.isHit ? "is-hit" : ""} ${stored.isSteal ? "is-steal" : ""} ${stored.isStealFail ? "is-steal-fail" : ""}`}
+        style={outcomeStyle}
       >
         {stored.label}
       </span>
@@ -83,7 +118,13 @@ function renderLineupRow(
   }
 
   // 이번 경기 누적 — "(안타수/타수)" 형식. AB 0이면 표시 안 함.
+  const baseLabel = getBaseLabel(baseState, batter.playerId);
   const today = todayStats.get(batter.playerId);
+  const baseNode = baseLabel ? (
+    <em className="stadium-play-lineup-base" style={BASE_BADGE_STYLE}>
+      {baseLabel}
+    </em>
+  ) : null;
 
   return (
     <li
@@ -101,7 +142,22 @@ function renderLineupRow(
           </em>
         ) : null}
       </span>
-      {outcomeNode}
+      {(baseNode || outcomeNode) ? (
+        <span
+          className="stadium-play-lineup-status"
+          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          {baseNode}
+          {outcomeNode}
+        </span>
+      ) : null}
     </li>
   );
+}
+
+function getBaseLabel(baseState: BaseState, playerId: string) {
+  if (baseState.first === playerId) return "1루";
+  if (baseState.second === playerId) return "2루";
+  if (baseState.third === playerId) return "3루";
+  return null;
 }

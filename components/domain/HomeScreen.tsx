@@ -18,10 +18,12 @@ import {
   Users
 } from "lucide-react";
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
-import { HomeCardPulse } from "@/components/domain/HomeCardPulse";
 import { HomeRecordBadge } from "@/components/domain/HomeRecordBadge";
 import { NoticeButton } from "@/components/domain/NoticeButton";
+import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
+import { HomePointBadge } from "@/components/domain/points/HomePointBadge";
 import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
+import type { HomePointAvailability } from "@/lib/server/homePointAvailability";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -293,23 +295,23 @@ type HomeScreenProps = {
   user?: any;
   /** 현재 사용자의 공개 매치 누적 전적 (히어로 뱃지용). 미로그인 시 zeros. */
   userRecord?: UserPublicMatchRecord;
-  /** 계정 누적 랭킹 내 본인 순위. 매치 기록 없거나 미로그인 시 null. */
-  myRank?: number | null;
   /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
   isAnonymous?: boolean;
+  /** 첫 화면에서 BP 뱃지를 바로 표시하기 위한 서버 계산값. */
+  initialPointAvailability?: HomePointAvailability;
 };
 
 export function HomeScreen({
   user = null,
   userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
-  myRank = null,
-  isAnonymous = false
+  isAnonymous = false,
+  initialPointAvailability = {}
 }: HomeScreenProps = {}) {
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
   void isAnonymous;
   void user;
   return (
-    <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader wide>
+    <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
       <header className="play-hub-header">
         <h1>
           <Image
@@ -327,15 +329,7 @@ export function HomeScreen({
         </h1>
         <div className="play-hub-header-actions">
           <NoticeButton />
-          <Link href="/my/settings" className="play-hub-settings" prefetch={false} aria-label="설정">
-            <Image
-              src="/icons/header/settings.png"
-              alt=""
-              width={36}
-              height={36}
-              className="play-hub-header-icon"
-            />
-          </Link>
+          <PointBalanceChip />
         </div>
       </header>
 
@@ -424,9 +418,10 @@ export function HomeScreen({
                   external={card.external}
                   badge={card.badge}
                 />
-                {card.available && !card.external ? (
-                  <HomeCardPulse cardId={card.id} />
-                ) : null}
+                <HomePointBadge
+                  cardId={card.id}
+                  initialAvailable={initialPointAvailability[card.id]}
+                />
                 {/* 가을야구 모드 오픈 — 경기장 카드 상단에 겹쳐 강조. 카드 링크와 별도(형제)
                     Link 라 뱃지 탭은 가을야구, 카드 나머지 탭은 경기장 로비로. */}
                 {card.id === "stadium" ? (
@@ -497,7 +492,6 @@ export function HomeScreen({
                             <HomeRecordBadge
                               initialWins={userRecord.wins}
                               initialLosses={userRecord.losses}
-                              initialRank={myRank}
                             />
                           ) : null}
                         </div>

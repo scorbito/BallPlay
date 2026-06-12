@@ -63,6 +63,14 @@ function computeStats(records: BpRecordRow[], lineupId: string | null): Stats {
   return { wins, losses, draws };
 }
 
+function getRecordTeamShortName(teamId: string): string {
+  try {
+    return getTeam(teamId).shortName;
+  } catch {
+    return teamId === "national" ? "국가대표" : teamId;
+  }
+}
+
 type RecordsScreenProps = {
   /** 서버에서 계산한 누적 공개 매치 전적 — 상단 요약 카드용. */
   userRecord?: UserPublicMatchRecord;
@@ -138,7 +146,7 @@ export function RecordsScreen({
           return {
             id: r.id,
             entryId: entry.entryId,
-            name: r.name?.trim() || getTeam(r.team_id).shortName,
+            name: r.name?.trim() || getRecordTeamShortName(r.team_id),
             teamId: r.team_id,
             entry
           };

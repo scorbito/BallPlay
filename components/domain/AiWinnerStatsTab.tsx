@@ -16,6 +16,8 @@ import { AiTeamPowerComparison } from "./AiTeamPowerComparison";
 
 type StarterStats = {
   name: string;
+  wins?: number;
+  losses?: number;
   era: number;
   whip: number;
   k9: number;
@@ -313,6 +315,9 @@ function AiStartersSection({
             {homeTeamName}
           </span>
           <strong className="starter-label-name">{starters.home.name}</strong>
+          <span className="starter-label-record">
+            {formatStarterRecord(starters.home)}
+          </span>
         </div>
         <span className="starter-vs-badge">VS</span>
         <div className="ai-stats-starter-profile text-right">
@@ -320,6 +325,9 @@ function AiStartersSection({
             {awayTeamName}
           </span>
           <strong className="starter-label-name">{starters.away.name}</strong>
+          <span className="starter-label-record">
+            {formatStarterRecord(starters.away)}
+          </span>
         </div>
       </div>
 
@@ -376,6 +384,10 @@ function AiStartersSection({
 // ──────────────────────────────────────────────────────────
 // ── 하위 컴포넌트: 팀 타선 지표 대조 ───────────────────────────
 // ──────────────────────────────────────────────────────────
+function formatStarterRecord(starter: StarterStats) {
+  return `${starter.wins ?? 0}승 ${starter.losses ?? 0}패`;
+}
+
 type BattingSectionProps = {
   homeTeamName: string;
   awayTeamName: string;

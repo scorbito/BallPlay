@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { getTeam } from "@/lib/constants/teams";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { MessageCircle, ShieldAlert, Award, Star, ThumbsUp, ArrowRight } from "lucide-react";
+import { useAppState } from "@/lib/state/AppState";
+import { POINT_LABEL, POINT_REWARDS } from "@/lib/points/config";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
+import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
 
 function hexToRgb(hex: string): [number, number, number] {
   const m = hex.replace("#", "");
@@ -65,6 +69,7 @@ export function AiWinnerBattleTab({
   predictions,
   gameStatus
 }: Props) {
+  const { showToast } = useAppState();
   const homeTeam = getTeam(homeTeamId);
   const awayTeam = getTeam(awayTeamId);
 
@@ -105,6 +110,10 @@ export function AiWinnerBattleTab({
       if (res.ok) {
         const d = await res.json();
         setVoteCount({ home: d.home ?? 0, away: d.away ?? 0 });
+        if (d.pointAward?.awarded) {
+          emitPointBalanceUpdated(d.pointAward.balance);
+          showToast(`+${d.pointAward.amount}${POINT_LABEL} 획득!`);
+        }
       }
     } catch {
       // best-effort
@@ -252,6 +261,12 @@ export function AiWinnerBattleTab({
         <h4 className="ai-battle-vote-title">
           <MessageCircle size={16} /> 어느 대변인의 주장에 끌리시나요?
         </h4>
+        {!votedSide ? (
+          <div className="ai-battle-point-hint">
+            <PointBaseballIcon size={15} className="ai-battle-point-ball-icon" />
+            <span>투표하면 +{POINT_REWARDS.aiBattleVotePerGame}{POINT_LABEL} 지급</span>
+          </div>
+        ) : null}
 
         {!votedSide ? (
           <div className="ai-battle-vote-actions">

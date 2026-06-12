@@ -1,14 +1,26 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { UserProfile } from "@/lib/types/domain";
 import type { UserProfileRecord } from "@/lib/types/api-contracts";
 import { useVisibilityRefresh } from "@/lib/hooks/useVisibilityRefresh";
 import { initCustomCursor } from "@/lib/cursor/customCursor";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
+import { POINT_LABEL } from "@/lib/points/config";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
+import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
 
 type Toast = {
   id: number;
   message: string;
+  pointReward: boolean;
+};
+
+type CheckinRewardModal = {
+  amount: number;
+  bonus: number;
+  streak: number;
 };
 
 type ProfileSettings = Pick<UserProfile, "nickname" | "mainTeamId" | "interestTeamIds" | "avatarUrl" | "bio">;
@@ -62,6 +74,8 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
     : "전체 공개"
   );
   const [toast, setToast] = useState<Toast | null>(null);
+  const [checkinRewardModal, setCheckinRewardModal] = useState<CheckinRewardModal | null>(null);
+  const checkinAttemptedRef = useRef(false);
 
   useVisibilityRefresh();
 
@@ -85,12 +99,41 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
     document.documentElement.setAttribute("data-loaded", "true");
   }, []);
 
+  useEffect(() => {
+    if (checkinAttemptedRef.current) return;
+    checkinAttemptedRef.current = true;
+
+    (async () => {
+      try {
+        const client = createSupabaseBrowserClient();
+        await ensureAnonymousClient(client);
+        const res = await fetch("/api/points/checkin", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok || !data.ok) return;
+        emitPointBalanceUpdated(Number(data.balance));
+        if (data.awarded) {
+          setCheckinRewardModal({
+            amount: Number(data.amount ?? 0),
+            bonus: Number(data.bonus ?? 0),
+            streak: Number(data.streak ?? 1)
+          });
+        }
+      } catch {
+        // 출석 보상은 진입 보조 기능이라 실패해도 화면 진입은 막지 않는다.
+      }
+    })();
+  }, []);
+
   const showToast = (message: string) => {
     const id = Date.now();
-    setToast({ id, message });
+    setToast({
+      id,
+      message,
+      pointReward: new RegExp(`\\+\\d[\\d,]*${POINT_LABEL}.*획득`).test(message)
+    });
     window.setTimeout(() => {
       setToast((current) => (current?.id === id ? null : current));
-    }, 2200);
+    }, 3600);
   };
 
   const value = useMemo<AppState>(() => ({
@@ -117,7 +160,50 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   return (
     <AppStateContext.Provider value={value}>
       {children}
-      {toast ? <div className="toast-message">{toast.message}</div> : null}
+      {checkinRewardModal ? (
+        <div className="daily-checkin-backdrop" role="presentation">
+          <section
+            className="daily-checkin-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="출석 보상"
+          >
+            <span className="daily-checkin-icon" aria-hidden="true">
+              <PointBaseballIcon size={30} className="daily-checkin-ball-icon" />
+            </span>
+            <h2>오늘도 야구놀이터를 방문해주셔서 감사합니다.</h2>
+            <p>
+              출석 보상으로 <strong>{checkinRewardModal.amount.toLocaleString()}{POINT_LABEL}</strong> 지급
+            </p>
+            {checkinRewardModal.bonus > 0 ? (
+              <span className="daily-checkin-bonus">
+                연속 출석 보너스 +{checkinRewardModal.bonus.toLocaleString()}{POINT_LABEL}
+              </span>
+            ) : null}
+            <p className="daily-checkin-message">즐거운 시간 되세요.</p>
+            <button type="button" onClick={() => setCheckinRewardModal(null)}>
+              확인
+            </button>
+          </section>
+        </div>
+      ) : null}
+      {toast ? (
+        <div className={`toast-message${toast.pointReward ? " point-reward-toast" : ""}`}>
+          {toast.pointReward ? (
+            <span className="point-toast-particles" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </span>
+          ) : null}
+          <span className="toast-message-text">{toast.message}</span>
+        </div>
+      ) : null}
     </AppStateContext.Provider>
   );
 }

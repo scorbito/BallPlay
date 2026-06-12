@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "AI 승부대결 입력"
+  short_description: "BallPlay 전용 KBO AI 승부대결 분석을 생성하고 DB에 등록합니다."
+  default_prompt: "승부대결 입력해줘"

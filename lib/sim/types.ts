@@ -45,6 +45,8 @@ export type SimBatter = {
   hbp: number;
   strikeouts: number;
   sb?: number;
+  cs?: number;
+  sba?: number;
 
   avg: number;
   obp: number;
@@ -130,6 +132,7 @@ export type BaseState = {
 export type AtBatLog = {
   batterId: string;
   pitcherId: string;
+  preEvents?: SimPreAtBatEvent[];
   outcome: AtBatOutcome;
   baseStateBefore: BaseState;
   baseStateAfter: BaseState;
@@ -137,6 +140,16 @@ export type AtBatLog = {
   outsAfter: 0 | 1 | 2 | 3;
   runsScored: number;
   rbi: number;
+};
+
+export type SimPreAtBatEvent = {
+  kind: "STEAL_2B";
+  runnerId: string;
+  success: boolean;
+  baseStateBefore: BaseState;
+  baseStateAfter: BaseState;
+  outsBefore: 0 | 1 | 2;
+  outsAfter: 0 | 1 | 2 | 3;
 };
 
 export type HalfInningLog = {

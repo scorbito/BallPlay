@@ -5,6 +5,11 @@ import Link from "next/link";
 import { Brain, CheckCircle2, XCircle, RefreshCw, Home } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { trackEvent } from "@/lib/analytics/events";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
+import { POINT_LABEL } from "@/lib/points/config";
+import { useAppState } from "@/lib/state/AppState";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import quizData from "@/data/quiz/baseball-quiz.json";
 
 // ── 데이터 타입 (baseball-quiz.json 구조) ──
@@ -79,6 +84,7 @@ type AnswerRecord = {
 };
 
 export function QuizScreen() {
+  const { showToast } = useAppState();
   // 라운드 키 — 증가시키면 useMemo가 새 랜덤 10문제를 다시 추출.
   const [round, setRound] = useState(0);
   const questions = useMemo<PreparedQuestion[]>(() => pickQuestions(), [round]);
@@ -88,6 +94,7 @@ export function QuizScreen() {
   const [records, setRecords] = useState<AnswerRecord[]>([]); // 누적 정오 기록
   const [finished, setFinished] = useState(false);
   const completionTrackedRef = useRef(false);
+  const pointsRecordedRef = useRef(false);
 
   const total = questions.length;
   const q = questions[current];
@@ -127,6 +134,7 @@ export function QuizScreen() {
 
   useEffect(() => {
     completionTrackedRef.current = false;
+    pointsRecordedRef.current = false;
     void trackEvent("quiz_started", { total });
   }, [round, total]);
 
@@ -140,6 +148,30 @@ export function QuizScreen() {
       accuracy: total > 0 ? Math.round((score / total) * 100) : null
     });
   }, [finished, score, total]);
+
+  useEffect(() => {
+    if (!finished || pointsRecordedRef.current) return;
+    pointsRecordedRef.current = true;
+    void (async () => {
+      try {
+        const client = createSupabaseBrowserClient();
+        await ensureAnonymousClient(client);
+        const res = await fetch("/api/quiz/attempt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ score, total })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) return;
+        emitPointBalanceUpdated(data.balance);
+        if (data.awarded > 0) {
+          showToast(`+${data.awarded}${POINT_LABEL} 획득!`);
+        }
+      } catch {
+        // Quiz result display should not fail because point logging failed.
+      }
+    })();
+  }, [finished, score, showToast, total]);
 
   return (
     <AppShell activeTab="home" title="야구 상식 퀴즈" theme="light" backHref="/">

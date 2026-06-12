@@ -46,5 +46,14 @@ export const BASE_RUNNING_PROB = {
   GROUNDOUT_TO_DP: 0.3
 } as const;
 
+export const STEAL_PROB = {
+  MIN_ATTEMPTS: 2,
+  LEAGUE_SUCCESS_RATE: 0.72,
+  SUCCESS_REGRESSION_ATTEMPTS: 8,
+  MAX_ATTEMPT_PROB: 0.26,
+  MIN_ATTEMPT_PROB: 0.015,
+  OPPORTUNITY_MULTIPLIER: 2.2
+} as const;
+
 // 연장 한계. KBO 정규시즌은 12회가 아니라 11회까지 → 동점이면 무승부.
 export const MAX_INNINGS = 11;

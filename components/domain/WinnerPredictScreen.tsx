@@ -24,6 +24,8 @@ import {
   upsertPrediction
 } from "@/lib/supabase/query-parts/bpPredictions";
 import { trackEvent } from "@/lib/analytics/events";
+import { POINT_LABEL } from "@/lib/points/config";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 
 export type WinnerPredictGame = {
   id: string;
@@ -230,6 +232,22 @@ export function WinnerPredictScreen({
     if (!result.ok) {
       showToast(`잠금 실패: ${result.error}`);
       return;
+    }
+    try {
+      const pointRes = await fetch("/api/points/prediction-submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameDate: selectedDateISO })
+      });
+      const pointData = await pointRes.json();
+      if (pointRes.ok && pointData.ok) {
+        emitPointBalanceUpdated(pointData.balance);
+        if (pointData.awarded > 0) {
+          showToast(`+${pointData.awarded}${POINT_LABEL} 획득!`);
+        }
+      }
+    } catch {
+      // BP reward failure must not block prediction submission.
     }
     setLockedMap((prev) => {
       const next = { ...prev };

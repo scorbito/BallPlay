@@ -34,6 +34,14 @@ function formatRecord(stats: LineupStats | undefined): string {
   return ` (${stats.wins}승 ${stats.losses}패)`;
 }
 
+function getRecordTeamShortName(teamId: string): string {
+  try {
+    return getTeam(teamId).shortName;
+  } catch {
+    return teamId === "national" ? "국가대표" : teamId;
+  }
+}
+
 export function RematchLineupModal({
   open,
   opponentTeam,
@@ -60,7 +68,7 @@ export function RematchLineupModal({
           <div className="stadium-enter-team">
             <span className="stadium-enter-team-label">상대</span>
             <TeamBadge teamId={opponentTeam.teamId} size="lg" />
-            <strong>{opponentTeam.displayName ?? getTeam(opponentTeam.teamId).shortName}</strong>
+            <strong>{opponentTeam.displayName ?? getRecordTeamShortName(opponentTeam.teamId)}</strong>
           </div>
           <span className="stadium-enter-vs-label">VS</span>
           <div className="stadium-enter-team">

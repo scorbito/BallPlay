@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
+import { POINT_REWARDS } from "@/lib/points/config";
+import { awardPoints, getEarnedAmountForReasonOnDate, getPointBalance, kstDateString } from "@/lib/server/points";
 
 type Params = { params: { gameId: string } };
 
@@ -62,6 +64,30 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  let pointAward = null;
+  if (!error) {
+    const today = kstDateString();
+    const earnedToday = await getEarnedAmountForReasonOnDate(supabase, user.id, "ai_battle_vote", today);
+    if (earnedToday + POINT_REWARDS.aiBattleVotePerGame <= POINT_REWARDS.aiBattleVoteDailyMax) {
+      pointAward = await awardPoints({
+        userId: user.id,
+        amount: POINT_REWARDS.aiBattleVotePerGame,
+        reason: "ai_battle_vote",
+        referenceType: "game",
+        referenceId: gameId,
+        rewardKey: `ai_battle_vote:${gameId}`,
+        rewardDate: today
+      }).catch(() => null);
+    } else {
+      pointAward = {
+        awarded: false,
+        amount: 0,
+        balance: await getPointBalance(user.id),
+        capped: true
+      };
+    }
+  }
+
   // 최신 집계 반환
   const { data } = await supabase
     .from("bp_ai_battle_votes")
@@ -71,5 +97,5 @@ export async function POST(req: NextRequest, { params }: Params) {
   const home = (data ?? []).filter((r) => r.voted_side === "home").length;
   const away = (data ?? []).filter((r) => r.voted_side === "away").length;
 
-  return NextResponse.json({ home, away, myVote: side });
+  return NextResponse.json({ home, away, myVote: side, pointAward });
 }

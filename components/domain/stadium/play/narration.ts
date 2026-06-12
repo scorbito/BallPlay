@@ -67,6 +67,16 @@ export function buildNarration(args: BuildNarrationArgs): NarrationResult {
 
   // ───────── BATTER: 타순·이름 (+ live면 스탯) ─────────
   if (phase === "BATTER") {
+    const steal = current.ab.preEvents?.find((ev) => ev.kind === "STEAL_2B");
+    if (steal) {
+      const runnerName = playerNameById(steal.runnerId) ?? "1루 주자";
+      return {
+        text: steal.success
+          ? `${runnerName} 2루 도루 성공!`
+          : `${runnerName} 2루 도루 실패, 아웃입니다.`,
+        variant: "default"
+      };
+    }
     return {
       text: getBatterText({
         cursor,

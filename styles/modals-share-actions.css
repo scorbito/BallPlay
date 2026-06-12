@@ -228,23 +228,142 @@
 .toast-message {
   position: fixed;
   left: 50%;
-  bottom: 28px;
+  top: 50%;
   z-index: 100;
-  transform: translateX(-50%);
-  max-width: min(340px, calc(100vw - 32px));
-  padding: 12px 16px;
-  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 18px 22px;
+  border-radius: 28px;
   color: #fff;
   background: rgba(17, 24, 39, 0.92);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.24);
   font-size: 13px;
   font-weight: 900;
+  line-height: 1.45;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.toast-message-text {
+  position: relative;
+  z-index: 2;
+}
+
+.point-reward-toast {
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.16), transparent 38%),
+    rgba(17, 24, 39, 0.94);
+  box-shadow:
+    0 14px 34px rgba(15, 23, 42, 0.28),
+    0 0 26px rgba(232, 74, 138, 0.16);
+}
+
+.point-toast-particles {
+  position: absolute;
+  inset: -18px -20px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.point-toast-particles span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #fff;
+  opacity: 0;
+  box-shadow: 0 0 10px currentColor;
+  animation: point-toast-particle 1.25s ease-out infinite;
+}
+
+.point-toast-particles span:nth-child(1) {
+  color: #f472b6;
+  --toast-particle-x: -76px;
+  --toast-particle-y: -24px;
+  animation-delay: 0s;
+}
+
+.point-toast-particles span:nth-child(2) {
+  color: #fbbf24;
+  --toast-particle-x: -42px;
+  --toast-particle-y: -44px;
+  animation-delay: 0.08s;
+}
+
+.point-toast-particles span:nth-child(3) {
+  color: #60a5fa;
+  --toast-particle-x: 44px;
+  --toast-particle-y: -42px;
+  animation-delay: 0.04s;
+}
+
+.point-toast-particles span:nth-child(4) {
+  color: #fb7185;
+  --toast-particle-x: 78px;
+  --toast-particle-y: -18px;
+  animation-delay: 0.12s;
+}
+
+.point-toast-particles span:nth-child(5) {
+  color: #f9a8d4;
+  --toast-particle-x: -70px;
+  --toast-particle-y: 26px;
+  animation-delay: 0.18s;
+}
+
+.point-toast-particles span:nth-child(6) {
+  color: #93c5fd;
+  --toast-particle-x: -22px;
+  --toast-particle-y: 44px;
+  animation-delay: 0.24s;
+}
+
+.point-toast-particles span:nth-child(7) {
+  color: #fde68a;
+  --toast-particle-x: 30px;
+  --toast-particle-y: 42px;
+  animation-delay: 0.14s;
+}
+
+.point-toast-particles span:nth-child(8) {
+  color: #f472b6;
+  --toast-particle-x: 76px;
+  --toast-particle-y: 24px;
+  animation-delay: 0.22s;
+}
+
+@keyframes point-toast-particle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  18% {
+    opacity: 0.95;
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc(-50% + var(--toast-particle-x)),
+      calc(-50% + var(--toast-particle-y))
+    ) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .point-toast-particles span {
+    animation: none;
+  }
 }
 
 /* 모달이 열려있을 때는 모달 하단 액션(올리기/저장 등) 바로 위쪽에 표시되도록 위치를 올린다.
  * 모달 본문은 화면 하단까지 차오르는 경우가 많아 기본 bottom:28px이 가려져 보이거나 멀어 보임. */
 body:has(.modal-backdrop) .toast-message {
-  bottom: 96px;
+  top: 50%;
   z-index: 200;
 }
 

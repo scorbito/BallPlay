@@ -8,12 +8,11 @@ import { TeamLogo } from "@/components/common/TeamLogo";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import { PublicLineupChallenge } from "@/components/domain/stadium/PublicLineupChallenge";
 import { getTeam, teams } from "@/lib/constants/teams";
-import { getRoster } from "@/lib/rosters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchPublishedLineupsByIds } from "@/lib/supabase/query-parts/bpLineups";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import { buildStatsDirectoryForLineups, getLineupValidPlayerIds } from "@/lib/sim/lineupStatsDirectory";
 import type { SimTeamInput } from "@/lib/sim/types";
 import type { LineupRankingRow } from "@/lib/supabase/query-parts/bpLineupRankings";
 
@@ -83,10 +82,14 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
       const fetched = await fetchPublishedLineupsByIds(client, [row.lineupId]);
       if (!fetched.ok || fetched.rows.length === 0) return;
       const lineup = fetched.rows[0];
-      const validIds = new Set(getRoster(lineup.team_id).map((p) => p.id));
-      const pitching = fillMissingPitcherSlots(lineup.team_id, lineup.pitching?.slots ?? [], validIds);
+      const validIds = getLineupValidPlayerIds(lineup.team_id, lineup.batting);
+      const stats = buildStatsDirectoryForLineups([{
+        teamId: lineup.team_id,
+        batting: lineup.batting,
+        pitching: lineup.pitching
+      }]);
+      const pitching = fillMissingPitcherSlotsFromStatsDirectory(lineup.team_id, lineup.pitching?.slots ?? [], stats, validIds);
       if (!pitching) return;
-      const stats = buildStatsDirectory([lineup.team_id]);
       const built = buildSimTeamInput(lineup.team_id, lineup.batting, pitching, stats, lineup.name);
       if (!built.ok) return;
       setPreviewTeam(built.team);
@@ -195,7 +198,6 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
       ) : (
         <ol className="lineup-rank-list">
           {filteredRows.map((row) => {
-            const team = row.teamId ? getTeam(row.teamId) : null;
             const isLoading = previewLoadingId === row.lineupId;
             return (
               <li
@@ -220,8 +222,8 @@ export function LineupRankingScreen({ seasonRanking, weeklyRanking }: Props) {
                 >
                   {renderRankBadge(row.rank)}
                 </span>
-                {team ? (
-                  row.rank <= 3 ? <TeamLogo teamId={team.id} size="md" /> : <TeamBadge teamId={team.id} size="md" />
+                {row.teamId ? (
+                  row.rank <= 3 ? <TeamLogo teamId={row.teamId} size="md" /> : <TeamBadge teamId={row.teamId} size="md" />
                 ) : null}
                 <div className="lineup-rank-body">
                   <span className="lineup-rank-lineup-name">{row.lineupName}</span>

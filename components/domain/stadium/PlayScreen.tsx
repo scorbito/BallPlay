@@ -15,6 +15,8 @@ import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bp
 import { useAppState } from "@/lib/state/AppState";
 import { playMatchSound } from "@/lib/sound/matchSounds";
 import { trackEvent } from "@/lib/analytics/events";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
+import { claimStadiumRecordPoints, formatStadiumPointToast } from "@/components/domain/points/claimStadiumRecordPoints";
 import { OUTCOME_LABEL } from "./play/types";
 import { buildLinescore } from "./play/eventHelpers";
 import { FlyingBall } from "./play/effects/FlyingBall";
@@ -259,11 +261,21 @@ export function PlayScreen() {
   // 현재 이닝의 각 타자별 마지막 결과 — 공수교대 시 자동으로 비워짐 (currentInningEvents가 새 이닝의 것으로 교체됨)
   const inningOutcomes = useMemo(() => {
     // isHit는 뱃지 색상용(=출루) — 안타뿐 아니라 볼넷·사구도 출루이므로 녹색 표시.
-    const map = new Map<string, { label: string; isHit: boolean; isHr: boolean }>();
+    const map = new Map<string, { label: string; isHit: boolean; isHr: boolean; isSteal?: boolean; isStealFail?: boolean }>();
     for (let i = 0; i < currentInningEvents.length; i++) {
       const ev = currentInningEvents[i];
       const isLast = i === currentInningEvents.length - 1;
       // 마지막 타석은 결과 표시 페이즈일 때만 Map에 반영 (그 전엔 진행 중 ··· 상태)
+      for (const pre of ev.ab.preEvents ?? []) {
+        if (pre.kind !== "STEAL_2B") continue;
+        map.set(pre.runnerId, {
+          label: pre.success ? "도루" : "도루실패",
+          isHit: pre.success,
+          isHr: false,
+          isSteal: pre.success,
+          isStealFail: !pre.success
+        });
+      }
       if (isLast && !showOutcome) continue;
       const label =
         OUTCOME_LABEL[ev.ab.outcome] +
@@ -283,9 +295,9 @@ export function PlayScreen() {
     if (phase === "GAME_END") return; // 게임 종료 페이즈에선 진행 멈춤
     if (cursor > events.length) return;
 
-    // 모드별 시간 배수 — normal=기본, fast=0.35, superfast=0.20, live=느림(중계 호흡)
+    // 모드별 시간 배수 — normal=기본, fast=0.40, superfast=0.20, live=느림(중계 호흡)
     const modeMul =
-      mode === "superfast" ? 0.20 : mode === "fast" ? 0.35 : mode === "live" ? 1.6 : 1;
+      mode === "superfast" ? 0.20 : mode === "fast" ? 0.40 : mode === "live" ? 1.6 : 1;
 
     // OUTCOME phase 시간은 타구 결과에 따라 달라짐 — 득점 발생/안타/홈런은 더 길게.
     const currentEvt = cursor > 0 ? events[cursor - 1] : null;
@@ -432,7 +444,7 @@ export function PlayScreen() {
     const distance = o === "1B" ? 280 : o === "2B" ? 460 : o === "3B" ? 720 : viewportH + 200;
     // duration 도 진행 모드 따라가도록 modeMul 적용. normal 기준 1400~2800.
     const ballModeMul =
-      mode === "superfast" ? 0.20 : mode === "fast" ? 0.35 : mode === "live" ? 1.6 : 1;
+      mode === "superfast" ? 0.20 : mode === "fast" ? 0.40 : mode === "live" ? 1.6 : 1;
     const baseDurationMs = o === "1B" ? 1400 : o === "2B" ? 1900 : o === "3B" ? 2400 : 2800;
     const durationMs = baseDurationMs * ballModeMul;
     // 정점 scale — 안타 3배, 홈런 4배.
@@ -533,7 +545,7 @@ export function PlayScreen() {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const ballModeMul =
-      mode === "superfast" ? 0.20 : mode === "fast" ? 0.35 : mode === "live" ? 1.6 : 1;
+      mode === "superfast" ? 0.20 : mode === "fast" ? 0.40 : mode === "live" ? 1.6 : 1;
     const durationMs = 1500 * ballModeMul;
     strikeoutFiredForCursorRef.current = cursor;
     setStrikeoutEffect({ centerX, centerY, durationMs, key: cursor });
@@ -542,6 +554,19 @@ export function PlayScreen() {
 
   // 볼넷/사구 → walk, 병살 → double_play, 나머지 아웃류(GO/FO/PO/LO/SF) → out.
   // 안타/홈런/삼진은 위 useEffect들에서 별도 처리. 실책(E)은 사운드 X.
+  // 도루는 타석 전 주루 이벤트라 BATTER phase에서 별도 효과음을 재생.
+  const stealSoundFiredForCursorRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (phase !== "BATTER") return;
+    if (stealSoundFiredForCursorRef.current === cursor) return;
+    const evt = cursor > 0 ? events[cursor - 1] : null;
+    const steal = evt?.ab.preEvents?.find((pre) => pre.kind === "STEAL_2B");
+    if (!steal) return;
+    stealSoundFiredForCursorRef.current = cursor;
+    playMatchSound(steal.success ? "walk" : "double_play");
+  }, [phase, cursor, events, hydrated]);
+
   const auxSoundFiredForCursorRef = useRef<number>(-1);
   useEffect(() => {
     if (!hydrated) return;
@@ -647,6 +672,13 @@ export function PlayScreen() {
         const recordId = result.row?.id ?? "mirrored";
         const cur = loadMatchSession();
         if (cur) saveMatchSession({ ...cur, savedRecordId: recordId });
+        if (session.source === "public" && recordId !== "mirrored") {
+          const pointData = await claimStadiumRecordPoints(recordId).catch(() => null);
+          if (!cancelled && pointData?.ok && pointData.awarded) {
+            emitPointBalanceUpdated(pointData.balance);
+            showToast(formatStadiumPointToast(pointData));
+          }
+        }
         if (cancelled) return;
         setRecordSavedId(recordId);
       } catch {
@@ -728,7 +760,7 @@ export function PlayScreen() {
 
   if (!hydrated || !session?.result) {
     return (
-      <AppShell activeTab="stadium" title="시뮬레이션" backHref={backHrefForSource} theme="light" wide hideBottomTabs>
+      <AppShell activeTab="stadium" title="시뮬레이션" backHref={backHrefForSource} theme="light" wide hideBottomTabs hidePointChip>
         <p className="stadium-loading">경기 준비 중...</p>
       </AppShell>
     );
@@ -818,7 +850,7 @@ export function PlayScreen() {
   const showOpening = !openingDone;
 
   return (
-    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref={backHrefForSource} onBack={session.source === "playoff" ? () => setLeaveOpen(true) : undefined} theme="light" wide hideBottomTabs headerAction={matchTierBadge}>
+    <AppShell activeTab="stadium" title={headerTitle} titleDecoration={isDone ? undefined : "slashes"} backHref={backHrefForSource} onBack={session.source === "playoff" ? () => setLeaveOpen(true) : undefined} theme="light" wide hideBottomTabs hidePointChip headerAction={matchTierBadge}>
       {isLive && liveCountdown !== null && liveCountdown > 0 ? (
         <div className="stadium-live-countdown">
           <span>곧 시작합니다</span>
@@ -888,6 +920,7 @@ export function PlayScreen() {
             isDone={isDone}
             inningOutcomes={inningOutcomes}
             todayStats={todayStats}
+            baseState={baseState}
           />
           <LineupCard
             side="home"
@@ -899,6 +932,7 @@ export function PlayScreen() {
             isDone={isDone}
             inningOutcomes={inningOutcomes}
             todayStats={todayStats}
+            baseState={baseState}
           />
         </div>
 

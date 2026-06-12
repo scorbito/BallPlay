@@ -538,6 +538,12 @@
   font-weight: 900;
   color: #0f172a;
 }
+.starter-label-record {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  line-height: 1.2;
+}
 .starter-vs-badge {
   font-size: 11px;
   font-weight: 900;

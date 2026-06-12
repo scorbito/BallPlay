@@ -37,6 +37,7 @@ const TEAMS: TeamSpec[] = [
 const PAGES = {
   hitterBasic1: "https://www.koreabaseball.com/Record/Player/HitterBasic/Basic1.aspx",
   hitterBasic2: "https://www.koreabaseball.com/Record/Player/HitterBasic/Basic2.aspx",
+  runnerBasic: "https://www.koreabaseball.com/Record/Player/Runner/Basic.aspx",
   pitcherBasic1: "https://www.koreabaseball.com/Record/Player/PitcherBasic/Basic1.aspx",
   pitcherBasic2: "https://www.koreabaseball.com/Record/Player/PitcherBasic/Basic2.aspx"
 };
@@ -88,11 +89,13 @@ export async function syncStatsSnapshot(
       await sleep(FETCH_DELAY_MS);
       const hit2 = await scrapeStatsPage(PAGES.hitterBasic2, team.kboCode, year, parseHitterBasic2Row);
       await sleep(FETCH_DELAY_MS);
+      const runner = await scrapeStatsPage(PAGES.runnerBasic, team.kboCode, year, parseRunnerBasicRow);
+      await sleep(FETCH_DELAY_MS);
       const pit1 = await scrapeStatsPage(PAGES.pitcherBasic1, team.kboCode, year, parsePitcherBasic1Row);
       await sleep(FETCH_DELAY_MS);
       const pit2 = await scrapeStatsPage(PAGES.pitcherBasic2, team.kboCode, year, parsePitcherBasic2Row);
 
-      const mergedBatters = mergeRowsByName(hit1, hit2);
+      const mergedBatters = mergeRowsByName(hit1, hit2, runner);
       const mergedPitchers = mergeRowsByName(pit1, pit2);
 
       const batterRows: SnapshotRow[] = [];
@@ -304,6 +307,18 @@ function parseHitterBasic2Row(c: string[]): RawRow | null {
   };
 }
 
+function parseRunnerBasicRow(c: string[]): RawRow | null {
+  if (c.length < 8) return null;
+  return {
+    name: c[1],
+    g: numOr0(c[3]),
+    sba: numOr0(c[4]),
+    sb: numOr0(c[5]),
+    cs: numOr0(c[6]),
+    sbPct: numOr0(c[7])
+  };
+}
+
 function parsePitcherBasic1Row(c: string[]): RawRow | null {
   if (c.length < 19) return null;
   return {
@@ -358,14 +373,16 @@ function parseIp(s: string | null | undefined): number {
   return Math.round((whole + frac) * 10) / 10;
 }
 
-function mergeRowsByName(rowsA: RawRow[], rowsB: RawRow[]): RawRow[] {
+function mergeRowsByName(...rowGroups: RawRow[][]): RawRow[] {
   const keyOf = (r: RawRow) => String(r.name);
-  const map = new Map<string, RawRow>(rowsA.map((r) => [keyOf(r), { ...r }]));
-  for (const r of rowsB) {
-    const k = keyOf(r);
-    const prev = map.get(k);
-    if (prev) Object.assign(prev, r);
-    else map.set(k, { ...r });
+  const map = new Map<string, RawRow>();
+  for (const rows of rowGroups) {
+    for (const r of rows) {
+      const k = keyOf(r);
+      const prev = map.get(k);
+      if (prev) Object.assign(prev, r);
+      else map.set(k, { ...r });
+    }
   }
   return Array.from(map.values());
 }
@@ -414,6 +431,9 @@ function makeSimBatter(row: RawRow, playerId: string, roster: RosterPlayer[]): S
   const bb = num(row.bb);
   const hbp = num(row.hbp);
   const so = num(row.so);
+  const sb = num(row.sb);
+  const cs = num(row.cs);
+  const sba = Math.max(num(row.sba), sb + cs);
 
   const avg = num(row.avg) || (ab > 0 ? h / ab : 0);
   const obp = num(row.obp) || (pa > 0 ? (h + bb + hbp) / pa : 0);
@@ -441,6 +461,9 @@ function makeSimBatter(row: RawRow, playerId: string, roster: RosterPlayer[]): S
     walks: bb,
     hbp,
     strikeouts: so,
+    sb,
+    cs,
+    sba,
     avg: round3(avg),
     obp: round3(obp),
     slg: round3(slg),
