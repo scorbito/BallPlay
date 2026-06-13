@@ -140,8 +140,7 @@ const sections: HomeSection[] = [
         description: "AI 3사 분석 종합",
         icon: Bot,
         iconImage: "/icons/menu/ai-prediction.png",
-        available: true,
-        badge: "HOT"
+        available: true
       },
       {
         id: "ai-battle",
@@ -150,8 +149,7 @@ const sections: HomeSection[] = [
         description: "Gemini vs GPT 승리 근거 대결",
         icon: Swords,
         iconImage: "/icons/menu/ai-battle.png",
-        available: true,
-        badge: "NEW"
+        available: true
       },
       {
         id: "winner-predict",
@@ -188,8 +186,7 @@ const sections: HomeSection[] = [
         description: "어제 경기 결과 및 AI 종합 요약 리포트",
         icon: FileText,
         iconImage: "/icons/menu/daily-report.png",
-        available: true,
-        badge: "NEW"
+        available: true
       },
       {
         id: "weekly-report",
@@ -198,8 +195,7 @@ const sections: HomeSection[] = [
         description: "한 주간의 KBO 성적 분석 리포트",
         icon: FileText,
         iconImage: "/icons/menu/weekly-report.png",
-        available: true,
-        badge: "NEW"
+        available: true
       },
       {
         id: "today-results",
@@ -271,7 +267,7 @@ const sections: HomeSection[] = [
         title: "나만의 팀",
         description: "선수를 모아 만드는 커스텀 구단",
         icon: Users,
-        iconImage: "/icons/menu/lineup-builder.png",
+        iconImage: "/icons/menu/my-team.png",
         available: true,
         badge: "BETA"
       }

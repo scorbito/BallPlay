@@ -68,6 +68,21 @@ type PlayerDetailSection = {
   title: string;
   stats: { label: string; value: string }[];
 };
+type RecruitResult = {
+  player: Player;
+  duplicate: boolean;
+};
+type RecruitRevealState = {
+  title: string;
+  subtitle: string;
+  results: RecruitResult[];
+  revealed: Set<number>;
+  doneLabel: string;
+};
+
+const SINGLE_RECRUIT_COST = 100;
+const TEN_RECRUIT_COST = 900;
+const DUPLICATE_SCOUT_PIECES = 10;
 
 function formatRateStat(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -90,9 +105,9 @@ function formatPercentStat(value: unknown): string {
 function getPlayerCardStats(player: Player, batter?: SimBatter, pitcher?: SimPitcher): PlayerCardStats {
   if (player.primaryPosition === "P") {
     return [
-      { label: "ERA", value: formatDecimalStat(pitcher?.era) },
-      { label: "WHIP", value: formatDecimalStat(pitcher?.whip) },
-      { label: "K/9", value: formatDecimalStat(pitcher?.k9) }
+      { label: "ERA", value: formatDecimalStat(pitcher?.era, 1) },
+      { label: "WHIP", value: formatDecimalStat(pitcher?.whip, 1) },
+      { label: "K/9", value: formatDecimalStat(pitcher?.k9, 1) }
     ];
   }
 
@@ -122,7 +137,20 @@ function getPlayerPositionGroupLabel(position: Position): string {
   return "내야";
 }
 
+function hasPlayerStatData(player: Player, batter?: SimBatter, pitcher?: SimPitcher): boolean {
+  if (player.primaryPosition === "P") {
+    return typeof pitcher?.ip === "number" && pitcher.ip > 0;
+  }
+  return typeof batter?.pa === "number" && batter.pa > 0;
+}
+
+function getPlayerRecordSourceLabel(player: Player, batter?: SimBatter, pitcher?: SimPitcher): string {
+  if ((player.seasonGames ?? 0) > 0) return "1군 기록";
+  return hasPlayerStatData(player, batter, pitcher) ? "2군 기록" : "기록 없음";
+}
+
 function getPlayerDetailSections(player: Player, batter?: SimBatter, pitcher?: SimPitcher): PlayerDetailSection[] {
+  const recordSourceLabel = getPlayerRecordSourceLabel(player, batter, pitcher);
   if (player.primaryPosition === "P") {
     return [
       {
@@ -215,6 +243,7 @@ export function MyTeamScreen() {
   const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [points, setPoints] = useState<number>(10000);
+  const [scoutPieces, setScoutPieces] = useState<number>(0);
 
   // 창단 폼 상태
   const [formName, setFormName] = useState("");
@@ -238,6 +267,7 @@ export function MyTeamScreen() {
   const [positionPickerForOrder, setPositionPickerForOrder] = useState<LineupOrder | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [drawnPlayer, setDrawnPlayer] = useState<Player | null>(null);
+  const [recruitReveal, setRecruitReveal] = useState<RecruitRevealState | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [rosterFilter, setRosterFilter] = useState<"all" | "batters" | "pitchers">("all");
 
@@ -247,12 +277,14 @@ export function MyTeamScreen() {
     const info = localStorage.getItem("ballplay:my-team-info");
     const pl = localStorage.getItem("ballplay:my-team-players");
     const pts = localStorage.getItem("ballplay:my-team-points");
+    const pieces = localStorage.getItem("ballplay:my-team-scout-pieces");
     const line = localStorage.getItem("ballplay:my-team-lineup");
 
     if (info) setTeamInfo(JSON.parse(info));
     if (pl) setPlayers(JSON.parse(pl));
     if (pts) setPoints(Number(pts));
     else setPoints(10000);
+    if (pieces) setScoutPieces(Number(pieces));
 
     if (line) {
       const parsed = JSON.parse(line) as MyTeamLineup;
@@ -279,6 +311,11 @@ export function MyTeamScreen() {
   const savePoints = (newPoints: number) => {
     localStorage.setItem("ballplay:my-team-points", String(newPoints));
     setPoints(newPoints);
+  };
+
+  const saveScoutPieces = (newPieces: number) => {
+    localStorage.setItem("ballplay:my-team-scout-pieces", String(newPieces));
+    setScoutPieces(newPieces);
   };
 
   // 라인업 변경 시 자동 저장
@@ -312,10 +349,19 @@ export function MyTeamScreen() {
     const shuffledPitchers = [...pitchers].sort(() => 0.5 - Math.random());
 
     const selectedBatters = shuffledBatters.slice(0, 15);
-    const selectedPitchers = shuffledPitchers.slice(0, 3);
-    
-    savePlayers([...selectedBatters, ...selectedPitchers]);
+    const selectedPitchers = shuffledPitchers.slice(0, 5);
+    const foundingPlayers = [...selectedBatters, ...selectedPitchers];
+
+    savePlayers(foundingPlayers);
     savePoints(10000);
+    saveScoutPieces(0);
+    setRecruitReveal({
+      title: "창단 선수 지급",
+      subtitle: `기본 선수 ${foundingPlayers.length}명을 확인하세요.`,
+      results: foundingPlayers.map((player) => ({ player, duplicate: false })),
+      revealed: new Set(),
+      doneLabel: "나만의 팀으로 이동"
+    });
   };
 
   const handleResetTeam = () => {
@@ -324,35 +370,60 @@ export function MyTeamScreen() {
       localStorage.removeItem("ballplay:my-team-players");
       localStorage.removeItem("ballplay:my-team-lineup");
       localStorage.removeItem("ballplay:my-team-points");
+      localStorage.removeItem("ballplay:my-team-scout-pieces");
       setTeamInfo(null);
       setPlayers([]);
       setPoints(10000);
+      setScoutPieces(0);
       setSlots(EMPTY_SLOTS);
       setPitcherSlots(EMPTY_PITCHER_SLOTS);
     }
   };
 
   // 선수 뽑기
-  const handleDrawPlayer = () => {
-    if (points < 1000) {
+  const handleDrawPlayer = (count: 1 | 10) => {
+    const cost = count === 10 ? TEN_RECRUIT_COST : SINGLE_RECRUIT_COST;
+    if (points < cost) {
       alert("포인트가 부족합니다! 상단에서 무료로 충전하세요.");
       return;
     }
 
     const allPlayers = getAllKboPlayers();
-    const availablePlayers = allPlayers.filter(ap => !players.some(p => p.id === ap.id));
+    const availablePlayers = allPlayers;
 
     if (availablePlayers.length === 0) {
       alert("축하합니다! 이미 모든 KBO 선수를 수집하셨습니다.");
       return;
     }
 
-    const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
-    const newPlayers = [...players, randomPlayer];
+    const ownedIds = new Set(players.map((player) => player.id));
+    const newPlayers = [...players];
+    const results: RecruitResult[] = [];
+    let nextPieces = scoutPieces;
+
+    for (let i = 0; i < count; i += 1) {
+      const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+      const duplicate = ownedIds.has(randomPlayer.id);
+      results.push({ player: randomPlayer, duplicate });
+
+      if (duplicate) {
+        nextPieces += DUPLICATE_SCOUT_PIECES;
+      } else {
+        ownedIds.add(randomPlayer.id);
+        newPlayers.push(randomPlayer);
+      }
+    }
 
     savePlayers(newPlayers);
-    savePoints(points - 1000);
-    setDrawnPlayer(randomPlayer);
+    savePoints(points - cost);
+    saveScoutPieces(nextPieces);
+    setRecruitReveal({
+      title: count === 10 ? "10회 선수 영입" : "1회 선수 영입",
+      subtitle: `신규 ${results.filter((result) => !result.duplicate).length}명 · 중복 ${results.filter((result) => result.duplicate).length}명`,
+      results,
+      revealed: new Set(),
+      doneLabel: "확인"
+    });
   };
 
   // AI 팀과 대결 실행
@@ -988,7 +1059,7 @@ export function MyTeamScreen() {
               setRosterFilter("all");
             }}
             className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
-              activeTab !== "lineup"
+              activeTab === "players"
                 ? "bg-slate-900 text-white"
                 : "border border-slate-200 bg-white text-slate-700"
             }`}
@@ -1008,8 +1079,12 @@ export function MyTeamScreen() {
           </button>
           <button
             type="button"
-            onClick={handleDrawPlayer}
-            className="rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-3 text-xs font-black text-white shadow-sm transition-all active:scale-95"
+            onClick={() => setActiveTab("draw")}
+            className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
+              activeTab === "draw"
+                ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
+                : "border border-slate-200 bg-white text-slate-700"
+            }`}
           >
             선수 영입
           </button>
@@ -1092,6 +1167,43 @@ export function MyTeamScreen() {
               </button>
             </div>
 
+            {activeTab === "draw" ? (
+              <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">선수 영입</h3>
+                    <p className="text-[10px] font-semibold text-slate-400">KBO 전체 선수 중 랜덤으로 영입합니다.</p>
+                  </div>
+                  <span className="rounded-full border border-pink-100 bg-pink-50 px-2.5 py-1 text-[10px] font-black text-pink-500">
+                    조각 {scoutPieces}
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDrawPlayer(1)}
+                    className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-4 text-left shadow-sm transition-transform active:scale-[0.98]"
+                  >
+                    <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-700">1회</span>
+                    <strong className="mt-3 block text-lg font-black text-slate-900">선수 1명 영입</strong>
+                    <span className="mt-1 block text-xs font-bold text-slate-400">100 BP</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDrawPlayer(10)}
+                    className="rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 to-white p-4 text-left shadow-sm transition-transform active:scale-[0.98]"
+                  >
+                    <span className="inline-flex rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-black text-pink-600">10회</span>
+                    <strong className="mt-3 block text-lg font-black text-slate-900">선수 10명 영입</strong>
+                    <span className="mt-1 block text-xs font-bold text-slate-400">900 BP · 100 BP 할인</span>
+                  </button>
+                </div>
+                <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-500">
+                  중복 선수는 스카우트 조각 {DUPLICATE_SCOUT_PIECES}개로 전환됩니다.
+                </p>
+              </div>
+            ) : null}
+
             <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <div>
@@ -1142,7 +1254,7 @@ export function MyTeamScreen() {
                         <p className="text-[10px] font-black text-slate-400">
                           #{Number.isFinite(p.jerseyNumber) ? p.jerseyNumber : "-"}
                         </p>
-                        <p className="mt-1 truncate text-[13px] font-black text-slate-900">{p.name}</p>
+                        <p className="mt-1 truncate text-[15px] font-black text-slate-900">{p.name}</p>
                       </div>
                       <div className="mt-3 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 pt-2">
                         {cardStats.map((stat) => (
@@ -1215,7 +1327,7 @@ export function MyTeamScreen() {
                 <p className="text-xs text-slate-400 mt-1">1,000 BP가 차감되며 중복은 나오지 않습니다.</p>
               </div>
               <button
-                onClick={handleDrawPlayer}
+                onClick={() => handleDrawPlayer(1)}
                 className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black rounded-xl shadow-md hover:brightness-105 active:scale-95 transition-all"
               >
                 선수 영입 (1,000 BP)
@@ -1260,7 +1372,7 @@ export function MyTeamScreen() {
           </button>
           <button
             type="button"
-            onClick={handleDrawPlayer}
+            onClick={() => setActiveTab("draw")}
             className="rounded-2xl bg-amber-500 px-3 py-3 text-sm font-black text-white shadow-sm"
           >
             선수 영입
@@ -1389,11 +1501,12 @@ export function MyTeamScreen() {
         const detailSections = getPlayerDetailSections(selectedPlayer, stats?.batter, stats?.pitcher);
         const originalTeamName = getTeamShortName(selectedPlayer.teamId);
         const positionLabel = getPlayerPositionGroupLabel(selectedPlayer.primaryPosition);
+        const recordSourceLabel = getPlayerRecordSourceLabel(selectedPlayer, stats?.batter, stats?.pitcher);
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-            <div className="max-h-[86vh] w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-pink-100 bg-white shadow-2xl">
-              <div className="max-h-[86vh] overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm">
+            <div className="max-h-[92vh] w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-pink-100 bg-white shadow-2xl">
+              <div className="max-h-[92vh] overflow-y-auto p-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[9px] font-black text-pink-500">현재팀</p>
@@ -1408,25 +1521,34 @@ export function MyTeamScreen() {
                   </button>
                 </div>
 
-                <div className="mt-3 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-white p-4">
+                <div className="mt-2 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-white p-3">
                   <div className="min-w-0">
-                    <p className="text-3xl font-black tracking-normal text-pink-500">
-                      #{Number.isFinite(selectedPlayer.jerseyNumber) ? selectedPlayer.jerseyNumber : "-"}
-                    </p>
-                    <h4 className="mt-1 truncate text-xl font-black tracking-normal text-slate-900">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-pink-100 [&_.team-logo]:!h-7 [&_.team-logo]:!w-7 [&_.team-logo-img]:!h-7 [&_.team-logo-img]:!w-7">
+                        <TeamLogo teamId={selectedPlayer.teamId} size="sm" />
+                      </span>
+                      <span className="text-lg font-black text-pink-500">{originalTeamName}</span>
+                      <span className="text-lg font-black tracking-normal text-pink-500">
+                        #{Number.isFinite(selectedPlayer.jerseyNumber) ? selectedPlayer.jerseyNumber : "-"}
+                      </span>
+                    </div>
+                    <h4 className="mt-1 truncate text-2xl font-black tracking-normal text-slate-900">
                       {selectedPlayer.name}
                     </h4>
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-pink-100 bg-white px-2 py-0.5 text-[9px] font-black text-pink-500">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span className="hidden">
                         <span className="flex h-3.5 w-3.5 items-center justify-center overflow-hidden rounded-full [&_.team-logo]:!h-3.5 [&_.team-logo]:!w-3.5 [&_.team-logo-img]:!h-3.5 [&_.team-logo-img]:!w-3.5">
                           <TeamLogo teamId={selectedPlayer.teamId} size="sm" />
                         </span>
                         원래팀 {originalTeamName}
                       </span>
-                      <span className="rounded-full border border-pink-100 bg-white px-2 py-0.5 text-[9px] font-black text-pink-500">
+                      <span className="rounded-full border border-pink-100 bg-white px-2.5 py-1 text-xs font-black text-pink-500">
                         {positionLabel}
                       </span>
-                      <span className="rounded-full border border-slate-100 bg-white px-2 py-0.5 text-[9px] font-black text-slate-500">
+                      <span className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-600">
+                        {recordSourceLabel}
+                      </span>
+                      <span className="rounded-full border border-slate-100 bg-white px-2.5 py-1 text-xs font-black text-slate-500">
                         {selectedPlayer.primaryPosition === "P"
                           ? `투구 ${selectedPlayer.throwingHand ?? "-"}`
                           : `타격 ${selectedPlayer.battingHand ?? "-"}`}
@@ -1435,15 +1557,17 @@ export function MyTeamScreen() {
                   </div>
                 </div>
 
-                <div className="mt-3 space-y-2">
-                  {detailSections.map((section) => (
-                    <section key={section.title} className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
-                      <h5 className="text-xs font-black text-slate-900">{section.title}</h5>
-                      <div className="mt-2 grid grid-cols-3 gap-1.5">
+                <div className="mt-2 space-y-1.5">
+                  {detailSections.map((section, sectionIndex) => (
+                    <section key={section.title} className="rounded-2xl border border-slate-100 bg-white p-2.5 shadow-sm">
+                      <h5 className="text-sm font-black text-slate-900">
+                        {sectionIndex === 1 ? `누적 기록 (${recordSourceLabel})` : section.title}
+                      </h5>
+                      <div className="mt-1.5 grid grid-cols-3 gap-1.5">
                         {section.stats.map((stat) => (
-                          <div key={`${section.title}-${stat.label}`} className="rounded-xl bg-slate-50 p-1.5 text-center">
-                            <p className="truncate text-[8px] font-bold text-slate-400">{stat.label}</p>
-                            <p className="mt-0.5 truncate text-[10px] font-black text-slate-900">{stat.value}</p>
+                          <div key={`${section.title}-${stat.label}`} className="rounded-xl bg-slate-50 px-1.5 py-1.5 text-center">
+                            <p className="truncate text-[10px] font-bold text-slate-400">{stat.label}</p>
+                            <p className="truncate text-sm font-black text-slate-900">{stat.value}</p>
                           </div>
                         ))}
                       </div>
@@ -1455,6 +1579,114 @@ export function MyTeamScreen() {
           </div>
         );
       })()}
+
+      {recruitReveal !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-3 backdrop-blur-md">
+          <div className="w-full max-w-3xl rounded-[1.75rem] border border-pink-100 bg-white p-4 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">{recruitReveal.title}</h3>
+                <p className="mt-0.5 text-xs font-semibold text-slate-400">{recruitReveal.subtitle}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setRecruitReveal((current) =>
+                    current ? { ...current, revealed: new Set(current.results.map((_, index) => index)) } : current
+                  );
+                }}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black text-slate-600 shadow-sm"
+              >
+                모두 공개
+              </button>
+            </div>
+
+            <div
+              className={`mt-4 grid max-h-[62vh] gap-2 overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+                recruitReveal.results.length === 1
+                  ? "grid-cols-1 place-items-center"
+                  : "grid-cols-2 sm:grid-cols-5"
+              }`}
+            >
+              {recruitReveal.results.map((result, index) => {
+                const isRevealed = recruitReveal.revealed.has(index);
+                const stats = playerStatsById.get(result.player.id);
+                const cardStats = getPlayerCardStats(result.player, stats?.batter, stats?.pitcher);
+
+                return (
+                  <button
+                    key={`${result.player.id}-${index}`}
+                    type="button"
+                    onClick={() => {
+                      setRecruitReveal((current) => {
+                        if (!current) return current;
+                        const revealed = new Set(current.revealed);
+                        revealed.add(index);
+                        return { ...current, revealed };
+                      });
+                    }}
+                    className={`group min-h-[178px] [perspective:900px] ${
+                      recruitReveal.results.length === 1 ? "w-full max-w-[322px]" : ""
+                    }`}
+                  >
+                    <div className={`relative h-full min-h-[178px] transition-transform duration-500 [transform-style:preserve-3d] ${isRevealed ? "[transform:rotateY(180deg)]" : ""}`}>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-pink-100 bg-gradient-to-br from-pink-500 to-amber-400 p-3 text-white shadow-sm [backface-visibility:hidden]">
+                        <Sparkles className="h-8 w-8" />
+                        <span className="mt-3 text-xs font-black">BP CARD</span>
+                        <span className="mt-1 text-[10px] font-bold text-white/80">탭해서 공개</span>
+                      </div>
+                      <div className="absolute inset-0 overflow-hidden rounded-2xl border border-pink-100 bg-white p-2.5 shadow-sm [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-r from-pink-50 to-white" aria-hidden="true" />
+                        <div className="relative flex items-start justify-between gap-1">
+                          <span className="flex min-w-0 items-center gap-1">
+                            <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 shadow-sm ring-1 ring-pink-100 [&_.team-logo]:!h-4 [&_.team-logo]:!w-4 [&_.team-logo-img]:!h-4 [&_.team-logo-img]:!w-4 [&_.team-logo-wrap]:!inline-flex">
+                              <TeamLogo teamId={result.player.teamId} size="sm" />
+                            </span>
+                            <span className="truncate text-[9px] font-black text-pink-500">{getTeamShortName(result.player.teamId)}</span>
+                          </span>
+                          <span className="rounded-full border border-pink-100 bg-pink-50 px-1.5 py-0.5 text-[9px] font-black text-pink-500">
+                            {result.duplicate ? "중복" : "신규"}
+                          </span>
+                        </div>
+                        <div className="relative mt-3 text-center">
+                          <p className="text-[10px] font-black text-slate-400">
+                            #{Number.isFinite(result.player.jerseyNumber) ? result.player.jerseyNumber : "-"}
+                          </p>
+                          <p className="mt-1 truncate text-[15px] font-black text-slate-900">{result.player.name}</p>
+                          <p className="mx-auto mt-1 inline-flex rounded-full border border-pink-100 bg-pink-50 px-2 py-0.5 text-[9px] font-black text-pink-500">
+                            {getPlayerPositionGroupLabel(result.player.primaryPosition)}
+                          </p>
+                        </div>
+                        <div className="mt-3 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 pt-2">
+                          {cardStats.map((stat) => (
+                            <div key={stat.label} className="min-w-0 px-1 text-center">
+                              <p className="truncate text-[8px] font-bold text-slate-400">{stat.label}</p>
+                              <p className="mt-0.5 truncate text-[10px] font-black text-pink-500">{stat.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {result.duplicate ? (
+                          <div className="mt-1 rounded-full bg-slate-900 px-2 py-1 text-center text-[9px] font-black text-white">
+                            조각 +{DUPLICATE_SCOUT_PIECES}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setRecruitReveal(null)}
+              className="mt-4 w-full rounded-2xl bg-slate-900 py-3 text-sm font-black text-white shadow-sm transition-transform active:scale-[0.98]"
+            >
+              {recruitReveal.doneLabel}
+            </button>
+          </div>
+        </div>
+      )}
 
       {drawnPlayer !== null && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
