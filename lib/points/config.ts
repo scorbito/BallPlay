@@ -7,10 +7,10 @@ export const POINT_REWARDS = {
   checkinStreakStep: 5,
   checkinStreakMaxBonus: 30,
   predictionSubmittedPerGame: 10,
-  predictionSubmittedDailyMax: 50,
+    predictionSubmittedDailyMax: 100,
   predictionCorrectPerGame: 20,
   aiBattleVotePerGame: 10,
-  aiBattleVoteDailyMax: 50,
+    aiBattleVoteDailyMax: 100,
   stadiumOfficialFirstFive: 20,
   stadiumOfficialAfterFive: 10,
   stadiumOfficialFirstFiveCount: 5,
@@ -22,9 +22,9 @@ export const POINT_REWARDS = {
     ai_prediction: 10
   },
   contentClaimDailyMaxByType: {
-    daily_report: 20,
-    daily_report_game: 50,
-    ai_prediction: 50
+    daily_report: 40,
+    daily_report_game: 100,
+    ai_prediction: 100
   },
   quizComplete: 20,
   quizPerfectBonus: 10

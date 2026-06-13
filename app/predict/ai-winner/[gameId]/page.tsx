@@ -74,6 +74,8 @@ export default async function AiWinnerRevealPage({
   const userTier = await getUserTier(supabase);
   const isAdmin = userTier.tier === "admin";
   const locked = userTier.tier === "guest";
+  const today = kstToday();
+  const isFuture = gameRow.game_date > today;
 
   // AI 예측 상세(reveal)는 정식 로그인 전용. 비로그인/익명(guest)은 로그인으로 보낸다.
   // (리스트는 소프트 게이트로 매치업만 노출하지만, 상세는 곧 결과 전체라 하드 게이트.)
@@ -158,7 +160,7 @@ export default async function AiWinnerRevealPage({
       ])
     : [null, null];
 
-  const isToday = gameRow.game_date === kstToday();
+  const isToday = gameRow.game_date === today;
 
   return (
     <AiWinnerRevealScreen
@@ -177,6 +179,7 @@ export default async function AiWinnerRevealPage({
       }}
       predictions={predictions}
       isToday={isToday}
+      isFuture={isFuture}
       selectedDate={searchParams.date}
       sim={sim}
       homeLineup={homeLineup}

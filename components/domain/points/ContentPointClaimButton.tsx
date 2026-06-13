@@ -14,6 +14,8 @@ type Props = {
   className?: string;
 };
 
+type ClaimStatus = "available" | "claimed" | "capped" | "ineligible";
+
 async function readJsonResponse(res: Response) {
   const text = await res.text();
   if (!text) return {};
@@ -29,7 +31,8 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
   const amount = getContentPointAmount(contentType);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [claiming, setClaiming] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [status, setStatus] = useState<ClaimStatus>("available");
+  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -39,8 +42,18 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
       try {
         const res = await fetch(`/api/points/content-claim?${params.toString()}`, { cache: "no-store" });
         const data = await readJsonResponse(res);
-        if (!cancelled && res.ok && data.ok && (data.claimed || data.capped || data.eligible === false)) {
-          setHidden(true);
+        if (!cancelled && res.ok && data.ok) {
+          if (data.claimed) {
+            setStatus("claimed");
+          } else if (data.capped) {
+            setStatus("capped");
+          } else if (data.eligible === false) {
+            setStatus("ineligible");
+            setStatusMessage(String(data.ineligibleReason ?? ""));
+          } else {
+            setStatus("available");
+            setStatusMessage("");
+          }
         }
       } finally {
         if (!cancelled) setCheckingStatus(false);
@@ -53,7 +66,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
   }, [contentId, contentType]);
 
   const handleClaim = async () => {
-    if (claiming || hidden) return;
+    if (claiming || status !== "available") return;
     setClaiming(true);
     try {
       const client = createSupabaseBrowserClient();
@@ -66,7 +79,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
       const data = await readJsonResponse(res);
       if (!res.ok || !data.ok) throw new Error(data.error ?? "BP 획득에 실패했어요.");
       emitPointBalanceUpdated(data.balance);
-      setHidden(true);
+      setStatus("claimed");
       if (data.awarded) {
         showToast(`+${data.amount}${POINT_LABEL} 획득!`);
       } else {
@@ -79,7 +92,31 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
     }
   };
 
-  if (checkingStatus || hidden) return null;
+  if (checkingStatus) return null;
+
+  if (status !== "available") {
+    if (contentType !== "ai_prediction") return null;
+
+    const label =
+      status === "claimed"
+        ? "이미 BP 받음"
+        : status === "capped"
+          ? "오늘 AI 예측 BP 한도 완료"
+          : statusMessage || "아직 BP를 받을 수 없어요";
+
+    return (
+      <div className={`content-point-claim ${className ?? ""}`.trim()}>
+        <button
+          type="button"
+          className="content-point-claim-btn is-disabled"
+          disabled
+        >
+          <PointBaseballIcon size={16} className="content-point-ball-icon" />
+          <span>{label}</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={`content-point-claim ${className ?? ""}`.trim()}>

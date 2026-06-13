@@ -471,7 +471,7 @@ export function AiWinnerListScreen({
                 // ⚠️ 미스터리 연출은 "오늘 첫 reveal"에만 의미 있음. 과거 날짜 경기는
                 //    적중 결과 확인이 목적이므로 무조건 펼친 상태로 노출.
                 const hasSeenReveal = seenIds.has(g.id);
-                const effectiveSeen = hasSeenReveal || !isToday || allTodayFinished;
+                const effectiveSeen = hasSeenReveal || (!isToday && !isFuture) || allTodayFinished;
 
                 // 카드 상태:
                 //   1) 09시 전 + 예측 없음 → 잠금 카운트다운

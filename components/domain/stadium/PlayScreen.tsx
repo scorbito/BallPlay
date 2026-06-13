@@ -12,6 +12,14 @@ import { ModalShell } from "@/components/common/ModalShell";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bpRecords";
+import { getCustomTeamById } from "@/lib/supabase/query-parts/bpCustomTeams";
+import {
+  customTeamRowToBadgeMeta,
+  getCustomTeamDbId,
+  getCustomTeamIdAliases,
+  readLocalMyTeamBadgeMeta,
+  type CustomTeamBadgeMeta
+} from "@/lib/customTeamBadge";
 import { useAppState } from "@/lib/state/AppState";
 import { playMatchSound } from "@/lib/sound/matchSounds";
 import { trackEvent } from "@/lib/analytics/events";
@@ -42,6 +50,8 @@ import { useMatchSounds } from "./play/hooks/useMatchSounds";
 import { useLiveCountdown } from "./play/hooks/useLiveCountdown";
 import { useMatchSession } from "./play/hooks/useMatchSession";
 import type { SimPitcher } from "@/lib/sim/types";
+
+type CustomTeamMeta = CustomTeamBadgeMeta;
 
 function getPlayableTeamMeta(teamId: string, displayName?: string) {
   try {
@@ -136,6 +146,67 @@ export function PlayScreen() {
   });
   const matchStartedTrackedRef = useRef(false);
   const matchCompletedTrackedRef = useRef(false);
+  const [customTeamMetaById, setCustomTeamMetaById] = useState<Record<string, CustomTeamMeta>>({});
+
+  useEffect(() => {
+    if (!session?.input) {
+      setCustomTeamMetaById({});
+      return;
+    }
+    const lookupEntries = [session.input.home.teamId, session.input.away.teamId]
+      .map((teamId) => ({ teamId, dbId: getCustomTeamDbId(teamId) }))
+      .filter((entry): entry is { teamId: string; dbId: string } => {
+        if (!entry.dbId) return false;
+        if (entry.teamId === "national") return false;
+        try {
+          getTeam(entry.teamId);
+          return false;
+        } catch {
+          return true;
+        }
+      });
+    if (lookupEntries.length === 0) {
+      setCustomTeamMetaById({});
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      const client = createSupabaseBrowserClient();
+      const entries = await Promise.all(
+        Array.from(new Set(lookupEntries.map((entry) => entry.dbId))).map(async (teamId) => {
+          const res = await getCustomTeamById(client, teamId);
+          return [teamId, res.ok ? res.row : null] as const;
+        })
+      );
+      if (cancelled) return;
+      const meta: Record<string, CustomTeamMeta> = {};
+      const setMetaAliases = (teamId: string, badgeMeta: CustomTeamMeta) => {
+        for (const alias of getCustomTeamIdAliases(teamId)) {
+          meta[alias] = badgeMeta;
+        }
+      };
+      const byDbId = new Map<string, CustomTeamMeta>();
+      for (const [teamId, row] of entries) {
+        if (row) byDbId.set(teamId, customTeamRowToBadgeMeta(row));
+      }
+      for (const { teamId, dbId } of lookupEntries) {
+        const badgeMeta = byDbId.get(dbId);
+        if (badgeMeta) setMetaAliases(teamId, badgeMeta);
+      }
+
+      const localMyTeamMeta = readLocalMyTeamBadgeMeta();
+      if (localMyTeamMeta && session.myTeamId) {
+        const myTeamDbId = getCustomTeamDbId(session.myTeamId);
+        if (myTeamDbId) setMetaAliases(session.myTeamId, localMyTeamMeta);
+      }
+      setCustomTeamMetaById(meta);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.input, session?.myTeamId]);
 
   useEffect(() => {
     if (!hydrated || !session?.input || matchStartedTrackedRef.current) return;
@@ -758,8 +829,10 @@ export function PlayScreen() {
   }
 
   const input = session.input!;
-  const homeTeam = getPlayableTeamMeta(input.home.teamId, input.home.displayName);
-  const awayTeam = getPlayableTeamMeta(input.away.teamId, input.away.displayName);
+  const homeCustomMeta = customTeamMetaById[input.home.teamId];
+  const awayCustomMeta = customTeamMetaById[input.away.teamId];
+  const homeTeam = getPlayableTeamMeta(input.home.teamId, homeCustomMeta?.name ?? input.home.displayName);
+  const awayTeam = getPlayableTeamMeta(input.away.teamId, awayCustomMeta?.name ?? input.away.displayName);
   const homeLabel = deriveTeamLabel(input.home.displayName, homeTeam.shortName);
   const awayLabel = deriveTeamLabel(input.away.displayName, awayTeam.shortName);
   const myNickname = profile?.nickname?.trim() || "나";
@@ -817,6 +890,9 @@ export function PlayScreen() {
   const openingHome = {
     teamId: input.home.teamId,
     lineupName: (input.home.displayName?.trim() || homeTeam.shortName) ?? "",
+    initials: homeCustomMeta?.initials,
+    color: homeCustomMeta?.color,
+    badgeStyle: homeCustomMeta?.badge_style,
     starterName: input.home.starter.name,
     starterHand: input.home.starter.throwingHand,
     batters: input.home.batters.map((b, i) => ({
@@ -829,6 +905,9 @@ export function PlayScreen() {
   const openingAway = {
     teamId: input.away.teamId,
     lineupName: (input.away.displayName?.trim() || awayTeam.shortName) ?? "",
+    initials: awayCustomMeta?.initials,
+    color: awayCustomMeta?.color,
+    badgeStyle: awayCustomMeta?.badge_style,
     starterName: input.away.starter.name,
     starterHand: input.away.starter.throwingHand,
     batters: input.away.batters.map((b, i) => ({
@@ -869,6 +948,12 @@ export function PlayScreen() {
           totalHome={totalHome}
           awayNickname={awayNickname}
           homeNickname={homeNickname}
+          awayInitial={awayCustomMeta?.initials}
+          homeInitial={homeCustomMeta?.initials}
+          awayColor={awayCustomMeta?.color}
+          homeColor={homeCustomMeta?.color}
+          awayBadgeStyle={awayCustomMeta?.badge_style}
+          homeBadgeStyle={homeCustomMeta?.badge_style}
           baseState={baseState}
           outs={outs}
         />
@@ -939,7 +1024,8 @@ export function PlayScreen() {
           onChangeMode={setMode}
           onSkip={() => {
             // 가상경기(ai/self)는 전적 미집계라 이닝 제한 없이 즉시 건너뛰기 허용.
-            if (session.source !== "ai" && session.source !== "self" && linescore.currentInning < 6) {
+            const canSkipImmediately = Boolean(session.replayOfRecordId) || session.source === "ai" || session.source === "self";
+            if (!canSkipImmediately && linescore.currentInning < 6) {
               setSkipBlockedOpen(true);
               return;
             }

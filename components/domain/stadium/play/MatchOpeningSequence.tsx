@@ -15,6 +15,9 @@ type Batter = {
 type TeamSide = {
   teamId: string;
   lineupName: string;
+  initials?: string;
+  color?: string;
+  badgeStyle?: "circle" | "shield";
   starterName: string;
   starterHand: "L" | "R";
   batters: Batter[];
@@ -176,14 +179,28 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
           <p className="match-opening-title-eyebrow">대결 시작</p>
           <div className="match-opening-title-teams">
             <div className="match-opening-title-side match-opening-title-side--away">
-              <TeamLogo teamId={away.teamId} size="lg" />
+              <TeamLogo
+                teamId={away.teamId}
+                size="lg"
+                fallbackName={away.lineupName}
+                fallbackInitial={away.initials}
+                fallbackColor={away.color}
+                fallbackBadgeStyle={away.badgeStyle}
+              />
               <strong className="match-opening-title-name">{away.lineupName}</strong>
             </div>
             <span className="match-opening-title-vs" aria-hidden>
               VS
             </span>
             <div className="match-opening-title-side match-opening-title-side--home">
-              <TeamLogo teamId={home.teamId} size="lg" />
+              <TeamLogo
+                teamId={home.teamId}
+                size="lg"
+                fallbackName={home.lineupName}
+                fallbackInitial={home.initials}
+                fallbackColor={home.color}
+                fallbackBadgeStyle={home.badgeStyle}
+              />
               <strong className="match-opening-title-name">{home.lineupName}</strong>
             </div>
           </div>
@@ -194,7 +211,14 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
         <div className="match-opening-lineups">
           <div className="match-opening-lineups-col match-opening-lineups-col--away">
             <header className="match-opening-lineups-head">
-              <TeamLogo teamId={away.teamId} size="md" />
+              <TeamLogo
+                teamId={away.teamId}
+                size="md"
+                fallbackName={away.lineupName}
+                fallbackInitial={away.initials}
+                fallbackColor={away.color}
+                fallbackBadgeStyle={away.badgeStyle}
+              />
               <strong>{away.lineupName}</strong>
             </header>
             <div
@@ -230,7 +254,14 @@ export function MatchOpeningSequence({ home, away, onComplete, showSkip = true, 
           </div>
           <div className="match-opening-lineups-col match-opening-lineups-col--home">
             <header className="match-opening-lineups-head">
-              <TeamLogo teamId={home.teamId} size="md" />
+              <TeamLogo
+                teamId={home.teamId}
+                size="md"
+                fallbackName={home.lineupName}
+                fallbackInitial={home.initials}
+                fallbackColor={home.color}
+                fallbackBadgeStyle={home.badgeStyle}
+              />
               <strong>{home.lineupName}</strong>
             </header>
             <div

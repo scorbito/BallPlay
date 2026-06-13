@@ -53,11 +53,12 @@ export default async function DailyReportPage({ searchParams }: Props) {
 
   // 1. Supabase 캐시 테이블(daily_ai_reports)에서 데이터 조회 시도 (nocache가 아닐 때만)
   let cachedReport = null;
+  let cachedReportPublishedAt: string | null = null;
   if (!isNoCache) {
     try {
       const { data: cacheRow, error: cacheErr } = await supabase
         .from("daily_ai_reports")
-        .select("report_json")
+        .select("report_json, created_at")
         .eq("report_date", targetDate)
         .maybeSingle();
 
@@ -66,6 +67,7 @@ export default async function DailyReportPage({ searchParams }: Props) {
         const reportData = cacheRow.report_json;
         if (!isSkeletonReport(reportData)) {
           cachedReport = reportData;
+          cachedReportPublishedAt = typeof cacheRow.created_at === "string" ? cacheRow.created_at : null;
         } else {
           console.log(`[Daily Report Cache Skip] 캐시된 데이터가 더미 스켈레톤이므로 무시합니다. date: ${targetDate}`);
         }
@@ -81,6 +83,7 @@ export default async function DailyReportPage({ searchParams }: Props) {
       <DailyReportScreen 
         initialReport={cachedReport} 
         reportDate={targetDate}
+        reportPublishedAt={cachedReportPublishedAt}
         isAdmin={isAdmin}
         focus={searchParams.focus}
         backHref={searchParams.backHref}

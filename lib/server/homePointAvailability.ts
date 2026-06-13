@@ -24,15 +24,19 @@ function sumEarnedByReason(rows: Array<{ reason: string | null; amount: number |
   return earned;
 }
 
-async function getLatestPublishedDailyReportDate(client: SupabaseClient) {
+async function getLatestPublishedDailyReport(client: SupabaseClient) {
   const { data } = await client
     .from("daily_ai_reports")
-    .select("report_date, report_json")
+    .select("report_date, report_json, created_at")
     .order("report_date", { ascending: false })
     .limit(5);
 
   const report = (data ?? []).find((row) => !isSkeletonReport(row.report_json));
-  return typeof report?.report_date === "string" ? report.report_date : null;
+  if (typeof report?.report_date !== "string") return null;
+  return {
+    date: report.report_date,
+    createdAt: typeof report.created_at === "string" ? report.created_at : null
+  };
 }
 
 export async function getHomePointAvailability(
@@ -45,7 +49,7 @@ export async function getHomePointAvailability(
   const start = `${today}T00:00:00+09:00`;
   const end = `${addDaysISO(today, 1)}T00:00:00+09:00`;
 
-  const [gamesRes, aiPredictionsRes, claimsRes, transactionsRes, latestDailyReportDate] = await Promise.all([
+  const [gamesRes, aiPredictionsRes, claimsRes, transactionsRes, latestDailyReport] = await Promise.all([
     client
       .from("games")
       .select("id")
@@ -66,7 +70,7 @@ export async function getHomePointAvailability(
       .in("reason", EARN_REASONS)
       .gte("created_at", start)
       .lt("created_at", end),
-    getLatestPublishedDailyReportDate(client)
+    getLatestPublishedDailyReport(client)
   ]);
 
   const eligibleFrom = userCreatedAt && new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
@@ -98,12 +102,23 @@ export async function getHomePointAvailability(
     .filter((gameId) => hasClaim(`prediction_submitted:${gameId}`, today))
     .length;
   const dailyReportDates = Array.from(new Set([
-    latestDailyReportDate,
+    latestDailyReport?.date,
     today,
     yesterday
   ].filter((date): date is string => Boolean(date))));
+  const latestDailyReportContentId = latestDailyReport
+    ? `${latestDailyReport.date}${latestDailyReport.createdAt ? `|${latestDailyReport.createdAt}` : ""}`
+    : null;
   const claimedDailyReport = dailyReportDates
-    .some((date) => hasClaim(`content_daily_report:${date}`, date));
+    .some((date) => {
+      const rewardDate = latestDailyReport?.date === date && latestDailyReport.createdAt
+        ? kstDateString(new Date(latestDailyReport.createdAt))
+        : date;
+      const rewardKey = latestDailyReport?.date === date && latestDailyReportContentId
+        ? `content_daily_report:${latestDailyReportContentId}`
+        : `content_daily_report:${date}`;
+      return hasClaim(rewardKey, rewardDate);
+    });
   const stadiumMax = (POINT_REWARDS.stadiumOfficialFirstFive * POINT_REWARDS.stadiumOfficialFirstFiveCount)
     + POINT_REWARDS.stadiumOfficialExtraMax;
   const aiPredictionEligible = Array.from(aiGameIds).length > 0;

@@ -36,6 +36,7 @@ type DailyReportScreenProps = {
   isAdmin?: boolean;
   focus?: string;
   backHref?: string;
+  reportPublishedAt?: string | null;
 };
 
 // YYYY-MM-DD 날짜 차감/가산 헬퍼
@@ -62,7 +63,8 @@ export function DailyReportScreen({
   isNoReport: initialIsNoReport = false,
   isAdmin = false,
   focus,
-  backHref
+  backHref,
+  reportPublishedAt = null
 }: DailyReportScreenProps) {
   const [activeTab, setActiveTab] = useState<"brief" | "games">("brief");
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
@@ -73,8 +75,10 @@ export function DailyReportScreen({
   const [isFailed, setIsFailed] = useState(initialIsFailed);
   const [isNoReport, setIsNoReport] = useState(initialIsNoReport);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [contentPublishedAt, setContentPublishedAt] = useState<string | null>(reportPublishedAt);
 
   const hasReport = !isPending && !isNoGames && !isFailed && !isGenerating && !isNoReport;
+  const reportContentId = contentPublishedAt ? `${reportDate}|${contentPublishedAt}` : reportDate;
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
   const router = useRouter();
@@ -85,8 +89,9 @@ export function DailyReportScreen({
     setIsGenerating(initialIsGenerating);
     setIsFailed(initialIsFailed);
     setIsNoReport(initialIsNoReport);
+    setContentPublishedAt(reportPublishedAt);
     setErrorMsg(null);
-  }, [initialReport, initialIsGenerating, initialIsFailed, initialIsNoReport, reportDate]);
+  }, [initialReport, initialIsGenerating, initialIsFailed, initialIsNoReport, reportDate, reportPublishedAt]);
 
   // 포커스 경기 자동 확장 및 탭 전환
   useEffect(() => {
@@ -114,6 +119,7 @@ export function DailyReportScreen({
 
         if (res.ok && data.ok && data.report) {
           setReport(data.report);
+          setContentPublishedAt(typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString());
           setIsGenerating(false);
         } else {
           throw new Error(data.error || "일일 리포트 생성에 실패했습니다.");
@@ -531,7 +537,7 @@ export function DailyReportScreen({
 
                               <ContentPointClaimButton
                                 contentType="daily_report_game"
-                                contentId={`${reportDate}:${gameReport.gameId}`}
+                                contentId={contentPublishedAt ? `${reportDate}|${contentPublishedAt}|${gameReport.gameId}` : `${reportDate}:${gameReport.gameId}`}
                               />
 
                             </div>
@@ -550,7 +556,7 @@ export function DailyReportScreen({
 
       </div>
       {hasReport ? (
-        <ContentPointClaimButton contentType="daily_report" contentId={reportDate} />
+        <ContentPointClaimButton contentType="daily_report" contentId={reportContentId} />
       ) : null}
       <PageViewCounter />
     </AppShell>

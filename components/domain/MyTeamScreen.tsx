@@ -1275,17 +1275,7 @@ export function MyTeamScreen() {
   const filledCount = slots.filter((s) => s !== null && playersMap.has(s.playerId)).length;
   const pitcherFilled = pitcherSlots.filter((id) => id !== null && playersMap.has(id)).length;
 
-  const BadgeIcon = ({ initials, style, color }: { initials: string; style: "circle" | "shield"; color: string }) => {
-    const styleClass = style === "shield" ? "rounded-b-2xl rounded-t-lg" : "rounded-full";
-    return (
-      <div 
-        className={`w-12 h-12 flex items-center justify-center font-bold text-white shadow-md border-2 border-white ${styleClass}`}
-        style={{ backgroundColor: color }}
-      >
-        {initials}
-      </div>
-    );
-  };
+  const myTeamLogoId = customTeamId ?? "custom:my-team";
 
   // 1. 구단 미설립 상태
   if (!teamInfo) {
@@ -1379,7 +1369,14 @@ export function MyTeamScreen() {
     return (
       <AppShell activeTab="home" title="나만의 팀 드래프트" backHref="/" theme="light">
         <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-md mt-6 text-center">
-          <BadgeIcon initials={teamInfo.initials} style={teamInfo.badgeStyle} color={teamInfo.color} />
+          <TeamLogo
+            teamId={myTeamLogoId}
+            size="lg"
+            fallbackName={teamInfo.name}
+            fallbackInitial={teamInfo.initials}
+            fallbackColor={teamInfo.color}
+            fallbackBadgeStyle={teamInfo.badgeStyle}
+          />
           <h2 className="text-2xl font-extrabold text-slate-800 mt-4">{teamInfo.name} 창단 완료!</h2>
           <p className="text-sm text-slate-500 mt-2">
             이제 첫 기본 선수단(타자 15명, 투수 3명)을 영입하기 위한 창단 드래프트를 실행합니다.
@@ -1405,7 +1402,14 @@ export function MyTeamScreen() {
       <div className="w-full max-w-3xl mx-auto mt-4 mb-0 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <BadgeIcon initials={teamInfo.initials} style={teamInfo.badgeStyle} color={teamInfo.color} />
+            <TeamLogo
+              teamId={myTeamLogoId}
+              size="lg"
+              fallbackName={teamInfo.name}
+              fallbackInitial={teamInfo.initials}
+              fallbackColor={teamInfo.color}
+              fallbackBadgeStyle={teamInfo.badgeStyle}
+            />
             <div className="min-w-0">
               <h2 className="truncate text-lg font-black text-slate-900">{teamInfo.name}</h2>
             </div>
@@ -1460,7 +1464,14 @@ export function MyTeamScreen() {
 
       <div className="hidden">
         <div className="flex items-center gap-3">
-          <BadgeIcon initials={teamInfo.initials} style={teamInfo.badgeStyle} color={teamInfo.color} />
+          <TeamLogo
+            teamId={myTeamLogoId}
+            size="lg"
+            fallbackName={teamInfo.name}
+            fallbackInitial={teamInfo.initials}
+            fallbackColor={teamInfo.color}
+            fallbackBadgeStyle={teamInfo.badgeStyle}
+          />
           <div>
             <h2 className="font-extrabold text-base text-slate-800">{teamInfo.name}</h2>
             <p className="text-[10px] text-slate-400">보유 선수 {players.length}명</p>
@@ -1493,43 +1504,33 @@ export function MyTeamScreen() {
       {activeTab !== "lineup" ? (
         <>
           <div className="w-full max-w-4xl mx-auto space-y-3 px-2 sm:px-4">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setRosterFilter("batters")}
-                className={`rounded-2xl border p-3 text-center shadow-sm transition-all active:scale-95 ${
+                className={`inline-flex min-h-[38px] items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-center shadow-sm transition-all active:scale-95 ${
                   rosterFilter === "batters"
                     ? "border-pink-200 bg-pink-50"
                     : "border-slate-100 bg-white"
                 }`}
               >
-                <p className="text-[10px] font-bold text-slate-400">타자</p>
-                <strong className="mt-1 block text-lg font-black text-slate-900">
+                <span className="text-sm font-black text-slate-500">타자</span>
+                <strong className="text-xl font-black leading-none text-slate-900">
                   {players.filter((p) => p.primaryPosition !== "P").length}
                 </strong>
               </button>
               <button
                 type="button"
                 onClick={() => setRosterFilter("pitchers")}
-                className={`rounded-2xl border p-3 text-center shadow-sm transition-all active:scale-95 ${
+                className={`inline-flex min-h-[38px] items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-center shadow-sm transition-all active:scale-95 ${
                   rosterFilter === "pitchers"
                     ? "border-pink-200 bg-pink-50"
                     : "border-slate-100 bg-white"
                 }`}
               >
-                <p className="text-[10px] font-bold text-slate-400">투수</p>
-                <strong className="mt-1 block text-lg font-black text-slate-900">
+                <span className="text-sm font-black text-slate-500">투수</span>
+                <strong className="text-xl font-black leading-none text-slate-900">
                   {players.filter((p) => p.primaryPosition === "P").length}
-                </strong>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("lineup")}
-                className="rounded-2xl border border-slate-100 bg-white p-3 text-center shadow-sm transition-all active:scale-95"
-              >
-                <p className="text-[10px] font-bold text-slate-400">라인업</p>
-                <strong className="mt-1 block text-lg font-black text-slate-900">
-                  {filledCount}/9
                 </strong>
               </button>
             </div>

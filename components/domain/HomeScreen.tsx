@@ -121,7 +121,8 @@ const sections: HomeSection[] = [
         description: "선수를 모아 만드는 커스텀 구단",
         icon: Users,
         iconImage: "/icons/menu/my-team.png",
-        available: true
+        available: false,
+        badge: "준비중"
       }
     ]
   },
@@ -454,7 +455,7 @@ export function HomeScreen({
                     />
                   </Link>
                 ) : null}
-                {card.id === "my-team" ? (
+                {card.id === "my-team" && card.available ? (
                   <Link
                     href="/my-team"
                     className="home-fall-badge home-my-team-badge"

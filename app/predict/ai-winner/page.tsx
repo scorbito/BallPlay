@@ -145,7 +145,8 @@ export default async function AiWinnerPredictPage({
     // VIEW 의 is_correct_live 를 BpAiPredictionRow.is_correct 로 매핑.
     // 컴포넌트 시그니처(BpAiPredictionRow[]) 유지 위해 page 안에서 형변환.
     const rawPredictions = predictionsByGameId.get(g.id) ?? [];
-    const enriched: BpAiPredictionRow[] = rawPredictions.map((p) => ({
+    const visiblePredictions = predictionsPublished || isAdmin ? rawPredictions : [];
+    const enriched: BpAiPredictionRow[] = visiblePredictions.map((p) => ({
       id: p.id,
       game_id: p.game_id,
       game_date: p.game_date,
@@ -174,7 +175,7 @@ export default async function AiWinnerPredictPage({
       status: g.status,
       // guest 는 항상 가림(클라이언트로 데이터 자체가 안 감). 그 외엔 3개 AI 완료(공개) 전엔
       // 가리되, 운영자(영상 사전제작용)는 미리 본다.
-      predictions: locked ? [] : predictionsPublished || isAdmin ? enriched : []
+      predictions: locked ? [] : enriched
     };
   });
 

@@ -119,10 +119,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 6) DB 캐시 upsert
+    const createdAt = new Date().toISOString();
     const { error: upsertErr } = await admin.from("daily_ai_reports").upsert({
       report_date: targetDate,
       report_json: aiReport,
-      created_at: new Date().toISOString()
+      created_at: createdAt
     });
 
     if (upsertErr) {
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       ok: true, 
       date: targetDate, 
+      createdAt,
       report: aiReport 
     });
 

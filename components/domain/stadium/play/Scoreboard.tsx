@@ -27,6 +27,12 @@ export function Scoreboard({
   totalHome,
   awayNickname,
   homeNickname,
+  awayInitial,
+  homeInitial,
+  awayColor,
+  homeColor,
+  awayBadgeStyle,
+  homeBadgeStyle,
   baseState,
   outs
 }: {
@@ -38,6 +44,12 @@ export function Scoreboard({
   totalHome: number;
   awayNickname: string | null;
   homeNickname: string | null;
+  awayInitial?: string;
+  homeInitial?: string;
+  awayColor?: string;
+  homeColor?: string;
+  awayBadgeStyle?: "circle" | "shield";
+  homeBadgeStyle?: "circle" | "shield";
   baseState: BaseState;
   outs: 0 | 1 | 2 | 3;
 }) {
@@ -106,7 +118,14 @@ export function Scoreboard({
           {awayNickname ? (
             <span className="stadium-play-team-nickname" title={awayNickname}>{awayNickname}</span>
           ) : null}
-          <TeamLogo teamId={awayTeamId} size="lg" />
+          <TeamLogo
+            teamId={awayTeamId}
+            size="lg"
+            fallbackName={awayLabel}
+            fallbackInitial={awayInitial}
+            fallbackColor={awayColor}
+            fallbackBadgeStyle={awayBadgeStyle}
+          />
         </div>
         <div className="stadium-play-team-info">
           <span className="stadium-play-team-name">{awayLabel}</span>
@@ -126,7 +145,14 @@ export function Scoreboard({
           {homeNickname ? (
             <span className="stadium-play-team-nickname" title={homeNickname}>{homeNickname}</span>
           ) : null}
-          <TeamLogo teamId={homeTeamId} size="lg" />
+          <TeamLogo
+            teamId={homeTeamId}
+            size="lg"
+            fallbackName={homeLabel}
+            fallbackInitial={homeInitial}
+            fallbackColor={homeColor}
+            fallbackBadgeStyle={homeBadgeStyle}
+          />
         </div>
       </div>
     </header>

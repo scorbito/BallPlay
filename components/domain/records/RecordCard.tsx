@@ -1,12 +1,13 @@
 "use client";
 
 import { Play, Swords, Trash2 } from "lucide-react";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import {
   canReplay,
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
+import type { CustomTeamBadgeMeta } from "@/lib/customTeamBadge";
 
 type ReplayReason = NonNullable<ReturnType<typeof canReplay>["reason"]>;
 
@@ -41,6 +42,7 @@ type Props = {
   deleting: boolean;
   canRematch: boolean;
   opponentSide: "home" | "away";
+  customTeamMetaById?: Record<string, CustomTeamBadgeMeta>;
   onReplay: (row: BpRecordRow) => void;
   onOpenOpponent: (row: BpRecordRow) => void;
   onRematch: (row: BpRecordRow) => void;
@@ -52,6 +54,7 @@ export function RecordCard({
   deleting,
   canRematch,
   opponentSide,
+  customTeamMetaById = {},
   onReplay,
   onOpenOpponent,
   onRematch,
@@ -72,6 +75,10 @@ export function RecordCard({
     (row.user_side === "home" && row.final_score.home > row.final_score.away) ||
     (row.user_side === "away" && row.final_score.away > row.final_score.home);
   const isDraw = row.final_score.home === row.final_score.away;
+  const awayFallback = customTeamMetaById[row.away_team_id];
+  const homeFallback = customTeamMetaById[row.home_team_id];
+  const awayDisplayName = awayFallback?.name ?? row.input?.away.displayName ?? row.away_label ?? row.away_team_id;
+  const homeDisplayName = homeFallback?.name ?? row.input?.home.displayName ?? row.home_label ?? row.home_team_id;
 
   return (
     <article className="records-card">
@@ -111,14 +118,28 @@ export function RecordCard({
             onClick={() => onOpenOpponent(row)}
             title="상대 라인업 보기"
           >
-            <TeamBadge teamId={row.away_team_id} size="sm" />
-            <span>{row.away_label ?? row.away_team_id}</span>
+            <TeamLogo
+              teamId={row.away_team_id}
+              size="sm"
+              fallbackName={awayDisplayName}
+              fallbackInitial={awayFallback?.initials}
+              fallbackColor={awayFallback?.color}
+              fallbackBadgeStyle={awayFallback?.badge_style}
+            />
+            <span>{awayDisplayName}</span>
             <strong>{row.final_score.away}</strong>
           </button>
         ) : (
           <div className="records-card-team">
-            <TeamBadge teamId={row.away_team_id} size="sm" />
-            <span>{row.away_label ?? row.away_team_id}</span>
+            <TeamLogo
+              teamId={row.away_team_id}
+              size="sm"
+              fallbackName={awayDisplayName}
+              fallbackInitial={awayFallback?.initials}
+              fallbackColor={awayFallback?.color}
+              fallbackBadgeStyle={awayFallback?.badge_style}
+            />
+            <span>{awayDisplayName}</span>
             <strong>{row.final_score.away}</strong>
           </div>
         )}
@@ -130,14 +151,28 @@ export function RecordCard({
             onClick={() => onOpenOpponent(row)}
             title="상대 라인업 보기"
           >
-            <TeamBadge teamId={row.home_team_id} size="sm" />
-            <span>{row.home_label ?? row.home_team_id}</span>
+            <TeamLogo
+              teamId={row.home_team_id}
+              size="sm"
+              fallbackName={homeDisplayName}
+              fallbackInitial={homeFallback?.initials}
+              fallbackColor={homeFallback?.color}
+              fallbackBadgeStyle={homeFallback?.badge_style}
+            />
+            <span>{homeDisplayName}</span>
             <strong>{row.final_score.home}</strong>
           </button>
         ) : (
           <div className="records-card-team is-right">
-            <TeamBadge teamId={row.home_team_id} size="sm" />
-            <span>{row.home_label ?? row.home_team_id}</span>
+            <TeamLogo
+              teamId={row.home_team_id}
+              size="sm"
+              fallbackName={homeDisplayName}
+              fallbackInitial={homeFallback?.initials}
+              fallbackColor={homeFallback?.color}
+              fallbackBadgeStyle={homeFallback?.badge_style}
+            />
+            <span>{homeDisplayName}</span>
             <strong>{row.final_score.home}</strong>
           </div>
         )}

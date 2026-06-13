@@ -45,6 +45,8 @@ type Props = {
   games: Sim1000GameCard[];
   /** 운영자만 true — "다시 돌리기" 버튼 노출 */
   isAdmin?: boolean;
+  /** 운영자가 현재 선택 날짜의 시뮬을 수동 재실행할 수 있으면 true. */
+  canAdminRerun?: boolean;
   /** 시즌 누적 적중률 (live 집계). undefined 또는 total 0 이면 안내 표시. */
   accuracyStats?: Sim1000AccuracyStats;
   /** 소프트 게이트 — 비로그인/익명이면 true. 매치업·누적 적중률만 보이고 수치는 로그인 유도. */
@@ -107,6 +109,7 @@ export function Sim1000ListScreen({
   nextDate,
   games,
   isAdmin = false,
+  canAdminRerun,
   accuracyStats,
   locked = false
 }: Props) {
@@ -168,7 +171,7 @@ export function Sim1000ListScreen({
     }
   }
 
-  const showRerun = isAdmin && isToday;
+  const showRerun = canAdminRerun ?? (isAdmin && isToday);
 
   return (
     <AppShell

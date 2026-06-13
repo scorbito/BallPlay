@@ -47,6 +47,7 @@ type Props = {
   predictions: BpAiPredictionRow[];
   /** 오늘 경기인가 — 과거 경기면 연출 없이 즉시 펼친 상태로 노출. */
   isToday?: boolean;
+  isFuture?: boolean;
   selectedDate?: string;
   sim: BpSimResultRow | null;
   homeLineup: Sim1000LineupBatter[] | null;
@@ -95,6 +96,7 @@ export function AiWinnerRevealScreen({
   game,
   predictions,
   isToday = true,
+  isFuture = false,
   selectedDate,
   sim,
   homeLineup,
@@ -146,8 +148,8 @@ export function AiWinnerRevealScreen({
   // 오늘 경기는 재진입이라도 매번 애니메이션 재생 (사용자 영상 제작 워크플로우).
   // 목록 화면의 미스터리 카드는 markSeen 으로 별도 관리 (한 번 본 픽은 가리지 않음).
   useEffect(() => {
-    if (!isToday) setVisibleStage(4);
-  }, [isToday]);
+    if (!isToday && !isFuture) setVisibleStage(4);
+  }, [isFuture, isToday]);
 
   // 초기 reveal 트리거 — visibleStage가 0이면 800ms 후 1로.
   // Strict mode의 두 번 실행에 안전: cleanup이 timer를 비우고 두 번째 mount가 다시 set.
@@ -179,7 +181,8 @@ export function AiWinnerRevealScreen({
   };
 
   const summary = summarize(orderedPredictions, game.homeTeamId, game.awayTeamId);
-  const isPastDate = !isToday;
+  const hasCompleteAiPredictions = new Set(orderedPredictions.map((p) => p.ai_provider)).size >= 3;
+  const isPastDate = !isToday && !isFuture;
   const finished =
     game.status === "finished" ||
     (game.status !== "in_progress" && game.homeScore !== null && game.awayScore !== null) ||
@@ -280,7 +283,7 @@ export function AiWinnerRevealScreen({
           >
             AI 예측 결과
           </button>
-          {isToday && (
+          {hasCompleteAiPredictions && (
             <button
               type="button"
               className={`ai-reveal-tab-btn ${activeTab === "stats" ? "is-active" : ""}`}

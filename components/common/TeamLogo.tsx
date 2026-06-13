@@ -11,6 +11,7 @@ type TeamLogoProps = {
   fallbackName?: string;
   fallbackInitial?: string;
   fallbackColor?: string;
+  fallbackBadgeStyle?: "circle" | "shield";
 };
 
 const logoSrcByTeamId: Record<string, string | StaticImageData> = {
@@ -45,13 +46,20 @@ export function TeamLogo({
   showName = false,
   fallbackName,
   fallbackInitial,
-  fallbackColor
+  fallbackColor,
+  fallbackBadgeStyle = "circle"
 }: TeamLogoProps) {
   const team = (() => {
     try {
       return getTeam(teamId);
     } catch {
-      if (teamId.startsWith("custom:")) {
+      if (
+        teamId.startsWith("custom:") ||
+        teamId.startsWith("custom-team:") ||
+        fallbackName ||
+        fallbackInitial ||
+        fallbackColor
+      ) {
         const name = fallbackName?.trim() || "나만의 팀";
         return {
           id: teamId,
@@ -70,11 +78,12 @@ export function TeamLogo({
   const src = logoSrcByTeamId[teamId];
 
   if (!src) {
+    const badgeRadius = fallbackBadgeStyle === "shield" ? "8px 8px 16px 16px" : "9999px";
     return (
       <span className="team-badge-wrap">
         <span
           className={`team-badge team-badge-${size}`}
-          style={{ background: team.color } as CSSProperties}
+          style={{ background: team.color, borderRadius: badgeRadius } as CSSProperties}
           aria-label={team.name}
         >
           <span className="team-badge-initial">{team.initial}</span>

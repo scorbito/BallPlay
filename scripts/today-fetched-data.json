@@ -1,1317 +1,131 @@
 {
-  "date": "2026-06-12",
+  "date": "2026-06-14",
   "games": [
     {
-      "id": "d04b22e1-290e-4c94-b4c4-2a244d2334be",
-      "external_id": "kbo-20260612-lotte-lg",
-      "game_date": "2026-06-12",
-      "game_time": "18:30:00",
-      "stadium": "미정",
-      "home_team_id": "lg",
-      "away_team_id": "lotte",
-      "home_starter": "톨허스트",
-      "away_starter": "로드리게스",
-      "status": "scheduled"
-    },
-    {
-      "id": "d648060d-5d19-4590-99d1-9736852838e8",
-      "external_id": "kbo-20260612-ssg-samsung",
-      "game_date": "2026-06-12",
-      "game_time": "18:30:00",
-      "stadium": "미정",
-      "home_team_id": "samsung",
-      "away_team_id": "ssg",
-      "home_starter": "장찬희",
-      "away_starter": "타케다",
-      "status": "scheduled"
-    },
-    {
-      "id": "d2decbec-d083-444d-855e-5deaccd3a94d",
-      "external_id": "kbo-20260612-doosan-kia",
-      "game_date": "2026-06-12",
-      "game_time": "18:30:00",
-      "stadium": "미정",
-      "home_team_id": "kia",
-      "away_team_id": "doosan",
-      "home_starter": "양현종",
-      "away_starter": "최민석",
-      "status": "scheduled"
-    },
-    {
-      "id": "3ef375b1-e6b2-4c16-afd2-afe58171a705",
-      "external_id": "kbo-20260612-nc-kt",
-      "game_date": "2026-06-12",
-      "game_time": "18:30:00",
-      "stadium": "미정",
-      "home_team_id": "kt",
-      "away_team_id": "nc",
-      "home_starter": "배제성",
-      "away_starter": "테일러",
-      "status": "scheduled"
-    },
-    {
-      "id": "e83810dc-429e-4fcd-b19f-3605d2c18fda",
-      "external_id": "kbo-20260612-hanwha-kiwoom",
-      "game_date": "2026-06-12",
-      "game_time": "18:30:00",
-      "stadium": "미정",
+      "id": "b8065d15-4b6e-4b74-a29c-155969d0e90d",
+      "external_id": "kbo-20260614-hanwha-kiwoom",
+      "game_date": "2026-06-14",
+      "game_time": "14:00:00",
+      "stadium": "고척",
       "home_team_id": "kiwoom",
       "away_team_id": "hanwha",
-      "home_starter": "안우진",
-      "away_starter": "에르난데스",
+      "home_starter": "로젠버그",
+      "away_starter": "왕옌청",
+      "status": "scheduled"
+    },
+    {
+      "id": "9904dc32-7256-4402-bc69-afd1941cb8dd",
+      "external_id": "kbo-20260614-ssg-samsung",
+      "game_date": "2026-06-14",
+      "game_time": "17:00:00",
+      "stadium": "대구",
+      "home_team_id": "samsung",
+      "away_team_id": "ssg",
+      "home_starter": "양창섭",
+      "away_starter": "해치",
+      "status": "scheduled"
+    },
+    {
+      "id": "09e0f80d-41dd-4463-990a-93d3a3ad3229",
+      "external_id": "kbo-20260614-lotte-lg",
+      "game_date": "2026-06-14",
+      "game_time": "17:00:00",
+      "stadium": "잠실",
+      "home_team_id": "lg",
+      "away_team_id": "lotte",
+      "home_starter": "임찬규",
+      "away_starter": "비슬리",
+      "status": "scheduled"
+    },
+    {
+      "id": "ffdffa7a-22b0-418c-adc4-e816f6235407",
+      "external_id": "kbo-20260614-doosan-kia",
+      "game_date": "2026-06-14",
+      "game_time": "17:00:00",
+      "stadium": "광주",
+      "home_team_id": "kia",
+      "away_team_id": "doosan",
+      "home_starter": "김태형",
+      "away_starter": "곽빈",
+      "status": "scheduled"
+    },
+    {
+      "id": "06427010-5838-4edc-8409-ffbfcbcfbdaf",
+      "external_id": "kbo-20260614-nc-kt",
+      "game_date": "2026-06-14",
+      "game_time": "17:00:00",
+      "stadium": "수원",
+      "home_team_id": "kt",
+      "away_team_id": "nc",
+      "home_starter": "고영표",
+      "away_starter": "김준원",
       "status": "scheduled"
     }
   ],
   "lineups": {
-    "lg": [
-      {
-        "game_date": "2026-06-11",
-        "game_id": "20260611SKLG0",
-        "batting": [
-          {
-            "name": "홍창기",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "lg-51"
-          },
-          {
-            "name": "박해민",
-            "order": 2,
-            "position": "CF",
-            "rosterId": "lg-17"
-          },
-          {
-            "name": "오스틴",
-            "order": 3,
-            "position": "1B",
-            "rosterId": "lg-23"
-          },
-          {
-            "name": "문보경",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "lg-2"
-          },
-          {
-            "name": "오지환",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lg-10"
-          },
-          {
-            "name": "송찬의",
-            "order": 6,
-            "position": "LF",
-            "rosterId": "lg-55"
-          },
-          {
-            "name": "문정빈",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "lg-56"
-          },
-          {
-            "name": "이주헌",
-            "order": 8,
-            "position": "C",
-            "rosterId": "lg-63"
-          },
-          {
-            "name": "신민재",
-            "order": 9,
-            "position": "2B",
-            "rosterId": "lg-4"
-          }
-        ],
-        "starter_name": "김윤식",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-10",
-        "game_id": "20260610SKLG0",
-        "batting": [
-          {
-            "name": "박해민",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "lg-17"
-          },
-          {
-            "name": "문성주",
-            "order": 2,
-            "position": "LF",
-            "rosterId": "lg-8"
-          },
-          {
-            "name": "오스틴",
-            "order": 3,
-            "position": "1B",
-            "rosterId": "lg-23"
-          },
-          {
-            "name": "문보경",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "lg-2"
-          },
-          {
-            "name": "오지환",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lg-10"
-          },
-          {
-            "name": "송찬의",
-            "order": 6,
-            "position": "RF",
-            "rosterId": "lg-55"
-          },
-          {
-            "name": "박동원",
-            "order": 7,
-            "position": "C",
-            "rosterId": "lg-27"
-          },
-          {
-            "name": "구본혁",
-            "order": 8,
-            "position": "3B",
-            "rosterId": "lg-6"
-          },
-          {
-            "name": "신민재",
-            "order": 9,
-            "position": "2B",
-            "rosterId": "lg-4"
-          }
-        ],
-        "starter_name": "웰스",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-09",
-        "game_id": "20260609SKLG0",
-        "batting": [
-          {
-            "name": "박해민",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "lg-17"
-          },
-          {
-            "name": "문성주",
-            "order": 2,
-            "position": "LF",
-            "rosterId": "lg-8"
-          },
-          {
-            "name": "오스틴",
-            "order": 3,
-            "position": "1B",
-            "rosterId": "lg-23"
-          },
-          {
-            "name": "문보경",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "lg-2"
-          },
-          {
-            "name": "오지환",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lg-10"
-          },
-          {
-            "name": "박동원",
-            "order": 6,
-            "position": "C",
-            "rosterId": "lg-27"
-          },
-          {
-            "name": "송찬의",
-            "order": 7,
-            "position": "RF",
-            "rosterId": "lg-55"
-          },
-          {
-            "name": "구본혁",
-            "order": 8,
-            "position": "3B",
-            "rosterId": "lg-6"
-          },
-          {
-            "name": "신민재",
-            "order": 9,
-            "position": "2B",
-            "rosterId": "lg-4"
-          }
-        ],
-        "starter_name": "임찬규",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-07",
-        "game_id": "20260607LGNC0",
-        "batting": [
-          {
-            "name": "홍창기",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "lg-51"
-          },
-          {
-            "name": "박해민",
-            "order": 2,
-            "position": "CF",
-            "rosterId": "lg-17"
-          },
-          {
-            "name": "오스틴",
-            "order": 3,
-            "position": "1B",
-            "rosterId": "lg-23"
-          },
-          {
-            "name": "문보경",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "lg-2"
-          },
-          {
-            "name": "오지환",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lg-10"
-          },
-          {
-            "name": "송찬의",
-            "order": 6,
-            "position": "LF",
-            "rosterId": "lg-55"
-          },
-          {
-            "name": "구본혁",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "lg-6"
-          },
-          {
-            "name": "이주헌",
-            "order": 8,
-            "position": "C",
-            "rosterId": "lg-63"
-          },
-          {
-            "name": "신민재",
-            "order": 9,
-            "position": "2B",
-            "rosterId": "lg-4"
-          }
-        ],
-        "starter_name": "송승기",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606LGNC0",
-        "batting": [
-          {
-            "name": "홍창기",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "lg-51"
-          },
-          {
-            "name": "박해민",
-            "order": 2,
-            "position": "CF",
-            "rosterId": "lg-17"
-          },
-          {
-            "name": "오스틴",
-            "order": 3,
-            "position": "1B",
-            "rosterId": "lg-23"
-          },
-          {
-            "name": "문보경",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "lg-2"
-          },
-          {
-            "name": "오지환",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lg-10"
-          },
-          {
-            "name": "문성주",
-            "order": 6,
-            "position": "LF",
-            "rosterId": "lg-8"
-          },
-          {
-            "name": "박동원",
-            "order": 7,
-            "position": "C",
-            "rosterId": "lg-27"
-          },
-          {
-            "name": "구본혁",
-            "order": 8,
-            "position": "3B",
-            "rosterId": "lg-6"
-          },
-          {
-            "name": "신민재",
-            "order": 9,
-            "position": "2B",
-            "rosterId": "lg-4"
-          }
-        ],
-        "starter_name": "톨허스트",
-        "is_home": false
-      }
-    ],
-    "samsung": [
-      {
-        "game_date": "2026-06-11",
-        "game_id": "20260611SSKT0",
-        "batting": [
-          {
-            "name": "김지찬",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "samsung-58"
-          },
-          {
-            "name": "양우현",
-            "order": 2,
-            "position": "2B",
-            "rosterId": "samsung-53"
-          },
-          {
-            "name": "구자욱",
-            "order": 3,
-            "position": "DH",
-            "rosterId": "samsung-5"
-          },
-          {
-            "name": "박승규",
-            "order": 4,
-            "position": "LF",
-            "rosterId": "samsung-66"
-          },
-          {
-            "name": "디아즈",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "samsung-0"
-          },
-          {
-            "name": "이재현",
-            "order": 6,
-            "position": "SS",
-            "rosterId": "samsung-7"
-          },
-          {
-            "name": "김성윤",
-            "order": 7,
-            "position": "RF",
-            "rosterId": "samsung-39"
-          },
-          {
-            "name": "김도환",
-            "order": 8,
-            "position": "C",
-            "rosterId": "samsung-24"
-          },
-          {
-            "name": "김상준",
-            "order": 9,
-            "position": "3B",
-            "rosterId": "samsung-56"
-          }
-        ],
-        "starter_name": "오러클린",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-10",
-        "game_id": "20260610SSKT0",
-        "batting": [
-          {
-            "name": "김지찬",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "samsung-58"
-          },
-          {
-            "name": "김성윤",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "samsung-39"
-          },
-          {
-            "name": "구자욱",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "samsung-5"
-          },
-          {
-            "name": "디아즈",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "samsung-0"
-          },
-          {
-            "name": "최형우",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "samsung-34"
-          },
-          {
-            "name": "류지혁",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "samsung-16"
-          },
-          {
-            "name": "이재현",
-            "order": 7,
-            "position": "SS",
-            "rosterId": "samsung-7"
-          },
-          {
-            "name": "강민호",
-            "order": 8,
-            "position": "C",
-            "rosterId": "samsung-47"
-          },
-          {
-            "name": "전병우",
-            "order": 9,
-            "position": "3B",
-            "rosterId": "samsung-61"
-          }
-        ],
-        "starter_name": "원태인",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-09",
-        "game_id": "20260609SSKT0",
-        "batting": [
-          {
-            "name": "김지찬",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "samsung-58"
-          },
-          {
-            "name": "김성윤",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "samsung-39"
-          },
-          {
-            "name": "구자욱",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "samsung-5"
-          },
-          {
-            "name": "최형우",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "samsung-34"
-          },
-          {
-            "name": "디아즈",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "samsung-0"
-          },
-          {
-            "name": "류지혁",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "samsung-16"
-          },
-          {
-            "name": "전병우",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "samsung-61"
-          },
-          {
-            "name": "강민호",
-            "order": 8,
-            "position": "C",
-            "rosterId": "samsung-47"
-          },
-          {
-            "name": "양우현",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "samsung-53"
-          }
-        ],
-        "starter_name": "최원태",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-07",
-        "game_id": "20260607SSHT0",
-        "batting": [
-          {
-            "name": "김지찬",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "samsung-58"
-          },
-          {
-            "name": "김성윤",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "samsung-39"
-          },
-          {
-            "name": "구자욱",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "samsung-5"
-          },
-          {
-            "name": "디아즈",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "samsung-0"
-          },
-          {
-            "name": "강민호",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "samsung-47"
-          },
-          {
-            "name": "류지혁",
-            "order": 6,
-            "position": "三二",
-            "rosterId": "samsung-16"
-          },
-          {
-            "name": "김상준",
-            "order": 7,
-            "position": "SS",
-            "rosterId": "samsung-56"
-          },
-          {
-            "name": "장승현",
-            "order": 8,
-            "position": "C",
-            "rosterId": "samsung-46"
-          },
-          {
-            "name": "양우현",
-            "order": 9,
-            "position": "2B",
-            "rosterId": "samsung-53"
-          }
-        ],
-        "starter_name": "양창섭",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606SSHT0",
-        "batting": [
-          {
-            "name": "김지찬",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "samsung-58"
-          },
-          {
-            "name": "김성윤",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "samsung-39"
-          },
-          {
-            "name": "구자욱",
-            "order": 3,
-            "position": "DH",
-            "rosterId": "samsung-5"
-          },
-          {
-            "name": "디아즈",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "samsung-0"
-          },
-          {
-            "name": "박승규",
-            "order": 5,
-            "position": "LF",
-            "rosterId": "samsung-66"
-          },
-          {
-            "name": "강민호",
-            "order": 6,
-            "position": "C",
-            "rosterId": "samsung-47"
-          },
-          {
-            "name": "류지혁",
-            "order": 7,
-            "position": "2B",
-            "rosterId": "samsung-16"
-          },
-          {
-            "name": "전병우",
-            "order": 8,
-            "position": "3B",
-            "rosterId": "samsung-61"
-          },
-          {
-            "name": "박계범",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "samsung-p64468"
-          }
-        ],
-        "starter_name": "장찬희",
-        "is_home": false
-      }
-    ],
-    "kia": [
-      {
-        "game_date": "2026-06-11",
-        "game_id": "20260611HTHH0",
-        "batting": [
-          {
-            "name": "박재현",
-            "order": 1,
-            "position": "LF",
-            "rosterId": "kia-15"
-          },
-          {
-            "name": "김선빈",
-            "order": 2,
-            "position": "2B",
-            "rosterId": "kia-3"
-          },
-          {
-            "name": "김도영",
-            "order": 3,
-            "position": "DH",
-            "rosterId": "kia-5"
-          },
-          {
-            "name": "나성범",
-            "order": 4,
-            "position": "RF",
-            "rosterId": "kia-47"
-          },
-          {
-            "name": "아데를린",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "kia-24"
-          },
-          {
-            "name": "한준수",
-            "order": 6,
-            "position": "C",
-            "rosterId": "kia-25"
-          },
-          {
-            "name": "변우혁",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "kia-29"
-          },
-          {
-            "name": "박민",
-            "order": 8,
-            "position": "SS",
-            "rosterId": "kia-2"
-          },
-          {
-            "name": "김호령",
-            "order": 9,
-            "position": "CF",
-            "rosterId": "kia-27"
-          }
-        ],
-        "starter_name": "올러",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-10",
-        "game_id": "20260610HTHH0",
-        "batting": [
-          {
-            "name": "박재현",
-            "order": 1,
-            "position": "LF",
-            "rosterId": "kia-15"
-          },
-          {
-            "name": "김민규",
-            "order": 2,
-            "position": "CF",
-            "rosterId": "kia-37"
-          },
-          {
-            "name": "김도영",
-            "order": 3,
-            "position": "DH",
-            "rosterId": "kia-5"
-          },
-          {
-            "name": "나성범",
-            "order": 4,
-            "position": "RF",
-            "rosterId": "kia-47"
-          },
-          {
-            "name": "아데를린",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "kia-24"
-          },
-          {
-            "name": "김규성",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "kia-14"
-          },
-          {
-            "name": "변우혁",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "kia-29"
-          },
-          {
-            "name": "김태군",
-            "order": 8,
-            "position": "C",
-            "rosterId": "kia-42"
-          },
-          {
-            "name": "박민",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kia-2"
-          }
-        ],
-        "starter_name": "시라카와",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-09",
-        "game_id": "20260609HTHH0",
-        "batting": [
-          {
-            "name": "김민규",
-            "order": 1,
-            "position": "LF",
-            "rosterId": "kia-37"
-          },
-          {
-            "name": "김선빈",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "kia-3"
-          },
-          {
-            "name": "김도영",
-            "order": 3,
-            "position": "3B",
-            "rosterId": "kia-5"
-          },
-          {
-            "name": "아데를린",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "kia-24"
-          },
-          {
-            "name": "나성범",
-            "order": 5,
-            "position": "RF",
-            "rosterId": "kia-47"
-          },
-          {
-            "name": "한준수",
-            "order": 6,
-            "position": "C",
-            "rosterId": "kia-25"
-          },
-          {
-            "name": "김호령",
-            "order": 7,
-            "position": "CF",
-            "rosterId": "kia-27"
-          },
-          {
-            "name": "박민",
-            "order": 8,
-            "position": "2B",
-            "rosterId": "kia-2"
-          },
-          {
-            "name": "정현창",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kia-12"
-          }
-        ],
-        "starter_name": "황동하",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-07",
-        "game_id": "20260607SSHT0",
-        "batting": [
-          {
-            "name": "박재현",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "kia-15"
-          },
-          {
-            "name": "김민규",
-            "order": 2,
-            "position": "LF",
-            "rosterId": "kia-37"
-          },
-          {
-            "name": "김도영",
-            "order": 3,
-            "position": "3B",
-            "rosterId": "kia-5"
-          },
-          {
-            "name": "나성범",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "kia-47"
-          },
-          {
-            "name": "아데를린",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "kia-24"
-          },
-          {
-            "name": "김호령",
-            "order": 6,
-            "position": "CF",
-            "rosterId": "kia-27"
-          },
-          {
-            "name": "김규성",
-            "order": 7,
-            "position": "2B",
-            "rosterId": "kia-14"
-          },
-          {
-            "name": "김태군",
-            "order": 8,
-            "position": "C",
-            "rosterId": "kia-42"
-          },
-          {
-            "name": "박민",
-            "order": 9,
-            "position": "유二",
-            "rosterId": "kia-2"
-          }
-        ],
-        "starter_name": "네일",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606SSHT0",
-        "batting": [
-          {
-            "name": "박재현",
-            "order": 1,
-            "position": "LF",
-            "rosterId": "kia-15"
-          },
-          {
-            "name": "오선우",
-            "order": 2,
-            "position": "1B",
-            "rosterId": "kia-56"
-          },
-          {
-            "name": "김도영",
-            "order": 3,
-            "position": "3B",
-            "rosterId": "kia-5"
-          },
-          {
-            "name": "나성범",
-            "order": 4,
-            "position": "RF",
-            "rosterId": "kia-47"
-          },
-          {
-            "name": "아데를린",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "kia-24"
-          },
-          {
-            "name": "한준수",
-            "order": 6,
-            "position": "C",
-            "rosterId": "kia-25"
-          },
-          {
-            "name": "박정우",
-            "order": 7,
-            "position": "CF",
-            "rosterId": "kia-1"
-          },
-          {
-            "name": "김규성",
-            "order": 8,
-            "position": "2B",
-            "rosterId": "kia-14"
-          },
-          {
-            "name": "박민",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kia-2"
-          }
-        ],
-        "starter_name": "양현종",
-        "is_home": true
-      }
-    ],
-    "kt": [
-      {
-        "game_date": "2026-06-11",
-        "game_id": "20260611SSKT0",
-        "batting": [
-          {
-            "name": "최원준",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "kt-3"
-          },
-          {
-            "name": "김현수",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "kt-10"
-          },
-          {
-            "name": "김민혁",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "kt-53"
-          },
-          {
-            "name": "힐리어드",
-            "order": 4,
-            "position": "CF",
-            "rosterId": "kt-34"
-          },
-          {
-            "name": "허경민",
-            "order": 5,
-            "position": "3B",
-            "rosterId": "kt-13"
-          },
-          {
-            "name": "김상수",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "kt-7"
-          },
-          {
-            "name": "류현인",
-            "order": 7,
-            "position": "1B",
-            "rosterId": "kt-9"
-          },
-          {
-            "name": "강현우",
-            "order": 8,
-            "position": "C",
-            "rosterId": "kt-55"
-          },
-          {
-            "name": "이강민",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kt-6"
-          }
-        ],
-        "starter_name": "스기모토",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-10",
-        "game_id": "20260610SSKT0",
-        "batting": [
-          {
-            "name": "최원준",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "kt-3"
-          },
-          {
-            "name": "김현수",
-            "order": 2,
-            "position": "1B",
-            "rosterId": "kt-10"
-          },
-          {
-            "name": "김민혁",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "kt-53"
-          },
-          {
-            "name": "힐리어드",
-            "order": 4,
-            "position": "CF",
-            "rosterId": "kt-34"
-          },
-          {
-            "name": "이정훈",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "kt-33"
-          },
-          {
-            "name": "김상수",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "kt-7"
-          },
-          {
-            "name": "류현인",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "kt-9"
-          },
-          {
-            "name": "한승택",
-            "order": 8,
-            "position": "C",
-            "rosterId": "kt-45"
-          },
-          {
-            "name": "권동진",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kt-52"
-          }
-        ],
-        "starter_name": "사우어",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-09",
-        "game_id": "20260609SSKT0",
-        "batting": [
-          {
-            "name": "최원준",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "kt-3"
-          },
-          {
-            "name": "김현수",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "kt-10"
-          },
-          {
-            "name": "김민혁",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "kt-53"
-          },
-          {
-            "name": "힐리어드",
-            "order": 4,
-            "position": "CF",
-            "rosterId": "kt-34"
-          },
-          {
-            "name": "허경민",
-            "order": 5,
-            "position": "3B",
-            "rosterId": "kt-13"
-          },
-          {
-            "name": "김상수",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "kt-7"
-          },
-          {
-            "name": "류현인",
-            "order": 7,
-            "position": "1B",
-            "rosterId": "kt-9"
-          },
-          {
-            "name": "한승택",
-            "order": 8,
-            "position": "C",
-            "rosterId": "kt-45"
-          },
-          {
-            "name": "권동진",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kt-52"
-          }
-        ],
-        "starter_name": "고영표",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-07",
-        "game_id": "20260607KTSK0",
-        "batting": [
-          {
-            "name": "최원준",
-            "order": 1,
-            "position": "RF",
-            "rosterId": "kt-3"
-          },
-          {
-            "name": "김현수",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "kt-10"
-          },
-          {
-            "name": "김민혁",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "kt-53"
-          },
-          {
-            "name": "힐리어드",
-            "order": 4,
-            "position": "CF",
-            "rosterId": "kt-34"
-          },
-          {
-            "name": "허경민",
-            "order": 5,
-            "position": "3B",
-            "rosterId": "kt-13"
-          },
-          {
-            "name": "김상수",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "kt-7"
-          },
-          {
-            "name": "한승택",
-            "order": 7,
-            "position": "C",
-            "rosterId": "kt-45"
-          },
-          {
-            "name": "오윤석",
-            "order": 8,
-            "position": "1B",
-            "rosterId": "kt-4"
-          },
-          {
-            "name": "권동진",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kt-52"
-          }
-        ],
-        "starter_name": "오원석",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606KTSK0",
-        "batting": [
-          {
-            "name": "최원준",
-            "order": 1,
-            "position": "DH",
-            "rosterId": "kt-3"
-          },
-          {
-            "name": "김현수",
-            "order": 2,
-            "position": "1B",
-            "rosterId": "kt-10"
-          },
-          {
-            "name": "김민혁",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "kt-53"
-          },
-          {
-            "name": "힐리어드",
-            "order": 4,
-            "position": "CF",
-            "rosterId": "kt-34"
-          },
-          {
-            "name": "허경민",
-            "order": 5,
-            "position": "3B",
-            "rosterId": "kt-13"
-          },
-          {
-            "name": "김상수",
-            "order": 6,
-            "position": "2B",
-            "rosterId": "kt-7"
-          },
-          {
-            "name": "이재원",
-            "order": 7,
-            "position": "RF",
-            "rosterId": "kt-105"
-          },
-          {
-            "name": "강현우",
-            "order": 8,
-            "position": "C",
-            "rosterId": "kt-55"
-          },
-          {
-            "name": "권동진",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "kt-52"
-          }
-        ],
-        "starter_name": "배제성",
-        "is_home": false
-      }
-    ],
     "kiwoom": [
+      {
+        "game_date": "2026-06-12",
+        "game_id": "20260612HHWO0",
+        "batting": [
+          {
+            "name": "서건창",
+            "order": 1,
+            "position": "2B",
+            "rosterId": "kiwoom-14"
+          },
+          {
+            "name": "히우라",
+            "order": 2,
+            "position": "DH",
+            "rosterId": "kiwoom-22"
+          },
+          {
+            "name": "김웅빈",
+            "order": 3,
+            "position": "3B",
+            "rosterId": "kiwoom-10"
+          },
+          {
+            "name": "최주환",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "kiwoom-53"
+          },
+          {
+            "name": "박찬혁",
+            "order": 5,
+            "position": "RF",
+            "rosterId": "kiwoom-43"
+          },
+          {
+            "name": "김건희",
+            "order": 6,
+            "position": "C",
+            "rosterId": "kiwoom-12"
+          },
+          {
+            "name": "권혁빈",
+            "order": 7,
+            "position": "SS",
+            "rosterId": "kiwoom-0"
+          },
+          {
+            "name": "임지열",
+            "order": 8,
+            "position": "LF",
+            "rosterId": "kiwoom-29"
+          },
+          {
+            "name": "박수종",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "kiwoom-87"
+          }
+        ],
+        "starter_name": "안우진",
+        "is_home": true
+      },
       {
         "game_date": "2026-06-11",
         "game_id": "20260611NCWO0",
@@ -1559,1319 +373,1319 @@
         ],
         "starter_name": "알칸타라",
         "is_home": false
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606WOOB0",
-        "batting": [
-          {
-            "name": "서건창",
-            "order": 1,
-            "position": "2B",
-            "rosterId": "kiwoom-14"
-          },
-          {
-            "name": "히우라",
-            "order": 2,
-            "position": "LF",
-            "rosterId": "kiwoom-22"
-          },
-          {
-            "name": "임병욱",
-            "order": 3,
-            "position": "CF",
-            "rosterId": "kiwoom-17"
-          },
-          {
-            "name": "최주환",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "kiwoom-53"
-          },
-          {
-            "name": "김웅빈",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "kiwoom-10"
-          },
-          {
-            "name": "여동욱",
-            "order": 6,
-            "position": "3B",
-            "rosterId": "kiwoom-93"
-          },
-          {
-            "name": "추재현",
-            "order": 7,
-            "position": "RF",
-            "rosterId": "kiwoom-27"
-          },
-          {
-            "name": "오선진",
-            "order": 8,
-            "position": "SS",
-            "rosterId": "kiwoom-6"
-          },
-          {
-            "name": "김건희",
-            "order": 9,
-            "position": "C",
-            "rosterId": "kiwoom-12"
-          }
-        ],
-        "starter_name": "안우진",
-        "is_home": false
       }
     ],
-    "lotte": [
+    "samsung": [
       {
-        "game_date": "2026-06-11",
-        "game_id": "20260611OBLT0",
+        "game_date": "2026-06-12",
+        "game_id": "20260612SKSS0",
         "batting": [
           {
-            "name": "황성빈",
+            "name": "김지찬",
             "order": 1,
             "position": "CF",
-            "rosterId": "lotte-0"
+            "rosterId": "samsung-58"
           },
           {
-            "name": "고승민",
+            "name": "김상준",
             "order": 2,
-            "position": "1B",
-            "rosterId": "lotte-2"
-          },
-          {
-            "name": "레이예스",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "lotte-29"
-          },
-          {
-            "name": "나승엽",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "lotte-51"
-          },
-          {
-            "name": "전민재",
-            "order": 5,
             "position": "SS",
-            "rosterId": "lotte-13"
+            "rosterId": "samsung-56"
           },
           {
-            "name": "손호영",
+            "name": "구자욱",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "samsung-5"
+          },
+          {
+            "name": "박승규",
+            "order": 4,
+            "position": "LF",
+            "rosterId": "samsung-66"
+          },
+          {
+            "name": "디아즈",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "samsung-0"
+          },
+          {
+            "name": "전병우",
             "order": 6,
-            "position": "2B",
-            "rosterId": "lotte-33"
+            "position": "3B",
+            "rosterId": "samsung-61"
           },
           {
-            "name": "조세진",
+            "name": "김성윤",
             "order": 7,
             "position": "RF",
-            "rosterId": "lotte-12"
+            "rosterId": "samsung-39"
           },
           {
-            "name": "김세민",
+            "name": "김도환",
             "order": 8,
-            "position": "3B",
-            "rosterId": "lotte-5"
+            "position": "C",
+            "rosterId": "samsung-24"
           },
           {
-            "name": "손성빈",
+            "name": "양우현",
             "order": 9,
-            "position": "C",
-            "rosterId": "lotte-28"
+            "position": "2B",
+            "rosterId": "samsung-53"
           }
         ],
-        "starter_name": "박세웅",
+        "starter_name": "장찬희",
         "is_home": true
+      },
+      {
+        "game_date": "2026-06-11",
+        "game_id": "20260611SSKT0",
+        "batting": [
+          {
+            "name": "김지찬",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "samsung-58"
+          },
+          {
+            "name": "양우현",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "samsung-53"
+          },
+          {
+            "name": "구자욱",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "samsung-5"
+          },
+          {
+            "name": "박승규",
+            "order": 4,
+            "position": "LF",
+            "rosterId": "samsung-66"
+          },
+          {
+            "name": "디아즈",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "samsung-0"
+          },
+          {
+            "name": "이재현",
+            "order": 6,
+            "position": "SS",
+            "rosterId": "samsung-7"
+          },
+          {
+            "name": "김성윤",
+            "order": 7,
+            "position": "RF",
+            "rosterId": "samsung-39"
+          },
+          {
+            "name": "김도환",
+            "order": 8,
+            "position": "C",
+            "rosterId": "samsung-24"
+          },
+          {
+            "name": "김상준",
+            "order": 9,
+            "position": "3B",
+            "rosterId": "samsung-56"
+          }
+        ],
+        "starter_name": "오러클린",
+        "is_home": false
       },
       {
         "game_date": "2026-06-10",
-        "game_id": "20260610OBLT0",
+        "game_id": "20260610SSKT0",
         "batting": [
           {
-            "name": "황성빈",
+            "name": "김지찬",
             "order": 1,
             "position": "CF",
-            "rosterId": "lotte-0"
+            "rosterId": "samsung-58"
           },
           {
-            "name": "고승민",
+            "name": "김성윤",
             "order": 2,
-            "position": "1B",
-            "rosterId": "lotte-2"
+            "position": "RF",
+            "rosterId": "samsung-39"
           },
           {
-            "name": "레이예스",
+            "name": "구자욱",
             "order": 3,
             "position": "LF",
-            "rosterId": "lotte-29"
+            "rosterId": "samsung-5"
           },
           {
-            "name": "나승엽",
+            "name": "디아즈",
             "order": 4,
-            "position": "DH",
-            "rosterId": "lotte-51"
+            "position": "1B",
+            "rosterId": "samsung-0"
           },
           {
-            "name": "전민재",
+            "name": "최형우",
             "order": 5,
-            "position": "SS",
-            "rosterId": "lotte-13"
+            "position": "DH",
+            "rosterId": "samsung-34"
           },
           {
-            "name": "손호영",
+            "name": "류지혁",
             "order": 6,
             "position": "2B",
-            "rosterId": "lotte-33"
+            "rosterId": "samsung-16"
           },
           {
-            "name": "손성빈",
+            "name": "이재현",
             "order": 7,
-            "position": "C",
-            "rosterId": "lotte-28"
+            "position": "SS",
+            "rosterId": "samsung-7"
           },
           {
-            "name": "조세진",
+            "name": "강민호",
             "order": 8,
-            "position": "RF",
-            "rosterId": "lotte-12"
+            "position": "C",
+            "rosterId": "samsung-47"
           },
           {
-            "name": "김세민",
+            "name": "전병우",
             "order": 9,
             "position": "3B",
-            "rosterId": "lotte-5"
+            "rosterId": "samsung-61"
           }
         ],
-        "starter_name": "김진욱",
-        "is_home": true
+        "starter_name": "원태인",
+        "is_home": false
       },
       {
         "game_date": "2026-06-09",
-        "game_id": "20260609OBLT0",
+        "game_id": "20260609SSKT0",
         "batting": [
           {
-            "name": "황성빈",
+            "name": "김지찬",
             "order": 1,
             "position": "CF",
-            "rosterId": "lotte-0"
+            "rosterId": "samsung-58"
           },
           {
-            "name": "고승민",
+            "name": "김성윤",
             "order": 2,
-            "position": "2B",
-            "rosterId": "lotte-2"
+            "position": "RF",
+            "rosterId": "samsung-39"
           },
           {
-            "name": "레이예스",
+            "name": "구자욱",
             "order": 3,
             "position": "LF",
-            "rosterId": "lotte-29"
+            "rosterId": "samsung-5"
           },
           {
-            "name": "나승엽",
+            "name": "최형우",
             "order": 4,
-            "position": "1B",
-            "rosterId": "lotte-51"
-          },
-          {
-            "name": "전민재",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lotte-13"
-          },
-          {
-            "name": "손호영",
-            "order": 6,
-            "position": "3B",
-            "rosterId": "lotte-33"
-          },
-          {
-            "name": "최항",
-            "order": 7,
             "position": "DH",
-            "rosterId": "lotte-14"
+            "rosterId": "samsung-34"
           },
           {
-            "name": "조세진",
+            "name": "디아즈",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "samsung-0"
+          },
+          {
+            "name": "류지혁",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "samsung-16"
+          },
+          {
+            "name": "전병우",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "samsung-61"
+          },
+          {
+            "name": "강민호",
             "order": 8,
-            "position": "RF",
-            "rosterId": "lotte-12"
+            "position": "C",
+            "rosterId": "samsung-47"
           },
           {
-            "name": "손성빈",
+            "name": "양우현",
             "order": 9,
-            "position": "C",
-            "rosterId": "lotte-28"
+            "position": "SS",
+            "rosterId": "samsung-53"
           }
         ],
-        "starter_name": "나균안",
-        "is_home": true
+        "starter_name": "최원태",
+        "is_home": false
       },
       {
         "game_date": "2026-06-07",
-        "game_id": "20260607HHLT0",
+        "game_id": "20260607SSHT0",
         "batting": [
           {
-            "name": "황성빈",
-            "order": 1,
-            "position": "중좌",
-            "rosterId": "lotte-0"
-          },
-          {
-            "name": "고승민",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "lotte-2"
-          },
-          {
-            "name": "레이예스",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "lotte-29"
-          },
-          {
-            "name": "나승엽",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "lotte-51"
-          },
-          {
-            "name": "전민재",
-            "order": 5,
-            "position": "SS",
-            "rosterId": "lotte-13"
-          },
-          {
-            "name": "김민성",
-            "order": 6,
-            "position": "3B",
-            "rosterId": "lotte-16"
-          },
-          {
-            "name": "손호영",
-            "order": 7,
-            "position": "2B",
-            "rosterId": "lotte-33"
-          },
-          {
-            "name": "조세진",
-            "order": 8,
-            "position": "RF",
-            "rosterId": "lotte-12"
-          },
-          {
-            "name": "손성빈",
-            "order": 9,
-            "position": "C",
-            "rosterId": "lotte-28"
-          }
-        ],
-        "starter_name": "비슬리",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606HHLT0",
-        "batting": [
-          {
-            "name": "황성빈",
+            "name": "김지찬",
             "order": 1,
             "position": "CF",
-            "rosterId": "lotte-0"
+            "rosterId": "samsung-58"
           },
           {
-            "name": "고승민",
+            "name": "김성윤",
             "order": 2,
-            "position": "2B",
-            "rosterId": "lotte-2"
+            "position": "RF",
+            "rosterId": "samsung-39"
           },
           {
-            "name": "레이예스",
+            "name": "구자욱",
             "order": 3,
             "position": "LF",
-            "rosterId": "lotte-29"
+            "rosterId": "samsung-5"
           },
           {
-            "name": "나승엽",
+            "name": "디아즈",
             "order": 4,
             "position": "1B",
-            "rosterId": "lotte-51"
+            "rosterId": "samsung-0"
           },
           {
-            "name": "전민재",
+            "name": "강민호",
             "order": 5,
-            "position": "SS",
-            "rosterId": "lotte-13"
-          },
-          {
-            "name": "장두성",
-            "order": 6,
-            "position": "RF",
-            "rosterId": "lotte-7"
-          },
-          {
-            "name": "손호영",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "lotte-33"
-          },
-          {
-            "name": "김민성",
-            "order": 8,
             "position": "DH",
-            "rosterId": "lotte-16"
+            "rosterId": "samsung-47"
           },
           {
-            "name": "손성빈",
-            "order": 9,
+            "name": "류지혁",
+            "order": 6,
+            "position": "三二",
+            "rosterId": "samsung-16"
+          },
+          {
+            "name": "김상준",
+            "order": 7,
+            "position": "SS",
+            "rosterId": "samsung-56"
+          },
+          {
+            "name": "장승현",
+            "order": 8,
             "position": "C",
-            "rosterId": "lotte-28"
+            "rosterId": "samsung-46"
+          },
+          {
+            "name": "양우현",
+            "order": 9,
+            "position": "2B",
+            "rosterId": "samsung-53"
           }
         ],
-        "starter_name": "이민석",
-        "is_home": true
+        "starter_name": "양창섭",
+        "is_home": false
       }
     ],
-    "ssg": [
+    "lg": [
+      {
+        "game_date": "2026-06-12",
+        "game_id": "20260612LTLG0",
+        "batting": [
+          {
+            "name": "홍창기",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "lg-51"
+          },
+          {
+            "name": "박해민",
+            "order": 2,
+            "position": "CF",
+            "rosterId": "lg-17"
+          },
+          {
+            "name": "오스틴",
+            "order": 3,
+            "position": "1B",
+            "rosterId": "lg-23"
+          },
+          {
+            "name": "문보경",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "lg-2"
+          },
+          {
+            "name": "오지환",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lg-10"
+          },
+          {
+            "name": "송찬의",
+            "order": 6,
+            "position": "LF",
+            "rosterId": "lg-55"
+          },
+          {
+            "name": "박동원",
+            "order": 7,
+            "position": "C",
+            "rosterId": "lg-27"
+          },
+          {
+            "name": "구본혁",
+            "order": 8,
+            "position": "3B",
+            "rosterId": "lg-6"
+          },
+          {
+            "name": "신민재",
+            "order": 9,
+            "position": "2B",
+            "rosterId": "lg-4"
+          }
+        ],
+        "starter_name": "톨허스트",
+        "is_home": true
+      },
       {
         "game_date": "2026-06-11",
         "game_id": "20260611SKLG0",
         "batting": [
           {
-            "name": "박성한",
+            "name": "홍창기",
             "order": 1,
-            "position": "SS",
-            "rosterId": "ssg-2"
-          },
-          {
-            "name": "정준재",
-            "order": 2,
-            "position": "2B",
-            "rosterId": "ssg-p54812"
-          },
-          {
-            "name": "최정",
-            "order": 3,
-            "position": "DH",
-            "rosterId": "ssg-14"
-          },
-          {
-            "name": "에레디아",
-            "order": 4,
-            "position": "LF",
-            "rosterId": "ssg-27"
-          },
-          {
-            "name": "김성욱",
-            "order": 5,
-            "position": "CF",
-            "rosterId": "ssg-31"
-          },
-          {
-            "name": "오태곤",
-            "order": 6,
             "position": "RF",
-            "rosterId": "ssg-37"
+            "rosterId": "lg-51"
           },
           {
-            "name": "전의산",
-            "order": 7,
+            "name": "박해민",
+            "order": 2,
+            "position": "CF",
+            "rosterId": "lg-17"
+          },
+          {
+            "name": "오스틴",
+            "order": 3,
             "position": "1B",
-            "rosterId": "ssg-jeonus"
+            "rosterId": "lg-23"
           },
           {
-            "name": "조형우",
+            "name": "문보경",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "lg-2"
+          },
+          {
+            "name": "오지환",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lg-10"
+          },
+          {
+            "name": "송찬의",
+            "order": 6,
+            "position": "LF",
+            "rosterId": "lg-55"
+          },
+          {
+            "name": "문정빈",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "lg-56"
+          },
+          {
+            "name": "이주헌",
             "order": 8,
             "position": "C",
-            "rosterId": "ssg-20"
+            "rosterId": "lg-63"
           },
           {
-            "name": "안상현",
+            "name": "신민재",
             "order": 9,
-            "position": "3B",
-            "rosterId": "ssg-10"
+            "position": "2B",
+            "rosterId": "lg-4"
           }
         ],
-        "starter_name": "김건우",
-        "is_home": false
+        "starter_name": "김윤식",
+        "is_home": true
       },
       {
         "game_date": "2026-06-10",
         "game_id": "20260610SKLG0",
         "batting": [
           {
-            "name": "박성한",
+            "name": "박해민",
             "order": 1,
-            "position": "SS",
-            "rosterId": "ssg-2"
+            "position": "CF",
+            "rosterId": "lg-17"
           },
           {
-            "name": "정준재",
+            "name": "문성주",
             "order": 2,
-            "position": "2B",
-            "rosterId": "ssg-p54812"
-          },
-          {
-            "name": "에레디아",
-            "order": 3,
             "position": "LF",
-            "rosterId": "ssg-27"
+            "rosterId": "lg-8"
           },
           {
-            "name": "김재환",
+            "name": "오스틴",
+            "order": 3,
+            "position": "1B",
+            "rosterId": "lg-23"
+          },
+          {
+            "name": "문보경",
             "order": 4,
             "position": "DH",
-            "rosterId": "ssg-32"
+            "rosterId": "lg-2"
           },
           {
-            "name": "김성욱",
+            "name": "오지환",
             "order": 5,
-            "position": "RF",
-            "rosterId": "ssg-31"
+            "position": "SS",
+            "rosterId": "lg-10"
           },
           {
-            "name": "전의산",
+            "name": "송찬의",
             "order": 6,
-            "position": "1B",
-            "rosterId": "ssg-jeonus"
+            "position": "RF",
+            "rosterId": "lg-55"
           },
           {
-            "name": "안상현",
+            "name": "박동원",
             "order": 7,
-            "position": "3B",
-            "rosterId": "ssg-10"
-          },
-          {
-            "name": "조형우",
-            "order": 8,
             "position": "C",
-            "rosterId": "ssg-20"
+            "rosterId": "lg-27"
           },
           {
-            "name": "최지훈",
+            "name": "구본혁",
+            "order": 8,
+            "position": "3B",
+            "rosterId": "lg-6"
+          },
+          {
+            "name": "신민재",
             "order": 9,
-            "position": "CF",
-            "rosterId": "ssg-54"
+            "position": "2B",
+            "rosterId": "lg-4"
           }
         ],
-        "starter_name": "최민준",
-        "is_home": false
+        "starter_name": "웰스",
+        "is_home": true
       },
       {
         "game_date": "2026-06-09",
         "game_id": "20260609SKLG0",
         "batting": [
           {
-            "name": "박성한",
+            "name": "박해민",
             "order": 1,
-            "position": "SS",
-            "rosterId": "ssg-2"
-          },
-          {
-            "name": "최지훈",
-            "order": 2,
             "position": "CF",
-            "rosterId": "ssg-54"
+            "rosterId": "lg-17"
           },
           {
-            "name": "에레디아",
-            "order": 3,
+            "name": "문성주",
+            "order": 2,
             "position": "LF",
-            "rosterId": "ssg-27"
+            "rosterId": "lg-8"
           },
           {
-            "name": "김재환",
+            "name": "오스틴",
+            "order": 3,
+            "position": "1B",
+            "rosterId": "lg-23"
+          },
+          {
+            "name": "문보경",
             "order": 4,
             "position": "DH",
-            "rosterId": "ssg-32"
+            "rosterId": "lg-2"
           },
           {
-            "name": "전의산",
+            "name": "오지환",
             "order": 5,
-            "position": "1B",
-            "rosterId": "ssg-jeonus"
-          },
-          {
-            "name": "조형우",
-            "order": 6,
-            "position": "C",
-            "rosterId": "ssg-20"
-          },
-          {
-            "name": "김성욱",
-            "order": 7,
-            "position": "RF",
-            "rosterId": "ssg-31"
-          },
-          {
-            "name": "정준재",
-            "order": 8,
-            "position": "2B",
-            "rosterId": "ssg-p54812"
-          },
-          {
-            "name": "최윤석",
-            "order": 9,
-            "position": "3B",
-            "rosterId": "ssg-65"
-          }
-        ],
-        "starter_name": "김민준",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-07",
-        "game_id": "20260607KTSK0",
-        "batting": [
-          {
-            "name": "박성한",
-            "order": 1,
             "position": "SS",
-            "rosterId": "ssg-2"
+            "rosterId": "lg-10"
           },
           {
-            "name": "정준재",
-            "order": 2,
-            "position": "2B",
-            "rosterId": "ssg-p54812"
-          },
-          {
-            "name": "에레디아",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "ssg-27"
-          },
-          {
-            "name": "김재환",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "ssg-32"
-          },
-          {
-            "name": "김성욱",
-            "order": 5,
-            "position": "RF",
-            "rosterId": "ssg-31"
-          },
-          {
-            "name": "전의산",
+            "name": "박동원",
             "order": 6,
-            "position": "1B",
-            "rosterId": "ssg-jeonus"
-          },
-          {
-            "name": "최지훈",
-            "order": 7,
-            "position": "CF",
-            "rosterId": "ssg-54"
-          },
-          {
-            "name": "조형우",
-            "order": 8,
             "position": "C",
-            "rosterId": "ssg-20"
+            "rosterId": "lg-27"
           },
           {
-            "name": "김민준",
-            "order": 9,
+            "name": "송찬의",
+            "order": 7,
+            "position": "RF",
+            "rosterId": "lg-55"
+          },
+          {
+            "name": "구본혁",
+            "order": 8,
             "position": "3B",
-            "rosterId": "ssg-5"
+            "rosterId": "lg-6"
+          },
+          {
+            "name": "신민재",
+            "order": 9,
+            "position": "2B",
+            "rosterId": "lg-4"
           }
         ],
-        "starter_name": "베니지아노",
+        "starter_name": "임찬규",
         "is_home": true
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606KTSK0",
-        "batting": [
-          {
-            "name": "박성한",
-            "order": 1,
-            "position": "SS",
-            "rosterId": "ssg-2"
-          },
-          {
-            "name": "정준재",
-            "order": 2,
-            "position": "2B",
-            "rosterId": "ssg-p54812"
-          },
-          {
-            "name": "최지훈",
-            "order": 3,
-            "position": "CF",
-            "rosterId": "ssg-54"
-          },
-          {
-            "name": "김재환",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "ssg-32"
-          },
-          {
-            "name": "에레디아",
-            "order": 5,
-            "position": "LF",
-            "rosterId": "ssg-27"
-          },
-          {
-            "name": "전의산",
-            "order": 6,
-            "position": "1B",
-            "rosterId": "ssg-jeonus"
-          },
-          {
-            "name": "최준우",
-            "order": 7,
-            "position": "RF",
-            "rosterId": "ssg-p68868"
-          },
-          {
-            "name": "김민식",
-            "order": 8,
-            "position": "C",
-            "rosterId": "ssg-24"
-          },
-          {
-            "name": "홍대인",
-            "order": 9,
-            "position": "3B",
-            "rosterId": "ssg-97"
-          }
-        ],
-        "starter_name": "타케다",
-        "is_home": true
-      }
-    ],
-    "doosan": [
-      {
-        "game_date": "2026-06-11",
-        "game_id": "20260611OBLT0",
-        "batting": [
-          {
-            "name": "정수빈",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "doosan-31"
-          },
-          {
-            "name": "카메론",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "doosan-24"
-          },
-          {
-            "name": "김민석",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "doosan-2"
-          },
-          {
-            "name": "양의지",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "doosan-25"
-          },
-          {
-            "name": "오명진",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "doosan-6"
-          },
-          {
-            "name": "안재석",
-            "order": 6,
-            "position": "3B",
-            "rosterId": "doosan-62"
-          },
-          {
-            "name": "박지훈",
-            "order": 7,
-            "position": "SS",
-            "rosterId": "doosan-37"
-          },
-          {
-            "name": "이유찬",
-            "order": 8,
-            "position": "2B",
-            "rosterId": "doosan-13"
-          },
-          {
-            "name": "윤준호",
-            "order": 9,
-            "position": "C",
-            "rosterId": "doosan-27"
-          }
-        ],
-        "starter_name": "타카다",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-10",
-        "game_id": "20260610OBLT0",
-        "batting": [
-          {
-            "name": "정수빈",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "doosan-31"
-          },
-          {
-            "name": "카메론",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "doosan-24"
-          },
-          {
-            "name": "손아섭",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "doosan-8"
-          },
-          {
-            "name": "양의지",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "doosan-25"
-          },
-          {
-            "name": "안재석",
-            "order": 5,
-            "position": "3B",
-            "rosterId": "doosan-62"
-          },
-          {
-            "name": "박찬호",
-            "order": 6,
-            "position": "SS",
-            "rosterId": "doosan-7"
-          },
-          {
-            "name": "박지훈",
-            "order": 7,
-            "position": "1B",
-            "rosterId": "doosan-37"
-          },
-          {
-            "name": "강승호",
-            "order": 8,
-            "position": "2B",
-            "rosterId": "doosan-23"
-          },
-          {
-            "name": "윤준호",
-            "order": 9,
-            "position": "C",
-            "rosterId": "doosan-27"
-          }
-        ],
-        "starter_name": "잭로그",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-09",
-        "game_id": "20260609OBLT0",
-        "batting": [
-          {
-            "name": "정수빈",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "doosan-31"
-          },
-          {
-            "name": "카메론",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "doosan-24"
-          },
-          {
-            "name": "김민석",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "doosan-2"
-          },
-          {
-            "name": "양의지",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "doosan-25"
-          },
-          {
-            "name": "안재석",
-            "order": 5,
-            "position": "3B",
-            "rosterId": "doosan-62"
-          },
-          {
-            "name": "박찬호",
-            "order": 6,
-            "position": "SS",
-            "rosterId": "doosan-7"
-          },
-          {
-            "name": "오명진",
-            "order": 7,
-            "position": "2B",
-            "rosterId": "doosan-6"
-          },
-          {
-            "name": "박지훈",
-            "order": 8,
-            "position": "1B",
-            "rosterId": "doosan-37"
-          },
-          {
-            "name": "김기연",
-            "order": 9,
-            "position": "C",
-            "rosterId": "doosan-22"
-          }
-        ],
-        "starter_name": "곽빈",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-07",
-        "game_id": "20260607WOOB0",
-        "batting": [
-          {
-            "name": "정수빈",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "doosan-31"
-          },
-          {
-            "name": "카메론",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "doosan-24"
-          },
-          {
-            "name": "오명진",
-            "order": 3,
-            "position": "二一",
-            "rosterId": "doosan-6"
-          },
-          {
-            "name": "양의지",
-            "order": 4,
-            "position": "C",
-            "rosterId": "doosan-25"
-          },
-          {
-            "name": "김민석",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "doosan-2"
-          },
-          {
-            "name": "박찬호",
-            "order": 6,
-            "position": "SS",
-            "rosterId": "doosan-7"
-          },
-          {
-            "name": "박지훈",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "doosan-37"
-          },
-          {
-            "name": "조수행",
-            "order": 8,
-            "position": "LF",
-            "rosterId": "doosan-51"
-          },
-          {
-            "name": "강승호",
-            "order": 9,
-            "position": "1B",
-            "rosterId": "doosan-23"
-          }
-        ],
-        "starter_name": "벤자민",
-        "is_home": true
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606WOOB0",
-        "batting": [
-          {
-            "name": "정수빈",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "doosan-31"
-          },
-          {
-            "name": "카메론",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "doosan-24"
-          },
-          {
-            "name": "오명진",
-            "order": 3,
-            "position": "2B",
-            "rosterId": "doosan-6"
-          },
-          {
-            "name": "양의지",
-            "order": 4,
-            "position": "C",
-            "rosterId": "doosan-25"
-          },
-          {
-            "name": "김민석",
-            "order": 5,
-            "position": "LF",
-            "rosterId": "doosan-2"
-          },
-          {
-            "name": "박지훈",
-            "order": 6,
-            "position": "1B",
-            "rosterId": "doosan-37"
-          },
-          {
-            "name": "박찬호",
-            "order": 7,
-            "position": "SS",
-            "rosterId": "doosan-7"
-          },
-          {
-            "name": "안재석",
-            "order": 8,
-            "position": "3B",
-            "rosterId": "doosan-62"
-          },
-          {
-            "name": "조수행",
-            "order": 9,
-            "position": "RF",
-            "rosterId": "doosan-51"
-          }
-        ],
-        "starter_name": "최민석",
-        "is_home": true
-      }
-    ],
-    "nc": [
-      {
-        "game_date": "2026-06-11",
-        "game_id": "20260611NCWO0",
-        "batting": [
-          {
-            "name": "김주원",
-            "order": 1,
-            "position": "SS",
-            "rosterId": "nc-7"
-          },
-          {
-            "name": "권희동",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "nc-36"
-          },
-          {
-            "name": "박민우",
-            "order": 3,
-            "position": "2B",
-            "rosterId": "nc-2"
-          },
-          {
-            "name": "데이비슨",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "nc-24"
-          },
-          {
-            "name": "박건우",
-            "order": 5,
-            "position": "DH",
-            "rosterId": "nc-37"
-          },
-          {
-            "name": "이우성",
-            "order": 6,
-            "position": "LF",
-            "rosterId": "nc-55"
-          },
-          {
-            "name": "도태훈",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "nc-16"
-          },
-          {
-            "name": "김형준",
-            "order": 8,
-            "position": "C",
-            "rosterId": "nc-25"
-          },
-          {
-            "name": "최정원",
-            "order": 9,
-            "position": "CF",
-            "rosterId": "nc-14"
-          }
-        ],
-        "starter_name": "라일리",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-10",
-        "game_id": "20260610NCWO0",
-        "batting": [
-          {
-            "name": "김주원",
-            "order": 1,
-            "position": "SS",
-            "rosterId": "nc-7"
-          },
-          {
-            "name": "권희동",
-            "order": 2,
-            "position": "LF",
-            "rosterId": "nc-36"
-          },
-          {
-            "name": "박민우",
-            "order": 3,
-            "position": "2B",
-            "rosterId": "nc-2"
-          },
-          {
-            "name": "데이비슨",
-            "order": 4,
-            "position": "1B",
-            "rosterId": "nc-24"
-          },
-          {
-            "name": "박건우",
-            "order": 5,
-            "position": "RF",
-            "rosterId": "nc-37"
-          },
-          {
-            "name": "이우성",
-            "order": 6,
-            "position": "DH",
-            "rosterId": "nc-55"
-          },
-          {
-            "name": "서호철",
-            "order": 7,
-            "position": "3B",
-            "rosterId": "nc-5"
-          },
-          {
-            "name": "안중열",
-            "order": 8,
-            "position": "C",
-            "rosterId": "nc-22"
-          },
-          {
-            "name": "최정원",
-            "order": 9,
-            "position": "CF",
-            "rosterId": "nc-14"
-          }
-        ],
-        "starter_name": "구창모",
-        "is_home": false
-      },
-      {
-        "game_date": "2026-06-09",
-        "game_id": "20260609NCWO0",
-        "batting": [
-          {
-            "name": "김주원",
-            "order": 1,
-            "position": "SS",
-            "rosterId": "nc-7"
-          },
-          {
-            "name": "권희동",
-            "order": 2,
-            "position": "RF",
-            "rosterId": "nc-36"
-          },
-          {
-            "name": "박민우",
-            "order": 3,
-            "position": "2B",
-            "rosterId": "nc-2"
-          },
-          {
-            "name": "박건우",
-            "order": 4,
-            "position": "DH",
-            "rosterId": "nc-37"
-          },
-          {
-            "name": "이우성",
-            "order": 5,
-            "position": "LF",
-            "rosterId": "nc-55"
-          },
-          {
-            "name": "데이비슨",
-            "order": 6,
-            "position": "1B",
-            "rosterId": "nc-24"
-          },
-          {
-            "name": "오장한",
-            "order": 7,
-            "position": "CF",
-            "rosterId": "nc-65"
-          },
-          {
-            "name": "김형준",
-            "order": 8,
-            "position": "C",
-            "rosterId": "nc-25"
-          },
-          {
-            "name": "서호철",
-            "order": 9,
-            "position": "3B",
-            "rosterId": "nc-5"
-          }
-        ],
-        "starter_name": "김태경",
-        "is_home": false
       },
       {
         "game_date": "2026-06-07",
         "game_id": "20260607LGNC0",
         "batting": [
           {
-            "name": "김주원",
+            "name": "홍창기",
             "order": 1,
-            "position": "SS",
-            "rosterId": "nc-7"
+            "position": "RF",
+            "rosterId": "lg-51"
           },
           {
-            "name": "권희동",
+            "name": "박해민",
             "order": 2,
-            "position": "우좌",
-            "rosterId": "nc-36"
+            "position": "CF",
+            "rosterId": "lg-17"
           },
           {
-            "name": "이우성",
+            "name": "오스틴",
             "order": 3,
-            "position": "LF",
-            "rosterId": "nc-55"
+            "position": "1B",
+            "rosterId": "lg-23"
           },
           {
-            "name": "박건우",
+            "name": "문보경",
             "order": 4,
             "position": "DH",
-            "rosterId": "nc-37"
+            "rosterId": "lg-2"
           },
           {
-            "name": "데이비슨",
+            "name": "오지환",
             "order": 5,
-            "position": "1B",
-            "rosterId": "nc-24"
+            "position": "SS",
+            "rosterId": "lg-10"
           },
           {
-            "name": "오장한",
+            "name": "송찬의",
             "order": 6,
-            "position": "중우",
-            "rosterId": "nc-65"
+            "position": "LF",
+            "rosterId": "lg-55"
           },
           {
-            "name": "서호철",
+            "name": "구본혁",
             "order": 7,
             "position": "3B",
-            "rosterId": "nc-5"
+            "rosterId": "lg-6"
           },
           {
-            "name": "김형준",
+            "name": "이주헌",
             "order": 8,
             "position": "C",
-            "rosterId": "nc-25"
+            "rosterId": "lg-63"
           },
           {
-            "name": "김한별",
+            "name": "신민재",
             "order": 9,
             "position": "2B",
-            "rosterId": "nc-13"
+            "rosterId": "lg-4"
           }
         ],
-        "starter_name": "토다",
+        "starter_name": "송승기",
+        "is_home": false
+      }
+    ],
+    "kia": [
+      {
+        "game_date": "2026-06-12",
+        "game_id": "20260612OBHT0",
+        "batting": [
+          {
+            "name": "박재현",
+            "order": 1,
+            "position": "LF",
+            "rosterId": "kia-15"
+          },
+          {
+            "name": "한준수",
+            "order": 2,
+            "position": "C",
+            "rosterId": "kia-25"
+          },
+          {
+            "name": "김도영",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "kia-5"
+          },
+          {
+            "name": "나성범",
+            "order": 4,
+            "position": "RF",
+            "rosterId": "kia-47"
+          },
+          {
+            "name": "아데를린",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "kia-24"
+          },
+          {
+            "name": "김선빈",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kia-3"
+          },
+          {
+            "name": "변우혁",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "kia-29"
+          },
+          {
+            "name": "김규성",
+            "order": 8,
+            "position": "SS",
+            "rosterId": "kia-14"
+          },
+          {
+            "name": "김호령",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "kia-27"
+          }
+        ],
+        "starter_name": "양현종",
         "is_home": true
       },
       {
-        "game_date": "2026-06-06",
-        "game_id": "20260606LGNC0",
+        "game_date": "2026-06-11",
+        "game_id": "20260611HTHH0",
         "batting": [
           {
-            "name": "김주원",
+            "name": "박재현",
             "order": 1,
-            "position": "SS",
-            "rosterId": "nc-7"
+            "position": "LF",
+            "rosterId": "kia-15"
           },
           {
-            "name": "이우성",
+            "name": "김선빈",
             "order": 2,
-            "position": "DH",
-            "rosterId": "nc-55"
-          },
-          {
-            "name": "박민우",
-            "order": 3,
             "position": "2B",
-            "rosterId": "nc-2"
+            "rosterId": "kia-3"
           },
           {
-            "name": "박건우",
+            "name": "김도영",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "kia-5"
+          },
+          {
+            "name": "나성범",
             "order": 4,
             "position": "RF",
-            "rosterId": "nc-37"
+            "rosterId": "kia-47"
           },
           {
-            "name": "권희동",
+            "name": "아데를린",
             "order": 5,
-            "position": "LF",
-            "rosterId": "nc-36"
-          },
-          {
-            "name": "데이비슨",
-            "order": 6,
             "position": "1B",
-            "rosterId": "nc-24"
+            "rosterId": "kia-24"
           },
           {
-            "name": "한석현",
-            "order": 7,
-            "position": "CF",
-            "rosterId": "nc-33"
-          },
-          {
-            "name": "김한별",
-            "order": 8,
-            "position": "3B",
-            "rosterId": "nc-13"
-          },
-          {
-            "name": "안중열",
-            "order": 9,
+            "name": "한준수",
+            "order": 6,
             "position": "C",
-            "rosterId": "nc-22"
+            "rosterId": "kia-25"
+          },
+          {
+            "name": "변우혁",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "kia-29"
+          },
+          {
+            "name": "박민",
+            "order": 8,
+            "position": "SS",
+            "rosterId": "kia-2"
+          },
+          {
+            "name": "김호령",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "kia-27"
           }
         ],
-        "starter_name": "테일러",
+        "starter_name": "올러",
+        "is_home": false
+      },
+      {
+        "game_date": "2026-06-10",
+        "game_id": "20260610HTHH0",
+        "batting": [
+          {
+            "name": "박재현",
+            "order": 1,
+            "position": "LF",
+            "rosterId": "kia-15"
+          },
+          {
+            "name": "김민규",
+            "order": 2,
+            "position": "CF",
+            "rosterId": "kia-37"
+          },
+          {
+            "name": "김도영",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "kia-5"
+          },
+          {
+            "name": "나성범",
+            "order": 4,
+            "position": "RF",
+            "rosterId": "kia-47"
+          },
+          {
+            "name": "아데를린",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "kia-24"
+          },
+          {
+            "name": "김규성",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kia-14"
+          },
+          {
+            "name": "변우혁",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "kia-29"
+          },
+          {
+            "name": "김태군",
+            "order": 8,
+            "position": "C",
+            "rosterId": "kia-42"
+          },
+          {
+            "name": "박민",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kia-2"
+          }
+        ],
+        "starter_name": "시라카와",
+        "is_home": false
+      },
+      {
+        "game_date": "2026-06-09",
+        "game_id": "20260609HTHH0",
+        "batting": [
+          {
+            "name": "김민규",
+            "order": 1,
+            "position": "LF",
+            "rosterId": "kia-37"
+          },
+          {
+            "name": "김선빈",
+            "order": 2,
+            "position": "DH",
+            "rosterId": "kia-3"
+          },
+          {
+            "name": "김도영",
+            "order": 3,
+            "position": "3B",
+            "rosterId": "kia-5"
+          },
+          {
+            "name": "아데를린",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "kia-24"
+          },
+          {
+            "name": "나성범",
+            "order": 5,
+            "position": "RF",
+            "rosterId": "kia-47"
+          },
+          {
+            "name": "한준수",
+            "order": 6,
+            "position": "C",
+            "rosterId": "kia-25"
+          },
+          {
+            "name": "김호령",
+            "order": 7,
+            "position": "CF",
+            "rosterId": "kia-27"
+          },
+          {
+            "name": "박민",
+            "order": 8,
+            "position": "2B",
+            "rosterId": "kia-2"
+          },
+          {
+            "name": "정현창",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kia-12"
+          }
+        ],
+        "starter_name": "황동하",
+        "is_home": false
+      },
+      {
+        "game_date": "2026-06-07",
+        "game_id": "20260607SSHT0",
+        "batting": [
+          {
+            "name": "박재현",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "kia-15"
+          },
+          {
+            "name": "김민규",
+            "order": 2,
+            "position": "LF",
+            "rosterId": "kia-37"
+          },
+          {
+            "name": "김도영",
+            "order": 3,
+            "position": "3B",
+            "rosterId": "kia-5"
+          },
+          {
+            "name": "나성범",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "kia-47"
+          },
+          {
+            "name": "아데를린",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "kia-24"
+          },
+          {
+            "name": "김호령",
+            "order": 6,
+            "position": "CF",
+            "rosterId": "kia-27"
+          },
+          {
+            "name": "김규성",
+            "order": 7,
+            "position": "2B",
+            "rosterId": "kia-14"
+          },
+          {
+            "name": "김태군",
+            "order": 8,
+            "position": "C",
+            "rosterId": "kia-42"
+          },
+          {
+            "name": "박민",
+            "order": 9,
+            "position": "유二",
+            "rosterId": "kia-2"
+          }
+        ],
+        "starter_name": "네일",
         "is_home": true
       }
     ],
+    "kt": [
+      {
+        "game_date": "2026-06-12",
+        "game_id": "20260612NCKT0",
+        "batting": [
+          {
+            "name": "최원준",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "kt-3"
+          },
+          {
+            "name": "김현수",
+            "order": 2,
+            "position": "1B",
+            "rosterId": "kt-10"
+          },
+          {
+            "name": "김민혁",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "kt-53"
+          },
+          {
+            "name": "힐리어드",
+            "order": 4,
+            "position": "CF",
+            "rosterId": "kt-34"
+          },
+          {
+            "name": "이정훈",
+            "order": 5,
+            "position": "DH",
+            "rosterId": "kt-33"
+          },
+          {
+            "name": "류현인",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kt-9"
+          },
+          {
+            "name": "허경민",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "kt-13"
+          },
+          {
+            "name": "한승택",
+            "order": 8,
+            "position": "C",
+            "rosterId": "kt-45"
+          },
+          {
+            "name": "권동진",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kt-52"
+          }
+        ],
+        "starter_name": "배제성",
+        "is_home": true
+      },
+      {
+        "game_date": "2026-06-11",
+        "game_id": "20260611SSKT0",
+        "batting": [
+          {
+            "name": "최원준",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "kt-3"
+          },
+          {
+            "name": "김현수",
+            "order": 2,
+            "position": "DH",
+            "rosterId": "kt-10"
+          },
+          {
+            "name": "김민혁",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "kt-53"
+          },
+          {
+            "name": "힐리어드",
+            "order": 4,
+            "position": "CF",
+            "rosterId": "kt-34"
+          },
+          {
+            "name": "허경민",
+            "order": 5,
+            "position": "3B",
+            "rosterId": "kt-13"
+          },
+          {
+            "name": "김상수",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kt-7"
+          },
+          {
+            "name": "류현인",
+            "order": 7,
+            "position": "1B",
+            "rosterId": "kt-9"
+          },
+          {
+            "name": "강현우",
+            "order": 8,
+            "position": "C",
+            "rosterId": "kt-55"
+          },
+          {
+            "name": "이강민",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kt-6"
+          }
+        ],
+        "starter_name": "스기모토",
+        "is_home": true
+      },
+      {
+        "game_date": "2026-06-10",
+        "game_id": "20260610SSKT0",
+        "batting": [
+          {
+            "name": "최원준",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "kt-3"
+          },
+          {
+            "name": "김현수",
+            "order": 2,
+            "position": "1B",
+            "rosterId": "kt-10"
+          },
+          {
+            "name": "김민혁",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "kt-53"
+          },
+          {
+            "name": "힐리어드",
+            "order": 4,
+            "position": "CF",
+            "rosterId": "kt-34"
+          },
+          {
+            "name": "이정훈",
+            "order": 5,
+            "position": "DH",
+            "rosterId": "kt-33"
+          },
+          {
+            "name": "김상수",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kt-7"
+          },
+          {
+            "name": "류현인",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "kt-9"
+          },
+          {
+            "name": "한승택",
+            "order": 8,
+            "position": "C",
+            "rosterId": "kt-45"
+          },
+          {
+            "name": "권동진",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kt-52"
+          }
+        ],
+        "starter_name": "사우어",
+        "is_home": true
+      },
+      {
+        "game_date": "2026-06-09",
+        "game_id": "20260609SSKT0",
+        "batting": [
+          {
+            "name": "최원준",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "kt-3"
+          },
+          {
+            "name": "김현수",
+            "order": 2,
+            "position": "DH",
+            "rosterId": "kt-10"
+          },
+          {
+            "name": "김민혁",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "kt-53"
+          },
+          {
+            "name": "힐리어드",
+            "order": 4,
+            "position": "CF",
+            "rosterId": "kt-34"
+          },
+          {
+            "name": "허경민",
+            "order": 5,
+            "position": "3B",
+            "rosterId": "kt-13"
+          },
+          {
+            "name": "김상수",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kt-7"
+          },
+          {
+            "name": "류현인",
+            "order": 7,
+            "position": "1B",
+            "rosterId": "kt-9"
+          },
+          {
+            "name": "한승택",
+            "order": 8,
+            "position": "C",
+            "rosterId": "kt-45"
+          },
+          {
+            "name": "권동진",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kt-52"
+          }
+        ],
+        "starter_name": "고영표",
+        "is_home": true
+      },
+      {
+        "game_date": "2026-06-07",
+        "game_id": "20260607KTSK0",
+        "batting": [
+          {
+            "name": "최원준",
+            "order": 1,
+            "position": "RF",
+            "rosterId": "kt-3"
+          },
+          {
+            "name": "김현수",
+            "order": 2,
+            "position": "DH",
+            "rosterId": "kt-10"
+          },
+          {
+            "name": "김민혁",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "kt-53"
+          },
+          {
+            "name": "힐리어드",
+            "order": 4,
+            "position": "CF",
+            "rosterId": "kt-34"
+          },
+          {
+            "name": "허경민",
+            "order": 5,
+            "position": "3B",
+            "rosterId": "kt-13"
+          },
+          {
+            "name": "김상수",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "kt-7"
+          },
+          {
+            "name": "한승택",
+            "order": 7,
+            "position": "C",
+            "rosterId": "kt-45"
+          },
+          {
+            "name": "오윤석",
+            "order": 8,
+            "position": "1B",
+            "rosterId": "kt-4"
+          },
+          {
+            "name": "권동진",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "kt-52"
+          }
+        ],
+        "starter_name": "오원석",
+        "is_home": false
+      }
+    ],
     "hanwha": [
+      {
+        "game_date": "2026-06-12",
+        "game_id": "20260612HHWO0",
+        "batting": [
+          {
+            "name": "이원석",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "hanwha-37"
+          },
+          {
+            "name": "페라자",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "hanwha-30"
+          },
+          {
+            "name": "문현빈",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "hanwha-51"
+          },
+          {
+            "name": "강백호",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "hanwha-50"
+          },
+          {
+            "name": "노시환",
+            "order": 5,
+            "position": "3B",
+            "rosterId": "hanwha-8"
+          },
+          {
+            "name": "김태연",
+            "order": 6,
+            "position": "1B",
+            "rosterId": "hanwha-25"
+          },
+          {
+            "name": "허인서",
+            "order": 7,
+            "position": "C",
+            "rosterId": "hanwha-59"
+          },
+          {
+            "name": "이도윤",
+            "order": 8,
+            "position": "2B",
+            "rosterId": "hanwha-5"
+          },
+          {
+            "name": "심우준",
+            "order": 9,
+            "position": "SS",
+            "rosterId": "hanwha-7"
+          }
+        ],
+        "starter_name": "에르난데스",
+        "is_home": false
+      },
       {
         "game_date": "2026-06-11",
         "game_id": "20260611HTHH0",
@@ -3119,1014 +1933,2254 @@
         ],
         "starter_name": "황준서",
         "is_home": false
-      },
-      {
-        "game_date": "2026-06-06",
-        "game_id": "20260606HHLT0",
-        "batting": [
-          {
-            "name": "오재원",
-            "order": 1,
-            "position": "CF",
-            "rosterId": "hanwha-54"
-          },
-          {
-            "name": "페라자",
-            "order": 2,
-            "position": "DH",
-            "rosterId": "hanwha-30"
-          },
-          {
-            "name": "문현빈",
-            "order": 3,
-            "position": "LF",
-            "rosterId": "hanwha-51"
-          },
-          {
-            "name": "노시환",
-            "order": 4,
-            "position": "3B",
-            "rosterId": "hanwha-8"
-          },
-          {
-            "name": "김태연",
-            "order": 5,
-            "position": "1B",
-            "rosterId": "hanwha-25"
-          },
-          {
-            "name": "허인서",
-            "order": 6,
-            "position": "C",
-            "rosterId": "hanwha-59"
-          },
-          {
-            "name": "이도윤",
-            "order": 7,
-            "position": "2B",
-            "rosterId": "hanwha-5"
-          },
-          {
-            "name": "이진영",
-            "order": 8,
-            "position": "RF",
-            "rosterId": "hanwha-10"
-          },
-          {
-            "name": "심우준",
-            "order": 9,
-            "position": "SS",
-            "rosterId": "hanwha-7"
-          }
-        ],
-        "starter_name": "에르난데스",
-        "is_home": false
-      }
-    ]
-  },
-  "teamNews": {
-    "lg": [
-      {
-        "title": "'롱릴리프 변신' LG 장현식 \"새로운 역할에 대한 부담 없다\"",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014002075",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T13:41:00+00:00"
-      },
-      {
-        "title": "'2루타 4방' 역대 한 경기 최다 타이…LG 송찬의 \"쓰레기도 줍고 복습도...",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014002032",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T13:26:00+00:00"
-      },
-      {
-        "title": "'류현진 8승' 한화, KIA 꺾고 4위 도약…선두 LG는 SSG 15-1 완파(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014002018",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T13:23:00+00:00"
-      },
-      {
-        "title": "'롱릴리프 변신' LG 장현식 \"새 역할 부담 전혀 없다\"",
-        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=843832",
-        "source": "hansbiz",
-        "published_at": "2026-06-11T13:22:00+00:00"
-      },
-      {
-        "title": "염경엽 LG 감독 \"장현식 승리에 결정적 역할, 송찬의 4안타 축하\"",
-        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=843830",
-        "source": "hansbiz",
-        "published_at": "2026-06-11T13:06:00+00:00"
-      },
-      {
-        "title": "'16안타 15득점' LG 타선, 자비 없이 터졌다… SSG 3연전 싹쓸이",
-        "url": "https://m.sports.naver.com/kbaseball/article/018/0006303643",
-        "source": "edaily",
-        "published_at": "2026-06-11T12:57:00+00:00"
-      },
-      {
-        "title": "[AI상보] '송찬의 4안타 5타점 맹타' LG, SSG 15-1로 꺾고 3연전 싹쓸이",
-        "url": "https://www.newspim.com/news/view/20260611001213",
-        "source": "newspim",
-        "published_at": "2026-06-11T12:50:00+00:00"
-      },
-      {
-        "title": "[사진]LG, SSG에 스윕승",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551501",
-        "source": "osen",
-        "published_at": "2026-06-11T12:48:00+00:00"
-      },
-      {
-        "title": "[사진]이숭용 감독, LG에 스윕패",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551503",
-        "source": "osen",
-        "published_at": "2026-06-11T12:48:00+00:00"
-      },
-      {
-        "title": "'송찬의 5타점 폭발' LG, SSG 15-1 대파...3연승으로 단독 선두 굳혔다",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193683",
-        "source": "maniareport",
-        "published_at": "2026-06-11T12:46:00+00:00"
-      },
-      {
-        "title": "화끈한 LG, 홈런 없이도 15-1 대승…송찬의 4안타 SSG전 싹쓸이",
-        "url": "https://m.sports.naver.com/kbaseball/article/081/0003651814",
-        "source": "seoul",
-        "published_at": "2026-06-11T12:44:00+00:00"
-      },
-      {
-        "title": "‘송찬의 4안타 5타점+오스틴 3안타 3타점’ 3일간 31점 폭발한 선두 LG...",
-        "url": "https://m.sports.naver.com/kbaseball/article/382/0001277884",
-        "source": "donga",
-        "published_at": "2026-06-11T12:36:00+00:00"
-      },
-      {
-        "title": "'송찬의 4안타 5타점 맹활약' LG, 타선 폭발하며 SSG에 15-1 대승…3연승...",
-        "url": "http://www.stoo.com/article.php?aid=107113361435",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:34:00+00:00"
-      },
-      {
-        "title": "'송찬의 4안타 5타점' LG 16안타 대폭발! SSG 15-1 완파하고 3연승 질주…...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551479",
-        "source": "osen",
-        "published_at": "2026-06-11T12:34:00+00:00"
-      },
-      {
-        "title": "트윈스 왜 이렇게 잘해요? ‘송찬의 4안타 5타점→장현식 4.2이닝 무실점...",
-        "url": "https://m.sports.naver.com/kbaseball/article/468/0001246664",
-        "source": "스포츠서울",
-        "published_at": "2026-06-11T12:34:00+00:00"
-      },
-      {
-        "title": "'화력 미쳤다' 송찬의 4안타 5타점 맹타, 장현식 4⅔이닝 무실점... LG, S...",
-        "url": "https://m.sports.naver.com/kbaseball/article/117/0004073905",
-        "source": "마이데일리",
-        "published_at": "2026-06-11T12:34:00+00:00"
-      },
-      {
-        "title": "[프로야구 잠실전적] LG 15-1 SSG",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134257",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:33:00+00:00"
-      },
-      {
-        "title": "'오스틴·송찬의 8타점 합작' LG, SSG 15-1 대파…3연전 싹쓸이",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014001995",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T12:33:00+00:00"
-      },
-      {
-        "title": "장현식 무실점·송찬의 5타점… 프로야구 LG, SSG에 3연전 싹쓸이",
-        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=843824",
-        "source": "hansbiz",
-        "published_at": "2026-06-11T12:32:00+00:00"
-      },
-      {
-        "title": "'5득점 빅이닝 두 번씩이나' LG 송찬의·오스틴 만루 3타점 2루타 펑펑→...",
-        "url": "https://m.sports.naver.com/kbaseball/article/108/0003443521",
-        "source": "스타뉴스",
-        "published_at": "2026-06-11T12:32:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] SSG 김건우, 6월 11일 잠실 LG전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001192",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:40:00+00:00"
-      },
-      {
-        "title": "[사진]공명, LG가 좋아",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551394",
-        "source": "osen",
-        "published_at": "2026-06-11T11:37:00+00:00"
-      },
-      {
-        "title": "[사진]공명-한효주, 잠실 LG-SSG 경기 관람",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551392",
-        "source": "osen",
-        "published_at": "2026-06-11T11:37:00+00:00"
-      },
-      {
-        "title": "[사진]공명, LG 빅이닝에 미소 가득",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551382",
-        "source": "osen",
-        "published_at": "2026-06-11T11:30:00+00:00"
-      },
-      {
-        "title": "[사진]공명, LG 모자 쓰고 경기 직관",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551381",
-        "source": "osen",
-        "published_at": "2026-06-11T11:30:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] LG 김윤식, 6월 11일 잠실 SSG전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001178",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:10:00+00:00"
-      },
-      {
-        "title": "한효주 ‘LG 응원’ [MK포토]",
-        "url": "https://m.entertain.naver.com/article/410/0001128363",
-        "source": "mk",
-        "published_at": "2026-06-11T11:06:00+00:00"
-      }
-    ],
-    "samsung": [
-      {
-        "title": "한화, 다승 선두 류현진 앞세워 4위 도약…삼성 3연패 탈출",
-        "url": "https://m.sports.naver.com/kbaseball/article/055/0001363696",
-        "source": "SBS",
-        "published_at": "2026-06-11T13:43:00+00:00"
-      },
-      {
-        "title": "\"내가 잘던지기 보다는 수비 덕분\" 1안타 무실점 시즌 5승째 삼성 오러...",
-        "url": "https://m.sports.naver.com/kbaseball/article/117/0004073915",
-        "source": "마이데일리",
-        "published_at": "2026-06-11T13:30:00+00:00"
-      },
-      {
-        "title": "'투타가 완벽했다' 삼성, KT 8-1 완파하고 3연패 탈출...오러클린 무실점...",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193690",
-        "source": "maniareport",
-        "published_at": "2026-06-11T13:24:00+00:00"
-      },
-      {
-        "title": "한화, 다승 선두 류현진 앞세워 4위 도약…삼성 3연패 탈출(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134277",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T13:18:00+00:00"
-      },
-      {
-        "title": "오러클린 6이닝 1피안타 무실점… 삼성, KT 꺾고 3연패 탈출",
-        "url": "https://m.sports.naver.com/kbaseball/article/018/0006303670",
-        "source": "edaily",
-        "published_at": "2026-06-11T13:07:00+00:00"
-      },
-      {
-        "title": "6이닝 1피안타 무실점…삼성, kt 제압하고 3연패 종료",
-        "url": "https://www.topstarnews.net/news/articleView.html?idxno=16088726",
-        "source": "topstarnews",
-        "published_at": "2026-06-11T12:52:00+00:00"
-      },
-      {
-        "title": "[사진]삼성 '3연패 끊었다'",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551494",
-        "source": "osen",
-        "published_at": "2026-06-11T12:45:00+00:00"
-      },
-      {
-        "title": "[사진]승리 기뻐하는 삼성",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551488",
-        "source": "osen",
-        "published_at": "2026-06-11T12:44:00+00:00"
-      },
-      {
-        "title": "박진만 파격 라인업 적중! 국대 중견수 결승타→삼성 3연패 끊고 2위 1....",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551487",
-        "source": "osen",
-        "published_at": "2026-06-11T12:43:00+00:00"
-      },
-      {
-        "title": "삼성 '3연패 끊어낸 승리'[포토]",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021271",
-        "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T12:43:00+00:00"
-      },
-      {
-        "title": "[MD포토] 삼성, '완벽한 승리'",
-        "url": "https://m.sports.naver.com/kbaseball/article/117/0004073907",
-        "source": "마이데일리",
-        "published_at": "2026-06-11T12:42:00+00:00"
-      },
-      {
-        "title": "'김지찬 4출루+오러클린 6이닝 무실점' 삼성, KT 꺾고 3연패 탈출",
-        "url": "http://www.stoo.com/article.php?aid=107113586038",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:40:00+00:00"
-      },
-      {
-        "title": "‘오러클린 6이닝 무실점’ 삼성 라이온즈, KT 꺾고 3연패 탈출",
-        "url": "https://www.yeongnam.com/web/view.php?key=20260611025119719",
-        "source": "yeongnam",
-        "published_at": "2026-06-11T12:40:00+00:00"
-      },
-      {
-        "title": "오러클린 6이닝 1피안타 무실점 역투…삼성 3연패 탈출",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134261",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:40:00+00:00"
-      },
-      {
-        "title": "삼성 마침내 3연패 탈출→2위 KT에 다시 1.5G 맹추격!…오러클린 1피안타...",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021269",
-        "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T12:39:00+00:00"
-      },
-      {
-        "title": "[프로야구 수원전적] 삼성 8-1 kt",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134260",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:39:00+00:00"
-      },
-      {
-        "title": "[사진]김도환 '계속되는 삼성의 득점'",
-        "url": "https://m.sports.naver.com/general/article/109/0005551472",
-        "source": "osen",
-        "published_at": "2026-06-11T12:29:00+00:00"
-      },
-      {
-        "title": "[사진]김도환 '계속되는 삼성의 득점'",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551472",
-        "source": "osen",
-        "published_at": "2026-06-11T12:29:00+00:00"
-      }
-    ],
-    "kia": [
-      {
-        "title": "류현진이 막고 이도윤이 끝냈다... 한화, 5-1로 KIA 밀어내고 가을야구권...",
-        "url": "https://m.sports.naver.com/kbaseball/article/450/0000151891",
-        "source": "stnsports",
-        "published_at": "2026-06-11T14:15:00+00:00"
-      },
-      {
-        "title": "류현진이 막고 이도윤이 끝냈다…한화, KIA 꺾고 '4위 점프'",
-        "url": "https://m.sports.naver.com/kbaseball/article/079/0004157051",
-        "source": "nocutnews",
-        "published_at": "2026-06-11T14:10:00+00:00"
-      },
-      {
-        "title": "'류현진 8승' 한화, KIA 꺾고 4위 도약…선두 LG는 SSG 15-1 완파(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014002018",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T13:23:00+00:00"
-      },
-      {
-        "title": "류현진 넘지 못한 KIA, 한화전 루징시리즈",
-        "url": "https://www.namdonews.com/news/articleView.html?idxno=913373",
-        "source": "namdonews",
-        "published_at": "2026-06-11T13:20:00+00:00"
-      },
-      {
-        "title": "[AI상보] 류현진 8승 다승 선두, 한화 KIA 5-1로 꺾고 4위 도약",
-        "url": "https://www.newspim.com/news/view/20260611001219",
-        "source": "newspim",
-        "published_at": "2026-06-11T13:14:00+00:00"
-      },
-      {
-        "title": "'류현진 8승 다승 선두' 한화, KIA 역전...승률 0.001 차로 4위 올라섰다",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193689",
-        "source": "maniareport",
-        "published_at": "2026-06-11T13:00:00+00:00"
-      },
-      {
-        "title": "150㎞ 꽂은 류현진, 시즌 8승…한화, KIA 꺾고 4위 탈환",
-        "url": "https://m.sports.naver.com/general/article/656/0000178864",
-        "source": "daejonilbo",
-        "published_at": "2026-06-11T12:56:00+00:00"
-      },
-      {
-        "title": "150㎞ 꽂은 류현진, 시즌 8승…한화, KIA 꺾고 4위 탈환",
-        "url": "https://m.sports.naver.com/kbaseball/article/656/0000178864",
-        "source": "daejonilbo",
-        "published_at": "2026-06-11T12:56:00+00:00"
-      },
-      {
-        "title": "KIA, 한화에 연패…류현진 호투에 막혀 루징시리즈",
-        "url": "https://www.jnilbo.com/news/articleView.html?idxno=90000041770",
-        "source": "jnilbo",
-        "published_at": "2026-06-11T12:50:00+00:00"
-      },
-      {
-        "title": "류현진이 끝내 버텼다… 한화, 1리 차로 KIA 밀어내고 4위 점프",
-        "url": "https://m.sports.naver.com/kbaseball/article/018/0006303627",
-        "source": "edaily",
-        "published_at": "2026-06-11T12:48:00+00:00"
-      },
-      {
-        "title": "류현진 8승 질주, 한화 4위 도약-KIA 제치고 순위 뒤집기 성공",
-        "url": "https://www.mediafine.co.kr/news/articleView.html?idxno=80754",
-        "source": "mediafine",
-        "published_at": "2026-06-11T12:44:00+00:00"
-      },
-      {
-        "title": "'6연승 질주' 류현진, KIA 제압하고 다승 선두·한화 4위 견인",
-        "url": "https://www.topstarnews.net/news/articleView.html?idxno=16088709",
-        "source": "topstarnews",
-        "published_at": "2026-06-11T12:30:00+00:00"
-      },
-      {
-        "title": "'39세' 류현진 150km 강속구 미쳤다…벌써 8승 신바람, 한화 연이틀 KIA ...",
-        "url": "https://m.sports.naver.com/kbaseball/article/477/0000612879",
-        "source": "SPOTV NEWS",
-        "published_at": "2026-06-11T12:24:00+00:00"
-      },
-      {
-        "title": "한화, 5-1로 KIA 꺾고 4위 도약…'시즌 8승' 류현진, 다승 단독 선두",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014001987",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T12:22:00+00:00"
-      },
-      {
-        "title": "'류현진 6이닝 1실점+시즌 8승' 한화, 마운드 힘으로 KIA에 5-1 승리",
-        "url": "http://www.stoo.com/article.php?aid=107113265255",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:20:00+00:00"
-      },
-      {
-        "title": "한화 4위 탈환! '39세 류현진 8승' 다승 단독 1위!…KIA 5-1 격파→이도...",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021264",
-        "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T12:19:00+00:00"
-      },
-      {
-        "title": "[프로야구 대전전적] 한화 5-1 KIA",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134244",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:17:00+00:00"
-      },
-      {
-        "title": "류현진, KIA 올러 잡고 '시즌 8승'…다승 단독 선두 우뚝",
-        "url": "https://m.sports.naver.com/kbaseball/article/421/0008999391",
-        "source": "뉴스1",
-        "published_at": "2026-06-11T12:16:00+00:00"
-      },
-      {
-        "title": "한화, KIA 끌어내리고 4위 올라섰다...류현진 8승 쾌투→환상 더블스틸...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551460",
-        "source": "osen",
-        "published_at": "2026-06-11T12:16:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] KIA 올러, 6월 11일 대전 한화전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001198",
-        "source": "newspim",
-        "published_at": "2026-06-11T12:03:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] 한화 류현진, 6월 11일 대전 KIA전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001196",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:54:00+00:00"
-      },
-      {
-        "title": "천재해결사, 리드오프에 마무리까지 AG 발탁....KIA 마냥 좋을 수 없다....",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551350",
-        "source": "osen",
-        "published_at": "2026-06-11T11:16:00+00:00"
-      }
-    ],
-    "kt": [
-      {
-        "title": "'투타가 완벽했다' 삼성, KT 8-1 완파하고 3연패 탈출...오러클린 무실점...",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193690",
-        "source": "maniareport",
-        "published_at": "2026-06-11T13:24:00+00:00"
-      },
-      {
-        "title": "오러클린 6이닝 1피안타 무실점… 삼성, KT 꺾고 3연패 탈출",
-        "url": "https://m.sports.naver.com/kbaseball/article/018/0006303670",
-        "source": "edaily",
-        "published_at": "2026-06-11T13:07:00+00:00"
-      },
-      {
-        "title": "'김지찬 4출루+오러클린 6이닝 무실점' 삼성, KT 꺾고 3연패 탈출",
-        "url": "http://www.stoo.com/article.php?aid=107113586038",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:40:00+00:00"
-      },
-      {
-        "title": "‘오러클린 6이닝 무실점’ 삼성 라이온즈, KT 꺾고 3연패 탈출",
-        "url": "https://www.yeongnam.com/web/view.php?key=20260611025119719",
-        "source": "yeongnam",
-        "published_at": "2026-06-11T12:40:00+00:00"
-      },
-      {
-        "title": "삼성 마침내 3연패 탈출→2위 KT에 다시 1.5G 맹추격!…오러클린 1피안타...",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021269",
-        "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T12:39:00+00:00"
-      },
-      {
-        "title": "[사진]KT 한승주 '역투'",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551326",
-        "source": "osen",
-        "published_at": "2026-06-11T11:04:00+00:00"
-      }
-    ],
-    "kiwoom": [
-      {
-        "title": "키움증권, 퇴직연금 사업 공식 개시…1호 법인으로 HK이노엔 확보",
-        "url": "http://www.ttlnews.com/news/articleView.html?idxno=3115730",
-        "source": "ttlnews",
-        "published_at": "2026-06-11T14:30:00+00:00"
-      },
-      {
-        "title": "[한번에쓱]고척돔에서 '3-2로 키움에 역전승하며 위닝시리즈' NC다이노스",
-        "url": "https://m.sports.naver.com/kbaseball/article/108/0003443532",
-        "source": "스타뉴스",
-        "published_at": "2026-06-11T13:32:00+00:00"
-      },
-      {
-        "title": "[AI상보] '라일리 QS·전사민 세이브' NC, 키움 3-2 역전승 3연속 위닝시...",
-        "url": "https://www.newspim.com/news/view/20260611001217",
-        "source": "newspim",
-        "published_at": "2026-06-11T13:18:00+00:00"
-      },
-      {
-        "title": "‘0:2→3:2 9회 역전승’ NC, 키움 잡고 2연승 질주→위닝시리즈…이우...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551513",
-        "source": "osen",
-        "published_at": "2026-06-11T12:56:00+00:00"
-      },
-      {
-        "title": "[프로야구 고척전적] NC 3-2 키움",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134267",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:53:00+00:00"
-      },
-      {
-        "title": "'라일리 호투+천재환 결승 희생플라이' NC, 접전 끝에 키움 꺾고 연승 성...",
-        "url": "http://www.stoo.com/article.php?aid=107113667105",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:52:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] NC 라일리, 6월 11일 고척 키움전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001210",
-        "source": "newspim",
-        "published_at": "2026-06-11T12:45:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] 키움 박준현, 6월 11일 고척 NC전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001185",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:32:00+00:00"
-      }
-    ],
-    "lotte": [
-      {
-        "title": "타선 대폭발에 탄탄한 뒷문까지...롯데 난타전 단숨에 제압, \"이용찬-박...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551551",
-        "source": "osen",
-        "published_at": "2026-06-11T14:20:00+00:00"
-      },
-      {
-        "title": "'카메론 4안타·양의지 두 방' 두산, 12-7 난타전 끝 롯데 꺾고 위닝 시...",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193692",
-        "source": "maniareport",
-        "published_at": "2026-06-11T13:56:00+00:00"
-      },
-      {
-        "title": "[사진] 패배가 늘어가는 롯데",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551537",
-        "source": "osen",
-        "published_at": "2026-06-11T13:27:00+00:00"
-      },
-      {
-        "title": "'카메론 4안타 4타점' 두산, 난타전 끝에 롯데 12-7 격파 …타카다는 데...",
-        "url": "http://www.stoo.com/article.php?aid=107113839089",
-        "source": "stoo",
-        "published_at": "2026-06-11T13:22:00+00:00"
-      },
-      {
-        "title": "[프로야구 부산전적] 두산 12-7 롯데",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134278",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T13:19:00+00:00"
-      },
-      {
-        "title": "롯데, 日 요미우리와 육성 교류전 실시",
-        "url": "https://www.ulsanpress.net/news/articleView.html?idxno=576972",
-        "source": "ulsanpress",
-        "published_at": "2026-06-11T12:43:00+00:00"
       }
     ],
     "ssg": [
       {
-        "title": "'류현진 8승' 한화, KIA 꺾고 4위 도약…선두 LG는 SSG 15-1 완파(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014002018",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T13:23:00+00:00"
+        "game_date": "2026-06-12",
+        "game_id": "20260612SKSS0",
+        "batting": [
+          {
+            "name": "박성한",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "ssg-2"
+          },
+          {
+            "name": "정준재",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "ssg-p54812"
+          },
+          {
+            "name": "최정",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "ssg-14"
+          },
+          {
+            "name": "김재환",
+            "order": 4,
+            "position": "LF",
+            "rosterId": "ssg-32"
+          },
+          {
+            "name": "에레디아",
+            "order": 5,
+            "position": "RF",
+            "rosterId": "ssg-27"
+          },
+          {
+            "name": "최지훈",
+            "order": 6,
+            "position": "CF",
+            "rosterId": "ssg-54"
+          },
+          {
+            "name": "전의산",
+            "order": 7,
+            "position": "1B",
+            "rosterId": "ssg-jeonus"
+          },
+          {
+            "name": "홍대인",
+            "order": 8,
+            "position": "3B",
+            "rosterId": "ssg-97"
+          },
+          {
+            "name": "신범수",
+            "order": 9,
+            "position": "C",
+            "rosterId": "ssg-25"
+          }
+        ],
+        "starter_name": "타케다",
+        "is_home": false
       },
       {
-        "title": "'16안타 15득점' LG 타선, 자비 없이 터졌다… SSG 3연전 싹쓸이",
-        "url": "https://m.sports.naver.com/kbaseball/article/018/0006303643",
-        "source": "edaily",
-        "published_at": "2026-06-11T12:57:00+00:00"
+        "game_date": "2026-06-11",
+        "game_id": "20260611SKLG0",
+        "batting": [
+          {
+            "name": "박성한",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "ssg-2"
+          },
+          {
+            "name": "정준재",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "ssg-p54812"
+          },
+          {
+            "name": "최정",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "ssg-14"
+          },
+          {
+            "name": "에레디아",
+            "order": 4,
+            "position": "LF",
+            "rosterId": "ssg-27"
+          },
+          {
+            "name": "김성욱",
+            "order": 5,
+            "position": "CF",
+            "rosterId": "ssg-31"
+          },
+          {
+            "name": "오태곤",
+            "order": 6,
+            "position": "RF",
+            "rosterId": "ssg-37"
+          },
+          {
+            "name": "전의산",
+            "order": 7,
+            "position": "1B",
+            "rosterId": "ssg-jeonus"
+          },
+          {
+            "name": "조형우",
+            "order": 8,
+            "position": "C",
+            "rosterId": "ssg-20"
+          },
+          {
+            "name": "안상현",
+            "order": 9,
+            "position": "3B",
+            "rosterId": "ssg-10"
+          }
+        ],
+        "starter_name": "김건우",
+        "is_home": false
       },
       {
-        "title": "[AI상보] '송찬의 4안타 5타점 맹타' LG, SSG 15-1로 꺾고 3연전 싹쓸이",
-        "url": "https://www.newspim.com/news/view/20260611001213",
-        "source": "newspim",
-        "published_at": "2026-06-11T12:50:00+00:00"
+        "game_date": "2026-06-10",
+        "game_id": "20260610SKLG0",
+        "batting": [
+          {
+            "name": "박성한",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "ssg-2"
+          },
+          {
+            "name": "정준재",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "ssg-p54812"
+          },
+          {
+            "name": "에레디아",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "ssg-27"
+          },
+          {
+            "name": "김재환",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "ssg-32"
+          },
+          {
+            "name": "김성욱",
+            "order": 5,
+            "position": "RF",
+            "rosterId": "ssg-31"
+          },
+          {
+            "name": "전의산",
+            "order": 6,
+            "position": "1B",
+            "rosterId": "ssg-jeonus"
+          },
+          {
+            "name": "안상현",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "ssg-10"
+          },
+          {
+            "name": "조형우",
+            "order": 8,
+            "position": "C",
+            "rosterId": "ssg-20"
+          },
+          {
+            "name": "최지훈",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "ssg-54"
+          }
+        ],
+        "starter_name": "최민준",
+        "is_home": false
       },
       {
-        "title": "[사진]고개숙인 SSG",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551508",
-        "source": "osen",
-        "published_at": "2026-06-11T12:49:00+00:00"
+        "game_date": "2026-06-09",
+        "game_id": "20260609SKLG0",
+        "batting": [
+          {
+            "name": "박성한",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "ssg-2"
+          },
+          {
+            "name": "최지훈",
+            "order": 2,
+            "position": "CF",
+            "rosterId": "ssg-54"
+          },
+          {
+            "name": "에레디아",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "ssg-27"
+          },
+          {
+            "name": "김재환",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "ssg-32"
+          },
+          {
+            "name": "전의산",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "ssg-jeonus"
+          },
+          {
+            "name": "조형우",
+            "order": 6,
+            "position": "C",
+            "rosterId": "ssg-20"
+          },
+          {
+            "name": "김성욱",
+            "order": 7,
+            "position": "RF",
+            "rosterId": "ssg-31"
+          },
+          {
+            "name": "정준재",
+            "order": 8,
+            "position": "2B",
+            "rosterId": "ssg-p54812"
+          },
+          {
+            "name": "최윤석",
+            "order": 9,
+            "position": "3B",
+            "rosterId": "ssg-65"
+          }
+        ],
+        "starter_name": "김민준",
+        "is_home": false
       },
       {
-        "title": "[사진]염경엽 감독, 'SSG전 스윕가자'",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551500",
-        "source": "osen",
-        "published_at": "2026-06-11T12:48:00+00:00"
+        "game_date": "2026-06-07",
+        "game_id": "20260607KTSK0",
+        "batting": [
+          {
+            "name": "박성한",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "ssg-2"
+          },
+          {
+            "name": "정준재",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "ssg-p54812"
+          },
+          {
+            "name": "에레디아",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "ssg-27"
+          },
+          {
+            "name": "김재환",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "ssg-32"
+          },
+          {
+            "name": "김성욱",
+            "order": 5,
+            "position": "RF",
+            "rosterId": "ssg-31"
+          },
+          {
+            "name": "전의산",
+            "order": 6,
+            "position": "1B",
+            "rosterId": "ssg-jeonus"
+          },
+          {
+            "name": "최지훈",
+            "order": 7,
+            "position": "CF",
+            "rosterId": "ssg-54"
+          },
+          {
+            "name": "조형우",
+            "order": 8,
+            "position": "C",
+            "rosterId": "ssg-20"
+          },
+          {
+            "name": "김민준",
+            "order": 9,
+            "position": "3B",
+            "rosterId": "ssg-5"
+          }
+        ],
+        "starter_name": "베니지아노",
+        "is_home": true
+      }
+    ],
+    "lotte": [
+      {
+        "game_date": "2026-06-12",
+        "game_id": "20260612LTLG0",
+        "batting": [
+          {
+            "name": "황성빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "lotte-0"
+          },
+          {
+            "name": "고승민",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "lotte-2"
+          },
+          {
+            "name": "레이예스",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "lotte-29"
+          },
+          {
+            "name": "나승엽",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "lotte-51"
+          },
+          {
+            "name": "전민재",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lotte-13"
+          },
+          {
+            "name": "손호영",
+            "order": 6,
+            "position": "3B",
+            "rosterId": "lotte-33"
+          },
+          {
+            "name": "최항",
+            "order": 7,
+            "position": "DH",
+            "rosterId": "lotte-14"
+          },
+          {
+            "name": "손성빈",
+            "order": 8,
+            "position": "C",
+            "rosterId": "lotte-28"
+          },
+          {
+            "name": "장두성",
+            "order": 9,
+            "position": "RF",
+            "rosterId": "lotte-7"
+          }
+        ],
+        "starter_name": "로드리게스",
+        "is_home": false
       },
       {
-        "title": "[사진]LG, SSG에 스윕승",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551501",
-        "source": "osen",
-        "published_at": "2026-06-11T12:48:00+00:00"
+        "game_date": "2026-06-11",
+        "game_id": "20260611OBLT0",
+        "batting": [
+          {
+            "name": "황성빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "lotte-0"
+          },
+          {
+            "name": "고승민",
+            "order": 2,
+            "position": "1B",
+            "rosterId": "lotte-2"
+          },
+          {
+            "name": "레이예스",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "lotte-29"
+          },
+          {
+            "name": "나승엽",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "lotte-51"
+          },
+          {
+            "name": "전민재",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lotte-13"
+          },
+          {
+            "name": "손호영",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "lotte-33"
+          },
+          {
+            "name": "조세진",
+            "order": 7,
+            "position": "RF",
+            "rosterId": "lotte-12"
+          },
+          {
+            "name": "김세민",
+            "order": 8,
+            "position": "3B",
+            "rosterId": "lotte-5"
+          },
+          {
+            "name": "손성빈",
+            "order": 9,
+            "position": "C",
+            "rosterId": "lotte-28"
+          }
+        ],
+        "starter_name": "박세웅",
+        "is_home": true
       },
       {
-        "title": "[사진]3연패 SSG",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551504",
-        "source": "osen",
-        "published_at": "2026-06-11T12:48:00+00:00"
+        "game_date": "2026-06-10",
+        "game_id": "20260610OBLT0",
+        "batting": [
+          {
+            "name": "황성빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "lotte-0"
+          },
+          {
+            "name": "고승민",
+            "order": 2,
+            "position": "1B",
+            "rosterId": "lotte-2"
+          },
+          {
+            "name": "레이예스",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "lotte-29"
+          },
+          {
+            "name": "나승엽",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "lotte-51"
+          },
+          {
+            "name": "전민재",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lotte-13"
+          },
+          {
+            "name": "손호영",
+            "order": 6,
+            "position": "2B",
+            "rosterId": "lotte-33"
+          },
+          {
+            "name": "손성빈",
+            "order": 7,
+            "position": "C",
+            "rosterId": "lotte-28"
+          },
+          {
+            "name": "조세진",
+            "order": 8,
+            "position": "RF",
+            "rosterId": "lotte-12"
+          },
+          {
+            "name": "김세민",
+            "order": 9,
+            "position": "3B",
+            "rosterId": "lotte-5"
+          }
+        ],
+        "starter_name": "김진욱",
+        "is_home": true
       },
       {
-        "title": "'송찬의 5타점 폭발' LG, SSG 15-1 대파...3연승으로 단독 선두 굳혔다",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193683",
-        "source": "maniareport",
-        "published_at": "2026-06-11T12:46:00+00:00"
+        "game_date": "2026-06-09",
+        "game_id": "20260609OBLT0",
+        "batting": [
+          {
+            "name": "황성빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "lotte-0"
+          },
+          {
+            "name": "고승민",
+            "order": 2,
+            "position": "2B",
+            "rosterId": "lotte-2"
+          },
+          {
+            "name": "레이예스",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "lotte-29"
+          },
+          {
+            "name": "나승엽",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "lotte-51"
+          },
+          {
+            "name": "전민재",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lotte-13"
+          },
+          {
+            "name": "손호영",
+            "order": 6,
+            "position": "3B",
+            "rosterId": "lotte-33"
+          },
+          {
+            "name": "최항",
+            "order": 7,
+            "position": "DH",
+            "rosterId": "lotte-14"
+          },
+          {
+            "name": "조세진",
+            "order": 8,
+            "position": "RF",
+            "rosterId": "lotte-12"
+          },
+          {
+            "name": "손성빈",
+            "order": 9,
+            "position": "C",
+            "rosterId": "lotte-28"
+          }
+        ],
+        "starter_name": "나균안",
+        "is_home": true
       },
       {
-        "title": "화끈한 LG, 홈런 없이도 15-1 대승…송찬의 4안타 SSG전 싹쓸이",
-        "url": "https://m.sports.naver.com/kbaseball/article/081/0003651814",
-        "source": "seoul",
-        "published_at": "2026-06-11T12:44:00+00:00"
-      },
-      {
-        "title": "'송찬의 4안타 5타점 맹활약' LG, 타선 폭발하며 SSG에 15-1 대승…3연승...",
-        "url": "http://www.stoo.com/article.php?aid=107113361435",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:34:00+00:00"
-      },
-      {
-        "title": "'송찬의 4안타 5타점' LG 16안타 대폭발! SSG 15-1 완파하고 3연승 질주…...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551479",
-        "source": "osen",
-        "published_at": "2026-06-11T12:34:00+00:00"
-      },
-      {
-        "title": "[프로야구 잠실전적] LG 15-1 SSG",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134257",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:33:00+00:00"
-      },
-      {
-        "title": "'오스틴·송찬의 8타점 합작' LG, SSG 15-1 대파…3연전 싹쓸이",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014001995",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T12:33:00+00:00"
-      },
-      {
-        "title": "장현식 무실점·송찬의 5타점… 프로야구 LG, SSG에 3연전 싹쓸이",
-        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=843824",
-        "source": "hansbiz",
-        "published_at": "2026-06-11T12:32:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] SSG 김건우, 6월 11일 잠실 LG전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001192",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:40:00+00:00"
-      },
-      {
-        "title": "[사진]공명-한효주, 잠실 LG-SSG 경기 관람",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551392",
-        "source": "osen",
-        "published_at": "2026-06-11T11:37:00+00:00"
-      },
-      {
-        "title": "[AI그래픽] LG 김윤식, 6월 11일 잠실 SSG전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001178",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:10:00+00:00"
+        "game_date": "2026-06-07",
+        "game_id": "20260607HHLT0",
+        "batting": [
+          {
+            "name": "황성빈",
+            "order": 1,
+            "position": "중좌",
+            "rosterId": "lotte-0"
+          },
+          {
+            "name": "고승민",
+            "order": 2,
+            "position": "DH",
+            "rosterId": "lotte-2"
+          },
+          {
+            "name": "레이예스",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "lotte-29"
+          },
+          {
+            "name": "나승엽",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "lotte-51"
+          },
+          {
+            "name": "전민재",
+            "order": 5,
+            "position": "SS",
+            "rosterId": "lotte-13"
+          },
+          {
+            "name": "김민성",
+            "order": 6,
+            "position": "3B",
+            "rosterId": "lotte-16"
+          },
+          {
+            "name": "손호영",
+            "order": 7,
+            "position": "2B",
+            "rosterId": "lotte-33"
+          },
+          {
+            "name": "조세진",
+            "order": 8,
+            "position": "RF",
+            "rosterId": "lotte-12"
+          },
+          {
+            "name": "손성빈",
+            "order": 9,
+            "position": "C",
+            "rosterId": "lotte-28"
+          }
+        ],
+        "starter_name": "비슬리",
+        "is_home": true
       }
     ],
     "doosan": [
       {
-        "title": "'카메론 4안타·양의지 두 방' 두산, 12-7 난타전 끝 롯데 꺾고 위닝 시...",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193692",
-        "source": "maniareport",
-        "published_at": "2026-06-11T13:56:00+00:00"
+        "game_date": "2026-06-12",
+        "game_id": "20260612OBHT0",
+        "batting": [
+          {
+            "name": "박찬호",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "doosan-7"
+          },
+          {
+            "name": "카메론",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "doosan-24"
+          },
+          {
+            "name": "손아섭",
+            "order": 3,
+            "position": "DH",
+            "rosterId": "doosan-8"
+          },
+          {
+            "name": "양의지",
+            "order": 4,
+            "position": "C",
+            "rosterId": "doosan-25"
+          },
+          {
+            "name": "김민석",
+            "order": 5,
+            "position": "LF",
+            "rosterId": "doosan-2"
+          },
+          {
+            "name": "박지훈",
+            "order": 6,
+            "position": "3B",
+            "rosterId": "doosan-37"
+          },
+          {
+            "name": "오명진",
+            "order": 7,
+            "position": "1B",
+            "rosterId": "doosan-6"
+          },
+          {
+            "name": "이유찬",
+            "order": 8,
+            "position": "2B",
+            "rosterId": "doosan-13"
+          },
+          {
+            "name": "조수행",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "doosan-51"
+          }
+        ],
+        "starter_name": "최민석",
+        "is_home": false
       },
       {
-        "title": "'카메론 4안타 4타점' 두산, 난타전 끝에 롯데 12-7 격파 …타카다는 데...",
-        "url": "http://www.stoo.com/article.php?aid=107113839089",
-        "source": "stoo",
-        "published_at": "2026-06-11T13:22:00+00:00"
+        "game_date": "2026-06-11",
+        "game_id": "20260611OBLT0",
+        "batting": [
+          {
+            "name": "정수빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "doosan-31"
+          },
+          {
+            "name": "카메론",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "doosan-24"
+          },
+          {
+            "name": "김민석",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "doosan-2"
+          },
+          {
+            "name": "양의지",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "doosan-25"
+          },
+          {
+            "name": "오명진",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "doosan-6"
+          },
+          {
+            "name": "안재석",
+            "order": 6,
+            "position": "3B",
+            "rosterId": "doosan-62"
+          },
+          {
+            "name": "박지훈",
+            "order": 7,
+            "position": "SS",
+            "rosterId": "doosan-37"
+          },
+          {
+            "name": "이유찬",
+            "order": 8,
+            "position": "2B",
+            "rosterId": "doosan-13"
+          },
+          {
+            "name": "윤준호",
+            "order": 9,
+            "position": "C",
+            "rosterId": "doosan-27"
+          }
+        ],
+        "starter_name": "타카다",
+        "is_home": false
       },
       {
-        "title": "[프로야구 부산전적] 두산 12-7 롯데",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134278",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T13:19:00+00:00"
+        "game_date": "2026-06-10",
+        "game_id": "20260610OBLT0",
+        "batting": [
+          {
+            "name": "정수빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "doosan-31"
+          },
+          {
+            "name": "카메론",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "doosan-24"
+          },
+          {
+            "name": "손아섭",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "doosan-8"
+          },
+          {
+            "name": "양의지",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "doosan-25"
+          },
+          {
+            "name": "안재석",
+            "order": 5,
+            "position": "3B",
+            "rosterId": "doosan-62"
+          },
+          {
+            "name": "박찬호",
+            "order": 6,
+            "position": "SS",
+            "rosterId": "doosan-7"
+          },
+          {
+            "name": "박지훈",
+            "order": 7,
+            "position": "1B",
+            "rosterId": "doosan-37"
+          },
+          {
+            "name": "강승호",
+            "order": 8,
+            "position": "2B",
+            "rosterId": "doosan-23"
+          },
+          {
+            "name": "윤준호",
+            "order": 9,
+            "position": "C",
+            "rosterId": "doosan-27"
+          }
+        ],
+        "starter_name": "잭로그",
+        "is_home": false
       },
       {
-        "title": "양의지+카메론 7타점 합작+박치국 베어스 최다홀드...두산 12-7 난타전 승...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551531",
-        "source": "osen",
-        "published_at": "2026-06-11T13:17:00+00:00"
+        "game_date": "2026-06-09",
+        "game_id": "20260609OBLT0",
+        "batting": [
+          {
+            "name": "정수빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "doosan-31"
+          },
+          {
+            "name": "카메론",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "doosan-24"
+          },
+          {
+            "name": "김민석",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "doosan-2"
+          },
+          {
+            "name": "양의지",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "doosan-25"
+          },
+          {
+            "name": "안재석",
+            "order": 5,
+            "position": "3B",
+            "rosterId": "doosan-62"
+          },
+          {
+            "name": "박찬호",
+            "order": 6,
+            "position": "SS",
+            "rosterId": "doosan-7"
+          },
+          {
+            "name": "오명진",
+            "order": 7,
+            "position": "2B",
+            "rosterId": "doosan-6"
+          },
+          {
+            "name": "박지훈",
+            "order": 8,
+            "position": "1B",
+            "rosterId": "doosan-37"
+          },
+          {
+            "name": "김기연",
+            "order": 9,
+            "position": "C",
+            "rosterId": "doosan-22"
+          }
+        ],
+        "starter_name": "곽빈",
+        "is_home": false
       },
       {
-        "title": "두산 이유찬, 인사이드 더 파크 홈런 작렬…개인 통산 두 번째",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014001937",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T11:25:00+00:00"
+        "game_date": "2026-06-07",
+        "game_id": "20260607WOOB0",
+        "batting": [
+          {
+            "name": "정수빈",
+            "order": 1,
+            "position": "CF",
+            "rosterId": "doosan-31"
+          },
+          {
+            "name": "카메론",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "doosan-24"
+          },
+          {
+            "name": "오명진",
+            "order": 3,
+            "position": "二一",
+            "rosterId": "doosan-6"
+          },
+          {
+            "name": "양의지",
+            "order": 4,
+            "position": "C",
+            "rosterId": "doosan-25"
+          },
+          {
+            "name": "김민석",
+            "order": 5,
+            "position": "DH",
+            "rosterId": "doosan-2"
+          },
+          {
+            "name": "박찬호",
+            "order": 6,
+            "position": "SS",
+            "rosterId": "doosan-7"
+          },
+          {
+            "name": "박지훈",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "doosan-37"
+          },
+          {
+            "name": "조수행",
+            "order": 8,
+            "position": "LF",
+            "rosterId": "doosan-51"
+          },
+          {
+            "name": "강승호",
+            "order": 9,
+            "position": "1B",
+            "rosterId": "doosan-23"
+          }
+        ],
+        "starter_name": "벤자민",
+        "is_home": true
       }
     ],
     "nc": [
       {
-        "title": "[한번에쓱]고척돔에서 '3-2로 키움에 역전승하며 위닝시리즈' NC다이노스",
-        "url": "https://m.sports.naver.com/kbaseball/article/108/0003443532",
-        "source": "스타뉴스",
-        "published_at": "2026-06-11T13:32:00+00:00"
+        "game_date": "2026-06-12",
+        "game_id": "20260612NCKT0",
+        "batting": [
+          {
+            "name": "김주원",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "nc-7"
+          },
+          {
+            "name": "박시원",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "nc-53"
+          },
+          {
+            "name": "박민우",
+            "order": 3,
+            "position": "2B",
+            "rosterId": "nc-2"
+          },
+          {
+            "name": "데이비슨",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "nc-24"
+          },
+          {
+            "name": "박건우",
+            "order": 5,
+            "position": "DH",
+            "rosterId": "nc-37"
+          },
+          {
+            "name": "이우성",
+            "order": 6,
+            "position": "LF",
+            "rosterId": "nc-55"
+          },
+          {
+            "name": "서호철",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "nc-5"
+          },
+          {
+            "name": "안중열",
+            "order": 8,
+            "position": "C",
+            "rosterId": "nc-22"
+          },
+          {
+            "name": "최정원",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "nc-14"
+          }
+        ],
+        "starter_name": "테일러",
+        "is_home": false
       },
       {
-        "title": "[AI상보] '라일리 QS·전사민 세이브' NC, 키움 3-2 역전승 3연속 위닝시...",
-        "url": "https://www.newspim.com/news/view/20260611001217",
+        "game_date": "2026-06-11",
+        "game_id": "20260611NCWO0",
+        "batting": [
+          {
+            "name": "김주원",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "nc-7"
+          },
+          {
+            "name": "권희동",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "nc-36"
+          },
+          {
+            "name": "박민우",
+            "order": 3,
+            "position": "2B",
+            "rosterId": "nc-2"
+          },
+          {
+            "name": "데이비슨",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "nc-24"
+          },
+          {
+            "name": "박건우",
+            "order": 5,
+            "position": "DH",
+            "rosterId": "nc-37"
+          },
+          {
+            "name": "이우성",
+            "order": 6,
+            "position": "LF",
+            "rosterId": "nc-55"
+          },
+          {
+            "name": "도태훈",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "nc-16"
+          },
+          {
+            "name": "김형준",
+            "order": 8,
+            "position": "C",
+            "rosterId": "nc-25"
+          },
+          {
+            "name": "최정원",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "nc-14"
+          }
+        ],
+        "starter_name": "라일리",
+        "is_home": false
+      },
+      {
+        "game_date": "2026-06-10",
+        "game_id": "20260610NCWO0",
+        "batting": [
+          {
+            "name": "김주원",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "nc-7"
+          },
+          {
+            "name": "권희동",
+            "order": 2,
+            "position": "LF",
+            "rosterId": "nc-36"
+          },
+          {
+            "name": "박민우",
+            "order": 3,
+            "position": "2B",
+            "rosterId": "nc-2"
+          },
+          {
+            "name": "데이비슨",
+            "order": 4,
+            "position": "1B",
+            "rosterId": "nc-24"
+          },
+          {
+            "name": "박건우",
+            "order": 5,
+            "position": "RF",
+            "rosterId": "nc-37"
+          },
+          {
+            "name": "이우성",
+            "order": 6,
+            "position": "DH",
+            "rosterId": "nc-55"
+          },
+          {
+            "name": "서호철",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "nc-5"
+          },
+          {
+            "name": "안중열",
+            "order": 8,
+            "position": "C",
+            "rosterId": "nc-22"
+          },
+          {
+            "name": "최정원",
+            "order": 9,
+            "position": "CF",
+            "rosterId": "nc-14"
+          }
+        ],
+        "starter_name": "구창모",
+        "is_home": false
+      },
+      {
+        "game_date": "2026-06-09",
+        "game_id": "20260609NCWO0",
+        "batting": [
+          {
+            "name": "김주원",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "nc-7"
+          },
+          {
+            "name": "권희동",
+            "order": 2,
+            "position": "RF",
+            "rosterId": "nc-36"
+          },
+          {
+            "name": "박민우",
+            "order": 3,
+            "position": "2B",
+            "rosterId": "nc-2"
+          },
+          {
+            "name": "박건우",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "nc-37"
+          },
+          {
+            "name": "이우성",
+            "order": 5,
+            "position": "LF",
+            "rosterId": "nc-55"
+          },
+          {
+            "name": "데이비슨",
+            "order": 6,
+            "position": "1B",
+            "rosterId": "nc-24"
+          },
+          {
+            "name": "오장한",
+            "order": 7,
+            "position": "CF",
+            "rosterId": "nc-65"
+          },
+          {
+            "name": "김형준",
+            "order": 8,
+            "position": "C",
+            "rosterId": "nc-25"
+          },
+          {
+            "name": "서호철",
+            "order": 9,
+            "position": "3B",
+            "rosterId": "nc-5"
+          }
+        ],
+        "starter_name": "김태경",
+        "is_home": false
+      },
+      {
+        "game_date": "2026-06-07",
+        "game_id": "20260607LGNC0",
+        "batting": [
+          {
+            "name": "김주원",
+            "order": 1,
+            "position": "SS",
+            "rosterId": "nc-7"
+          },
+          {
+            "name": "권희동",
+            "order": 2,
+            "position": "우좌",
+            "rosterId": "nc-36"
+          },
+          {
+            "name": "이우성",
+            "order": 3,
+            "position": "LF",
+            "rosterId": "nc-55"
+          },
+          {
+            "name": "박건우",
+            "order": 4,
+            "position": "DH",
+            "rosterId": "nc-37"
+          },
+          {
+            "name": "데이비슨",
+            "order": 5,
+            "position": "1B",
+            "rosterId": "nc-24"
+          },
+          {
+            "name": "오장한",
+            "order": 6,
+            "position": "중우",
+            "rosterId": "nc-65"
+          },
+          {
+            "name": "서호철",
+            "order": 7,
+            "position": "3B",
+            "rosterId": "nc-5"
+          },
+          {
+            "name": "김형준",
+            "order": 8,
+            "position": "C",
+            "rosterId": "nc-25"
+          },
+          {
+            "name": "김한별",
+            "order": 9,
+            "position": "2B",
+            "rosterId": "nc-13"
+          }
+        ],
+        "starter_name": "토다",
+        "is_home": true
+      }
+    ]
+  },
+  "teamNews": {
+    "kiwoom": [
+      {
+        "title": "데뷔 첫 QS도 웃지 못한 박준영…한화, 타선 침묵 속 키움에 연패 수렁",
+        "url": "https://www.dailysportshankook.co.kr/news/articleView.html?idxno=429707",
+        "source": "dailysportshankook",
+        "published_at": "2026-06-13T12:28:00+00:00"
+      },
+      {
+        "title": "프로야구 LG, 롯데 꺾고 시즌 40승 선착…키움 연이틀 한화 격파(종합)",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001979",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T12:25:00+00:00"
+      },
+      {
+        "title": "알칸타라, 에이스의 품격…키움, 한화 꺾고 위닝시리즈 선점",
+        "url": "https://www.dailysportshankook.co.kr/news/articleView.html?idxno=429705",
+        "source": "dailysportshankook",
+        "published_at": "2026-06-13T12:08:00+00:00"
+      },
+      {
+        "title": "'0-1→1-1→3-1' 키움이 연이틀 한화 잡았다! 설종진 감독 \"알칸타라 에...",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613282",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T12:04:00+00:00"
+      },
+      {
+        "title": "김건희 동점포·원성준 결승타-키움, 한화 꺾고 위닝시리즈 확보",
+        "url": "https://www.mediafine.co.kr/news/articleView.html?idxno=80894",
+        "source": "mediafine",
+        "published_at": "2026-06-13T11:42:00+00:00"
+      },
+      {
+        "title": "'정우주 충격 악송구' 한화 꼴찌에 또 덜미 잡혔다!…키움, 3-1 승+WS 확보...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021990",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T11:39:00+00:00"
+      },
+      {
+        "title": "박준영 호투도 못 살린 한화, 키움에 1-3 역전패",
+        "url": "https://m.sports.naver.com/kbaseball/article/656/0000178963",
+        "source": "daejonilbo",
+        "published_at": "2026-06-13T11:17:00+00:00"
+      },
+      {
+        "title": "이용규 음주운전? 우린 끄떡없지! ‘한화에 2연패 안긴’ 키움 “알칸타...",
+        "url": "https://m.sports.naver.com/kbaseball/article/468/0001247024",
+        "source": "스포츠서울",
+        "published_at": "2026-06-13T11:17:00+00:00"
+      },
+      {
+        "title": "[AI상보] '알칸타라 호투' 키움, 한화 3-1 제압하며 역전승",
+        "url": "https://www.newspim.com/news/view/20260613000101",
         "source": "newspim",
-        "published_at": "2026-06-11T13:18:00+00:00"
+        "published_at": "2026-06-13T11:09:00+00:00"
       },
       {
-        "title": "[포토] 1점 지켜내며 세이브에 다이노스 연승 지켜낸 전사민",
-        "url": "https://m.sports.naver.com/kbaseball/article/108/0003443528",
+        "title": "'이용규 음주운전→불명예 은퇴' 키움 2연승! 아주 공교롭네, 내일(14일...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444081",
         "source": "스타뉴스",
-        "published_at": "2026-06-11T13:07:00+00:00"
+        "published_at": "2026-06-13T11:01:00+00:00"
       },
       {
-        "title": "‘0:2→3:2 9회 역전승’ NC, 키움 잡고 2연승 질주→위닝시리즈…이우...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551513",
-        "source": "osen",
-        "published_at": "2026-06-11T12:56:00+00:00"
+        "title": "[AI그래픽] 키움 알칸타라, 6월 13일 고척 한화전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000095",
+        "source": "newspim",
+        "published_at": "2026-06-13T10:53:00+00:00"
       },
       {
-        "title": "[프로야구 고척전적] NC 3-2 키움",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134267",
+        "title": "키움 ‘위닝시리즈 확정’[포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021981",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T10:40:00+00:00"
+      },
+      {
+        "title": "키움 ‘승리의 하이파이브’[포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021982",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T10:40:00+00:00"
+      },
+      {
+        "title": "승리 거둔 키움 선수들 ‘오늘도 짜릿한 역전승이다’ [MK포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/410/0001128629",
+        "source": "mk",
+        "published_at": "2026-06-13T10:39:00+00:00"
+      },
+      {
+        "title": "'와' 한화 또 잡은 '꼴찌' 키움, 2연승 성공→위닝 확보! '장영석 누락 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444076",
+        "source": "스타뉴스",
+        "published_at": "2026-06-13T10:37:00+00:00"
+      },
+      {
+        "title": "[프로야구 고척전적] 키움 3-1 한화",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137125",
         "source": "연합뉴스",
-        "published_at": "2026-06-11T12:53:00+00:00"
+        "published_at": "2026-06-13T10:37:00+00:00"
       },
       {
-        "title": "'라일리 호투+천재환 결승 희생플라이' NC, 접전 끝에 키움 꺾고 연승 성...",
-        "url": "http://www.stoo.com/article.php?aid=107113667105",
+        "title": "‘음주운전 사고’ 이용규 은퇴…키움, 새 1군 타격 코치에 장영석",
+        "url": "https://n.news.naver.com/mnews/article/009/0005693378?sid=102",
+        "source": "mk",
+        "published_at": "2026-06-13T10:37:00+00:00"
+      },
+      {
+        "title": "'한화 2연패 안겼다' 키움, 알칸타라 호투 앞세워 3-1 승리…김건희 동...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552851",
+        "source": "osen",
+        "published_at": "2026-06-13T10:36:00+00:00"
+      },
+      {
+        "title": "'알칸타라 7이닝 1실점 호투' 키움, 기세 좋던 한화에 3-1 승리…위닝시...",
+        "url": "http://www.stoo.com/article.php?aid=107138430013",
         "source": "stoo",
-        "published_at": "2026-06-11T12:52:00+00:00"
+        "published_at": "2026-06-13T10:36:00+00:00"
       },
       {
-        "title": "[AI그래픽] NC 라일리, 6월 11일 고척 키움전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001210",
+        "title": "[포토S] 키움, '상승세 한화 꺾고 2연승!'",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613270",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T10:36:00+00:00"
+      },
+      {
+        "title": "[속보] 키움, 한화에 또 승리…주말 위닝 시리즈 달성",
+        "url": "https://www.gukjenews.com/news/articleView.html?idxno=3607635",
+        "source": "gukjenews",
+        "published_at": "2026-06-13T10:34:00+00:00"
+      },
+      {
+        "title": "기분좋은 승승!…‘알칸타라 KKKKKK 1실점 역투+원성준 결승타’ 키움, ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/410/0001128626",
+        "source": "mk",
+        "published_at": "2026-06-13T10:33:00+00:00"
+      },
+      {
+        "title": "'韓 최초 업적자' 4⅓이닝 퍼펙트→인생투 했는데…한화 빈타, 키움한테...",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613269",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T10:32:00+00:00"
+      },
+      {
+        "title": "'음주운전 사고' 이용규 은퇴…키움, 새 1군 타격 코치에 장영석",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001935",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T10:26:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] 한화 박준영, 6월 13일 고척 키움전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000094",
         "source": "newspim",
-        "published_at": "2026-06-11T12:45:00+00:00"
+        "published_at": "2026-06-13T10:23:00+00:00"
       },
       {
-        "title": "[포토]'8회말 역투펼치는' 다이노스 최성영",
-        "url": "https://m.sports.naver.com/kbaseball/article/108/0003443520",
+        "title": "8회에 등판한 키움 박정훈 [MK포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/410/0001128624",
+        "source": "mk",
+        "published_at": "2026-06-13T10:10:00+00:00"
+      },
+      {
+        "title": "'가득 찬 고척돔' 한화 만난 키움, 연이틀 매진! 시즌 18호 '전 좌석 완...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444073",
         "source": "스타뉴스",
-        "published_at": "2026-06-11T12:30:00+00:00"
+        "published_at": "2026-06-13T09:55:00+00:00"
       },
       {
-        "title": "[AI그래픽] 키움 박준현, 6월 11일 고척 NC전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001185",
+        "title": "'이용규 쇼크' 키움 또 황당 사태…장영석 코치 콜업했는데 등록 누락,...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552732",
+        "source": "osen",
+        "published_at": "2026-06-13T08:51:00+00:00"
+      },
+      {
+        "title": "[포토S] 박준영, '키움 타선 막는다'",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613227",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T08:44:00+00:00"
+      },
+      {
+        "title": "'음주운전 사고' 이용규 이탈…키움, 장영석 코치 1군 타격으로(종합)",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004705",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T08:29:00+00:00"
+      },
+      {
+        "title": "[포토S] 키움 선발 알칸타라",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613218",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T08:25:00+00:00"
+      },
+      {
+        "title": "박준영 ‘키움 타선을 막아라’[포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021897",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T08:21:00+00:00"
+      },
+      {
+        "title": "알칸타라 ‘키움의 선발투수’[포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021886",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T08:20:00+00:00"
+      }
+    ],
+    "samsung": [
+      {
+        "title": "선두 LG, 롯데에 설욕전 펼치며 시즌 40승 선착…삼성, 6점차 뒤집기(종...",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004781",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T12:18:00+00:00"
+      },
+      {
+        "title": "0-6 뒤집은 삼성라이온즈…전병우 추격 3점포, 박승규 역전타, 후라도 책...",
+        "url": "https://m.sports.naver.com/kbaseball/article/657/0000052405",
+        "source": "dgmbc",
+        "published_at": "2026-06-13T11:42:00+00:00"
+      },
+      {
+        "title": "[AI상보] '후라도 6실점' 삼성, 박승규 한 방으로 SSG에 7-6 짜릿한 역전...",
+        "url": "https://www.newspim.com/news/view/20260613000103",
         "source": "newspim",
-        "published_at": "2026-06-11T11:32:00+00:00"
+        "published_at": "2026-06-13T11:26:00+00:00"
+      },
+      {
+        "title": "'전병우 멀티히트 및 1홈런+3타점' 삼성, SSG에 역전승 거두고 3위 유지",
+        "url": "http://www.stoo.com/article.php?aid=107138997392",
+        "source": "stoo",
+        "published_at": "2026-06-13T11:14:00+00:00"
+      },
+      {
+        "title": "[사진] 역전 승리 기쁨 나누는 삼성 선수들",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552874",
+        "source": "osen",
+        "published_at": "2026-06-13T10:58:00+00:00"
+      },
+      {
+        "title": "저력의 삼성, 6점 열세 결국 뒤집었다! 전병우 3점포+박승규 결승타, SS...",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613276",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T10:57:00+00:00"
+      },
+      {
+        "title": "[프로야구 대구전적] 삼성 7-6 SSG",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137130",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:56:00+00:00"
+      },
+      {
+        "title": "'0-6 뒤집었다!' 삼성, 전병우 3점포+박승규 결승포로 드라마 썼다 [대구...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021985",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T10:53:00+00:00"
+      },
+      {
+        "title": "이보다 짜릿할 수 없다. 삼성, SSG에 0-6→7-6 화끈한 역전승 [대구 리뷰...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552871",
+        "source": "osen",
+        "published_at": "2026-06-13T10:52:00+00:00"
+      },
+      {
+        "title": "삼성 이재현, 허리 골멍으로 1군서 말소… 2주 후 재검진",
+        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=844081",
+        "source": "hansbiz",
+        "published_at": "2026-06-13T08:30:00+00:00"
+      }
+    ],
+    "lg": [
+      {
+        "title": "LG, 불펜 총동원해 40승 선착-박해민은 KBO 최초 13년 연속 20도루",
+        "url": "https://www.mediafine.co.kr/news/articleView.html?idxno=80899",
+        "source": "mediafine",
+        "published_at": "2026-06-13T12:36:00+00:00"
+      },
+      {
+        "title": "프로야구 LG, 롯데 꺾고 시즌 40승 선착…키움 연이틀 한화 격파(종합)",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001979",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T12:25:00+00:00"
+      },
+      {
+        "title": "LG, 롯데 5-3 제압→40승 선착...박해민 13시즌 연속 20도루",
+        "url": "https://www.slist.kr/news/articleView.html?idxno=745098",
+        "source": "slist",
+        "published_at": "2026-06-13T12:22:00+00:00"
+      },
+      {
+        "title": "선두 LG, 롯데에 설욕전 펼치며 시즌 40승 선착…삼성, 6점차 뒤집기(종...",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004781",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T12:18:00+00:00"
+      },
+      {
+        "title": "LG 새 외국인 투수 리오스, 올 시즌 최고 구속 160.8㎞",
+        "url": "https://m.sports.naver.com/kbaseball/article/052/0002366110",
+        "source": "ytn",
+        "published_at": "2026-06-13T12:14:00+00:00"
+      },
+      {
+        "title": "[AI상보] '불펜 데이' LG, 롯데 5-3으로 꺾고 40승 선착...리오스 160.8km로...",
+        "url": "https://www.newspim.com/news/view/20260613000106",
+        "source": "newspim",
+        "published_at": "2026-06-13T12:12:00+00:00"
+      },
+      {
+        "title": "프로야구 LG, '불펜 데이'에 롯데 5-3 격파…시즌 40승 선착",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001974",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T12:01:00+00:00"
+      },
+      {
+        "title": "\"내가 롤모델 되고 싶다\" 제2의 누군가 거부한 광주일고 배종윤, LG 김영...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444095",
+        "source": "스타뉴스",
+        "published_at": "2026-06-13T12:01:00+00:00"
+      },
+      {
+        "title": "'40승 선착' LG, 불펜데이로 1.5경기 차 선두 고수",
+        "url": "https://www.topstarnews.net/news/articleView.html?idxno=16092372",
+        "source": "topstarnews",
+        "published_at": "2026-06-13T11:58:00+00:00"
+      },
+      {
+        "title": "\"불펜 데이 팀 승리라 더 의미있다\" 염경엽 LG 감독 흐뭇한 미소 [MD잠실...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074415",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T11:57:00+00:00"
+      },
+      {
+        "title": "LG '新 필승조' 충격의 161km 강속구 폭발! 불펜데이 성공→11점 차 대패...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021993",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T11:50:00+00:00"
+      },
+      {
+        "title": "LG '불펜 데이'에 40승 선착…1.5게임 차 단독 1위 질주",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137145",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T11:48:00+00:00"
+      },
+      {
+        "title": "'치고 달리고' 박해민 펄펄…LG, 롯데 제압",
+        "url": "https://m.sports.naver.com/kbaseball/article/055/0001364126",
+        "source": "SBS",
+        "published_at": "2026-06-13T11:46:00+00:00"
+      },
+      {
+        "title": "\"도루 1위 보다는 팀 승리가 먼저죠\" 빠른 발 앞세워 승리 발판 마련 LG...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074414",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T11:40:00+00:00"
+      },
+      {
+        "title": "LG 새 외인 리오스, 시속 160.8㎞ '쾅'…LG, 40승 고지 선착",
+        "url": "https://m.sports.naver.com/kbaseball/article/079/0004157509",
+        "source": "nocutnews",
+        "published_at": "2026-06-13T11:36:00+00:00"
+      },
+      {
+        "title": "'두 이닝에 끝낸 승부' LG, 롯데 5-3 제압...리그 최초 40승으로 선두 수...",
+        "url": "https://m.sports.naver.com/kbaseball/article/425/0000194201",
+        "source": "maniareport",
+        "published_at": "2026-06-13T11:27:00+00:00"
+      },
+      {
+        "title": "LG 새 외인 리오스, 롯데전 시속 160.8㎞ '쾅'…올 시즌 최고 구속",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004766",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T11:17:00+00:00"
+      },
+      {
+        "title": "“이래서 1위” 40승 선착한 LG…박해민은 KBO 최초, 리오스는 160.8㎞ ‘...",
+        "url": "https://m.sports.naver.com/kbaseball/article/011/0004630810",
+        "source": "sedaily",
+        "published_at": "2026-06-13T11:15:00+00:00"
+      },
+      {
+        "title": "[사진]LG, 롯데 꺾고 가장 먼저 40승 고지",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552896",
+        "source": "osen",
+        "published_at": "2026-06-13T11:11:00+00:00"
+      },
+      {
+        "title": "[사진]1위 LG, 40승 선점",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552891",
+        "source": "osen",
+        "published_at": "2026-06-13T11:10:00+00:00"
+      },
+      {
+        "title": "[사진]LG,승리 세리머니",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552892",
+        "source": "osen",
+        "published_at": "2026-06-13T11:10:00+00:00"
+      },
+      {
+        "title": "\"160.8㎞ 강속구\"…LG 리오스, KBO 시즌 최고 구속 달성",
+        "url": "https://www.topstarnews.net/news/articleView.html?idxno=16092352",
+        "source": "topstarnews",
+        "published_at": "2026-06-13T11:10:00+00:00"
+      },
+      {
+        "title": "[사진]LG, 가장 먼저 40승 고지",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552880",
+        "source": "osen",
+        "published_at": "2026-06-13T11:08:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] 롯데 이민석, 6월 13일 잠실 LG전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000098",
+        "source": "newspim",
+        "published_at": "2026-06-13T11:05:00+00:00"
+      },
+      {
+        "title": "'오스틴 2안타 2타점+문정빈 홈런포' LG, 롯데 추격 뿌리치고 5-3 진땀승",
+        "url": "http://www.stoo.com/article.php?aid=107138883954",
+        "source": "stoo",
+        "published_at": "2026-06-13T10:58:00+00:00"
+      },
+      {
+        "title": "LG 새 외국인투수 리오스, 160.8㎞ '쾅'…올 시즌 최고 구속",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137128",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:55:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] LG 김진수, 6월 13일 잠실 롯데전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000096",
+        "source": "newspim",
+        "published_at": "2026-06-13T10:54:00+00:00"
+      },
+      {
+        "title": "'불펜데이'로도 승리 LG, 시즌 40승 선착 롯데 상대 전날 5-16 대패 설욕...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074408",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T10:52:00+00:00"
+      },
+      {
+        "title": "[프로야구 잠실전적] LG 5-3 롯데",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137127",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:50:00+00:00"
+      },
+      {
+        "title": "프로야구 LG 박해민, KBO리그 역대 최초 13시즌 연속 20도루",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001931",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T10:16:00+00:00"
+      },
+      {
+        "title": "도루왕만 5번인데 또 ‘KBO 최초’…LG 박해민, 13시즌 연속 20도루 달성",
+        "url": "https://m.sports.naver.com/kbaseball/article/011/0004630799",
+        "source": "sedaily",
+        "published_at": "2026-06-13T09:04:00+00:00"
+      },
+      {
+        "title": "LG 박해민, KBO 최초 13시즌 연속 20도루 달성",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004743",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T08:51:00+00:00"
+      },
+      {
+        "title": "KBO 최초 대기록이다. LG 캡틴 박해민, 13시즌 연속 20도루 신기록 달성...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552715",
+        "source": "osen",
+        "published_at": "2026-06-13T08:35:00+00:00"
+      },
+      {
+        "title": "'꾸준히 잘 달렸다' LG 박해민, 13년 연속 20도루 13일 롯데전 1회말 달성...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074395",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T08:33:00+00:00"
+      }
+    ],
+    "kia": [
+      {
+        "title": "'네일 무사사구 호투·김도영 맹타' KIA, 투수전 끝 두산 2-1 제압...4위 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/425/0000194263",
+        "source": "maniareport",
+        "published_at": "2026-06-13T12:33:00+00:00"
+      },
+      {
+        "title": "KIA, 에이스 네일 호투 앞세워 3연패 탈출",
+        "url": "https://www.namdonews.com/news/articleView.html?idxno=913424",
+        "source": "namdonews",
+        "published_at": "2026-06-13T12:00:00+00:00"
+      },
+      {
+        "title": "'네일 호투' KIA, 두산 꺾고 3연패 탈출...단독 4위로 올라서",
+        "url": "https://m.sports.naver.com/kbaseball/article/660/0000111147",
+        "source": "ikbc",
+        "published_at": "2026-06-13T11:59:00+00:00"
+      },
+      {
+        "title": "[AI상보] '네일 6이닝 1실점' KIA, 두산 2-1로 제압...성영탁 10세이브",
+        "url": "https://www.newspim.com/news/view/20260613000102",
+        "source": "newspim",
+        "published_at": "2026-06-13T11:22:00+00:00"
+      },
+      {
+        "title": "'네일 쾌투' KIA, 두산 2-1로 꺾고 3연패 탈출…단독 4위로",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004765",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T11:05:00+00:00"
+      },
+      {
+        "title": "'네일 6이닝 1실점+김도영 멀티히트' KIA, 투수전 끝에 두산 꺾고 3연패...",
+        "url": "http://www.stoo.com/article.php?aid=107138741598",
+        "source": "stoo",
+        "published_at": "2026-06-13T10:48:00+00:00"
+      },
+      {
+        "title": "[프로야구 광주전적] KIA 2-1 두산",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137126",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:48:00+00:00"
+      },
+      {
+        "title": "'릴레이 호투' KIA, 두산 2-1 잡고 연패 탈출",
+        "url": "https://www.jnilbo.com/news/articleView.html?idxno=90000042113",
+        "source": "jnilbo",
+        "published_at": "2026-06-13T10:45:00+00:00"
+      },
+      {
+        "title": "와 '네일 1실점 쾌투' KIA 마침내 3연패 탈출! '뜻밖의 수비 방해 OUT+양...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444079",
+        "source": "스타뉴스",
+        "published_at": "2026-06-13T10:44:00+00:00"
+      },
+      {
+        "title": "성영탁 완벽 10SV→불펜 2-1 지키자 네일 웃다. KIA 3연패 탈출 4위 복귀...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552858",
+        "source": "osen",
+        "published_at": "2026-06-13T10:41:00+00:00"
+      },
+      {
+        "title": "[오피셜] KIA의 광주 '월드컵 열기와 진배없다' 야구 인기 진짜 뜨겁네→...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444068",
+        "source": "스타뉴스",
+        "published_at": "2026-06-13T09:14:00+00:00"
+      },
+      {
+        "title": "'최연소 대기록 축하' KIA, 정해영 통산 150SV 달성 시상식 개최",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074399",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T09:01:00+00:00"
+      }
+    ],
+    "kt": [
+      {
+        "title": "[AI상보] '허경민 4안타+결승타' KT, 8회 7실점 악몽 딛고 NC에 11-9 재역...",
+        "url": "https://www.newspim.com/news/view/20260613000109",
+        "source": "newspim",
+        "published_at": "2026-06-13T12:17:00+00:00"
+      },
+      {
+        "title": "이강철 KT 감독 \"권동진 시즌 첫 홈런, 역전 불씨 살려\"",
+        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=844097",
+        "source": "hansbiz",
+        "published_at": "2026-06-13T12:02:00+00:00"
+      },
+      {
+        "title": "'뒤집고 또 뒤집었다' KT, 8회 9-7 역전 허용 후 곧장 재역전...NC에 11-9 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/425/0000194218",
+        "source": "maniareport",
+        "published_at": "2026-06-13T11:39:00+00:00"
+      },
+      {
+        "title": "'허경민 결승 2루타 포함 4안타' KT, 난타전 끝에 NC 꺾고 2연승",
+        "url": "http://www.stoo.com/article.php?aid=107139248020",
+        "source": "stoo",
+        "published_at": "2026-06-13T11:38:00+00:00"
+      },
+      {
+        "title": "'선발 전원 안타' 프로야구 KT, NC와 난타전 끝에 11-9 승",
+        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=844088",
+        "source": "hansbiz",
+        "published_at": "2026-06-13T11:28:00+00:00"
+      },
+      {
+        "title": "허경민 4안타 폭발! KT, 난타전 끝에 웃었다…위닝 시리즈 확보 [수원 리...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552901",
+        "source": "osen",
+        "published_at": "2026-06-13T11:27:00+00:00"
+      },
+      {
+        "title": "월드컵만큼 뜨거운 경기! '5-0→7-2→7-9→11-9' 美친 타격전 KT가 제압했...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074412",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T11:26:00+00:00"
+      },
+      {
+        "title": "MZ 세대 아이디어, 구단 마케팅에 접목...'34개팀 161명 참가' KT 위즈 '퓨...",
+        "url": "https://m.sports.naver.com/kbaseball/article/529/0000077551",
+        "source": "spochoo",
+        "published_at": "2026-06-13T10:36:00+00:00"
       }
     ],
     "hanwha": [
       {
-        "title": "한화 류현진, 8승 선착…타선 터진 쌍둥이 군단",
-        "url": "https://m.sports.naver.com/general/article/422/0000873901",
-        "source": "yonhapnewstv",
-        "published_at": "2026-06-11T14:26:00+00:00"
-      },
-      {
-        "title": "'8승 다승 선두에 팀 4위까지' 한화 류현진의 일석이조 호투, 위기마다...",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193705",
-        "source": "maniareport",
-        "published_at": "2026-06-11T14:23:00+00:00"
-      },
-      {
-        "title": "류현진이 막고 이도윤이 끝냈다... 한화, 5-1로 KIA 밀어내고 가을야구권...",
-        "url": "https://m.sports.naver.com/kbaseball/article/450/0000151891",
-        "source": "stnsports",
-        "published_at": "2026-06-11T14:15:00+00:00"
-      },
-      {
-        "title": "류현진이 막고 이도윤이 끝냈다…한화, KIA 꺾고 '4위 점프'",
-        "url": "https://m.sports.naver.com/kbaseball/article/079/0004157051",
-        "source": "nocutnews",
-        "published_at": "2026-06-11T14:10:00+00:00"
-      },
-      {
-        "title": "‘김도영 루킹 삼진’ 150km 찍은 류현진, 다승 단독 선두…한화 4위",
-        "url": "https://m.sports.naver.com/kbaseball/article/119/0003100276",
-        "source": "dailian",
-        "published_at": "2026-06-11T14:05:00+00:00"
-      },
-      {
-        "title": "한화, 다승 선두 류현진 앞세워 4위 도약…삼성 3연패 탈출",
-        "url": "https://m.sports.naver.com/kbaseball/article/055/0001363696",
-        "source": "SBS",
-        "published_at": "2026-06-11T13:43:00+00:00"
-      },
-      {
-        "title": "'류현진, 8승 다승 단독 선두' 한화, 4위 도약",
-        "url": "https://m.sports.naver.com/kbaseball/article/052/0002365358",
-        "source": "ytn",
-        "published_at": "2026-06-11T13:28:00+00:00"
-      },
-      {
-        "title": "'류현진 8승' 한화, KIA 꺾고 4위 도약…선두 LG는 SSG 15-1 완파(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014002018",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T13:23:00+00:00"
-      },
-      {
-        "title": "'시즌 8승' 류현진, 다승 단독 선두…한화 4위 도약(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/421/0008999430",
-        "source": "뉴스1",
-        "published_at": "2026-06-11T13:20:00+00:00"
-      },
-      {
-        "title": "류현진 넘지 못한 KIA, 한화전 루징시리즈",
-        "url": "https://www.namdonews.com/news/articleView.html?idxno=913373",
-        "source": "namdonews",
-        "published_at": "2026-06-11T13:20:00+00:00"
-      },
-      {
-        "title": "한화, 다승 선두 류현진 앞세워 4위 도약…삼성 3연패 탈출(종합)",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134277",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T13:18:00+00:00"
-      },
-      {
-        "title": "[AI상보] 류현진 8승 다승 선두, 한화 KIA 5-1로 꺾고 4위 도약",
-        "url": "https://www.newspim.com/news/view/20260611001219",
-        "source": "newspim",
-        "published_at": "2026-06-11T13:14:00+00:00"
-      },
-      {
-        "title": "한화 4위 행복하네! \"역시 나이스 피칭\" 달감독, '39세' 단독 1위 좌완 1...",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021282",
+        "title": "\"5이닝 정도만\" 달감독 기대치 초과했는데…한화 '육성 스리쿼터' 7K 인...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021999",
         "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T13:11:00+00:00"
+        "published_at": "2026-06-13T12:46:00+00:00"
       },
       {
-        "title": "류현진 다승 단독 선두 오르며 한화 4위로 견인",
-        "url": "https://m.sports.naver.com/kbaseball/article/025/0003529874",
-        "source": "joongang",
-        "published_at": "2026-06-11T13:10:00+00:00"
-      },
-      {
-        "title": "'류현진 8승 다승 선두' 한화, KIA 역전...승률 0.001 차로 4위 올라섰다",
-        "url": "https://m.sports.naver.com/kbaseball/article/425/0000193689",
-        "source": "maniareport",
-        "published_at": "2026-06-11T13:00:00+00:00"
-      },
-      {
-        "title": "150㎞ 꽂은 류현진, 시즌 8승…한화, KIA 꺾고 4위 탈환",
-        "url": "https://m.sports.naver.com/general/article/656/0000178864",
-        "source": "daejonilbo",
-        "published_at": "2026-06-11T12:56:00+00:00"
-      },
-      {
-        "title": "150㎞ 꽂은 류현진, 시즌 8승…한화, KIA 꺾고 4위 탈환",
-        "url": "https://m.sports.naver.com/kbaseball/article/656/0000178864",
-        "source": "daejonilbo",
-        "published_at": "2026-06-11T12:56:00+00:00"
-      },
-      {
-        "title": "KIA, 한화에 연패…류현진 호투에 막혀 루징시리즈",
-        "url": "https://www.jnilbo.com/news/articleView.html?idxno=90000041770",
-        "source": "jnilbo",
-        "published_at": "2026-06-11T12:50:00+00:00"
-      },
-      {
-        "title": "류현진이 끝내 버텼다… 한화, 1리 차로 KIA 밀어내고 4위 점프",
-        "url": "https://m.sports.naver.com/kbaseball/article/018/0006303627",
-        "source": "edaily",
-        "published_at": "2026-06-11T12:48:00+00:00"
-      },
-      {
-        "title": "류현진 8승 질주, 한화 4위 도약-KIA 제치고 순위 뒤집기 성공",
-        "url": "https://www.mediafine.co.kr/news/articleView.html?idxno=80754",
-        "source": "mediafine",
-        "published_at": "2026-06-11T12:44:00+00:00"
-      },
-      {
-        "title": "'6연승 질주' 류현진, KIA 제압하고 다승 선두·한화 4위 견인",
-        "url": "https://www.topstarnews.net/news/articleView.html?idxno=16088709",
-        "source": "topstarnews",
-        "published_at": "2026-06-11T12:30:00+00:00"
-      },
-      {
-        "title": "한화 류현진 8승째 따며 다승 단독 선두로",
-        "url": "https://m.sports.naver.com/kbaseball/article/023/0003981525",
-        "source": "chosun",
-        "published_at": "2026-06-11T12:27:00+00:00"
-      },
-      {
-        "title": "'39세' 류현진 150km 강속구 미쳤다…벌써 8승 신바람, 한화 연이틀 KIA ...",
-        "url": "https://m.sports.naver.com/kbaseball/article/477/0000612879",
-        "source": "SPOTV NEWS",
-        "published_at": "2026-06-11T12:24:00+00:00"
-      },
-      {
-        "title": "'RYU 클래스는 영원하다' 마침내 다승 단독 선두 등극! 한화 4위 탈환 '6...",
-        "url": "https://m.sports.naver.com/kbaseball/article/108/0003443518",
-        "source": "스타뉴스",
-        "published_at": "2026-06-11T12:24:00+00:00"
-      },
-      {
-        "title": "한화, 5-1로 KIA 꺾고 4위 도약…'시즌 8승' 류현진, 다승 단독 선두",
-        "url": "https://m.sports.naver.com/kbaseball/article/003/0014001987",
-        "source": "뉴시스",
-        "published_at": "2026-06-11T12:22:00+00:00"
-      },
-      {
-        "title": "'류현진 6이닝 1실점+시즌 8승' 한화, 마운드 힘으로 KIA에 5-1 승리",
-        "url": "http://www.stoo.com/article.php?aid=107113265255",
-        "source": "stoo",
-        "published_at": "2026-06-11T12:20:00+00:00"
-      },
-      {
-        "title": "한화 4위 탈환! '39세 류현진 8승' 다승 단독 1위!…KIA 5-1 격파→이도...",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021264",
-        "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T12:19:00+00:00"
-      },
-      {
-        "title": "류현진 6연승과 함께 다승 단독 선두로…한화 4위 도약",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134247",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:18:00+00:00"
-      },
-      {
-        "title": "[프로야구 대전전적] 한화 5-1 KIA",
-        "url": "https://m.sports.naver.com/kbaseball/article/001/0016134244",
-        "source": "연합뉴스",
-        "published_at": "2026-06-11T12:17:00+00:00"
-      },
-      {
-        "title": "류현진이 150km로 김도영과 올러를 잡았다, 한화 5-1 승리로 위닝→이도...",
-        "url": "https://m.sports.naver.com/kbaseball/article/117/0004073897",
+        "title": "'와 최초' 일본인 투수 10SV, 韓 61승 에이스 철벽투…'韓 최초' 한화 육...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074420",
         "source": "마이데일리",
-        "published_at": "2026-06-11T12:16:00+00:00"
+        "published_at": "2026-06-13T12:41:00+00:00"
       },
       {
-        "title": "한화, KIA 끌어내리고 4위 올라섰다...류현진 8승 쾌투→환상 더블스틸...",
-        "url": "https://m.sports.naver.com/kbaseball/article/109/0005551460",
-        "source": "osen",
-        "published_at": "2026-06-11T12:16:00+00:00"
+        "title": "데뷔 첫 QS도 웃지 못한 박준영…한화, 타선 침묵 속 키움에 연패 수렁",
+        "url": "https://www.dailysportshankook.co.kr/news/articleView.html?idxno=429707",
+        "source": "dailysportshankook",
+        "published_at": "2026-06-13T12:28:00+00:00"
       },
       {
-        "title": "[AI그래픽] KIA 올러, 6월 11일 대전 한화전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001198",
-        "source": "newspim",
-        "published_at": "2026-06-11T12:03:00+00:00"
+        "title": "프로야구 LG, 롯데 꺾고 시즌 40승 선착…키움 연이틀 한화 격파(종합)",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001979",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T12:25:00+00:00"
       },
       {
-        "title": "[AI그래픽] 한화 류현진, 6월 11일 대전 KIA전 투구 분석",
-        "url": "https://www.newspim.com/news/view/20260611001196",
-        "source": "newspim",
-        "published_at": "2026-06-11T11:54:00+00:00"
+        "title": "알칸타라, 에이스의 품격…키움, 한화 꺾고 위닝시리즈 선점",
+        "url": "https://www.dailysportshankook.co.kr/news/articleView.html?idxno=429705",
+        "source": "dailysportshankook",
+        "published_at": "2026-06-13T12:08:00+00:00"
       },
       {
-        "title": "(R)한화 노시환·문현빈 대표팀 선발..\"왕옌청과 맞대결?\"",
-        "url": "https://www.tjb.co.kr/news05/bodo/view/id/99442",
-        "source": "tjb",
-        "published_at": "2026-06-11T11:52:00+00:00"
+        "title": "'0-1→1-1→3-1' 키움이 연이틀 한화 잡았다! 설종진 감독 \"알칸타라 에...",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613282",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T12:04:00+00:00"
       },
       {
-        "title": "한화 노시환·문현빈 대표팀 선발..\"왕옌청과 맞대결?\"",
-        "url": "http://www.tjb.co.kr/sub0301/bodo/view/id/99442",
-        "source": "tjb",
-        "published_at": "2026-06-11T11:52:00+00:00"
+        "title": "김건희 동점포·원성준 결승타-키움, 한화 꺾고 위닝시리즈 확보",
+        "url": "https://www.mediafine.co.kr/news/articleView.html?idxno=80894",
+        "source": "mediafine",
+        "published_at": "2026-06-13T11:42:00+00:00"
       },
       {
-        "title": "한화 1.5억 亞쿼터 투수, 한국 적으로 만날까…\"경계 대상 1호 될 수 있...",
-        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021249",
+        "title": "'정우주 충격 악송구' 한화 꼴찌에 또 덜미 잡혔다!…키움, 3-1 승+WS 확보...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021990",
         "source": "엑스포츠뉴스",
-        "published_at": "2026-06-11T11:32:00+00:00"
+        "published_at": "2026-06-13T11:39:00+00:00"
+      },
+      {
+        "title": "한화 '육성 스리쿼터' 인생투 깬 한 방…日 AG 국대 포수, 멘탈 강하네!...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021989",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T11:38:00+00:00"
+      },
+      {
+        "title": "박준영 호투도 못 살린 한화, 키움에 1-3 역전패",
+        "url": "https://m.sports.naver.com/kbaseball/article/656/0000178963",
+        "source": "daejonilbo",
+        "published_at": "2026-06-13T11:17:00+00:00"
+      },
+      {
+        "title": "이용규 음주운전? 우린 끄떡없지! ‘한화에 2연패 안긴’ 키움 “알칸타...",
+        "url": "https://m.sports.naver.com/kbaseball/article/468/0001247024",
+        "source": "스포츠서울",
+        "published_at": "2026-06-13T11:17:00+00:00"
+      },
+      {
+        "title": "[AI상보] '알칸타라 호투' 키움, 한화 3-1 제압하며 역전승",
+        "url": "https://www.newspim.com/news/view/20260613000101",
+        "source": "newspim",
+        "published_at": "2026-06-13T11:09:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] 키움 알칸타라, 6월 13일 고척 한화전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000095",
+        "source": "newspim",
+        "published_at": "2026-06-13T10:53:00+00:00"
+      },
+      {
+        "title": "한화 ‘2연패’[포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021979",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T10:40:00+00:00"
+      },
+      {
+        "title": "추성훈, 고척돔 뜬다…14일 한화전 시구 “승리 위해 진심으로 응원할 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/396/0000746778",
+        "source": "sportsworldi",
+        "published_at": "2026-06-13T10:38:00+00:00"
+      },
+      {
+        "title": "'와' 한화 또 잡은 '꼴찌' 키움, 2연승 성공→위닝 확보! '장영석 누락 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444076",
+        "source": "스타뉴스",
+        "published_at": "2026-06-13T10:37:00+00:00"
+      },
+      {
+        "title": "[프로야구 고척전적] 키움 3-1 한화",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137125",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:37:00+00:00"
+      },
+      {
+        "title": "'한화 2연패 안겼다' 키움, 알칸타라 호투 앞세워 3-1 승리…김건희 동...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552851",
+        "source": "osen",
+        "published_at": "2026-06-13T10:36:00+00:00"
+      },
+      {
+        "title": "'알칸타라 7이닝 1실점 호투' 키움, 기세 좋던 한화에 3-1 승리…위닝시...",
+        "url": "http://www.stoo.com/article.php?aid=107138430013",
+        "source": "stoo",
+        "published_at": "2026-06-13T10:36:00+00:00"
+      },
+      {
+        "title": "[포토S] 키움, '상승세 한화 꺾고 2연승!'",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613270",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T10:36:00+00:00"
+      },
+      {
+        "title": "[속보] 키움, 한화에 또 승리…주말 위닝 시리즈 달성",
+        "url": "https://www.gukjenews.com/news/articleView.html?idxno=3607635",
+        "source": "gukjenews",
+        "published_at": "2026-06-13T10:34:00+00:00"
+      },
+      {
+        "title": "4⅓이닝 퍼펙트→QS KKKKKKK 패전 실화? 한화 또 졌다, 정우주 치명적 실...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074407",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T10:33:00+00:00"
+      },
+      {
+        "title": "'韓 최초 업적자' 4⅓이닝 퍼펙트→인생투 했는데…한화 빈타, 키움한테...",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613269",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T10:32:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] 한화 박준영, 6월 13일 고척 키움전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000094",
+        "source": "newspim",
+        "published_at": "2026-06-13T10:23:00+00:00"
+      },
+      {
+        "title": "'말도 안 돼' 한화 육성선수 왜 미지명됐나, 괜히 韓 최초 역사 썼겠나...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074405",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T10:01:00+00:00"
+      },
+      {
+        "title": "'가득 찬 고척돔' 한화 만난 키움, 연이틀 매진! 시즌 18호 '전 좌석 완...",
+        "url": "https://m.sports.naver.com/kbaseball/article/108/0003444073",
+        "source": "스타뉴스",
+        "published_at": "2026-06-13T09:55:00+00:00"
+      },
+      {
+        "title": "'韓 최초' 한화 육성선수 퍼펙트 행진 깼다! 22살 국가대표 포수 125m 동...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074402",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T09:31:00+00:00"
+      },
+      {
+        "title": "마운드 향하는 한화 박준영[포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021921",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T09:21:00+00:00"
+      },
+      {
+        "title": "[핌in고척] 흔들린 한화 마무리 이민우 숨고르기, 주말까지 휴식",
+        "url": "https://www.newspim.com/news/view/20260613000074",
+        "source": "newspim",
+        "published_at": "2026-06-13T08:34:00+00:00"
+      },
+      {
+        "title": "[포토S] 선발로 나선 한화 박준영",
+        "url": "https://m.sports.naver.com/kbaseball/article/477/0000613219",
+        "source": "SPOTV NEWS",
+        "published_at": "2026-06-13T08:27:00+00:00"
+      },
+      {
+        "title": "노시환 ‘한화의 첫 안타’ [MK포토]",
+        "url": "https://m.sports.naver.com/kbaseball/article/410/0001128589",
+        "source": "mk",
+        "published_at": "2026-06-13T08:27:00+00:00"
+      }
+    ],
+    "ssg": [
+      {
+        "title": "[AI상보] '후라도 6실점' 삼성, 박승규 한 방으로 SSG에 7-6 짜릿한 역전...",
+        "url": "https://www.newspim.com/news/view/20260613000103",
+        "source": "newspim",
+        "published_at": "2026-06-13T11:26:00+00:00"
+      },
+      {
+        "title": "'전병우 멀티히트 및 1홈런+3타점' 삼성, SSG에 역전승 거두고 3위 유지",
+        "url": "http://www.stoo.com/article.php?aid=107138997392",
+        "source": "stoo",
+        "published_at": "2026-06-13T11:14:00+00:00"
+      },
+      {
+        "title": "[프로야구 대구전적] 삼성 7-6 SSG",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137130",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:56:00+00:00"
+      },
+      {
+        "title": "이보다 짜릿할 수 없다. 삼성, SSG에 0-6→7-6 화끈한 역전승 [대구 리뷰...",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552871",
+        "source": "osen",
+        "published_at": "2026-06-13T10:52:00+00:00"
+      },
+      {
+        "title": "'패패패' 벗어난 SSG, 5강 포기 안 했다…\"기회는 무조건 온다\" [대구 현...",
+        "url": "https://m.sports.naver.com/kbaseball/article/311/0002021910",
+        "source": "엑스포츠뉴스",
+        "published_at": "2026-06-13T09:01:00+00:00"
+      }
+    ],
+    "lotte": [
+      {
+        "title": "프로야구 LG, 롯데 꺾고 시즌 40승 선착…키움 연이틀 한화 격파(종합)",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001979",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T12:25:00+00:00"
+      },
+      {
+        "title": "LG, 롯데 5-3 제압→40승 선착...박해민 13시즌 연속 20도루",
+        "url": "https://www.slist.kr/news/articleView.html?idxno=745098",
+        "source": "slist",
+        "published_at": "2026-06-13T12:22:00+00:00"
+      },
+      {
+        "title": "선두 LG, 롯데에 설욕전 펼치며 시즌 40승 선착…삼성, 6점차 뒤집기(종...",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004781",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T12:18:00+00:00"
+      },
+      {
+        "title": "[AI상보] '불펜 데이' LG, 롯데 5-3으로 꺾고 40승 선착...리오스 160.8km로...",
+        "url": "https://www.newspim.com/news/view/20260613000106",
+        "source": "newspim",
+        "published_at": "2026-06-13T12:12:00+00:00"
+      },
+      {
+        "title": "프로야구 LG, '불펜 데이'에 롯데 5-3 격파…시즌 40승 선착",
+        "url": "https://m.sports.naver.com/kbaseball/article/421/0009001974",
+        "source": "뉴스1",
+        "published_at": "2026-06-13T12:01:00+00:00"
+      },
+      {
+        "title": "'치고 달리고' 박해민 펄펄…LG, 롯데 제압",
+        "url": "https://m.sports.naver.com/kbaseball/article/055/0001364126",
+        "source": "SBS",
+        "published_at": "2026-06-13T11:46:00+00:00"
+      },
+      {
+        "title": "'두 이닝에 끝낸 승부' LG, 롯데 5-3 제압...리그 최초 40승으로 선두 수...",
+        "url": "https://m.sports.naver.com/kbaseball/article/425/0000194201",
+        "source": "maniareport",
+        "published_at": "2026-06-13T11:27:00+00:00"
+      },
+      {
+        "title": "LG 새 외인 리오스, 롯데전 시속 160.8㎞ '쾅'…올 시즌 최고 구속",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004766",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T11:17:00+00:00"
+      },
+      {
+        "title": "[사진]LG, 롯데 꺾고 가장 먼저 40승 고지",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552896",
+        "source": "osen",
+        "published_at": "2026-06-13T11:11:00+00:00"
+      },
+      {
+        "title": "[사진]롯데, 아쉬운 패배",
+        "url": "https://m.sports.naver.com/kbaseball/article/109/0005552893",
+        "source": "osen",
+        "published_at": "2026-06-13T11:10:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] 롯데 이민석, 6월 13일 잠실 LG전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000098",
+        "source": "newspim",
+        "published_at": "2026-06-13T11:05:00+00:00"
+      },
+      {
+        "title": "'오스틴 2안타 2타점+문정빈 홈런포' LG, 롯데 추격 뿌리치고 5-3 진땀승",
+        "url": "http://www.stoo.com/article.php?aid=107138883954",
+        "source": "stoo",
+        "published_at": "2026-06-13T10:58:00+00:00"
+      },
+      {
+        "title": "[AI그래픽] LG 김진수, 6월 13일 잠실 롯데전 투구 분석",
+        "url": "https://www.newspim.com/news/view/20260613000096",
+        "source": "newspim",
+        "published_at": "2026-06-13T10:54:00+00:00"
+      },
+      {
+        "title": "'불펜데이'로도 승리 LG, 시즌 40승 선착 롯데 상대 전날 5-16 대패 설욕...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074408",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T10:52:00+00:00"
+      },
+      {
+        "title": "[프로야구 잠실전적] LG 5-3 롯데",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137127",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:50:00+00:00"
+      },
+      {
+        "title": "뷔 보러 부산 왔는데 “롯데 김태형 감독 유니폼 주세요”…아미들 사이...",
+        "url": "https://n.news.naver.com/mnews/article/011/0004630805?sid=102",
+        "source": "sedaily",
+        "published_at": "2026-06-13T10:14:00+00:00"
+      },
+      {
+        "title": "추격 불씨 댕긴 투런포 롯데 레이예스, 3시즌 연속 두자리수 홈런 [MD잠...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074401",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T09:16:00+00:00"
+      },
+      {
+        "title": "'꾸준히 잘 달렸다' LG 박해민, 13년 연속 20도루 13일 롯데전 1회말 달성...",
+        "url": "https://m.sports.naver.com/kbaseball/article/117/0004074395",
+        "source": "마이데일리",
+        "published_at": "2026-06-13T08:33:00+00:00"
+      }
+    ],
+    "doosan": [
+      {
+        "title": "'네일 무사사구 호투·김도영 맹타' KIA, 투수전 끝 두산 2-1 제압...4위 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/425/0000194263",
+        "source": "maniareport",
+        "published_at": "2026-06-13T12:33:00+00:00"
+      },
+      {
+        "title": "'네일 호투' KIA, 두산 꺾고 3연패 탈출...단독 4위로 올라서",
+        "url": "https://m.sports.naver.com/kbaseball/article/660/0000111147",
+        "source": "ikbc",
+        "published_at": "2026-06-13T11:59:00+00:00"
+      },
+      {
+        "title": "[AI상보] '네일 6이닝 1실점' KIA, 두산 2-1로 제압...성영탁 10세이브",
+        "url": "https://www.newspim.com/news/view/20260613000102",
+        "source": "newspim",
+        "published_at": "2026-06-13T11:22:00+00:00"
+      },
+      {
+        "title": "'네일 쾌투' KIA, 두산 2-1로 꺾고 3연패 탈출…단독 4위로",
+        "url": "https://m.sports.naver.com/kbaseball/article/003/0014004765",
+        "source": "뉴시스",
+        "published_at": "2026-06-13T11:05:00+00:00"
+      },
+      {
+        "title": "'네일 6이닝 1실점+김도영 멀티히트' KIA, 투수전 끝에 두산 꺾고 3연패...",
+        "url": "http://www.stoo.com/article.php?aid=107138741598",
+        "source": "stoo",
+        "published_at": "2026-06-13T10:48:00+00:00"
+      },
+      {
+        "title": "[프로야구 광주전적] KIA 2-1 두산",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137126",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T10:48:00+00:00"
+      },
+      {
+        "title": "'릴레이 호투' KIA, 두산 2-1 잡고 연패 탈출",
+        "url": "https://www.jnilbo.com/news/articleView.html?idxno=90000042113",
+        "source": "jnilbo",
+        "published_at": "2026-06-13T10:45:00+00:00"
+      }
+    ],
+    "nc": [
+      {
+        "title": "[AI상보] '허경민 4안타+결승타' KT, 8회 7실점 악몽 딛고 NC에 11-9 재역...",
+        "url": "https://www.newspim.com/news/view/20260613000109",
+        "source": "newspim",
+        "published_at": "2026-06-13T12:17:00+00:00"
+      },
+      {
+        "title": "'뒤집고 또 뒤집었다' KT, 8회 9-7 역전 허용 후 곧장 재역전...NC에 11-9 ...",
+        "url": "https://m.sports.naver.com/kbaseball/article/425/0000194218",
+        "source": "maniareport",
+        "published_at": "2026-06-13T11:39:00+00:00"
+      },
+      {
+        "title": "'허경민 결승 2루타 포함 4안타' KT, 난타전 끝에 NC 꺾고 2연승",
+        "url": "http://www.stoo.com/article.php?aid=107139248020",
+        "source": "stoo",
+        "published_at": "2026-06-13T11:38:00+00:00"
+      },
+      {
+        "title": "[프로야구 수원전적] kt 11-9 NC",
+        "url": "https://m.sports.naver.com/kbaseball/article/001/0016137140",
+        "source": "연합뉴스",
+        "published_at": "2026-06-13T11:31:00+00:00"
+      },
+      {
+        "title": "'선발 전원 안타' 프로야구 KT, NC와 난타전 끝에 11-9 승",
+        "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=844088",
+        "source": "hansbiz",
+        "published_at": "2026-06-13T11:28:00+00:00"
       }
     ]
   }

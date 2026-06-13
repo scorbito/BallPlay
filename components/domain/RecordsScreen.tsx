@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { History, Lock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { TeamBadge } from "@/components/common/TeamBadge";
+import { TeamLogo } from "@/components/common/TeamLogo";
 import { TierUpHost } from "@/components/common/TierUpHost";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
 import {
@@ -22,6 +22,14 @@ import {
   type BpRecordRow
 } from "@/lib/supabase/query-parts/bpRecords";
 import { fetchLineupStatsBulk, listMyLineups, rowToEntry, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
+import { getCustomTeamById } from "@/lib/supabase/query-parts/bpCustomTeams";
+import {
+  customTeamRowToBadgeMeta,
+  getCustomTeamDbId,
+  getCustomTeamIdAliases,
+  readLocalMyTeamBadgeMeta,
+  type CustomTeamBadgeMeta
+} from "@/lib/customTeamBadge";
 import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
@@ -40,6 +48,7 @@ type AuthState = "loading" | "loggedIn" | "loggedOut";
 type LineupOption = RematchLineupOption;
 
 type Stats = { wins: number; losses: number; draws: number };
+type CustomTeamMeta = CustomTeamBadgeMeta;
 // 특정 라인업(또는 전체)의 본인 시점 전적 집계.
 // user_side가 mirror row에선 flip되어 있으므로, user_side+final_score 조합이 곧 "본인 측 결과".
 function computeStats(records: BpRecordRow[], lineupId: string | null): Stats {
@@ -91,6 +100,7 @@ export function RecordsScreen({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   // 내 라인업 목록 — 필터 chip 노출용. 본인의 bp_lineups row id ↔ 이름 매핑.
   const [myLineups, setMyLineups] = useState<LineupOption[]>([]);
+  const [customTeamMetaById, setCustomTeamMetaById] = useState<Record<string, CustomTeamMeta>>({});
   // 재대전 picker 표시용 — entry_id → 전적.
   const [myStatsByEntryId, setMyStatsByEntryId] = useState<Record<string, LineupStats>>({});
   const [filterLineupId, setFilterLineupId] = useState<string | null>(null);
@@ -140,6 +150,9 @@ export function RecordsScreen({
     setRows(result.rows);
     // 라인업 필터용 매핑 — 실패해도 기록 표시엔 영향 없음 (필터 chip만 안 뜸).
     const linRes = await listMyLineups(client, user.id);
+    const teamIdsToResolve = new Set(
+      result.rows.flatMap((row) => [row.home_team_id, row.away_team_id])
+    );
     if (linRes.ok) {
       const options = linRes.rows
         .map((r) => {
@@ -154,6 +167,7 @@ export function RecordsScreen({
         })
         .filter((lineup) => lineup.entry.batting.slots.length === 9);
       setMyLineups(options);
+      options.forEach((option) => teamIdsToResolve.add(option.teamId));
 
       // 재대전 picker 라벨용 전적 fetch — 실패하면 라벨에 전적 미표시 (UI 영향 X)
       const ids = options.map((o) => o.id);
@@ -167,6 +181,54 @@ export function RecordsScreen({
         setMyStatsByEntryId(byEntry);
       }
     }
+    const customTeamLookupEntries = Array.from(teamIdsToResolve)
+      .map((teamId) => ({ teamId, dbId: getCustomTeamDbId(teamId) }))
+      .filter((entry): entry is { teamId: string; dbId: string } => {
+        if (!entry.dbId) return false;
+        if (entry.teamId === "national") return false;
+        try {
+          getTeam(entry.teamId);
+          return false;
+        } catch {
+          return true;
+        }
+      });
+    const dbIds = Array.from(new Set(customTeamLookupEntries.map((entry) => entry.dbId)));
+    const meta: Record<string, CustomTeamMeta> = {};
+    const setMetaAliases = (teamId: string, badgeMeta: CustomTeamMeta) => {
+      for (const alias of getCustomTeamIdAliases(teamId)) {
+        meta[alias] = badgeMeta;
+      }
+    };
+
+    if (dbIds.length > 0) {
+      const entries = await Promise.all(
+        dbIds.map(async (teamId) => {
+          const res = await getCustomTeamById(client, teamId);
+          return [teamId, res.ok ? res.row : null] as const;
+        })
+      );
+      const byDbId = new Map<string, CustomTeamMeta>();
+      for (const [teamId, row] of entries) {
+        if (row) byDbId.set(teamId, customTeamRowToBadgeMeta(row));
+      }
+      for (const { teamId, dbId } of customTeamLookupEntries) {
+        const badgeMeta = byDbId.get(dbId);
+        if (badgeMeta) setMetaAliases(teamId, badgeMeta);
+      }
+    }
+
+    const localMyTeamMeta = readLocalMyTeamBadgeMeta();
+    if (localMyTeamMeta) {
+      for (const lineup of linRes.ok ? linRes.rows : []) {
+        if (getCustomTeamDbId(lineup.team_id) || lineup.custom_team_id) {
+          setMetaAliases(lineup.team_id, localMyTeamMeta);
+          if (lineup.custom_team_id) setMetaAliases(lineup.custom_team_id, localMyTeamMeta);
+        }
+      }
+    }
+
+    setCustomTeamMetaById(meta);
   }, []);
 
   useEffect(() => {
@@ -469,7 +531,14 @@ export function RecordsScreen({
                 className={`records-filter-chip ${filterLineupId === lineup.id ? "is-active" : ""}`}
                 onClick={() => setFilterLineupId(lineup.id)}
               >
-                <TeamBadge teamId={lineup.teamId} size="sm" />
+                <TeamLogo
+                  teamId={lineup.teamId}
+                  size="sm"
+                  fallbackName={customTeamMetaById[lineup.teamId]?.name ?? lineup.name}
+                  fallbackInitial={customTeamMetaById[lineup.teamId]?.initials}
+                  fallbackColor={customTeamMetaById[lineup.teamId]?.color}
+                  fallbackBadgeStyle={customTeamMetaById[lineup.teamId]?.badge_style}
+                />
                 <span className="records-filter-chip-text">
                   <span className="records-filter-chip-name">{lineup.name}</span>
                   <span className="records-filter-chip-stats">{s.wins}승 {s.losses}패</span>
@@ -504,6 +573,7 @@ export function RecordsScreen({
               onOpenOpponent={handleOpenOpponent}
               onRematch={openRematchPicker}
               onDelete={handleDelete}
+              customTeamMetaById={customTeamMetaById}
             />
           );
         })}

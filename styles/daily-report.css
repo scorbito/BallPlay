@@ -705,3 +705,7 @@
     transform: rotate(360deg);
   }
 }
+.phone-frame-light .play-hub-card-wrap-my-team .play-hub-card-badge {
+  left: auto;
+  right: 8px;
+}

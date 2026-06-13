@@ -37,6 +37,30 @@ function kstDateFromTimestamp(timestamp: string): string {
   return kstDateString(new Date(timestamp));
 }
 
+function parseDailyReportContentId(contentId: string): { dateISO: string; publishedAt: string | null } | null {
+  const [dateISO, publishedAt] = contentId.split("|");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO)) return null;
+  return { dateISO, publishedAt: publishedAt || null };
+}
+
+function parseDailyReportGameContentId(contentId: string): {
+  dateISO: string;
+  publishedAt: string | null;
+  gameId: string;
+} | null {
+  const pipeParts = contentId.split("|");
+  if (pipeParts.length >= 3) {
+    const [dateISO, publishedAt, ...gameIdParts] = pipeParts;
+    const gameId = gameIdParts.join("|");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO) || !publishedAt || !gameId) return null;
+    return { dateISO, publishedAt, gameId };
+  }
+
+  const [dateISO, gameId] = contentId.split(":");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO) || !gameId) return null;
+  return { dateISO, publishedAt: null, gameId };
+}
+
 function getUserContentEligibilityStart(userCreatedAt?: string | null): string {
   if (!userCreatedAt) return POINT_CONTENT_REWARD_START_AT;
   return new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
@@ -51,40 +75,70 @@ async function resolveContentRewardContext(input: {
   eligible: boolean;
   publishedAt: string | null;
   rewardDate: string;
+  skipUserCreatedAtCheck?: boolean;
   reason?: string;
 }> {
   if (input.contentType === "daily_report") {
-    const dateISO = input.contentId;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO)) {
+    const parsed = parseDailyReportContentId(input.contentId);
+    if (!parsed) {
       return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "invalid content date" };
     }
-    return { eligible: true, publishedAt: dateOnlyToKstStart(dateISO), rewardDate: dateISO };
+    const publishedAt = parsed.publishedAt ?? dateOnlyToKstStart(parsed.dateISO);
+    return {
+      eligible: true,
+      publishedAt,
+      rewardDate: parsed.publishedAt ? kstDateFromTimestamp(parsed.publishedAt) : parsed.dateISO
+    };
   }
 
   if (input.contentType === "daily_report_game") {
-    const [dateISO, gameId] = input.contentId.split(":");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO) || !gameId) {
+    const parsed = parseDailyReportGameContentId(input.contentId);
+    if (!parsed) {
       return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "invalid content date" };
     }
-    return { eligible: true, publishedAt: dateOnlyToKstStart(dateISO), rewardDate: dateISO };
+    const publishedAt = parsed.publishedAt ?? dateOnlyToKstStart(parsed.dateISO);
+    return {
+      eligible: true,
+      publishedAt,
+      rewardDate: parsed.publishedAt ? kstDateFromTimestamp(parsed.publishedAt) : parsed.dateISO
+    };
   }
 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("bp_ai_predictions")
-    .select("published_at")
-    .eq("game_id", input.contentId)
-    .lte("published_at", new Date().toISOString())
-    .order("published_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .select("ai_provider,game_date,created_at,published_at")
+    .eq("game_id", input.contentId);
 
-  if (error || !data?.published_at) {
-    return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "content is not published" };
+  if (error || !data || data.length === 0) {
+    return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "AI 예측이 아직 준비되지 않았어요." };
   }
 
-  const publishedAt = String(data.published_at);
-  return { eligible: true, publishedAt, rewardDate: kstDateFromTimestamp(publishedAt) };
+  const rows = data as Array<{
+    ai_provider: string | null;
+    game_date: string | null;
+    created_at: string | null;
+    published_at: string | null;
+  }>;
+  const providerCount = new Set(rows.map((row) => row.ai_provider).filter(Boolean)).size;
+  if (providerCount < 3) {
+    return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "3개 AI 예측이 모두 도착하면 BP를 받을 수 있어요." };
+  }
+
+  const completedAt = rows
+    .map((row) => row.created_at ?? row.published_at)
+    .filter((value): value is string => Boolean(value))
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+  if (!completedAt) {
+    return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "AI 예측 입력 시간을 확인하지 못했어요." };
+  }
+
+  return {
+    eligible: true,
+    publishedAt: completedAt,
+    rewardDate: kstDateFromTimestamp(completedAt),
+    skipUserCreatedAtCheck: true
+  };
 }
 
 export async function getContentRewardEligibility(input: {
@@ -95,13 +149,14 @@ export async function getContentRewardEligibility(input: {
   eligible: boolean;
   publishedAt: string | null;
   rewardDate: string;
+  skipUserCreatedAtCheck?: boolean;
   reason?: string;
 }> {
   const context = await resolveContentRewardContext(input);
   if (!context.eligible || !context.publishedAt) return context;
 
   const eligibleFrom = getUserContentEligibilityStart(input.userCreatedAt);
-  if (new Date(context.publishedAt).getTime() < new Date(eligibleFrom).getTime()) {
+  if (!context.skipUserCreatedAtCheck && new Date(context.publishedAt).getTime() < new Date(eligibleFrom).getTime()) {
     return {
       ...context,
       eligible: false,
