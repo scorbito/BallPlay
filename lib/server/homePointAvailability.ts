@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { POINT_REWARDS } from "@/lib/points/config";
+import { POINT_CONTENT_REWARD_START_AT, POINT_REWARDS } from "@/lib/points/config";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { addDaysISO, kstDateString } from "@/lib/server/points";
 import { isSkeletonReport } from "@/lib/utils/dailyReportHelper";
@@ -11,7 +11,8 @@ const EARN_REASONS = [
   "ai_battle_vote",
   "stadium_official_completed",
   "content_ai_prediction",
-  "content_daily_report"
+  "content_daily_report",
+  "content_daily_report_game"
 ];
 
 function sumEarnedByReason(rows: Array<{ reason: string | null; amount: number | null }>) {
@@ -36,7 +37,8 @@ async function getLatestPublishedDailyReportDate(client: SupabaseClient) {
 
 export async function getHomePointAvailability(
   userId: string,
-  client: SupabaseClient = createSupabaseAdminClient()
+  client: SupabaseClient = createSupabaseAdminClient(),
+  userCreatedAt?: string | null
 ): Promise<HomePointAvailability> {
   const today = kstDateString();
   const yesterday = addDaysISO(today, -1);
@@ -50,11 +52,11 @@ export async function getHomePointAvailability(
       .eq("game_date", today),
     client
       .from("bp_ai_predictions")
-      .select("game_id")
+      .select("game_id,published_at")
       .eq("game_date", today),
     client
       .from("point_reward_claims")
-      .select("reward_key, reward_date")
+      .select("reward_key,reward_date,amount")
       .eq("user_id", userId),
     client
       .from("point_transactions")
@@ -67,34 +69,33 @@ export async function getHomePointAvailability(
     getLatestPublishedDailyReportDate(client)
   ]);
 
-  const aiGameIds = new Set(
-    ((aiPredictionsRes.data ?? []) as Array<{ game_id: string | null }>)
-      .map((row) => row.game_id)
-      .filter((gameId): gameId is string => Boolean(gameId))
-  );
+  const eligibleFrom = userCreatedAt && new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
+    ? userCreatedAt
+    : POINT_CONTENT_REWARD_START_AT;
+  const eligibleAiPredictions = ((aiPredictionsRes.data ?? []) as Array<{ game_id: string | null; published_at: string | null }>)
+    .filter((row): row is { game_id: string; published_at: string } => Boolean(row.game_id && row.published_at))
+    .filter((row) => new Date(row.published_at).getTime() >= new Date(eligibleFrom).getTime())
+    .map((row) => ({ gameId: row.game_id, rewardDate: kstDateString(new Date(row.published_at)) }));
+  const aiGameIds = new Set(eligibleAiPredictions.map((row) => row.gameId));
+  const claimsRows = (claimsRes.data ?? []) as Array<{ reward_key: string | null; reward_date: string | null; amount: number | null }>;
   const claims = new Set(
-    ((claimsRes.data ?? []) as Array<{ reward_key: string | null; reward_date: string | null }>)
-      .map((row) => row.reward_key)
-      .filter((rewardKey): rewardKey is string => Boolean(rewardKey))
+    claimsRows
+      .filter((row): row is { reward_key: string; reward_date: string; amount: number | null } => Boolean(row.reward_key && row.reward_date))
+      .map((row) => `${row.reward_key}|${row.reward_date}`)
   );
-  const todayClaims = new Set(
-    ((claimsRes.data ?? []) as Array<{ reward_key: string | null; reward_date: string | null }>)
-      .filter((row) => row.reward_date === today)
-      .map((row) => row.reward_key)
-      .filter((rewardKey): rewardKey is string => Boolean(rewardKey))
-  );
+  const hasClaim = (rewardKey: string, rewardDate: string) => claims.has(`${rewardKey}|${rewardDate}`);
   const earned = sumEarnedByReason(
     (transactionsRes.data ?? []) as Array<{ reason: string | null; amount: number | null }>
   );
 
-  const claimedAiPredictionCount = Array.from(aiGameIds)
-    .filter((gameId) => claims.has(`content_ai_prediction:${gameId}`))
+  const claimedAiPredictionCount = eligibleAiPredictions
+    .filter((row) => hasClaim(`content_ai_prediction:${row.gameId}`, row.rewardDate))
     .length;
   const gameIds = ((gamesRes.data ?? []) as Array<{ id: string | null }>)
     .map((row) => row.id)
     .filter((gameId): gameId is string => Boolean(gameId));
   const claimedWinnerPredictionCount = gameIds
-    .filter((gameId) => claims.has(`prediction_submitted:${gameId}`))
+    .filter((gameId) => hasClaim(`prediction_submitted:${gameId}`, today))
     .length;
   const dailyReportDates = Array.from(new Set([
     latestDailyReportDate,
@@ -102,22 +103,26 @@ export async function getHomePointAvailability(
     yesterday
   ].filter((date): date is string => Boolean(date))));
   const claimedDailyReport = dailyReportDates
-    .some((date) => claims.has(`content_daily_report:${date}`));
+    .some((date) => hasClaim(`content_daily_report:${date}`, date));
   const stadiumMax = (POINT_REWARDS.stadiumOfficialFirstFive * POINT_REWARDS.stadiumOfficialFirstFiveCount)
     + POINT_REWARDS.stadiumOfficialExtraMax;
+  const aiPredictionEligible = Array.from(aiGameIds).length > 0;
 
   return {
-    "daily-report": !claimedDailyReport
-      && (earned.get("content_daily_report") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType,
-    "ai-predict": aiGameIds.size > 0
+    "daily-report": dailyReportDates.some((date) =>
+      new Date(`${date}T00:00:00+09:00`).getTime() >= new Date(eligibleFrom).getTime()
+    ) && ((!claimedDailyReport
+        && (earned.get("content_daily_report") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType.daily_report)
+        || (earned.get("content_daily_report_game") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType.daily_report_game),
+    "ai-predict": aiPredictionEligible
       && claimedAiPredictionCount < aiGameIds.size
-      && (earned.get("content_ai_prediction") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType,
+      && (earned.get("content_ai_prediction") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType.ai_prediction,
     "ai-battle": aiGameIds.size > 0
       && (earned.get("ai_battle_vote") ?? 0) < POINT_REWARDS.aiBattleVoteDailyMax,
     "winner-predict": gameIds.length > 0
       && claimedWinnerPredictionCount < gameIds.length
       && (earned.get("prediction_submitted") ?? 0) < POINT_REWARDS.predictionSubmittedDailyMax,
-    "quiz": !todayClaims.has("quiz_completed"),
+    "quiz": !hasClaim("quiz_completed", today),
     "stadium": (earned.get("stadium_official_completed") ?? 0) < stadiumMax
   };
 }

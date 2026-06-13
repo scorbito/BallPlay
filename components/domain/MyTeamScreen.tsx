@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
@@ -9,19 +9,30 @@ import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
 import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
 import { ConfirmResetModal } from "@/components/domain/lineup/modals/ConfirmResetModal";
+import { ConfirmDeletePresetModal } from "@/components/domain/lineup/modals/ConfirmDeletePresetModal";
+import { LineupPresetBar } from "@/components/domain/lineup/LineupPresetBar";
+import { PresetNameModal } from "@/components/domain/lineup/modals/PresetNameModal";
 import { getRoster } from "@/lib/rosters";
 import { useAppState } from "@/lib/state/AppState";
 import {
+  deletePreset,
+  loadPresets,
+  renamePreset,
+  savePreset,
+  type LineupPreset
+} from "@/lib/storage/lineupPresets";
+import {
   POSITION_SHORT,
-  PITCHER_CLOSER_INDEX,
-  PITCHER_REQUIRED_BULLPEN_INDEX,
   PITCHER_SLOTS_COUNT,
   PITCHER_STARTER_INDEX,
   type Player,
   type Position,
   type LineupSlot,
+  type LineupEntry,
   type LineupMode,
-  type LineupOrder
+  type LineupOrder,
+  type SavedLineup,
+  type SavedPitcherLineup
 } from "@/lib/types/lineup";
 import {
   EMPTY_SLOTS,
@@ -40,15 +51,39 @@ import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
 import statsData from "@/data/kbo_players_2026.json";
 import { makeFallbackBatter, makeFallbackPitcher } from "@/lib/sim/leagueAverage";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import { getLatestLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import { teams as KBO_TEAMS_LIST } from "@/lib/constants/teams";
+import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
+import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
+import {
+  addCustomTeamPlayers,
+  archiveCustomTeam,
+  getMyActiveCustomTeam,
+  listCustomTeamPlayerIds,
+  upsertCustomTeam,
+  updateCustomTeamScoutPieces
+} from "@/lib/supabase/query-parts/bpCustomTeams";
+import {
+  fetchLineupStatsBulk,
+  listMyLineups,
+  type LineupStats,
+  upsertLineup
+} from "@/lib/supabase/query-parts/bpLineups";
 import type { SimBatter, SimPitcher } from "@/lib/sim/types";
 
 const ALL_TEAMS = ["doosan", "lg", "kt", "samsung", "ssg", "nc", "kia", "hanwha", "kiwoom", "lotte"];
 
 function getAllKboPlayers(): Player[] {
   return ALL_TEAMS.flatMap((teamId) => getRoster(teamId));
+}
+
+function getPlayersByIds(playerIds: string[]): Player[] {
+  const byId = new Map(getAllKboPlayers().map((player) => [player.id, player]));
+  return playerIds
+    .map((playerId) => byId.get(playerId))
+    .filter((player): player is Player => Boolean(player));
 }
 
 type TeamInfo = {
@@ -83,6 +118,8 @@ type RecruitRevealState = {
 const SINGLE_RECRUIT_COST = 100;
 const TEN_RECRUIT_COST = 900;
 const DUPLICATE_SCOUT_PIECES = 10;
+const MY_TEAM_PRESET_TEAM_ID = "my-team";
+const IS_DEV_BUILD = process.env.NODE_ENV !== "production";
 
 function formatRateStat(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -105,26 +142,27 @@ function formatPercentStat(value: unknown): string {
 function getPlayerCardStats(player: Player, batter?: SimBatter, pitcher?: SimPitcher): PlayerCardStats {
   if (player.primaryPosition === "P") {
     return [
-      { label: "ERA", value: formatDecimalStat(pitcher?.era, 1) },
-      { label: "WHIP", value: formatDecimalStat(pitcher?.whip, 1) },
-      { label: "K/9", value: formatDecimalStat(pitcher?.k9, 1) }
+      { label: "ERA", value: formatDecimalStat(pitcher?.era, 1) }
     ];
   }
 
-  const ops =
-    typeof batter?.obp === "number" && typeof batter?.slg === "number"
-      ? batter.obp + batter.slg
-      : undefined;
-
   return [
-    { label: "AVG", value: formatRateStat(batter?.avg) },
-    { label: "OBP", value: formatRateStat(batter?.obp) },
-    { label: "OPS", value: formatRateStat(ops) }
+    { label: "타율", value: formatRateStat(batter?.avg) }
   ];
 }
 
 function getTeamShortName(teamId: string): string {
   return KBO_TEAMS_LIST.find((team) => team.id === teamId)?.shortName ?? teamId.toUpperCase();
+}
+
+function getKboTeamColor(teamId: string): string {
+  const team = KBO_TEAMS_LIST.find((item) => item.id === teamId);
+  return team?.accent ?? team?.color ?? "#e84a8a";
+}
+
+function formatTeamRecord(stats: LineupStats | null): string {
+  if (!stats || stats.matches === 0) return "0승 0패 0무";
+  return `${stats.wins}승 ${stats.losses}패 ${stats.draws}무`;
 }
 
 function getPlayerPositionGroupLabel(position: Position): string {
@@ -154,11 +192,11 @@ function getPlayerDetailSections(player: Player, batter?: SimBatter, pitcher?: S
       {
         title: "핵심 지표",
         stats: [
-          { label: "ERA", value: formatDecimalStat(pitcher?.era) },
-          { label: "WHIP", value: formatDecimalStat(pitcher?.whip) },
-          { label: "K/9", value: formatDecimalStat(pitcher?.k9) },
-          { label: "BB/9", value: formatDecimalStat(pitcher?.bb9) },
-          { label: "HR/9", value: formatDecimalStat(pitcher?.hr9) },
+          { label: "평균자책", value: formatDecimalStat(pitcher?.era) },
+          { label: "출루허용", value: formatDecimalStat(pitcher?.whip) },
+          { label: "탈삼진/9", value: formatDecimalStat(pitcher?.k9) },
+          { label: "볼넷/9", value: formatDecimalStat(pitcher?.bb9) },
+          { label: "홈런/9", value: formatDecimalStat(pitcher?.hr9) },
           { label: "역할", value: pitcher?.role ?? "-" }
         ]
       },
@@ -196,12 +234,12 @@ function getPlayerDetailSections(player: Player, batter?: SimBatter, pitcher?: S
     {
       title: "핵심 지표",
       stats: [
-        { label: "AVG", value: formatRateStat(batter?.avg) },
-        { label: "OBP", value: formatRateStat(batter?.obp) },
-        { label: "SLG", value: formatRateStat(batter?.slg) },
-        { label: "OPS", value: formatRateStat(ops) },
-        { label: "ISO", value: formatRateStat(batter?.iso) },
-        { label: "BABIP", value: formatRateStat(batter?.babip) }
+        { label: "타율", value: formatRateStat(batter?.avg) },
+        { label: "출루율", value: formatRateStat(batter?.obp) },
+        { label: "장타율", value: formatRateStat(batter?.slg) },
+        { label: "출루+장타", value: formatRateStat(ops) },
+        { label: "순장타", value: formatRateStat(batter?.iso) },
+        { label: "인플레이", value: formatRateStat(batter?.babip) }
       ]
     },
     {
@@ -221,11 +259,11 @@ function getPlayerDetailSections(player: Player, batter?: SimBatter, pitcher?: S
     {
       title: "상세 지표",
       stats: [
-        { label: "BB%", value: formatPercentStat(batter?.bbRate) },
-        { label: "K%", value: formatPercentStat(batter?.kRate) },
+        { label: "볼넷률", value: formatPercentStat(batter?.bbRate) },
+        { label: "삼진률", value: formatPercentStat(batter?.kRate) },
         { label: "컨택", value: formatPercentStat(batter?.contactScore) },
-        { label: "vs좌 OPS", value: formatRateStat(batter?.vsLhpOps) },
-        { label: "vs우 OPS", value: formatRateStat(batter?.vsRhpOps) },
+        { label: "좌투 상대", value: formatRateStat(batter?.vsLhpOps) },
+        { label: "우투 상대", value: formatRateStat(batter?.vsRhpOps) },
         { label: "타격", value: player.battingHand ?? "-" }
       ]
     }
@@ -237,9 +275,12 @@ export function MyTeamScreen() {
   const { showToast } = useAppState();
   const [activeTab, setActiveTab] = useState<"players" | "lineup" | "draw" | "match">("players");
   const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
+  const [customTeamId, setCustomTeamId] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [points, setPoints] = useState<number>(10000);
+  const [accountBalance, setAccountBalance] = useState<number | null>(null);
+  const [recruitingCount, setRecruitingCount] = useState<1 | 10 | null>(null);
   const [scoutPieces, setScoutPieces] = useState<number>(0);
+  const [teamRecord, setTeamRecord] = useState<LineupStats | null>(null);
 
   // 창단 폼 상태
   const [formName, setFormName] = useState("");
@@ -256,6 +297,7 @@ export function MyTeamScreen() {
   const [swapSource, setSwapSource] = useState<Position | null>(null);
   const [swapTravelers, setSwapTravelers] = useState<SwapTraveler[]>([]);
   const swapTimerRef = useRef<number | null>(null);
+  const officialLineupSyncKeyRef = useRef<string | null>(null);
   const [swapOrderSourceIdx, setSwapOrderSourceIdx] = useState<number | null>(null);
   const [swapOrderAnimation, setSwapOrderAnimation] = useState<{ a: number; b: number } | null>(null);
   const swapOrderAnimTimerRef = useRef<number | null>(null);
@@ -266,20 +308,22 @@ export function MyTeamScreen() {
   const [recruitReveal, setRecruitReveal] = useState<RecruitRevealState | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [rosterFilter, setRosterFilter] = useState<"all" | "batters" | "pitchers">("all");
+  const [presetMenuOpen, setPresetMenuOpen] = useState(false);
+  const [savePresetOpen, setSavePresetOpen] = useState(false);
+  const [renamingPreset, setRenamingPreset] = useState<LineupPreset | null>(null);
+  const [deletingPreset, setDeletingPreset] = useState<LineupPreset | null>(null);
 
   // 로컬 스토리지 데이터 로드
   useEffect(() => {
     if (typeof window === "undefined") return;
+    let cancelled = false;
     const info = localStorage.getItem("ballplay:my-team-info");
     const pl = localStorage.getItem("ballplay:my-team-players");
-    const pts = localStorage.getItem("ballplay:my-team-points");
     const pieces = localStorage.getItem("ballplay:my-team-scout-pieces");
     const line = localStorage.getItem("ballplay:my-team-lineup");
 
     if (info) setTeamInfo(JSON.parse(info));
     if (pl) setPlayers(JSON.parse(pl));
-    if (pts) setPoints(Number(pts));
-    else setPoints(10000);
     if (pieces) setScoutPieces(Number(pieces));
 
     if (line) {
@@ -292,11 +336,160 @@ export function MyTeamScreen() {
       }
       setPitcherSlots(loadedPitching);
     }
+
+    void (async () => {
+      try {
+        const client = createSupabaseBrowserClient();
+        await ensureAnonymousClient(client);
+        const { data: { user } } = await client.auth.getUser();
+        if (!user || cancelled) return;
+
+        const existing = await getMyActiveCustomTeam(client, user.id);
+        if (cancelled || !existing.ok) return;
+
+        if (existing.row) {
+          const dbInfo: TeamInfo = {
+            name: existing.row.name,
+            initials: existing.row.initials,
+            badgeStyle: existing.row.badge_style,
+            color: existing.row.color
+          };
+          setCustomTeamId(existing.row.id);
+          setTeamInfo(dbInfo);
+          setScoutPieces(Number(existing.row.scout_pieces ?? 0));
+          localStorage.setItem("ballplay:my-team-info", JSON.stringify(dbInfo));
+          localStorage.setItem("ballplay:my-team-scout-pieces", String(existing.row.scout_pieces ?? 0));
+
+          const playerIds = await listCustomTeamPlayerIds(client, existing.row.id);
+          if (!cancelled && playerIds.ok) {
+            const dbPlayers = getPlayersByIds(playerIds.playerIds);
+            setPlayers(dbPlayers);
+            localStorage.setItem("ballplay:my-team-players", JSON.stringify(dbPlayers));
+          }
+          return;
+        }
+
+        if (!info) return;
+        const localInfo = JSON.parse(info) as TeamInfo;
+        const created = await upsertCustomTeam(client, {
+          ownerUserId: user.id,
+          name: localInfo.name,
+          initials: localInfo.initials,
+          color: localInfo.color,
+          badgeStyle: localInfo.badgeStyle,
+          scoutPieces: pieces ? Number(pieces) : 0,
+          isPublic: true
+        });
+        if (cancelled || !created.ok) return;
+
+        setCustomTeamId(created.row.id);
+        if (pl) {
+          const localPlayers = JSON.parse(pl) as Player[];
+          await addCustomTeamPlayers(client, {
+            customTeamId: created.row.id,
+            playerIds: localPlayers.map((player) => player.id),
+            acquiredSource: "local_migration"
+          });
+        }
+      } catch {
+        // Keep local fallback usable if official team sync fails.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/points/balance", { cache: "no-store" });
+        const data = await res.json();
+        if (!cancelled) setAccountBalance(Number(data.balance ?? 0));
+      } catch {
+        if (!cancelled) setAccountBalance(0);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!customTeamId) {
+      setTeamRecord(null);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const client = createSupabaseBrowserClient();
+        await ensureAnonymousClient(client);
+        const { data: { user } } = await client.auth.getUser();
+        if (!user || cancelled) return;
+
+        const lineups = await listMyLineups(client, user.id);
+        if (!lineups.ok || cancelled) return;
+        const row = lineups.rows.find((item) =>
+          item.custom_team_id === customTeamId ||
+          item.team_id === customTeamId ||
+          item.entry_id === `custom-team:${customTeamId}`
+        );
+        if (!row) {
+          setTeamRecord({ matches: 0, wins: 0, losses: 0, draws: 0 });
+          return;
+        }
+
+        const stats = await fetchLineupStatsBulk(client, [row.id]);
+        if (!cancelled) {
+          setTeamRecord(stats[row.id] ?? { matches: 0, wins: 0, losses: 0, draws: 0 });
+        }
+      } catch {
+        if (!cancelled) setTeamRecord({ matches: 0, wins: 0, losses: 0, draws: 0 });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [customTeamId]);
+
+  const ensureOfficialCustomTeam = async (info = teamInfo): Promise<string | null> => {
+    if (!info) return null;
+    if (customTeamId) return customTeamId;
+
+    const client = createSupabaseBrowserClient();
+    await ensureAnonymousClient(client);
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return null;
+
+    const result = await upsertCustomTeam(client, {
+      ownerUserId: user.id,
+      name: info.name,
+      initials: info.initials,
+      color: info.color,
+      badgeStyle: info.badgeStyle,
+      scoutPieces,
+      isPublic: true
+    });
+    if (!result.ok) {
+      showToast("공식 팀 저장에 실패했어요.");
+      return null;
+    }
+
+    setCustomTeamId(result.row.id);
+    return result.row.id;
+  };
 
   const saveTeamInfo = (info: TeamInfo) => {
     localStorage.setItem("ballplay:my-team-info", JSON.stringify(info));
     setTeamInfo(info);
+    void ensureOfficialCustomTeam(info);
   };
 
   const savePlayers = (newPlayers: Player[]) => {
@@ -304,26 +497,88 @@ export function MyTeamScreen() {
     setPlayers(newPlayers);
   };
 
-  const savePoints = (newPoints: number) => {
-    localStorage.setItem("ballplay:my-team-points", String(newPoints));
-    setPoints(newPoints);
-  };
-
-  const saveScoutPieces = (newPieces: number) => {
+  const saveScoutPieces = (newPieces: number, targetTeamId = customTeamId) => {
     localStorage.setItem("ballplay:my-team-scout-pieces", String(newPieces));
     setScoutPieces(newPieces);
+    if (targetTeamId) {
+      const client = createSupabaseBrowserClient();
+      void updateCustomTeamScoutPieces(client, { customTeamId: targetTeamId, scoutPieces: newPieces });
+    }
   };
 
   // 라인업 변경 시 자동 저장
+  const syncOfficialLineup = async (nextSlots: SlotState[], nextPitcherSlots: (string | null)[]) => {
+    if (!teamInfo) return;
+    const teamId = await ensureOfficialCustomTeam();
+    if (!teamId) return;
+
+    const client = createSupabaseBrowserClient();
+    await ensureAnonymousClient(client);
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+
+    const now = new Date().toISOString();
+    const battingSlots = nextSlots.filter((slot): slot is LineupSlot => slot !== null);
+    const hasStarter = Boolean(nextPitcherSlots[PITCHER_STARTER_INDEX]);
+    const isMatchReady = battingSlots.length === 9 && hasStarter;
+
+    const entry: LineupEntry = {
+      entryId: `custom-team:${teamId}`,
+      name: teamInfo.name,
+      teamId,
+      lineupType: "custom",
+      rosterSourceId: teamId,
+      batting: {
+        teamId,
+        slots: battingSlots,
+        useDH: true,
+        updatedAt: now,
+        lineupType: "custom",
+        rosterSourceId: teamId
+      },
+      pitching: {
+        teamId,
+        slots: nextPitcherSlots,
+        updatedAt: now,
+        lineupType: "custom",
+        rosterSourceId: teamId
+      },
+      updatedAt: now,
+      isPublished: isMatchReady
+    };
+
+    const result = await upsertLineup(client, entry, user.id);
+    if (!result.ok) {
+      console.warn("Failed to sync custom team lineup", result.error);
+    }
+  };
+
   const triggerSaveLineup = (nextSlots: SlotState[], nextPitcherSlots: (string | null)[]) => {
     const data: MyTeamLineup = {
       batting: nextSlots,
       pitching: nextPitcherSlots
     };
     localStorage.setItem("ballplay:my-team-lineup", JSON.stringify(data));
+    void syncOfficialLineup(nextSlots, nextPitcherSlots);
   };
 
   // 구단 창단 처리
+  useEffect(() => {
+    if (!teamInfo || !customTeamId) return;
+    const battingSlots = slots.filter((slot): slot is LineupSlot => slot !== null);
+    if (battingSlots.length !== 9 || !pitcherSlots[PITCHER_STARTER_INDEX]) return;
+
+    const syncKey = [
+      customTeamId,
+      ...battingSlots.map((slot) => `${slot.order}:${slot.playerId}:${slot.position}`),
+      ...pitcherSlots.map((playerId) => playerId ?? "-")
+    ].join("|");
+    if (officialLineupSyncKeyRef.current === syncKey) return;
+
+    officialLineupSyncKeyRef.current = syncKey;
+    void syncOfficialLineup(slots, pitcherSlots);
+  }, [customTeamId, pitcherSlots, slots, teamInfo]);
+
   const handleCreateTeam = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formInitials.trim()) return;
@@ -349,7 +604,16 @@ export function MyTeamScreen() {
     const foundingPlayers = [...selectedBatters, ...selectedPitchers];
 
     savePlayers(foundingPlayers);
-    savePoints(10000);
+    void (async () => {
+      const teamId = await ensureOfficialCustomTeam();
+      if (!teamId) return;
+      const client = createSupabaseBrowserClient();
+      await addCustomTeamPlayers(client, {
+        customTeamId: teamId,
+        playerIds: foundingPlayers.map((player) => player.id),
+        acquiredSource: "founding_draft"
+      });
+    })();
     saveScoutPieces(0);
     setRecruitReveal({
       title: "창단 선수 지급",
@@ -367,9 +631,13 @@ export function MyTeamScreen() {
       localStorage.removeItem("ballplay:my-team-lineup");
       localStorage.removeItem("ballplay:my-team-points");
       localStorage.removeItem("ballplay:my-team-scout-pieces");
+      if (customTeamId) {
+        const client = createSupabaseBrowserClient();
+        void archiveCustomTeam(client, customTeamId);
+      }
+      setCustomTeamId(null);
       setTeamInfo(null);
       setPlayers([]);
-      setPoints(10000);
       setScoutPieces(0);
       setSlots(EMPTY_SLOTS);
       setPitcherSlots(EMPTY_PITCHER_SLOTS);
@@ -377,9 +645,12 @@ export function MyTeamScreen() {
   };
 
   // 선수 뽑기
-  const handleDrawPlayer = (count: 1 | 10) => {
+  const handleDrawPlayer = async (count: 1 | 10) => {
+    if (recruitingCount !== null) return;
     const cost = count === 10 ? TEN_RECRUIT_COST : SINGLE_RECRUIT_COST;
-    if (points < cost) {
+    if (accountBalance !== null && accountBalance < cost) {
+      showToast("BP가 부족해요.");
+      return;
       alert("포인트가 부족합니다! 상단에서 무료로 충전하세요.");
       return;
     }
@@ -410,16 +681,45 @@ export function MyTeamScreen() {
       }
     }
 
-    savePlayers(newPlayers);
-    savePoints(points - cost);
-    saveScoutPieces(nextPieces);
-    setRecruitReveal({
+    setRecruitingCount(count);
+    try {
+      const client = createSupabaseBrowserClient();
+      await ensureAnonymousClient(client);
+      const res = await fetch("/api/points/my-team-recruit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error ?? "선수 영입에 실패했어요.");
+      }
+
+      const nextBalance = Number(data.balance ?? 0);
+      setAccountBalance(nextBalance);
+      emitPointBalanceUpdated(nextBalance);
+      savePlayers(newPlayers);
+      const teamId = await ensureOfficialCustomTeam();
+      if (teamId) {
+        await addCustomTeamPlayers(client, {
+          customTeamId: teamId,
+          playerIds: newPlayers.map((player) => player.id),
+          acquiredSource: count === 10 ? "recruit_10" : "recruit_1"
+        });
+      }
+      saveScoutPieces(nextPieces, teamId ?? customTeamId);
+      setRecruitReveal({
       title: count === 10 ? "10회 선수 영입" : "1회 선수 영입",
       subtitle: `신규 ${results.filter((result) => !result.duplicate).length}명 · 중복 ${results.filter((result) => result.duplicate).length}명`,
       results,
       revealed: new Set(),
       doneLabel: "확인"
-    });
+      });
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "선수 영입 중 오류가 발생했어요.");
+    } finally {
+      setRecruitingCount(null);
+    }
   };
 
   // AI 팀과 대결 실행
@@ -607,6 +907,76 @@ export function MyTeamScreen() {
     return players;
   }, [players, rosterFilter]);
 
+  const buildCurrentPresetSnapshot = (): {
+    batting: SavedLineup;
+    pitching: SavedPitcherLineup | null;
+  } => {
+    const now = new Date().toISOString();
+    const filledSlots = slots.filter((s): s is LineupSlot => s !== null);
+    const hasAnyPitcher = pitcherSlots.some(Boolean);
+
+    return {
+      batting: {
+        teamId: MY_TEAM_PRESET_TEAM_ID,
+        slots: filledSlots,
+        useDH: true,
+        updatedAt: now,
+        lineupType: "custom",
+        rosterSourceId: MY_TEAM_PRESET_TEAM_ID
+      },
+      pitching: hasAnyPitcher
+        ? {
+            teamId: MY_TEAM_PRESET_TEAM_ID,
+            slots: pitcherSlots,
+            updatedAt: now,
+            lineupType: "custom",
+            rosterSourceId: MY_TEAM_PRESET_TEAM_ID
+          }
+        : null
+    };
+  };
+
+  const applyPreset = (preset: LineupPreset) => {
+    const nextSlots: SlotState[] = Array.from({ length: 9 }, () => null);
+    preset.batting.slots.forEach((slot) => {
+      if (slot.order >= 1 && slot.order <= 9 && playersMap.has(slot.playerId)) {
+        nextSlots[slot.order - 1] = slot;
+      }
+    });
+
+    const nextPitcherSlots = Array.from({ length: PITCHER_SLOTS_COUNT }, (_, index) => {
+      const playerId = preset.pitching?.slots[index] ?? null;
+      return playerId && playersMap.has(playerId) ? playerId : null;
+    });
+
+    setSlots(nextSlots);
+    setPitcherSlots(nextPitcherSlots);
+    triggerSaveLineup(nextSlots, nextPitcherSlots);
+    setSwapOrderSourceIdx(null);
+    setSwapSource(null);
+    setMode("batter");
+    showToast(`"${preset.name}" 프리셋을 적용했어요.`);
+  };
+
+  const handleOpenSavePreset = () => {
+    const existing = loadPresets(MY_TEAM_PRESET_TEAM_ID);
+    if (existing.length >= 3) {
+      showToast("프리셋은 최대 3개까지 저장할 수 있어요.");
+      return;
+    }
+    setSavePresetOpen(true);
+  };
+
+  const handleSavePresetSubmit = (name: string) => {
+    const snapshot = buildCurrentPresetSnapshot();
+    const result = savePreset(MY_TEAM_PRESET_TEAM_ID, { name, ...snapshot });
+    if (!result.ok) {
+      showToast("프리셋은 최대 3개까지 저장할 수 있어요.");
+      return;
+    }
+    showToast(`"${name}" 프리셋을 저장했어요.`);
+  };
+
   // 로스터 변경 시 stale ID 클렌징 (로스터에 없는 선수가 라인업에 남아 오류를 유발하는 현상 방지)
   useEffect(() => {
     if (players.length === 0) return;
@@ -702,11 +1072,10 @@ export function MyTeamScreen() {
     }
     
     // 선발(0), 마무리(1), 불펜 1선발(2)에 해당하는 인덱스만 한정 배치
-    const allowedIndices = [PITCHER_STARTER_INDEX, PITCHER_CLOSER_INDEX, PITCHER_REQUIRED_BULLPEN_INDEX];
-    const emptyIdx = allowedIndices.find((idx) => next[idx] === null);
+    const emptyIdx = next.findIndex((id) => id === null);
 
-    if (emptyIdx === undefined) {
-      showToast("투수 배치 한도(3명: 선발 1, 불펜 1, 마무리 1)를 초과했습니다.");
+    if (emptyIdx === -1) {
+      showToast("투수 9명이 모두 찼습니다.");
       return;
     }
 
@@ -1034,17 +1403,19 @@ export function MyTeamScreen() {
       
       {/* 구단 헤더 */}
       <div className="w-full max-w-3xl mx-auto mt-4 mb-0 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <BadgeIcon initials={teamInfo.initials} style={teamInfo.badgeStyle} color={teamInfo.color} />
             <div className="min-w-0">
               <h2 className="truncate text-lg font-black text-slate-900">{teamInfo.name}</h2>
-              <p className="text-xs font-semibold text-slate-400">보유 선수 {players.length}명</p>
             </div>
           </div>
-          <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-600">
-            {points.toLocaleString()} BP
-          </span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <AccountTierBadge wins={teamRecord?.wins ?? 0} size={30} className="my-team-record-tier-badge" />
+            <span className="inline-flex items-center rounded-full border border-pink-100 bg-pink-50 px-3 py-1.5 text-xs font-black leading-none text-pink-500">
+              {formatTeamRecord(teamRecord)}
+            </span>
+          </div>
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
@@ -1056,18 +1427,18 @@ export function MyTeamScreen() {
             }}
             className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
               activeTab === "players"
-                ? "bg-slate-900 text-white"
+                ? "bg-pink-500 text-white shadow-pink-200"
                 : "border border-slate-200 bg-white text-slate-700"
             }`}
           >
-            보유선수
+            보유선수({players.length})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("lineup")}
             className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
               activeTab === "lineup"
-                ? "bg-slate-900 text-white"
+                ? "bg-pink-500 text-white shadow-pink-200"
                 : "border border-slate-200 bg-white text-slate-700"
             }`}
           >
@@ -1078,7 +1449,7 @@ export function MyTeamScreen() {
             onClick={() => setActiveTab("draw")}
             className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
               activeTab === "draw"
-                ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
+                ? "bg-pink-500 text-white shadow-pink-200"
                 : "border border-slate-200 bg-white text-slate-700"
             }`}
           >
@@ -1099,10 +1470,10 @@ export function MyTeamScreen() {
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end">
             <span className="text-xs font-black text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-              {points.toLocaleString()} BP
+              {accountBalance === null ? "..." : accountBalance.toLocaleString()} BP
             </span>
             <button 
-              onClick={() => savePoints(points + 10000)}
+              onClick={() => undefined}
               className="text-[9px] text-blue-600 hover:underline mt-0.5"
             >
               +10K 충전
@@ -1174,24 +1545,24 @@ export function MyTeamScreen() {
                     조각 {scoutPieces}
                   </span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => handleDrawPlayer(1)}
-                    className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-4 text-left shadow-sm transition-transform active:scale-[0.98]"
+                    className="my-team-recruit-card is-single text-left transition-transform active:scale-[0.98]"
                   >
-                    <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-700">1회</span>
-                    <strong className="mt-3 block text-lg font-black text-slate-900">선수 1명 영입</strong>
-                    <span className="mt-1 block text-xs font-bold text-slate-400">100 BP</span>
+                    <span className="my-team-recruit-count">1회</span>
+                    <strong className="my-team-recruit-title">선수 1명 영입</strong>
+                    <span className="my-team-recruit-price">100 BP</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDrawPlayer(10)}
-                    className="rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 to-white p-4 text-left shadow-sm transition-transform active:scale-[0.98]"
+                    className="my-team-recruit-card is-pack text-left transition-transform active:scale-[0.98]"
                   >
-                    <span className="inline-flex rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-black text-pink-600">10회</span>
-                    <strong className="mt-3 block text-lg font-black text-slate-900">선수 10명 영입</strong>
-                    <span className="mt-1 block text-xs font-bold text-slate-400">900 BP · 100 BP 할인</span>
+                    <span className="my-team-recruit-count">10회</span>
+                    <strong className="my-team-recruit-title">선수 10명 영입</strong>
+                    <span className="my-team-recruit-price">900 BP · 10% BP 할인</span>
                   </button>
                 </div>
                 <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-500">
@@ -1200,6 +1571,7 @@ export function MyTeamScreen() {
               </div>
             ) : null}
 
+            {activeTab !== "draw" ? (
             <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <div>
@@ -1214,11 +1586,12 @@ export function MyTeamScreen() {
                   라인업 관리
                 </button>
               </div>
-              <ul className="grid max-h-[560px] grid-cols-3 gap-2 overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <ul className="grid grid-cols-3 gap-2">
                 {filteredRosterPlayers.map((p) => {
                   const stats = playerStatsById.get(p.id);
                   const cardStats = getPlayerCardStats(p, stats?.batter, stats?.pitcher);
                   const teamShortName = getTeamShortName(p.teamId);
+                  const teamColor = getKboTeamColor(p.teamId);
 
                   return (
                     <li
@@ -1232,31 +1605,52 @@ export function MyTeamScreen() {
                           setSelectedPlayer(p);
                         }
                       }}
-                      className="relative cursor-pointer overflow-hidden rounded-2xl border border-pink-100 bg-white p-2.5 shadow-sm transition-transform active:scale-[0.98]"
+                      className="my-team-player-card relative cursor-pointer overflow-hidden rounded-2xl border p-2.5 shadow-sm transition-transform active:scale-[0.98]"
+                      style={{
+                        "--team-color": teamColor,
+                        "--team-color-soft": `${teamColor}16`,
+                        borderColor: `${teamColor}26`,
+                        background: `linear-gradient(180deg, ${teamColor}12 0%, ${teamColor}07 34%, #ffffff 74%)`
+                      } as CSSProperties}
                     >
-                      <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-r from-pink-50 to-white" aria-hidden="true" />
+                      <div
+                        className="absolute inset-x-0 top-0 h-9"
+                        style={{
+                          background: `linear-gradient(90deg, ${teamColor}24, ${teamColor}08 70%, transparent)`
+                        } as CSSProperties}
+                        aria-hidden="true"
+                      />
                       <div className="relative flex items-start justify-between gap-1">
                         <span className="flex min-w-0 items-center gap-1">
-                          <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 shadow-sm ring-1 ring-pink-100 [&_.team-logo]:!h-4 [&_.team-logo]:!w-4 [&_.team-logo-img]:!h-4 [&_.team-logo-img]:!w-4 [&_.team-logo-wrap]:!inline-flex">
+                          <span
+                            className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/85 shadow-sm ring-1 [&_.team-logo]:!h-4 [&_.team-logo]:!w-4 [&_.team-logo-img]:!h-4 [&_.team-logo-img]:!w-4 [&_.team-logo-wrap]:!inline-flex"
+                            style={{ "--tw-ring-color": `${teamColor}30` } as CSSProperties}
+                          >
                             <TeamLogo teamId={p.teamId} size="sm" />
                           </span>
-                          <span className="truncate text-[9px] font-black text-pink-500">{teamShortName}</span>
+                          <span className="truncate text-[9px] font-black" style={{ color: teamColor }}>
+                            {teamShortName}
+                          </span>
                         </span>
-                        <span className="rounded-full border border-pink-100 bg-pink-50 px-1.5 py-0.5 text-[9px] font-black text-pink-500">
+                        <span
+                          className="rounded-full border bg-white/70 px-1.5 py-0.5 text-[9px] font-black"
+                          style={{ borderColor: `${teamColor}1f`, color: teamColor } as CSSProperties}
+                        >
                           {getPlayerPositionGroupLabel(p.primaryPosition)}
                         </span>
                       </div>
                       <div className="relative mt-3 text-center">
-                        <p className="text-[10px] font-black text-slate-400">
+                        <p className="my-team-player-number text-[10px] font-black text-slate-400">
                           #{Number.isFinite(p.jerseyNumber) ? p.jerseyNumber : "-"}
                         </p>
-                        <p className="mt-1 truncate text-[15px] font-black text-slate-900">{p.name}</p>
+                        <p className="my-team-player-name mt-1 truncate text-[15px] font-black text-slate-900">{p.name}</p>
                       </div>
-                      <div className="mt-3 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 pt-2">
+                      <div className="my-team-player-stats mt-3 flex items-center justify-center border-t border-slate-100 pt-2">
                         {cardStats.map((stat) => (
-                          <div key={stat.label} className="min-w-0 px-1 text-center">
-                            <p className="truncate text-[8px] font-bold text-slate-400">{stat.label}</p>
-                            <p className="mt-0.5 truncate text-[10px] font-black text-pink-500">{stat.value}</p>
+                          <div key={stat.label} className="min-w-0 text-center">
+                            <p className="truncate text-[11px] font-black text-slate-500">
+                              {stat.label} <span className="text-[17px] text-slate-900">{stat.value}</span>
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -1264,12 +1658,15 @@ export function MyTeamScreen() {
                   );
                 })}
               </ul>
+              {IS_DEV_BUILD ? (
               <div className="mt-4 border-t border-slate-100 pt-4 text-center">
                 <button onClick={handleResetTeam} className="text-[10px] font-semibold text-red-500 hover:underline">
                   구단 해체 및 모든 데이터 리셋
                 </button>
               </div>
+              ) : null}
             </div>
+            ) : null}
           </div>
 
           <div className="hidden">
@@ -1309,11 +1706,13 @@ export function MyTeamScreen() {
                   </li>
                 ))}
               </ul>
+              {IS_DEV_BUILD ? (
               <div className="text-center pt-4 border-t mt-4">
                 <button onClick={handleResetTeam} className="text-[10px] text-red-500 hover:underline">
                   구단 해체 및 모든 데이터 리셋
                 </button>
               </div>
+              ) : null}
             </div>
           ) : activeTab === "draw" ? (
             <div className="bg-white p-6 rounded-2xl border shadow-sm text-center space-y-4">
@@ -1403,9 +1802,18 @@ export function MyTeamScreen() {
           {/* 타자/투수 탭 토글 및 정보 표시 */}
           <div className="lineup-action-row">
             <div className="lineup-action-lead">
-              <p className="lineup-action-hint">
-                나만의 팀 라인업 ({filledCount}/9 타자, {pitcherFilled}/3 투수)
-              </p>
+              <div className="my-team-lineup-preset-wrap">
+                <LineupPresetBar
+                  teamId={MY_TEAM_PRESET_TEAM_ID}
+                  canSaveCurrent={slots.some((s) => s !== null) || pitcherSlots.some(Boolean)}
+                  open={presetMenuOpen}
+                  setOpen={setPresetMenuOpen}
+                  onSaveCurrent={handleOpenSavePreset}
+                  onApply={applyPreset}
+                  onRename={setRenamingPreset}
+                  onDelete={setDeletingPreset}
+                />
+              </div>
             </div>
             <div className="lineup-action-buttons">
               <div className="lineup-mode-toggle lineup-mode-toggle-inline" role="tablist" aria-label="라인업 종류">
@@ -1491,6 +1899,40 @@ export function MyTeamScreen() {
         onPick={handleChangePosition}
       />
 
+      <PresetNameModal
+        open={savePresetOpen}
+        intent="save"
+        placeholder="나만의 팀 프리셋"
+        onClose={() => setSavePresetOpen(false)}
+        onSubmit={handleSavePresetSubmit}
+      />
+
+      <PresetNameModal
+        open={renamingPreset !== null}
+        intent="rename"
+        initialName={renamingPreset?.name ?? ""}
+        onClose={() => setRenamingPreset(null)}
+        onSubmit={(name) => {
+          if (renamingPreset) {
+            renamePreset(renamingPreset.presetId, name);
+            showToast("프리셋 이름을 변경했어요.");
+          }
+        }}
+      />
+
+      <ConfirmDeletePresetModal
+        open={deletingPreset !== null}
+        presetName={deletingPreset?.name ?? ""}
+        onCancel={() => setDeletingPreset(null)}
+        onConfirm={() => {
+          if (deletingPreset) {
+            deletePreset(deletingPreset.presetId);
+            showToast("프리셋을 삭제했어요.");
+          }
+          setDeletingPreset(null);
+        }}
+      />
+
       {/* 선수 뽑기 성공 모달 */}
       {selectedPlayer !== null && (() => {
         const stats = playerStatsById.get(selectedPlayer.id);
@@ -1518,6 +1960,7 @@ export function MyTeamScreen() {
                 </div>
 
                 <div className="mt-2 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-white p-3">
+                  <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-pink-100 [&_.team-logo]:!h-7 [&_.team-logo]:!w-7 [&_.team-logo-img]:!h-7 [&_.team-logo-img]:!w-7">
@@ -1528,23 +1971,24 @@ export function MyTeamScreen() {
                         #{Number.isFinite(selectedPlayer.jerseyNumber) ? selectedPlayer.jerseyNumber : "-"}
                       </span>
                     </div>
-                    <h4 className="mt-1 truncate text-2xl font-black tracking-normal text-slate-900">
+                    <h4 className="mt-1 truncate text-[34px] font-black leading-none tracking-normal text-slate-900">
                       {selectedPlayer.name}
                     </h4>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       <span className="hidden">
                         <span className="flex h-3.5 w-3.5 items-center justify-center overflow-hidden rounded-full [&_.team-logo]:!h-3.5 [&_.team-logo]:!w-3.5 [&_.team-logo-img]:!h-3.5 [&_.team-logo-img]:!w-3.5">
                           <TeamLogo teamId={selectedPlayer.teamId} size="sm" />
                         </span>
                         원래팀 {originalTeamName}
                       </span>
-                      <span className="rounded-full border border-pink-100 bg-white px-2.5 py-1 text-xs font-black text-pink-500">
+                  </div>
+                    <div className="flex max-w-[58%] shrink-0 flex-nowrap items-start justify-end gap-1">
+                      <span className="whitespace-nowrap rounded-full border border-pink-100 bg-white px-2 py-1 text-[11px] font-black text-pink-500">
                         {positionLabel}
                       </span>
-                      <span className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-600">
+                      <span className="whitespace-nowrap rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-black text-emerald-600">
                         {recordSourceLabel}
                       </span>
-                      <span className="rounded-full border border-slate-100 bg-white px-2.5 py-1 text-xs font-black text-slate-500">
+                      <span className="whitespace-nowrap rounded-full border border-slate-100 bg-white px-2 py-1 text-[11px] font-black text-slate-500">
                         {selectedPlayer.primaryPosition === "P"
                           ? `투구 ${selectedPlayer.throwingHand ?? "-"}`
                           : `타격 ${selectedPlayer.battingHand ?? "-"}`}
@@ -1653,11 +2097,12 @@ export function MyTeamScreen() {
                             {getPlayerPositionGroupLabel(result.player.primaryPosition)}
                           </p>
                         </div>
-                        <div className="mt-3 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 pt-2">
+                        <div className="mt-3 flex items-center justify-center border-t border-slate-100 pt-2">
                           {cardStats.map((stat) => (
-                            <div key={stat.label} className="min-w-0 px-1 text-center">
-                              <p className="truncate text-[8px] font-bold text-slate-400">{stat.label}</p>
-                              <p className="mt-0.5 truncate text-[10px] font-black text-pink-500">{stat.value}</p>
+                            <div key={stat.label} className="min-w-0 text-center">
+                              <p className="truncate text-[11px] font-black text-slate-500">
+                                {stat.label} <span className="text-[17px] text-slate-900">{stat.value}</span>
+                              </p>
                             </div>
                           ))}
                         </div>

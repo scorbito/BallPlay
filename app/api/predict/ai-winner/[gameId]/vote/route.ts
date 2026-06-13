@@ -1,9 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
-import { POINT_REWARDS } from "@/lib/points/config";
-import { awardPoints, getEarnedAmountForReasonOnDate, getPointBalance, kstDateString } from "@/lib/server/points";
+import { POINT_CONTENT_REWARD_START_AT, POINT_REWARDS } from "@/lib/points/config";
+import { awardPoints, getPointBalance, kstDateString } from "@/lib/server/points";
 
 type Params = { params: { gameId: string } };
+
+function getEligibilityStart(userCreatedAt?: string | null): string {
+  if (!userCreatedAt) return POINT_CONTENT_REWARD_START_AT;
+  return new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
+    ? userCreatedAt
+    : POINT_CONTENT_REWARD_START_AT;
+}
 
 /** GET — 투표 집계 + 내 투표 여부 */
 export async function GET(_req: NextRequest, { params }: Params) {
@@ -66,9 +73,27 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   let pointAward = null;
   if (!error) {
-    const today = kstDateString();
-    const earnedToday = await getEarnedAmountForReasonOnDate(supabase, user.id, "ai_battle_vote", today);
-    if (earnedToday + POINT_REWARDS.aiBattleVotePerGame <= POINT_REWARDS.aiBattleVoteDailyMax) {
+    const { data: published } = await supabase
+      .from("bp_ai_battle_predictions")
+      .select("published_at")
+      .eq("game_id", gameId)
+      .lte("published_at", new Date().toISOString())
+      .order("published_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const publishedAt = published?.published_at ? String(published.published_at) : null;
+    const rewardDate = publishedAt ? kstDateString(new Date(publishedAt)) : kstDateString();
+    const eligibleFrom = getEligibilityStart(user.created_at);
+    const eligible = publishedAt && new Date(publishedAt).getTime() >= new Date(eligibleFrom).getTime();
+    const { data: claimedRows } = await supabase
+      .from("point_reward_claims")
+      .select("amount")
+      .eq("user_id", user.id)
+      .eq("reward_date", rewardDate)
+      .like("reward_key", "ai_battle_vote:%");
+    const earnedToday = ((claimedRows ?? []) as Array<{ amount: number | null }>)
+      .reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
+    if (eligible && earnedToday + POINT_REWARDS.aiBattleVotePerGame <= POINT_REWARDS.aiBattleVoteDailyMax) {
       pointAward = await awardPoints({
         userId: user.id,
         amount: POINT_REWARDS.aiBattleVotePerGame,
@@ -76,7 +101,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         referenceType: "game",
         referenceId: gameId,
         rewardKey: `ai_battle_vote:${gameId}`,
-        rewardDate: today
+        rewardDate
       }).catch(() => null);
     } else {
       pointAward = {

@@ -8,6 +8,9 @@ type TeamLogoProps = {
   teamId: string;
   size?: "sm" | "md" | "lg";
   showName?: boolean;
+  fallbackName?: string;
+  fallbackInitial?: string;
+  fallbackColor?: string;
 };
 
 const logoSrcByTeamId: Record<string, string | StaticImageData> = {
@@ -36,11 +39,28 @@ const pixelSize = {
   lg: 64
 };
 
-export function TeamLogo({ teamId, size = "md", showName = false }: TeamLogoProps) {
+export function TeamLogo({
+  teamId,
+  size = "md",
+  showName = false,
+  fallbackName,
+  fallbackInitial,
+  fallbackColor
+}: TeamLogoProps) {
   const team = (() => {
     try {
       return getTeam(teamId);
     } catch {
+      if (teamId.startsWith("custom:")) {
+        const name = fallbackName?.trim() || "나만의 팀";
+        return {
+          id: teamId,
+          name,
+          shortName: name,
+          initial: fallbackInitial?.trim().slice(0, 2).toUpperCase() || name.slice(0, 1) || "M",
+          color: fallbackColor || "#8b5cf6"
+        };
+      }
       if (teamId === "national") {
         return { id: teamId, name: "아시안게임 국가대표팀", shortName: "국가대표", initial: "N", color: "#0f4c81" };
       }

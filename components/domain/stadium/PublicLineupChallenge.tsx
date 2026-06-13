@@ -23,6 +23,7 @@ import {
   fetchLineupStatsBulk,
   fetchPublishedLineupsByIds,
   listMyLineups,
+  rowToEntry,
   type LineupStats,
   type PublishedLineupRow
 } from "@/lib/supabase/query-parts/bpLineups";
@@ -42,11 +43,26 @@ type Props = {
   onClose: () => void;
 };
 
+type CustomTeamBadgeInfo = {
+  initials?: string;
+  color?: string;
+};
+
 function formatOwnerLabel(row: PublishedLineupRow): string {
   return row.owner_display_name?.trim() || row.owner_nickname?.trim() || "익명";
 }
 
 type Stage = "idle" | "loading" | "login-gate" | "need-publish-gate" | "ready" | "error";
+
+function mergePublishedEntries(localEntries: LineupEntry[], dbEntries: LineupEntry[]): LineupEntry[] {
+  const map = new Map<string, LineupEntry>();
+  for (const entry of [...localEntries, ...dbEntries]) {
+    if (entry.batting.slots.length === 9 && entry.isPublished === true) {
+      map.set(entry.entryId, entry);
+    }
+  }
+  return Array.from(map.values());
+}
 
 export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
   const router = useRouter();
@@ -58,6 +74,7 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
   const [myStatsByEntryId, setMyStatsByEntryId] = useState<Record<string, LineupStats>>({});
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [myCustomBadgeInfo, setMyCustomBadgeInfo] = useState<CustomTeamBadgeInfo | null>(null);
 
   // opponentLineupId 변경 시 상태 재설정 + 데이터 로드.
   useEffect(() => {
@@ -73,6 +90,15 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
     let cancelled = false;
     setStage("loading");
     setError(null);
+    try {
+      const raw = window.localStorage.getItem("ballplay:my-team-info");
+      if (raw) {
+        const info = JSON.parse(raw) as { initials?: string; color?: string };
+        setMyCustomBadgeInfo({ initials: info.initials, color: info.color });
+      }
+    } catch {
+      setMyCustomBadgeInfo(null);
+    }
 
     void (async () => {
       const client = createSupabaseBrowserClient();
@@ -98,16 +124,20 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
       );
       if (cancelled) return;
       setMyPublishedEntries(myPublished);
-      if (myPublished.length === 0) {
-        setStage("need-publish-gate");
-        return;
-      }
-      setMyEntryId((prev) => prev ?? myPublished[0].entryId);
+      if (myPublished.length > 0) setMyEntryId((prev) => prev ?? myPublished[0].entryId);
 
       // 본인 공개 라인업 전적 — picker 라벨용 (RegisteredLineupList와 동일 패턴)
+      let effectivePublished = myPublished;
       try {
         const myLineupsRes = await listMyLineups(client, uid);
         if (!cancelled && myLineupsRes.ok) {
+          const dbPublished = myLineupsRes.rows.filter((row) => row.is_published).map(rowToEntry);
+          effectivePublished = mergePublishedEntries(myPublished, dbPublished);
+          setMyPublishedEntries(effectivePublished);
+          if (effectivePublished.length > 0) {
+            setMyEntryId((prev) => prev ?? effectivePublished[0].entryId);
+          }
+
           const idByEntry: Record<string, string> = {};
           for (const row of myLineupsRes.rows) {
             if (row.is_published) idByEntry[row.entry_id] = row.id;
@@ -126,6 +156,11 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
         }
       } catch {
         // stats fetch 실패는 picker 라벨에만 영향 → 무시
+      }
+
+      if (effectivePublished.length === 0) {
+        setStage("need-publish-gate");
+        return;
       }
 
       // opponent row fetch
@@ -335,7 +370,7 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
             <div className="stadium-enter-vs">
               <div className="stadium-enter-team">
                 <span className="stadium-enter-team-label">{formatOwnerLabel(opponent)}</span>
-                <TeamLogo teamId={opponent.team_id} size="lg" />
+                <TeamLogo teamId={opponent.team_id} size="lg" fallbackName={opponent.name} />
                 <strong>{opponent.name}</strong>
               </div>
               <span className="stadium-enter-vs-label">VS</span>
@@ -343,7 +378,13 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
                 <span className="stadium-enter-team-label">내 팀</span>
                 {myEntry ? (
                   <>
-                    <TeamLogo teamId={myEntry.teamId} size="lg" />
+                    <TeamLogo
+                      teamId={myEntry.teamId}
+                      size="lg"
+                      fallbackName={myEntry.name}
+                      fallbackInitial={myEntry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.initials : undefined}
+                      fallbackColor={myEntry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.color : undefined}
+                    />
                     <strong>{myEntry.name}</strong>
                   </>
                 ) : (
@@ -367,7 +408,13 @@ export function PublicLineupChallenge({ opponentLineupId, onClose }: Props) {
                         className={`stadium-discover-my-pick ${entry.entryId === myEntryId ? "is-active" : ""}`}
                         onClick={() => setMyEntryId(entry.entryId)}
                       >
-                        <TeamLogo teamId={entry.teamId} size="sm" />
+                        <TeamLogo
+                          teamId={entry.teamId}
+                          size="sm"
+                          fallbackName={entry.name}
+                          fallbackInitial={entry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.initials : undefined}
+                          fallbackColor={entry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.color : undefined}
+                        />
                         <span>
                           {entry.name}
                           {recordTxt}

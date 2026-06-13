@@ -115,12 +115,12 @@ const sections: HomeSection[] = [
         featured: true
       },
       {
-        id: "practice-stadium",
-        href: "/play/practice",
-        title: "연습경기장",
-        description: "AI · 친구 · 내 라인업 자유 대결",
-        icon: Swords,
-        iconImage: "/icons/menu/practice-stadium.png",
+        id: "my-team",
+        href: "/my-team",
+        title: "나만의 팀",
+        description: "선수를 모아 만드는 커스텀 구단",
+        icon: Users,
+        iconImage: "/icons/menu/my-team.png",
         available: true
       }
     ]
@@ -447,6 +447,23 @@ export function HomeScreen({
                     <Image
                       src="/badges/국가대표라인업추가.png"
                       alt="국가대표 라인업 추가"
+                      width={695}
+                      height={359}
+                      className="home-fall-badge-img"
+                      priority
+                    />
+                  </Link>
+                ) : null}
+                {card.id === "my-team" ? (
+                  <Link
+                    href="/my-team"
+                    className="home-fall-badge home-my-team-badge"
+                    aria-label="나만의 팀"
+                    prefetch={false}
+                  >
+                    <Image
+                      src="/badges/나만의팀뱃지.png"
+                      alt="나만의 팀"
                       width={695}
                       height={359}
                       className="home-fall-badge-img"

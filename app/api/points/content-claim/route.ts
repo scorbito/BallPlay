@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await client.auth.getUser();
     if (!user) return NextResponse.json({ ok: false, error: "unauthenticated" }, { status: 401 });
 
-    const result = await claimContentPoints({ userId: user.id, contentType, contentId });
+    const result = await claimContentPoints({ userId: user.id, userCreatedAt: user.created_at, contentType, contentId });
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "content point claim failed";
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: true, claimed: false, capped: false, balance: 0 });
     }
 
-    const status = await getContentPointClaimStatus({ userId: user.id, contentType, contentId });
+    const status = await getContentPointClaimStatus({ userId: user.id, userCreatedAt: user.created_at, contentType, contentId });
     return NextResponse.json({ ok: true, ...status });
   } catch (err) {
     const message = err instanceof Error ? err.message : "content point status failed";

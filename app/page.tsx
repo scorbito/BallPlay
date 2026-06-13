@@ -14,7 +14,7 @@ export default async function HomePage() {
       ? getAccountStats(adminClient, user.id)
       : Promise.resolve({ wins: 0, losses: 0, total: 0, winRate: 0 }),
     user
-      ? getHomePointAvailability(user.id, adminClient)
+      ? getHomePointAvailability(user.id, adminClient, user.created_at)
       : Promise.resolve({})
   ]);
   const isAnonymous = Boolean(user?.is_anonymous);

@@ -27,6 +27,8 @@ export type BpLineupRow = {
   // 팀 은퇴(보관). true 면 활성 목록/슬롯 한도/매치 풀에서 제외하되 전적은 보존.
   is_archived?: boolean;
   archived_at?: string | null;
+  lineup_type?: "kbo" | "national" | "custom";
+  custom_team_id?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -84,7 +86,9 @@ function entryToInsert(entry: LineupEntry, userId: string): Omit<BpLineupRow, "i
     team_id: entry.teamId,
     batting,
     pitching,
-    is_published: entry.isPublished ?? false
+    is_published: entry.isPublished ?? false,
+    lineup_type: lineupType,
+    custom_team_id: lineupType === "custom" ? rosterSourceId : null
   };
 }
 

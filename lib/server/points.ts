@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
-import { POINT_REWARDS, type ContentPointType } from "@/lib/points/config";
+import {
+  POINT_CONTENT_REWARD_START_AT,
+  POINT_REWARDS,
+  getContentPointAmount,
+  getContentPointDailyMax,
+  type ContentPointType
+} from "@/lib/points/config";
 
 export type AwardResult = {
   awarded: boolean;
@@ -9,6 +15,7 @@ export type AwardResult = {
   reason: string;
   already_claimed?: boolean;
   transaction_id?: string;
+  ineligibleReason?: string;
 };
 
 export function kstDateString(date = new Date()): string {
@@ -20,6 +27,89 @@ export function addDaysISO(dateISO: string, days: number): string {
   const d = new Date(`${dateISO}T00:00:00+09:00`);
   d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function dateOnlyToKstStart(dateISO: string): string {
+  return `${dateISO}T00:00:00+09:00`;
+}
+
+function kstDateFromTimestamp(timestamp: string): string {
+  return kstDateString(new Date(timestamp));
+}
+
+function getUserContentEligibilityStart(userCreatedAt?: string | null): string {
+  if (!userCreatedAt) return POINT_CONTENT_REWARD_START_AT;
+  return new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
+    ? userCreatedAt
+    : POINT_CONTENT_REWARD_START_AT;
+}
+
+async function resolveContentRewardContext(input: {
+  contentType: ContentPointType;
+  contentId: string;
+}): Promise<{
+  eligible: boolean;
+  publishedAt: string | null;
+  rewardDate: string;
+  reason?: string;
+}> {
+  if (input.contentType === "daily_report") {
+    const dateISO = input.contentId;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO)) {
+      return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "invalid content date" };
+    }
+    return { eligible: true, publishedAt: dateOnlyToKstStart(dateISO), rewardDate: dateISO };
+  }
+
+  if (input.contentType === "daily_report_game") {
+    const [dateISO, gameId] = input.contentId.split(":");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO) || !gameId) {
+      return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "invalid content date" };
+    }
+    return { eligible: true, publishedAt: dateOnlyToKstStart(dateISO), rewardDate: dateISO };
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("bp_ai_predictions")
+    .select("published_at")
+    .eq("game_id", input.contentId)
+    .lte("published_at", new Date().toISOString())
+    .order("published_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data?.published_at) {
+    return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "content is not published" };
+  }
+
+  const publishedAt = String(data.published_at);
+  return { eligible: true, publishedAt, rewardDate: kstDateFromTimestamp(publishedAt) };
+}
+
+export async function getContentRewardEligibility(input: {
+  contentType: ContentPointType;
+  contentId: string;
+  userCreatedAt?: string | null;
+}): Promise<{
+  eligible: boolean;
+  publishedAt: string | null;
+  rewardDate: string;
+  reason?: string;
+}> {
+  const context = await resolveContentRewardContext(input);
+  if (!context.eligible || !context.publishedAt) return context;
+
+  const eligibleFrom = getUserContentEligibilityStart(input.userCreatedAt);
+  if (new Date(context.publishedAt).getTime() < new Date(eligibleFrom).getTime()) {
+    return {
+      ...context,
+      eligible: false,
+      reason: "콘텐츠 BP는 포인트 오픈 이후, 그리고 계정 생성 이후 발행된 콘텐츠부터 받을 수 있어요."
+    };
+  }
+
+  return context;
 }
 
 export async function getPointBalance(userId: string): Promise<number> {
@@ -125,6 +215,84 @@ export async function awardPoints(input: {
   };
 }
 
+export async function spendPoints(input: {
+  userId: string;
+  amount: number;
+  reason: string;
+  referenceType?: string | null;
+  referenceId?: string | null;
+  metadata?: Record<string, unknown>;
+}): Promise<{
+  spent: number;
+  balance: number;
+  reason: string;
+  transaction_id?: string;
+}> {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    throw new Error("invalid spend amount");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const amount = Math.floor(input.amount);
+
+  await admin
+    .from("point_balances")
+    .upsert({
+      user_id: input.userId,
+      balance: 0,
+      lifetime_earned: 0,
+      lifetime_spent: 0,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id", ignoreDuplicates: true });
+
+  const { data: balanceRow, error: balanceError } = await admin
+    .from("point_balances")
+    .select("balance, lifetime_spent")
+    .eq("user_id", input.userId)
+    .maybeSingle();
+  if (balanceError) throw new Error(balanceError.message);
+
+  const currentBalance = Number(balanceRow?.balance ?? 0);
+  const currentLifetimeSpent = Number(balanceRow?.lifetime_spent ?? 0);
+  if (currentBalance < amount) {
+    throw new Error("Insufficient BP");
+  }
+
+  const nextBalance = currentBalance - amount;
+  const { error: updateError } = await admin
+    .from("point_balances")
+    .update({
+      balance: nextBalance,
+      lifetime_spent: currentLifetimeSpent + amount,
+      updated_at: new Date().toISOString()
+    })
+    .eq("user_id", input.userId)
+    .eq("balance", currentBalance);
+  if (updateError) throw new Error(updateError.message);
+
+  const { data: tx, error: txError } = await admin
+    .from("point_transactions")
+    .insert({
+      user_id: input.userId,
+      amount,
+      type: "spend",
+      reason: input.reason,
+      reference_type: input.referenceType ?? null,
+      reference_id: input.referenceId ?? null,
+      metadata: input.metadata ?? {}
+    })
+    .select("id")
+    .single();
+  if (txError) throw new Error(txError.message);
+
+  return {
+    spent: amount,
+    balance: nextBalance,
+    reason: input.reason,
+    transaction_id: tx.id
+  };
+}
+
 export async function getEarnedAmountForReasonOnDate(
   client: SupabaseClient,
   userId: string,
@@ -141,6 +309,23 @@ export async function getEarnedAmountForReasonOnDate(
     .eq("type", "earn")
     .gte("created_at", start)
     .lt("created_at", end);
+  if (error) return 0;
+  const rows = (data ?? []) as Array<{ amount: number | null }>;
+  return rows.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
+}
+
+async function getClaimedContentAmountForRewardDate(
+  client: SupabaseClient,
+  userId: string,
+  rewardKeyPrefix: string,
+  rewardDate: string
+): Promise<number> {
+  const { data, error } = await client
+    .from("point_reward_claims")
+    .select("amount")
+    .eq("user_id", userId)
+    .eq("reward_date", rewardDate)
+    .like("reward_key", `${rewardKeyPrefix}:%`);
   if (error) return 0;
   const rows = (data ?? []) as Array<{ amount: number | null }>;
   return rows.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
@@ -204,14 +389,28 @@ export async function claimDailyCheckin(userId: string): Promise<{
 
 export async function claimContentPoints(input: {
   userId: string;
+  userCreatedAt?: string | null;
   contentType: ContentPointType;
   contentId: string;
 }): Promise<AwardResult> {
   const admin = createSupabaseAdminClient();
-  const today = kstDateString();
   const reason = `content_${input.contentType}`;
-  const earnedToday = await getEarnedAmountForReasonOnDate(admin, input.userId, reason, today);
-  if (earnedToday >= POINT_REWARDS.contentClaimDailyMaxByType) {
+  const eligibility = await getContentRewardEligibility(input);
+  if (!eligibility.eligible) {
+    return {
+      awarded: false,
+      amount: 0,
+      balance: await getPointBalance(input.userId),
+      reason,
+      already_claimed: true,
+      ineligibleReason: eligibility.reason
+    };
+  }
+  const rewardDate = eligibility.rewardDate;
+  const earnedToday = await getClaimedContentAmountForRewardDate(admin, input.userId, reason, rewardDate);
+  const amount = getContentPointAmount(input.contentType);
+  const dailyMax = getContentPointDailyMax(input.contentType);
+  if (earnedToday >= dailyMax) {
     return {
       awarded: false,
       amount: 0,
@@ -223,41 +422,48 @@ export async function claimContentPoints(input: {
 
   return awardPoints({
     userId: input.userId,
-    amount: POINT_REWARDS.contentClaim,
+    amount,
     reason,
     referenceType: input.contentType,
     referenceId: input.contentId,
     rewardKey: `${reason}:${input.contentId}`,
-    rewardDate: today
+    rewardDate
   });
 }
 
 export async function getContentPointClaimStatus(input: {
   userId: string;
+  userCreatedAt?: string | null;
   contentType: ContentPointType;
   contentId: string;
 }): Promise<{
   claimed: boolean;
   capped: boolean;
   balance: number;
+  eligible: boolean;
+  ineligibleReason?: string;
 }> {
   const admin = createSupabaseAdminClient();
-  const today = kstDateString();
   const reason = `content_${input.contentType}`;
   const rewardKey = `${reason}:${input.contentId}`;
+  const dailyMax = getContentPointDailyMax(input.contentType);
+  const eligibility = await getContentRewardEligibility(input);
+  const rewardDate = eligibility.rewardDate;
 
   const { data: claim } = await admin
     .from("point_reward_claims")
     .select("id")
     .eq("user_id", input.userId)
     .eq("reward_key", rewardKey)
-    .eq("reward_date", today)
+    .eq("reward_date", rewardDate)
     .maybeSingle();
 
-  const earnedToday = await getEarnedAmountForReasonOnDate(admin, input.userId, reason, today);
+  const earnedToday = await getClaimedContentAmountForRewardDate(admin, input.userId, reason, rewardDate);
   return {
     claimed: Boolean(claim),
-    capped: earnedToday >= POINT_REWARDS.contentClaimDailyMaxByType,
-    balance: await getPointBalance(input.userId)
+    capped: earnedToday >= dailyMax,
+    balance: await getPointBalance(input.userId),
+    eligible: eligibility.eligible,
+    ineligibleReason: eligibility.reason
   };
 }

@@ -136,6 +136,26 @@
   transform: translateY(-50%);
 }
 
+.phone-frame-light .home-fall-badge.home-my-team-badge::after {
+  -webkit-mask: url("/badges/나만의팀뱃지.png") center / 100% auto no-repeat;
+  mask: url("/badges/나만의팀뱃지.png") center / 100% auto no-repeat;
+}
+
+.phone-frame-light .home-fall-badge.home-my-team-badge {
+  top: -12px;
+  width: 76%;
+  max-width: 210px;
+  aspect-ratio: 1117 / 223;
+  overflow: hidden;
+}
+
+.phone-frame-light .home-fall-badge.home-my-team-badge .home-fall-badge-img {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
 @keyframes home-badge-even-bob {
   0%,
   100% {

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { POINT_REWARDS } from "@/lib/points/config";
-import { awardPoints, getEarnedAmountForReasonOnDate, getPointBalance, kstDateString } from "@/lib/server/points";
+import { awardPoints, getPointBalance, kstDateString } from "@/lib/server/points";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -23,7 +23,14 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
 
   const reason = "prediction_submitted";
-  let earnedToday = await getEarnedAmountForReasonOnDate(admin, user.id, reason, gameDate);
+  const { data: claimedRows } = await admin
+    .from("point_reward_claims")
+    .select("amount")
+    .eq("user_id", user.id)
+    .eq("reward_date", gameDate)
+    .like("reward_key", `${reason}:%`);
+  let earnedToday = ((claimedRows ?? []) as Array<{ amount: number | null }>)
+    .reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   let awarded = 0;
   let balance = await getPointBalance(user.id);
   for (const row of (data ?? []) as Array<{ id: string; game_id: string }>) {
