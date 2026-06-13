@@ -2,7 +2,9 @@ import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import { Activity, BarChart3, Clock, ListChecks, Percent, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { AdminBpAdjustPanel } from "@/components/domain/admin/AdminBpAdjustPanel";
 import { getUserTier } from "@/lib/auth/userTier";
+import { getPointBalance } from "@/lib/server/points";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +33,17 @@ type CountRow = {
   eventName: string;
   total: number;
 };
+
+type RecentEventRow = {
+  row: EventRow;
+  duplicateCount: number;
+};
+
+type AdminClient = ReturnType<typeof createSupabaseAdminClient>;
+type LoadError = { message: string } | null;
+
+const ADMIN_EVENTS_PAGE_SIZE = 1000;
+const ADMIN_EVENTS_MAX_ROWS = 100000;
 
 const EVENT_LABELS: Record<string, string> = {
   lineup_created: "팀 생성",
@@ -61,6 +74,58 @@ function countByEvent(rows: EventRow[]): CountRow[] {
   return Array.from(counts.entries())
     .map(([eventName, total]) => ({ eventName, total }))
     .sort((a, b) => b.total - a.total || a.eventName.localeCompare(b.eventName));
+}
+
+function actorKey(row: EventRow): string {
+  return row.user_id ?? row.anonymous_id ?? "-";
+}
+
+function metricDedupeKey(row: EventRow): string | null {
+  if (row.event_name !== "ai_prediction_viewed") return null;
+  const gameDate = row.properties?.gameDate;
+  if (!gameDate) return null;
+  return [row.event_name, actorKey(row), String(gameDate)].join("|");
+}
+
+function dedupeMetricRows(rows: EventRow[]): EventRow[] {
+  const seen = new Set<string>();
+  const result: EventRow[] = [];
+
+  for (const row of rows) {
+    const key = metricDedupeKey(row);
+    if (key) {
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    result.push(row);
+  }
+
+  return result;
+}
+
+function eventLogKey(row: EventRow): string {
+  return [
+    row.event_name,
+    row.pathname ?? "-",
+    actorKey(row),
+    JSON.stringify(row.properties ?? {})
+  ].join("|");
+}
+
+function compactRecentEvents(rows: EventRow[], max: number): RecentEventRow[] {
+  const grouped = new Map<string, RecentEventRow>();
+
+  for (const row of rows) {
+    const key = eventLogKey(row);
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.duplicateCount += 1;
+    } else if (grouped.size < max) {
+      grouped.set(key, { row, duplicateCount: 1 });
+    }
+  }
+
+  return Array.from(grouped.values());
 }
 
 function eventCount(rows: EventRow[], eventName: string): number {
@@ -141,39 +206,82 @@ function countPlayoffByReach(rows: PlayoffRunRow[], reach: number): number {
   return rows.filter((row) => playoffReached(row) === reach).length;
 }
 
+async function fetchEventRowsSince(
+  client: AdminClient,
+  sinceISO: string
+): Promise<{ rows: EventRow[]; error: LoadError; truncated: boolean }> {
+  const rows: EventRow[] = [];
+
+  for (let from = 0; from < ADMIN_EVENTS_MAX_ROWS; from += ADMIN_EVENTS_PAGE_SIZE) {
+    const { data, error } = await client
+      .from("bp_events")
+      .select("event_name, properties, pathname, user_id, anonymous_id, created_at")
+      .gte("created_at", sinceISO)
+      .order("created_at", { ascending: false })
+      .range(from, from + ADMIN_EVENTS_PAGE_SIZE - 1);
+
+    if (error) return { rows, error, truncated: false };
+
+    const batch = (data ?? []) as EventRow[];
+    rows.push(...batch);
+    if (batch.length < ADMIN_EVENTS_PAGE_SIZE) return { rows, error: null, truncated: false };
+  }
+
+  return { rows, error: null, truncated: true };
+}
+
+async function fetchPlayoffRowsSince(
+  client: AdminClient,
+  sinceISO: string
+): Promise<{ rows: PlayoffRunRow[]; error: LoadError; truncated: boolean }> {
+  const rows: PlayoffRunRow[] = [];
+
+  for (let from = 0; from < ADMIN_EVENTS_MAX_ROWS; from += ADMIN_EVENTS_PAGE_SIZE) {
+    const { data, error } = await client
+      .from("bp_playoff_runs")
+      .select("id, user_id, team_id, team_name, status, current_round, created_at, completed_at")
+      .gte("created_at", sinceISO)
+      .order("created_at", { ascending: false })
+      .range(from, from + ADMIN_EVENTS_PAGE_SIZE - 1);
+
+    if (error) return { rows, error, truncated: false };
+
+    const batch = (data ?? []) as PlayoffRunRow[];
+    rows.push(...batch);
+    if (batch.length < ADMIN_EVENTS_PAGE_SIZE) return { rows, error: null, truncated: false };
+  }
+
+  return { rows, error: null, truncated: true };
+}
+
 export default async function AdminEventsPage() {
   noStore();
 
   const serverClient = createSupabaseServerClient();
   const { tier } = await getUserTier(serverClient);
   if (tier !== "admin") notFound();
+  const { data: { user } } = await serverClient.auth.getUser();
+  if (!user) notFound();
+  const myBpBalance = await getPointBalance(user.id);
 
   const adminClient = createSupabaseAdminClient();
   const now = Date.now();
   const since7d = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
   const since24hMs = now - 24 * 60 * 60 * 1000;
 
-  const { data, error } = await adminClient
-    .from("bp_events")
-    .select("event_name, properties, pathname, user_id, anonymous_id, created_at")
-    .gte("created_at", since7d)
-    .order("created_at", { ascending: false })
-    .limit(5000);
+  const [eventResult, playoffResult] = await Promise.all([
+    fetchEventRowsSince(adminClient, since7d),
+    fetchPlayoffRowsSince(adminClient, since7d)
+  ]);
 
-  const { data: playoffData, error: playoffError } = await adminClient
-    .from("bp_playoff_runs")
-    .select("id, user_id, team_id, team_name, status, current_round, created_at, completed_at")
-    .gte("created_at", since7d)
-    .order("created_at", { ascending: false })
-    .limit(5000);
-
-  const rows = ((data ?? []) as EventRow[]).filter((row) => row.event_name && row.created_at);
-  const rows24h = rows.filter((row) => new Date(row.created_at).getTime() >= since24hMs);
+  const rows = eventResult.rows.filter((row) => row.event_name && row.created_at);
+  const metricRows = dedupeMetricRows(rows);
+  const rows24h = metricRows.filter((row) => new Date(row.created_at).getTime() >= since24hMs);
   const counts24h = countByEvent(rows24h);
-  const counts7d = countByEvent(rows);
-  const recentRows = rows.slice(0, 50);
+  const counts7d = countByEvent(metricRows);
+  const recentRows = compactRecentEvents(metricRows, 50);
 
-  const playoffRows = ((playoffData ?? []) as PlayoffRunRow[]).filter((row) => row.id && row.created_at);
+  const playoffRows = playoffResult.rows.filter((row) => row.id && row.created_at);
   const playoffRows24h = playoffRows.filter((row) => new Date(row.created_at).getTime() >= since24hMs);
   const recentPlayoffRows = playoffRows.slice(0, 8);
 
@@ -196,7 +304,7 @@ export default async function AdminEventsPage() {
   const playoffBestReach7d = playoffRows.reduce((best, row) => Math.max(best, playoffReached(row)), 0);
 
   const uniqueVisitors24h = uniqueActorCount(rows24h);
-  const uniqueVisitors7d = uniqueActorCount(rows);
+  const uniqueVisitors7d = uniqueActorCount(metricRows);
 
   return (
     <AppShell activeTab="my" title="이벤트 통계" theme="light" backHref="/my/settings" wide>
@@ -209,15 +317,29 @@ export default async function AdminEventsPage() {
         <Activity size={34} aria-hidden />
       </section>
 
-      {error ? (
+      <AdminBpAdjustPanel initialBalance={myBpBalance} />
+
+      {eventResult.error ? (
         <section className="admin-events-error">
-          이벤트를 불러오지 못했습니다: {error.message}
+          이벤트를 불러오지 못했습니다: {eventResult.error.message}
         </section>
       ) : null}
 
-      {playoffError ? (
+      {eventResult.truncated ? (
         <section className="admin-events-error">
-          가을야구 통계를 불러오지 못했습니다: {playoffError.message}
+          이벤트가 많아 최근 {ADMIN_EVENTS_MAX_ROWS.toLocaleString()}건까지만 집계했습니다.
+        </section>
+      ) : null}
+
+      {playoffResult.error ? (
+        <section className="admin-events-error">
+          가을야구 통계를 불러오지 못했습니다: {playoffResult.error.message}
+        </section>
+      ) : null}
+
+      {playoffResult.truncated ? (
+        <section className="admin-events-error">
+          가을야구 도전이 많아 최근 {ADMIN_EVENTS_MAX_ROWS.toLocaleString()}건까지만 집계했습니다.
         </section>
       ) : null}
 
@@ -231,7 +353,7 @@ export default async function AdminEventsPage() {
         <article>
           <BarChart3 size={16} aria-hidden />
           <span>최근 7일</span>
-          <strong>{rows.length.toLocaleString()}건</strong>
+          <strong>{metricRows.length.toLocaleString()}건</strong>
           <small>{uniqueVisitors7d.toLocaleString()}명 기준</small>
         </article>
         <article>
@@ -242,9 +364,9 @@ export default async function AdminEventsPage() {
         </article>
         <article>
           <ListChecks size={16} aria-hidden />
-          <span>출전 등록률</span>
-          <strong>{formatPercent(lineupPublished24h, lineupCreated24h)}</strong>
-          <small>{lineupPublished24h}/{lineupCreated24h}</small>
+          <span>출전 등록</span>
+          <strong>{lineupPublished24h.toLocaleString()}건</strong>
+          <small>팀 생성 {lineupCreated24h.toLocaleString()}건</small>
         </article>
         <article>
           <Trophy size={16} aria-hidden />
@@ -297,8 +419,8 @@ export default async function AdminEventsPage() {
             <strong>{formatPercent(completed24h, started24h)}</strong>
           </div>
           <div>
-            <span>팀 생성 → 출전 등록</span>
-            <strong>{formatPercent(lineupPublished24h, lineupCreated24h)}</strong>
+            <span>팀 생성 / 출전 등록</span>
+            <strong>{lineupCreated24h.toLocaleString()} / {lineupPublished24h.toLocaleString()}</strong>
           </div>
           <div>
             <span>AI 예측 조회</span>
@@ -411,13 +533,16 @@ export default async function AdminEventsPage() {
       <section className="admin-events-panel">
         <header>
           <h2>최근 이벤트 로그</h2>
-          <span>최대 50건</span>
+          <span>중복 묶음 최대 50건</span>
         </header>
         <div className="admin-events-log">
-          {recentRows.length > 0 ? recentRows.map((row, index) => (
+          {recentRows.length > 0 ? recentRows.map(({ row, duplicateCount }, index) => (
             <article key={`${row.created_at}-${row.event_name}-${index}`}>
               <div className="admin-events-log-main">
-                <strong>{labelEvent(row.event_name)}</strong>
+                <strong>
+                  {labelEvent(row.event_name)}
+                  {duplicateCount > 1 ? ` x${duplicateCount}` : ""}
+                </strong>
                 <span>{formatProperties(row.properties)}</span>
               </div>
               <div className="admin-events-log-meta">

@@ -255,3 +255,127 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.phone-frame-light .admin-bp-panel {
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(37, 99, 235, 0.06)),
+    #ffffff;
+  box-shadow: var(--bp-shadow-card);
+  padding: 14px;
+}
+
+.phone-frame-light .admin-bp-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.phone-frame-light .admin-bp-kicker {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--bp-accent);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.phone-frame-light .admin-bp-panel h2 {
+  margin: 0;
+  color: var(--bp-text);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.phone-frame-light .admin-bp-panel-head > strong {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--bp-text);
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.phone-frame-light .admin-bp-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.phone-frame-light .admin-bp-actions button,
+.phone-frame-light .admin-bp-custom button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.phone-frame-light .admin-bp-actions button:disabled,
+.phone-frame-light .admin-bp-custom button:disabled,
+.phone-frame-light .admin-bp-custom input:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.phone-frame-light .admin-bp-actions .is-plus {
+  background: var(--bp-accent);
+}
+
+.phone-frame-light .admin-bp-actions .is-minus {
+  background: #64748b;
+}
+
+.phone-frame-light .admin-bp-actions .is-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #ef4444;
+}
+
+.phone-frame-light .admin-bp-custom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.phone-frame-light .admin-bp-custom input {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--bp-line);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--bp-text);
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  outline: none;
+}
+
+.phone-frame-light .admin-bp-custom input:focus {
+  border-color: var(--bp-accent);
+  box-shadow: 0 0 0 3px rgba(232, 74, 138, 0.12);
+}
+
+.phone-frame-light .admin-bp-custom button {
+  background: var(--bp-text);
+}
+
+.phone-frame-light .admin-bp-message {
+  margin: 8px 0 0;
+  color: var(--bp-text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}

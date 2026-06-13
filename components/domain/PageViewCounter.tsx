@@ -6,15 +6,16 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type PageViewCounterProps = {
   pullUp?: boolean;
+  viewKey?: string;
 };
 
-export function PageViewCounter({ pullUp = false }: PageViewCounterProps) {
+export function PageViewCounter({ pullUp = false, viewKey: viewKeyOverride }: PageViewCounterProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [count, setCount] = useState<number | null>(null);
 
   const date = searchParams.get("date");
-  const viewKey = date ? `${pathname}?date=${date}` : pathname;
+  const viewKey = viewKeyOverride ?? (date ? `${pathname}?date=${date}` : pathname);
 
   useEffect(() => {
     if (!viewKey) return;

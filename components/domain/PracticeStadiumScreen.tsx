@@ -41,7 +41,7 @@ export function PracticeStadiumScreen() {
   };
 
   return (
-    <AppShell activeTab="play" title="연습경기장" backHref="/" theme="light" wide>
+    <AppShell activeTab="play" title="연습경기장" backHref="/stadium" theme="light" wide>
       {/* 1. 친구 매치 진입 — 매치 만들기 + 코드 참여 */}
       <div className="stadium-lobby-live-row">
         <Link href="/stadium/live/new" className="stadium-lobby-live" prefetch>

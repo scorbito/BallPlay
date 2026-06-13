@@ -273,6 +273,13 @@ export function AiWinnerListScreen({
   useEffect(() => {
     const predictionCount = games.reduce((sum, g) => sum + g.predictions.length, 0);
     if (predictionCount === 0 || locked) return;
+    const eventKey = `ballplay:analytics:ai_prediction_viewed:${selectedDate}:${games.length}:${predictionCount}`;
+    try {
+      if (window.sessionStorage.getItem(eventKey) === "1") return;
+      window.sessionStorage.setItem(eventKey, "1");
+    } catch {
+      // ignore storage errors
+    }
     void trackEvent("ai_prediction_viewed", {
       gameDate: selectedDate,
       gameCount: games.length,
@@ -676,7 +683,7 @@ export function AiWinnerListScreen({
           })()}
         </section>
       </section>
-      <PageViewCounter />
+      <PageViewCounter viewKey={`/predict/ai-winner?date=${selectedDate}`} />
     </AppShell>
   );
 }

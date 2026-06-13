@@ -177,6 +177,101 @@ export async function getPointBalance(userId: string): Promise<number> {
   return Number(data?.balance ?? 0);
 }
 
+export async function adjustPointBalance(input: {
+  userId: string;
+  amount: number;
+  reason: string;
+  metadata?: Record<string, unknown>;
+}): Promise<{
+  adjusted: number;
+  balance: number;
+  transaction_id?: string;
+}> {
+  const amount = Math.trunc(input.amount);
+  if (!input.userId) throw new Error("user_id is required");
+  if (!Number.isFinite(amount) || amount === 0) {
+    return { adjusted: 0, balance: await getPointBalance(input.userId) };
+  }
+
+  const admin = createSupabaseAdminClient();
+  await admin
+    .from("point_balances")
+    .upsert({
+      user_id: input.userId,
+      balance: 0,
+      lifetime_earned: 0,
+      lifetime_spent: 0,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id", ignoreDuplicates: true });
+
+  const { data: balanceRow, error: balanceError } = await admin
+    .from("point_balances")
+    .select("balance")
+    .eq("user_id", input.userId)
+    .maybeSingle();
+  if (balanceError) throw new Error(balanceError.message);
+
+  const currentBalance = Number(balanceRow?.balance ?? 0);
+  const nextBalance = currentBalance + amount;
+  if (nextBalance < 0) throw new Error("BP cannot be negative");
+
+  const { error: updateError } = await admin
+    .from("point_balances")
+    .update({
+      balance: nextBalance,
+      updated_at: new Date().toISOString()
+    })
+    .eq("user_id", input.userId)
+    .eq("balance", currentBalance);
+  if (updateError) throw new Error(updateError.message);
+
+  const { data: tx, error: txError } = await admin
+    .from("point_transactions")
+    .insert({
+      user_id: input.userId,
+      amount,
+      type: "adjust",
+      reason: input.reason,
+      reference_type: "admin",
+      reference_id: input.userId,
+      metadata: {
+        previous_balance: currentBalance,
+        next_balance: nextBalance,
+        ...(input.metadata ?? {})
+      }
+    })
+    .select("id")
+    .single();
+  if (txError) throw new Error(txError.message);
+
+  return {
+    adjusted: amount,
+    balance: nextBalance,
+    transaction_id: tx.id
+  };
+}
+
+export async function setPointBalance(input: {
+  userId: string;
+  balance: number;
+  reason: string;
+  metadata?: Record<string, unknown>;
+}): Promise<{
+  adjusted: number;
+  balance: number;
+  transaction_id?: string;
+}> {
+  const nextBalance = Math.trunc(input.balance);
+  if (!Number.isFinite(nextBalance) || nextBalance < 0) throw new Error("invalid balance");
+  const currentBalance = await getPointBalance(input.userId);
+  return adjustPointBalance({
+    userId: input.userId,
+    amount: nextBalance - currentBalance,
+    reason: input.reason,
+    metadata: input.metadata
+  });
+}
+
 export async function awardPoints(input: {
   userId: string;
   amount: number;
