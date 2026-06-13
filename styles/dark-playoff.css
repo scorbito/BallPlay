@@ -175,6 +175,54 @@
   box-shadow: 0 4px 16px rgba(20, 30, 50, 0.1);
 }
 
+.phone-frame-light .stadium-practice-entry:not(.stadium-quick-entry) {
+  display: none;
+}
+
+.phone-frame-light .stadium-lobby-quick-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin: 5px 0 -4px;
+}
+
+.phone-frame-light .stadium-lobby-quick-row .stadium-practice-entry {
+  min-width: 0;
+  margin: 0;
+  padding: 9px 10px;
+  gap: 7px;
+}
+
+.phone-frame-light .stadium-lobby-quick-row .stadium-playoff-entry-emoji {
+  font-size: 18px;
+}
+
+.phone-frame-light .stadium-lobby-quick-row .stadium-playoff-entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.phone-frame-light .stadium-lobby-quick-row .stadium-playoff-entry-text strong {
+  display: block;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-light .stadium-lobby-quick-row .stadium-playoff-entry-text span {
+  overflow: hidden;
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-frame-light .stadium-lobby-quick-row .stadium-practice-entry > svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ============================================================
    명예???�당 ??가?�야�?진입 카드 바로 ?? ?�짝 골드/?�리미엄 ?�이??
    진입 카드(주인�?보다 ?�각?�으�??�지 ?�게 ?�적?�고 차분?�게.

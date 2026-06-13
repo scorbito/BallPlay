@@ -432,7 +432,7 @@ export function RecordsScreen({
 
   if (authState === "loading") {
     return (
-      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/stadium/lobby" wide>
         <p className="stadium-loading">불러오는 중...</p>
       </AppShell>
     );
@@ -440,7 +440,7 @@ export function RecordsScreen({
 
   if (authState === "loggedOut") {
     return (
-      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/stadium/lobby" wide>
         <section className="records-empty">
           <span className="records-empty-icon">
             <Lock size={28} />
@@ -457,7 +457,7 @@ export function RecordsScreen({
 
   if (loadError) {
     return (
-      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/stadium/lobby" wide>
         <section className="records-empty">
           <strong>불러오기 실패</strong>
           <p>{loadError}</p>
@@ -475,7 +475,7 @@ export function RecordsScreen({
 
   if (rows && rows.length === 0) {
     return (
-      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
+      <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/stadium/lobby" wide>
         <section className="records-empty">
           <span className="records-empty-icon">
             <History size={28} />
@@ -500,7 +500,7 @@ export function RecordsScreen({
   const rematchOpponentTeam = rematchRecord?.input?.[getOpponentSide(rematchRecord)] ?? null;
 
   return (
-    <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/my" wide>
+    <AppShell activeTab="my" title={<>내 기록 <span className="records-title-suffix-inline">(7일간 재생 가능)</span></>} theme="light" backHref="/stadium/lobby" wide>
       {/* 라인업 필터 chip — 라인업이 2개 이상일 때만 노출. "전체" + 본인 라인업 각각.
           각 chip: 1줄 라인업명 + 2줄 승·패·무. PC는 마우스 드래그로도 가로 스크롤. */}
       {myLineups.length >= 2 ? (

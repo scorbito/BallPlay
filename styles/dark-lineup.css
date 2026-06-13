@@ -178,7 +178,7 @@
 
 /* ?˜ì´ì§€ ?¤ë” ??ì²??¹ì…˜ ê°„ê²© ì¶•ì†Œ ??.app-content flex gap 18pxë¥??Œìˆ˜ margin?¼ë¡œ ?ì‡„ */
 .phone-frame-light .play-hub-header + .play-hub-section {
-  margin-top: -10px;
+  margin-top: -12px;
 }
 
 .phone-frame-light .play-hub-section-label {
@@ -295,7 +295,7 @@
 
 .phone-frame-light .play-hub-hero {
   position: relative;
-  padding: 14px 14px 14px;
+  padding: 8px 14px 14px;
   border-radius: 20px;
   background-color: #fde6ee;
   /* overflow: hidden ??ì¹´ë“œ??! ë²„íŠ¼ ?´íŒ???˜ë¦¼ + ?¼ëŸ¬?¤íŠ¸ top:-50px???˜ë¦¼.
@@ -309,7 +309,7 @@
 .phone-frame-light .play-hub-hero-header {
   display: block;
   margin-bottom: 10px;
-  padding: 4px 0 0 4px;
+  padding: 0 0 0 4px;
   /* ?¼ëŸ¬?¤íŠ¸ê°€ ?¤ë” ?˜ë‹¨???˜ê²¨ ?„ë˜ ì¹´ë“œ ê·¸ë¦¬??ê²½ê¸°??ë²„íŠ¼)???œê°???´ë¦­?ìœ¼ë¡?ì¹¨ë²”?˜ì? ?Šë„ë¡??´ë¦½ */
   overflow: hidden;
 }

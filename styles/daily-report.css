@@ -709,3 +709,75 @@
   left: auto;
   right: 8px;
 }
+
+.phone-frame-light .stadium-lineup-sort-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--bp-line);
+  border-radius: 999px;
+  background: var(--bp-card-soft);
+  padding: 2px;
+}
+
+.phone-frame-light .stadium-lineup-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bp-text-secondary);
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.phone-frame-light .stadium-lineup-sort-btn.is-active {
+  background: var(--bp-accent);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(232, 74, 138, 0.18);
+}
+
+.phone-frame-light .play-hub-section-hero .play-hub-hero-header {
+  align-items: flex-start;
+}
+
+.phone-frame-light .play-hub-section-hero .play-hub-hero-text {
+  width: 100%;
+  min-width: 0;
+}
+
+.phone-frame-light .play-hub-hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.phone-frame-light .play-hub-hero-title-row .play-hub-hero-title {
+  min-width: 0;
+  margin: 0;
+}
+
+.phone-frame-light .play-hub-hero-title-row .home-hero-record-badge {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+@media (max-width: 520px) {
+  .phone-frame-light .play-hub-hero-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .phone-frame-light .play-hub-hero-title-row .home-hero-record-badge {
+    align-self: flex-end;
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -19,6 +20,8 @@ type Props = {
   playoffSummary: PlayoffSummary;
 };
 
+const SHOW_STADIUM_RANKING_PREVIEW = false;
+
 function formatPlayoffEntryRecord(summary: PlayoffSummary): string | null {
   if (summary.totalGames > 0) {
     const champion = summary.championCount > 0 ? ` · 우승 ${summary.championCount}회` : "";
@@ -32,6 +35,7 @@ function formatPlayoffEntryRecord(summary: PlayoffSummary): string | null {
 
 export function LobbyScreen({ topLineupRanking, topAccountRanking, playoffSummary }: Props) {
   const playoffEntryRecord = formatPlayoffEntryRecord(playoffSummary);
+  const [lineupSort, setLineupSort] = useState<"winrate" | "recent">("winrate");
 
   return (
     <AppShell activeTab="stadium" title="경기장" backHref="/" theme="light" wide>
@@ -66,17 +70,58 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking, playoffSummar
 
       {/* === 출전팀(상시) — 랭킹 → 리스트 묶음 === */}
       {/* 3. 출전팀 랭킹 TOP3 — 라인업/계정 누적 탭 전환 */}
-      <StadiumLineupRankingPreview
-        lineupRows={topLineupRanking}
-        accountRows={topAccountRanking}
-      />
+      <div className="stadium-lobby-quick-row">
+        <Link href="/play/practice" className="stadium-playoff-entry stadium-practice-entry stadium-quick-entry" prefetch>
+          <span className="stadium-playoff-entry-emoji" aria-hidden="true">⚾</span>
+          <span className="stadium-playoff-entry-text">
+            <strong>연습경기장</strong>
+            <span>친구매치 · AI 대전</span>
+          </span>
+          <ChevronRight size={20} aria-hidden="true" />
+        </Link>
+        <Link href="/records" className="stadium-playoff-entry stadium-practice-entry stadium-record-entry stadium-quick-entry" prefetch>
+          <span className="stadium-playoff-entry-emoji" aria-hidden="true">📋</span>
+          <span className="stadium-playoff-entry-text">
+            <strong>경기 기록 보기</strong>
+            <span>내 경기 기록</span>
+          </span>
+          <ChevronRight size={20} aria-hidden="true" />
+        </Link>
+      </div>
+
+      {SHOW_STADIUM_RANKING_PREVIEW ? (
+        <StadiumLineupRankingPreview
+          lineupRows={topLineupRanking}
+          accountRows={topAccountRanking}
+        />
+      ) : null}
 
       {/* 4. 출전 팀 풀 — 전체 리스트 (추가 진입 불필요) */}
       <section className="stadium-lobby-section stadium-lobby-section-main">
         <header className="stadium-lobby-section-head">
           <h2 className="stadium-lobby-section-title">출전 팀</h2>
+          <div className="stadium-lineup-sort-toggle" role="tablist" aria-label="출전팀 정렬">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={lineupSort === "winrate"}
+              className={`stadium-lineup-sort-btn ${lineupSort === "winrate" ? "is-active" : ""}`}
+              onClick={() => setLineupSort("winrate")}
+            >
+              랭킹순
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={lineupSort === "recent"}
+              className={`stadium-lineup-sort-btn ${lineupSort === "recent" ? "is-active" : ""}`}
+              onClick={() => setLineupSort("recent")}
+            >
+              최신순
+            </button>
+          </div>
         </header>
-        <RegisteredLineupList sortBy="winrate" showHeader={false} />
+        <RegisteredLineupList sortBy={lineupSort} showHeader={false} />
       </section>
     </AppShell>
   );

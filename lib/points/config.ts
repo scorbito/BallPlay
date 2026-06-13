@@ -6,11 +6,11 @@ export const POINT_REWARDS = {
   dailyCheckin: 20,
   checkinStreakStep: 5,
   checkinStreakMaxBonus: 30,
-  predictionSubmittedPerGame: 10,
-    predictionSubmittedDailyMax: 100,
-  predictionCorrectPerGame: 20,
-  aiBattleVotePerGame: 10,
-    aiBattleVoteDailyMax: 100,
+  predictionSubmittedPerGame: 20,
+  predictionSubmittedDailyMax: 100,
+  predictionCorrectPerGame: 10,
+  aiBattleVotePerGame: 20,
+  aiBattleVoteDailyMax: 100,
   stadiumOfficialFirstFive: 20,
   stadiumOfficialAfterFive: 10,
   stadiumOfficialFirstFiveCount: 5,
@@ -19,11 +19,11 @@ export const POINT_REWARDS = {
   contentClaimByType: {
     daily_report: 20,
     daily_report_game: 10,
-    ai_prediction: 10
+    ai_prediction: 20
   },
   contentClaimDailyMaxByType: {
-    daily_report: 40,
-    daily_report_game: 100,
+    daily_report: 20,
+    daily_report_game: 50,
     ai_prediction: 100
   },
   quizComplete: 20,

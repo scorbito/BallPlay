@@ -92,7 +92,6 @@ const sections: HomeSection[] = [
     label: "내 라인업 플레이",
     variant: "hero",
     heroSubtitle: "나만의 라인업으로 승부하세요!",
-    heroIllustration: "/assets/home-hero-illust.png",
     gridCols: 3,
     cards: [
       {
@@ -493,9 +492,17 @@ export function HomeScreen({
                 <div className="play-hub-hero">
                   <div className="play-hub-hero-header">
                     <div className="play-hub-hero-text">
-                      <h2 className="play-hub-hero-title">{section.label}</h2>
+                      <div className="play-hub-hero-title-row">
+                        <h2 className="play-hub-hero-title">{section.label}</h2>
+                        {section.id === "lineup-play" ? (
+                          <HomeRecordBadge
+                            initialWins={userRecord.wins}
+                            initialLosses={userRecord.losses}
+                          />
+                        ) : null}
+                      </div>
                       {/* 부제 + 매치 기록 뱃지를 한 줄 flex row로 묶음 — 좁은 화면에서는 flex-wrap으로 뱃지가 다음 줄로 떨어짐. */}
-                      {section.heroSubtitle || section.id === "lineup-play" ? (
+                      {section.heroSubtitle && section.id !== "lineup-play" ? (
                         <div className="play-hub-hero-subtitle-row">
                           {section.heroSubtitle ? (
                             <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>

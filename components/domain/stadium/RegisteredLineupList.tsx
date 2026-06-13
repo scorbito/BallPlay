@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List, RefreshCw, Swords } from "lucide-react";
@@ -44,6 +44,11 @@ type CustomTeamBadgeInfo = {
   color?: string;
 };
 
+type LineupListCacheEntry = {
+  rows: PublishedLineupRow[];
+  statsByLineupId: Record<string, LineupStats>;
+};
+
 function formatOwnerLabel(row: PublishedLineupRow): string {
   return row.owner_display_name?.trim() || row.owner_nickname?.trim() || "익명";
 }
@@ -51,6 +56,21 @@ function formatOwnerLabel(row: PublishedLineupRow): string {
 function formatRecord(stats: LineupStats | undefined): string {
   if (!stats || stats.matches === 0) return "전적 없음";
   return `${stats.wins}승 ${stats.losses}패`;
+}
+
+function compareByRecord(
+  a: PublishedLineupRow,
+  b: PublishedLineupRow,
+  statsByLineupId: Record<string, LineupStats>
+): number {
+  const aStats = statsByLineupId[a.id] ?? { matches: 0, wins: 0, losses: 0, draws: 0 };
+  const bStats = statsByLineupId[b.id] ?? { matches: 0, wins: 0, losses: 0, draws: 0 };
+  return (
+    bStats.wins - aStats.wins ||
+    aStats.losses - bStats.losses ||
+    bStats.matches - aStats.matches ||
+    a.name.localeCompare(b.name, "ko")
+  );
 }
 
 function getTeamShortName(teamId: string): string {
@@ -93,13 +113,27 @@ export function RegisteredLineupList({
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myCustomBadgeInfo, setMyCustomBadgeInfo] = useState<CustomTeamBadgeInfo | null>(null);
+  const listCacheRef = useRef<Record<string, LineupListCacheEntry>>({});
 
   const loadList = useCallback(
-    async (excludeUid: string | null) => {
+    async (excludeUid: string | null, options?: { bypassCache?: boolean }) => {
+      const filterUid = includeMine ? null : excludeUid;
+      const cacheKey = `${sortBy}:${filterUid ?? "all"}:${maxItems}`;
+
+      if (!options?.bypassCache) {
+        const cached = listCacheRef.current[cacheKey];
+        if (cached) {
+          setRows(cached.rows);
+          setStatsByLineupId(cached.statsByLineupId);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      }
+
       const client = createSupabaseBrowserClient();
       setLoading(true);
       setError(null);
-      const filterUid = includeMine ? null : excludeUid;
 
       if (sortBy === "winrate") {
         const overfetch = filterUid ? maxItems + 12 : maxItems;
@@ -118,7 +152,10 @@ export function RegisteredLineupList({
         const filtered = (filterUid
           ? fetched.rows.filter((row) => row.owner_user_id !== filterUid)
           : fetched.rows
-        ).slice(0, maxItems);
+        )
+          .sort((a, b) => compareByRecord(a, b, sorted.statsByLineupId))
+          .slice(0, maxItems);
+        listCacheRef.current[cacheKey] = { rows: filtered, statsByLineupId: sorted.statsByLineupId };
         setRows(filtered);
         setStatsByLineupId(sorted.statsByLineupId);
         return;
@@ -130,6 +167,7 @@ export function RegisteredLineupList({
         setError(res.error);
         return;
       }
+      listCacheRef.current[cacheKey] = { rows: res.rows, statsByLineupId: res.statsByLineupId };
       setRows(res.rows);
       setStatsByLineupId(res.statsByLineupId);
     },
@@ -194,7 +232,7 @@ export function RegisteredLineupList({
   }, [loadList]);
 
   const refresh = useCallback(async () => {
-    await loadList(ownerIdForExclude);
+    await loadList(ownerIdForExclude, { bypassCache: true });
   }, [loadList, ownerIdForExclude]);
 
   useEffect(() => {

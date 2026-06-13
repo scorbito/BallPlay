@@ -118,9 +118,6 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
       <Card className="mypage-stat-card">
         <div className="mypage-stat-head">
           <strong>누적 전적</strong>
-          <Link href="/records" className="mypage-stat-link mypage-stat-btn" prefetch>
-            내 경기 기록 보기 <ChevronRight size={14} />
-          </Link>
         </div>
         <div className="mypage-record-row">
           <AccountTierBadge wins={accountStats.wins} size={40} showName className="mypage-record-badge" />
@@ -130,7 +127,7 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
           <span className="mypage-record-rate">
             {accountStats.total > 0 ? `승률 ${Math.round(accountStats.winRate * 100)}%` : "아직 경기 없음"}
           </span>
-          <Link href="/play/account-ranking" className="mypage-stat-link" prefetch>
+          <Link href="/play/account-ranking" className="mypage-stat-link mypage-stat-btn" prefetch>
             공식 랭킹 <ChevronRight size={14} />
           </Link>
         </div>
