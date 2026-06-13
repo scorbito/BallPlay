@@ -112,11 +112,9 @@ function getPlayerCardStats(player: Player, batter?: SimBatter, pitcher?: SimPit
   }
 
   const ops =
-    typeof batter?.ops === "number"
-      ? batter.ops
-      : typeof batter?.obp === "number" && typeof batter?.slg === "number"
-        ? batter.obp + batter.slg
-        : undefined;
+    typeof batter?.obp === "number" && typeof batter?.slg === "number"
+      ? batter.obp + batter.slg
+      : undefined;
 
   return [
     { label: "AVG", value: formatRateStat(batter?.avg) },
@@ -190,11 +188,9 @@ function getPlayerDetailSections(player: Player, batter?: SimBatter, pitcher?: S
   }
 
   const ops =
-    typeof batter?.ops === "number"
-      ? batter.ops
-      : typeof batter?.obp === "number" && typeof batter?.slg === "number"
-        ? batter.obp + batter.slg
-        : undefined;
+    typeof batter?.obp === "number" && typeof batter?.slg === "number"
+      ? batter.obp + batter.slg
+      : undefined;
 
   return [
     {
