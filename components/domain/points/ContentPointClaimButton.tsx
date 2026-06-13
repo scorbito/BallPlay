@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
-import { POINT_LABEL, POINT_REWARDS, type ContentPointType } from "@/lib/points/config";
+import { POINT_LABEL, getContentPointAmount, type ContentPointType } from "@/lib/points/config";
 import { useAppState } from "@/lib/state/AppState";
 import { emitPointBalanceUpdated } from "./pointEvents";
 import { PointBaseballIcon } from "./PointBaseballIcon";
@@ -26,6 +26,7 @@ async function readJsonResponse(res: Response) {
 
 export function ContentPointClaimButton({ contentType, contentId, className }: Props) {
   const { showToast } = useAppState();
+  const amount = getContentPointAmount(contentType);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -38,7 +39,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
       try {
         const res = await fetch(`/api/points/content-claim?${params.toString()}`, { cache: "no-store" });
         const data = await readJsonResponse(res);
-        if (!cancelled && res.ok && data.ok && (data.claimed || data.capped)) {
+        if (!cancelled && res.ok && data.ok && (data.claimed || data.capped || data.eligible === false)) {
           setHidden(true);
         }
       } finally {
@@ -69,7 +70,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
       if (data.awarded) {
         showToast(`+${data.amount}${POINT_LABEL} 획득!`);
       } else {
-        showToast("오늘 이 콘텐츠의 BP는 이미 받았어요.");
+        showToast(data.ineligibleReason ?? "이 콘텐츠의 BP는 이미 받았어요.");
       }
     } catch (err) {
       showToast(err instanceof Error ? err.message : "BP 획득 중 오류가 발생했어요.");
@@ -89,9 +90,9 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
         disabled={claiming}
       >
         <PointBaseballIcon size={16} className="content-point-ball-icon" />
-        <span>{claiming ? "획득 중..." : `+${POINT_REWARDS.contentClaim}${POINT_LABEL} 받기`}</span>
+        <span>{claiming ? "획득 중..." : `+${amount}${POINT_LABEL} 받기`}</span>
       </button>
-      <span className="content-point-claim-hint">콘텐츠별 하루 1회</span>
+      <span className="content-point-claim-hint">콘텐츠별 1회</span>
     </div>
   );
 }

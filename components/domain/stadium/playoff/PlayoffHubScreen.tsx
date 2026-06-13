@@ -19,10 +19,12 @@ function isComplete(e: LineupEntry): boolean {
 }
 
 type Props = { initialRun: PlayoffRun | null; loggedIn: boolean };
+type CustomTeamBadgeInfo = { initials?: string; color?: string };
 
 export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
   const { showToast } = useAppState();
   const [run, setRun] = useState<PlayoffRun | null>(initialRun);
+  const [customBadgeInfo, setCustomBadgeInfo] = useState<CustomTeamBadgeInfo | null>(null);
   // 이전 run이 이미 종료됐으면 진입 즉시 팀 선택 화면으로.
   const [mode, setMode] = useState<"auto" | "select">(
     initialRun?.status === "eliminated" || initialRun?.status === "champion" ? "select" : "auto"
@@ -32,6 +34,15 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
   // localStorage 읽기는 마운트 후 — 서버/초기 클라이언트 렌더 일치(hydration-safe).
   const [entries, setEntries] = useState<LineupEntry[]>([]);
   useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("ballplay:my-team-info");
+      if (raw) {
+        const info = JSON.parse(raw) as { initials?: string; color?: string };
+        setCustomBadgeInfo({ initials: info.initials, color: info.color });
+      }
+    } catch {
+      setCustomBadgeInfo(null);
+    }
     setEntries(loadLineupEntries().filter(isComplete));
   }, [mode, run]);
 
@@ -62,9 +73,15 @@ export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
       {showBracket && run ? (
         <PlayoffBracket run={run} />
       ) : showResult && run ? (
-        <PlayoffResultCard run={run} onNew={() => setMode("select")} />
+        <PlayoffResultCard run={run} customBadgeInfo={customBadgeInfo} onNew={() => setMode("select")} />
       ) : (
-        <PlayoffTeamSelect entries={entries} loggedIn={loggedIn} starting={starting} onStart={handleStart} />
+        <PlayoffTeamSelect
+          entries={entries}
+          loggedIn={loggedIn}
+          starting={starting}
+          customBadgeInfo={customBadgeInfo}
+          onStart={handleStart}
+        />
       )}
     </AppShell>
   );
@@ -74,11 +91,13 @@ function PlayoffTeamSelect({
   entries,
   loggedIn,
   starting,
+  customBadgeInfo,
   onStart
 }: {
   entries: LineupEntry[];
   loggedIn: boolean;
   starting: boolean;
+  customBadgeInfo: CustomTeamBadgeInfo | null;
   onStart: (e: LineupEntry) => void;
 }) {
   return (
@@ -106,7 +125,13 @@ function PlayoffTeamSelect({
         <ul className="playoff-team-grid">
           {entries.map((e) => (
             <li key={e.entryId} className="playoff-team-card">
-              <TeamLogo teamId={e.teamId} size="md" />
+              <TeamLogo
+                teamId={e.teamId}
+                size="md"
+                fallbackName={e.name}
+                fallbackInitial={e.teamId.startsWith("custom:") ? customBadgeInfo?.initials : undefined}
+                fallbackColor={e.teamId.startsWith("custom:") ? customBadgeInfo?.color : undefined}
+              />
               <span className="playoff-team-name">{e.name}</span>
               <button
                 type="button"
@@ -124,7 +149,15 @@ function PlayoffTeamSelect({
   );
 }
 
-function PlayoffResultCard({ run, onNew }: { run: PlayoffRun; onNew: () => void }) {
+function PlayoffResultCard({
+  run,
+  customBadgeInfo,
+  onNew
+}: {
+  run: PlayoffRun;
+  customBadgeInfo: CustomTeamBadgeInfo | null;
+  onNew: () => void;
+}) {
   const champion = run.status === "champion";
   return (
     <section className="playoff-result-state">
@@ -134,7 +167,13 @@ function PlayoffResultCard({ run, onNew }: { run: PlayoffRun; onNew: () => void 
           {champion ? "한국시리즈 우승!" : "탈락"}
         </strong>
         <div className="playoff-result-team">
-          <TeamLogo teamId={run.teamId} size="sm" />
+          <TeamLogo
+            teamId={run.teamId}
+            size="sm"
+            fallbackName={run.teamName}
+            fallbackInitial={run.teamId.startsWith("custom:") ? customBadgeInfo?.initials : undefined}
+            fallbackColor={run.teamId.startsWith("custom:") ? customBadgeInfo?.color : undefined}
+          />
           <span>{run.teamName}</span>
         </div>
         <p className="playoff-result-sub">

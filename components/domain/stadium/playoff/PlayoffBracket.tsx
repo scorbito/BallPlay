@@ -27,15 +27,27 @@ import {
 } from "@/lib/sim/lineupStatsDirectory";
 
 /** 진행 중 run 의 대진표 — 현재 라운드 매치업 + 경기 시작 + 결과 히스토리. */
+type CustomTeamBadgeInfo = { initials?: string; color?: string };
+
 export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const router = useRouter();
   const { showToast } = useAppState();
   const [oppOpen, setOppOpen] = useState(false);
+  const [customBadgeInfo, setCustomBadgeInfo] = useState<CustomTeamBadgeInfo | null>(null);
   // 대진표 진입 시 4팀의 "타순 완성된 최신" 라인업을 실시간 로드 (오늘 경기 전 선발만 있는
   // 행은 건너뛰고 어제 등 완성 라인업 사용). run 생성 시 박제 힌트(lineupHint)는 폴백.
   const [liveHints, setLiveHints] = useState<Record<string, RecentLineupHint>>({});
   useEffect(() => {
     let cancelled = false;
+    try {
+      const raw = window.localStorage.getItem("ballplay:my-team-info");
+      if (raw) {
+        const info = JSON.parse(raw) as { initials?: string; color?: string };
+        setCustomBadgeInfo({ initials: info.initials, color: info.color });
+      }
+    } catch {
+      setCustomBadgeInfo(null);
+    }
     void (async () => {
       const client = createSupabaseBrowserClient();
       const res = await listLatestBattingLineupsByTeam(client);
@@ -272,7 +284,13 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
           {isFinal ? <span className="playoff-vs-series">{seriesGameNo}차전</span> : null}
         </div>
         <div className="playoff-matchup-team">
-          <TeamLogo teamId={run.teamId} size="lg" />
+          <TeamLogo
+            teamId={run.teamId}
+            size="lg"
+            fallbackName={run.teamName}
+            fallbackInitial={run.teamId.startsWith("custom:") ? customBadgeInfo?.initials : undefined}
+            fallbackColor={run.teamId.startsWith("custom:") ? customBadgeInfo?.color : undefined}
+          />
           <strong>{run.teamName}</strong>
           <span className="playoff-seed">5위 · 나</span>
         </div>

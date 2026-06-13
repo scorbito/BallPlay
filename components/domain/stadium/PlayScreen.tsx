@@ -15,8 +15,6 @@ import { createRecord, type BpRecordSource } from "@/lib/supabase/query-parts/bp
 import { useAppState } from "@/lib/state/AppState";
 import { playMatchSound } from "@/lib/sound/matchSounds";
 import { trackEvent } from "@/lib/analytics/events";
-import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
-import { claimStadiumRecordPoints, formatStadiumPointToast } from "@/components/domain/points/claimStadiumRecordPoints";
 import { OUTCOME_LABEL } from "./play/types";
 import { buildLinescore } from "./play/eventHelpers";
 import { FlyingBall } from "./play/effects/FlyingBall";
@@ -672,13 +670,6 @@ export function PlayScreen() {
         const recordId = result.row?.id ?? "mirrored";
         const cur = loadMatchSession();
         if (cur) saveMatchSession({ ...cur, savedRecordId: recordId });
-        if (session.source === "public" && recordId !== "mirrored") {
-          const pointData = await claimStadiumRecordPoints(recordId).catch(() => null);
-          if (!cancelled && pointData?.ok && pointData.awarded) {
-            emitPointBalanceUpdated(pointData.balance);
-            showToast(formatStadiumPointToast(pointData));
-          }
-        }
         if (cancelled) return;
         setRecordSavedId(recordId);
       } catch {

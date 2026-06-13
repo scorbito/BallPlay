@@ -961,3 +961,378 @@
   color: var(--bp-text-muted);
   margin: 0 2px;
 }
+
+/* 나만의 팀: 보유 선수 프리미엄 카드 */
+.phone-frame-light .my-team-player-card {
+  aspect-ratio: 0.72;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.9) 56%, rgba(255, 255, 255, 0.84) 100%),
+    radial-gradient(120% 70% at 92% 102%, var(--team-color-soft), transparent 58%),
+    radial-gradient(90% 80% at 4% 6%, var(--team-color-soft), transparent 52%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 8px 18px rgba(20, 30, 50, 0.06);
+}
+
+.phone-frame-light .my-team-player-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, transparent 0 31%, rgba(255, 255, 255, 0.48) 31.5% 33%, transparent 33.5% 100%),
+    repeating-linear-gradient(132deg, transparent 0 7px, color-mix(in srgb, var(--team-color) 13%, transparent) 8px, transparent 9px);
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.phone-frame-light .my-team-player-card::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -21%;
+  height: 42%;
+  background:
+    radial-gradient(95% 105% at 68% 8%, rgba(255, 255, 255, 0.88) 0 37%, transparent 38%),
+    linear-gradient(150deg, transparent 0 34%, color-mix(in srgb, var(--team-color) 18%, transparent) 38%, var(--team-color) 100%);
+  border-radius: 52% 52% 0 0;
+  opacity: 0.72;
+  filter: saturate(1.08);
+  pointer-events: none;
+}
+
+.phone-frame-light .my-team-player-number {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  color: color-mix(in srgb, var(--team-color) 78%, #475569);
+}
+
+.phone-frame-light .my-team-player-number::before,
+.phone-frame-light .my-team-player-number::after {
+  content: "";
+  width: 18px;
+  height: 1px;
+  margin: 0 6px;
+  background: repeating-linear-gradient(90deg, var(--team-color) 0 2px, transparent 2px 5px);
+  opacity: 0.35;
+}
+
+.phone-frame-light .my-team-player-name {
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+.phone-frame-light .my-team-player-stats {
+  position: relative;
+  z-index: 1;
+  min-height: 28px;
+}
+
+.phone-frame-light .my-team-player-stats::before {
+  content: "⚾";
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 18px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--team-color);
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--team-color) 22%, transparent);
+}
+
+.phone-frame-light .my-team-recruit-card {
+  position: relative;
+  min-height: 0;
+  aspect-ratio: 0.78;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  padding: 16px 10px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.92) 0 18px, transparent 19px),
+    radial-gradient(120% 85% at 100% 100%, color-mix(in srgb, var(--recruit-color) 36%, transparent), transparent 58%),
+    radial-gradient(95% 74% at 0% 0%, color-mix(in srgb, var(--recruit-color) 32%, transparent), transparent 55%),
+    linear-gradient(145deg, color-mix(in srgb, var(--recruit-color) 22%, #fff), #fff 48%, color-mix(in srgb, var(--recruit-color) 18%, #fff));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 10px 24px rgba(20, 30, 50, 0.07);
+  color: var(--bp-text);
+  animation: my-team-recruit-float 3.8s ease-in-out infinite;
+}
+
+.phone-frame-light .my-team-recruit-card.is-single {
+  --recruit-color: #d89b16;
+  --recruit-color-soft: rgba(216, 155, 22, 0.26);
+  border-color: rgba(216, 155, 22, 0.34);
+  animation-duration: 4.2s;
+}
+
+.phone-frame-light .my-team-recruit-card.is-pack {
+  --recruit-color: #e84a8a;
+  --recruit-color-soft: rgba(232, 74, 138, 0.24);
+  border-color: rgba(232, 74, 138, 0.34);
+  animation:
+    my-team-recruit-float 3.3s ease-in-out infinite 0.55s,
+    my-team-recruit-glow 2.4s ease-in-out infinite 0.2s;
+}
+
+.phone-frame-light .my-team-recruit-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.78) 43%, rgba(255, 255, 255, 0.38) 50%, transparent 66%),
+    radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--recruit-color) 28%, transparent) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 75% 28%, color-mix(in srgb, var(--recruit-color) 20%, transparent) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 88% 34%, color-mix(in srgb, var(--recruit-color) 18%, transparent) 0 1.5px, transparent 2px),
+    linear-gradient(132deg, transparent 0 30%, rgba(255, 255, 255, 0.6) 31% 34%, transparent 35% 100%),
+    repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--recruit-color) 24%, transparent) 8px, transparent 10px);
+  background-size: 180% 100%, auto, auto, auto, auto, 18px 18px;
+  background-position: -130% 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  opacity: 0.48;
+  animation: my-team-recruit-card-shine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.phone-frame-light .my-team-recruit-card.is-single::before {
+  animation-duration: 3.8s;
+  animation-delay: 0.25s;
+}
+
+.phone-frame-light .my-team-recruit-card.is-pack::before {
+  animation-duration: 2.9s;
+  animation-delay: 1.05s;
+}
+
+.phone-frame-light .my-team-recruit-card::after {
+  content: "";
+  position: absolute;
+  left: -14%;
+  right: -14%;
+  bottom: -27%;
+  height: 50%;
+  border-radius: 54% 54% 0 0;
+  background:
+    radial-gradient(88% 108% at 70% 8%, rgba(255, 255, 255, 0.82) 0 35%, transparent 36%),
+    linear-gradient(150deg, transparent 0 30%, color-mix(in srgb, var(--recruit-color) 42%, transparent) 38%, var(--recruit-color) 100%);
+  background-position: 0 0, 0 0;
+  opacity: 0.92;
+  animation: my-team-recruit-wave 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.phone-frame-light .my-team-recruit-card.is-single::after {
+  animation-duration: 5.2s;
+}
+
+.phone-frame-light .my-team-recruit-card.is-pack::after {
+  animation-duration: 4.1s;
+  animation-delay: 0.6s;
+}
+
+.phone-frame-light .my-team-recruit-card .my-team-recruit-count::after {
+  content: "";
+  position: absolute;
+  inset: -9px -110px;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.72) 48%, transparent 64%);
+  transform: translateX(-85%) rotate(8deg);
+  animation: my-team-recruit-shine 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.phone-frame-light .my-team-recruit-card.is-single .my-team-recruit-count::after {
+  animation-duration: 3.9s;
+  animation-delay: 0.4s;
+}
+
+.phone-frame-light .my-team-recruit-card.is-pack .my-team-recruit-count::after {
+  animation-duration: 2.8s;
+  animation-delay: 1.1s;
+}
+
+.phone-frame-light .my-team-recruit-count,
+.phone-frame-light .my-team-recruit-title,
+.phone-frame-light .my-team-recruit-price {
+  position: relative;
+  z-index: 1;
+}
+
+.phone-frame-light .my-team-recruit-count {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--recruit-color) 14%, #fff);
+  color: var(--recruit-color);
+  padding: 4px 11px;
+  font-size: 11px;
+  font-weight: 900;
+  overflow: hidden;
+}
+
+.phone-frame-light .my-team-recruit-title {
+  display: block;
+  margin-top: 18px;
+  font-size: 18px;
+  line-height: 1.15;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-align: center;
+  color: #07142a;
+}
+
+.phone-frame-light .my-team-recruit-price {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: color-mix(in srgb, var(--recruit-color) 58%, #475569);
+  text-align: center;
+  word-break: keep-all;
+}
+
+@keyframes my-team-recruit-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+@keyframes my-team-recruit-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.95) inset,
+      0 10px 24px rgba(20, 30, 50, 0.07),
+      0 0 0 rgba(232, 74, 138, 0);
+  }
+  50% {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.95) inset,
+      0 16px 34px rgba(20, 30, 50, 0.13),
+      0 0 34px rgba(232, 74, 138, 0.34);
+  }
+}
+
+@keyframes my-team-recruit-card-shine {
+  0%,
+  46% {
+    background-position: -130% 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+  72%,
+  100% {
+    background-position: 150% 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+}
+
+@keyframes my-team-recruit-wave {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+@keyframes my-team-recruit-shine {
+  0%,
+  58% {
+    transform: translateX(-85%) rotate(8deg);
+  }
+  78%,
+  100% {
+    transform: translateX(85%) rotate(8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-frame-light .my-team-recruit-card,
+  .phone-frame-light .my-team-recruit-card.is-pack,
+  .phone-frame-light .my-team-recruit-card::before,
+  .phone-frame-light .my-team-recruit-card::after,
+  .phone-frame-light .my-team-recruit-card .my-team-recruit-count::after {
+    animation: none;
+  }
+}
+
+.phone-frame-light .my-team-lineup-preset-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phone-frame-light .my-team-lineup-preset-wrap .lineup-preset-menu {
+  left: 0;
+  right: auto;
+  width: min(278px, calc(100vw - 48px));
+}
+
+.phone-frame-light .play-hub-card-my-team .play-hub-card-icon {
+  width: 66px !important;
+  height: 66px !important;
+  margin-left: 6px;
+  margin-right: 2px;
+}
+
+.phone-frame-light .play-hub-card-my-team .play-hub-card-icon img {
+  transform: scale(1.14);
+  transform-origin: center;
+}
+
+.phone-frame-light .play-hub-card-my-team {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(232, 74, 138, 0.42) !important;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(124, 58, 237, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(37, 99, 235, 0.13) 54%, rgba(255, 255, 255, 0.92) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(124, 58, 237, 0.1),
+    0 10px 24px rgba(37, 99, 235, 0.11);
+}
+
+.phone-frame-light .play-hub-card-my-team::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(110deg, transparent 18%, rgba(255, 255, 255, 0.7) 42%, transparent 64%);
+  transform: translateX(-115%);
+  animation: my-team-menu-shine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.phone-frame-light .play-hub-card-my-team::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px rgba(232, 74, 138, 0.16);
+  pointer-events: none;
+}
+
+@keyframes my-team-menu-shine {
+  0%,
+  52% {
+    transform: translateX(-115%);
+  }
+  76%,
+  100% {
+    transform: translateX(115%);
+  }
+}

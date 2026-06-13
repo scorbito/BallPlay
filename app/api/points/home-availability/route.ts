@@ -15,7 +15,7 @@ export async function GET() {
   }
 
   const admin = createSupabaseAdminClient();
-  const available = await getHomePointAvailability(user.id, admin);
+  const available = await getHomePointAvailability(user.id, admin, user.created_at);
 
   return NextResponse.json({
     ok: true,

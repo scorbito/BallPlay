@@ -17,6 +17,7 @@ import {
   listMyLineups,
   listPublishedByRecent,
   listPublishedByWinrate,
+  rowToEntry,
   type LineupStats,
   type PublishedLineupRow
 } from "@/lib/supabase/query-parts/bpLineups";
@@ -38,6 +39,11 @@ type Props = {
   includeMine?: boolean;
 };
 
+type CustomTeamBadgeInfo = {
+  initials?: string;
+  color?: string;
+};
+
 function formatOwnerLabel(row: PublishedLineupRow): string {
   return row.owner_display_name?.trim() || row.owner_nickname?.trim() || "익명";
 }
@@ -48,11 +54,22 @@ function formatRecord(stats: LineupStats | undefined): string {
 }
 
 function getTeamShortName(teamId: string): string {
+  if (teamId.startsWith("custom:")) return "나만의 팀";
   try {
     return getTeam(teamId).shortName;
   } catch {
     return teamId === "national" ? "국가대표" : teamId;
   }
+}
+
+function mergePublishedEntries(localEntries: LineupEntry[], dbEntries: LineupEntry[]): LineupEntry[] {
+  const map = new Map<string, LineupEntry>();
+  for (const entry of [...localEntries, ...dbEntries]) {
+    if (entry.batting.slots.length === 9 && entry.isPublished === true) {
+      map.set(entry.entryId, entry);
+    }
+  }
+  return Array.from(map.values());
 }
 
 export function RegisteredLineupList({
@@ -75,6 +92,7 @@ export function RegisteredLineupList({
   const [loading, setLoading] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [myCustomBadgeInfo, setMyCustomBadgeInfo] = useState<CustomTeamBadgeInfo | null>(null);
 
   const loadList = useCallback(
     async (excludeUid: string | null) => {
@@ -120,9 +138,23 @@ export function RegisteredLineupList({
 
   useEffect(() => {
     const client = createSupabaseBrowserClient();
+    try {
+      const raw = window.localStorage.getItem("ballplay:my-team-info");
+      if (raw) {
+        const info = JSON.parse(raw) as { initials?: string; color?: string };
+        setMyCustomBadgeInfo({ initials: info.initials, color: info.color });
+      }
+    } catch {
+      setMyCustomBadgeInfo(null);
+    }
     void (async () => {
-      const { data: authData } = await client.auth.getUser();
-      const uid = authData.user?.id ?? null;
+      let { data: authData } = await client.auth.getUser();
+      let uid = authData.user?.id ?? null;
+      if (!uid) {
+        uid = await ensureAnonymousClient(client);
+        authData = (await client.auth.getUser()).data;
+        uid = authData.user?.id ?? uid;
+      }
       setUserId(uid);
       setOwnerIdForExclude(uid);
 
@@ -132,9 +164,14 @@ export function RegisteredLineupList({
       setMyPublishedEntries(myPublished);
       if (myPublished.length > 0) setMyEntryId(myPublished[0].entryId);
 
-      if (uid && myPublished.length > 0) {
+      if (uid) {
         const myLineupsRes = await listMyLineups(client, uid);
         if (myLineupsRes.ok) {
+          const dbPublished = myLineupsRes.rows.filter((row) => row.is_published).map(rowToEntry);
+          const merged = mergePublishedEntries(myPublished, dbPublished);
+          setMyPublishedEntries(merged);
+          if (merged.length > 0) setMyEntryId((prev) => prev ?? merged[0].entryId);
+
           const idByEntry: Record<string, string> = {};
           for (const row of myLineupsRes.rows) {
             if (row.is_published) idByEntry[row.entry_id] = row.id;
@@ -305,7 +342,7 @@ export function RegisteredLineupList({
           const stats = statsByLineupId[row.id];
           return (
             <div key={row.id} className="stadium-discover-card stadium-registered-card">
-              <TeamLogo teamId={row.team_id} size="md" />
+              <TeamLogo teamId={row.team_id} size="md" fallbackName={row.name} />
               <div className="stadium-discover-card-body">
                 <strong>{row.name}</strong>
                 <span className="stadium-registered-meta">
@@ -357,7 +394,7 @@ export function RegisteredLineupList({
               <div className="stadium-enter-vs">
                 <div className="stadium-enter-team">
                   <span className="stadium-enter-team-label">{formatOwnerLabel(selectedOpponent)}</span>
-                  <TeamLogo teamId={selectedOpponent.team_id} size="lg" />
+                  <TeamLogo teamId={selectedOpponent.team_id} size="lg" fallbackName={selectedOpponent.name} />
                   <strong>{selectedOpponent.name}</strong>
                 </div>
                 <span className="stadium-enter-vs-label">VS</span>
@@ -365,7 +402,13 @@ export function RegisteredLineupList({
                   <span className="stadium-enter-team-label">내 팀</span>
                   {myEntry ? (
                     <>
-                      <TeamLogo teamId={myEntry.teamId} size="lg" />
+                      <TeamLogo
+                        teamId={myEntry.teamId}
+                        size="lg"
+                        fallbackName={myEntry.name}
+                        fallbackInitial={myEntry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.initials : undefined}
+                        fallbackColor={myEntry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.color : undefined}
+                      />
                       <strong>{myEntry.name}</strong>
                     </>
                   ) : (
@@ -388,7 +431,13 @@ export function RegisteredLineupList({
                           className={`stadium-discover-my-pick ${entry.entryId === myEntryId ? "is-active" : ""}`}
                           onClick={() => setMyEntryId(entry.entryId)}
                         >
-                          <TeamLogo teamId={entry.teamId} size="sm" />
+                          <TeamLogo
+                            teamId={entry.teamId}
+                            size="sm"
+                            fallbackName={entry.name}
+                            fallbackInitial={entry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.initials : undefined}
+                            fallbackColor={entry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.color : undefined}
+                          />
                           <span>{entry.name}{recordTxt}</span>
                         </button>
                       );

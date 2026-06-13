@@ -56,6 +56,14 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking, playoffSummar
         <ChevronRight size={20} aria-hidden="true" />
       </Link>
 
+      <Link href="/play/practice" className="stadium-playoff-entry stadium-practice-entry" prefetch>
+        <span className="stadium-playoff-entry-emoji" aria-hidden="true">⚾</span>
+        <span className="stadium-playoff-entry-text">
+          <strong>연습경기장 가기 <small>(친구매치 · AI 대전)</small></strong>
+        </span>
+        <ChevronRight size={20} aria-hidden="true" />
+      </Link>
+
       {/* === 출전팀(상시) — 랭킹 → 리스트 묶음 === */}
       {/* 3. 출전팀 랭킹 TOP3 — 라인업/계정 누적 탭 전환 */}
       <StadiumLineupRankingPreview

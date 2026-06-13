@@ -529,6 +529,11 @@ export function DailyReportScreen({
                                 </div>
                               )}
 
+                              <ContentPointClaimButton
+                                contentType="daily_report_game"
+                                contentId={`${reportDate}:${gameReport.gameId}`}
+                              />
+
                             </div>
                           )}
 
