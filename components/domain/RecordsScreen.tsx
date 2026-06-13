@@ -24,13 +24,14 @@ import {
 import { fetchLineupStatsBulk, listMyLineups, rowToEntry, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 import { getTeam } from "@/lib/constants/teams";
-import { getRoster } from "@/lib/rosters";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
-import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
+import {
+  buildStatsDirectoryWithRecentFormForEntries,
+  getEntryValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 import type { SimTeamInput } from "@/lib/sim/types";
 import { withTimeout } from "@/lib/utils/withTimeout";
 
@@ -304,19 +305,19 @@ export function RecordsScreen({
     }
     const opponentSide = getOpponentSide(rematchRecord);
     const opponentTeam = rematchRecord.input[opponentSide];
-    const myValidIds = new Set(getRoster(selected.entry.teamId).map((p) => p.id));
-    const myPitching = fillMissingPitcherSlots(
+    const rematchClient = createSupabaseBrowserClient();
+    const stats = await buildStatsDirectoryWithRecentFormForEntries(rematchClient, [selected.entry]);
+    const myPitching = fillMissingPitcherSlotsFromStatsDirectory(
       selected.entry.teamId,
       selected.entry.pitching?.slots ?? [],
-      myValidIds
+      stats,
+      getEntryValidPlayerIds(selected.entry)
     );
     if (!myPitching) {
       showToast("투수 라인업을 만들 수 없습니다.");
       return;
     }
     // 내 팀만 DB 스냅샷 기반 시즌+최근 폼 블렌드. 상대팀은 원본 record 보존(재현성).
-    const rematchClient = createSupabaseBrowserClient();
-    const stats = await buildStatsDirectoryWithRecentForm(rematchClient, [selected.entry.teamId]);
     const mine = buildSimTeamInput(
       selected.entry.teamId,
       selected.entry.batting,

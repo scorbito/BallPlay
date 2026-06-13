@@ -10,16 +10,18 @@ import { ChevronRight } from "lucide-react";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "@/components/domain/stadium/LineupDetailModal";
-import { getRoster } from "@/lib/rosters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   listPlayoffChampions,
   countPlayoffChampions,
   type PlayoffChampionRow
 } from "@/lib/supabase/query-parts/bpPlayoffChampions";
-import { fillMissingPitcherSlots } from "@/lib/sim/autoPitcherLineup";
+import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcherLineup";
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
-import { buildStatsDirectory } from "@/lib/sim/statsLoader";
+import {
+  buildStatsDirectoryWithRecentFormForLineups,
+  getLineupValidPlayerIds
+} from "@/lib/sim/lineupStatsDirectory";
 import type { SimTeamInput } from "@/lib/sim/types";
 
 function formatDate(iso: string | null): string {
@@ -77,14 +79,21 @@ export function PlayoffHallOfFame({ variant = "full" }: Props) {
     return () => window.clearInterval(t);
   }, [compact, rows.length]);
 
-  const openLineup = (champ: PlayoffChampionRow) => {
+  const openLineup = async (champ: PlayoffChampionRow) => {
     if (loadingId || !champ.batting || !champ.pitching) return;
     setLoadingId(champ.id);
     try {
-      const validIds = new Set(getRoster(champ.teamId).map((p) => p.id));
-      const pitching = fillMissingPitcherSlots(champ.teamId, champ.pitching.slots, validIds);
+      const client = createSupabaseBrowserClient();
+      const stats = await buildStatsDirectoryWithRecentFormForLineups(client, [
+        { teamId: champ.teamId, batting: champ.batting, pitching: champ.pitching }
+      ]);
+      const pitching = fillMissingPitcherSlotsFromStatsDirectory(
+        champ.teamId,
+        champ.pitching.slots,
+        stats,
+        getLineupValidPlayerIds(champ.teamId, champ.batting)
+      );
       if (!pitching) return;
-      const stats = buildStatsDirectory([champ.teamId]);
       const built = buildSimTeamInput(champ.teamId, champ.batting, pitching, stats, champ.teamName);
       if (!built.ok) return;
       setPreviewTeam(built.team);
