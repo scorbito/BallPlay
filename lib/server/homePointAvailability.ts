@@ -34,7 +34,7 @@ export async function getHomePointAvailability(
   const [gamesRes, aiPredictionsRes, claimsRes, transactionsRes] = await Promise.all([
     client
       .from("games")
-      .select("id", { count: "exact", head: true })
+      .select("id")
       .eq("game_date", today),
     client
       .from("bp_ai_predictions")
@@ -72,18 +72,27 @@ export async function getHomePointAvailability(
   const claimedAiPredictionCount = Array.from(aiGameIds)
     .filter((gameId) => claims.has(`content_ai_prediction:${gameId}`))
     .length;
+  const gameIds = ((gamesRes.data ?? []) as Array<{ id: string | null }>)
+    .map((row) => row.id)
+    .filter((gameId): gameId is string => Boolean(gameId));
+  const claimedWinnerPredictionCount = gameIds
+    .filter((gameId) => claims.has(`prediction_submitted:${gameId}`))
+    .length;
+  const claimedDailyReport = [today, yesterday]
+    .some((date) => claims.has(`content_daily_report:${date}`));
   const stadiumMax = (POINT_REWARDS.stadiumOfficialFirstFive * POINT_REWARDS.stadiumOfficialFirstFiveCount)
     + POINT_REWARDS.stadiumOfficialExtraMax;
 
   return {
-    "daily-report": !claims.has(`content_daily_report:${yesterday}`)
+    "daily-report": !claimedDailyReport
       && (earned.get("content_daily_report") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType,
     "ai-predict": aiGameIds.size > 0
       && claimedAiPredictionCount < aiGameIds.size
       && (earned.get("content_ai_prediction") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType,
     "ai-battle": aiGameIds.size > 0
       && (earned.get("ai_battle_vote") ?? 0) < POINT_REWARDS.aiBattleVoteDailyMax,
-    "winner-predict": (gamesRes.count ?? 0) > 0
+    "winner-predict": gameIds.length > 0
+      && claimedWinnerPredictionCount < gameIds.length
       && (earned.get("prediction_submitted") ?? 0) < POINT_REWARDS.predictionSubmittedDailyMax,
     "quiz": !claims.has("quiz_completed"),
     "stadium": (earned.get("stadium_official_completed") ?? 0) < stadiumMax
