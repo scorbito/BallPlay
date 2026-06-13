@@ -374,6 +374,11 @@ export function WinnerPredictScreen({
               const awayPicked = picked === game.awayTeamId;
               const homeWon = showScores && game.homeScore !== null && game.awayScore !== null && game.homeScore > game.awayScore;
               const awayWon = showScores && game.homeScore !== null && game.awayScore !== null && game.awayScore > game.homeScore;
+              const resultLabel = picked && game.isJudged
+                ? game.isCorrect === true
+                  ? "적중"
+                  : "실패"
+                : null;
 
               // 페이지에 픽이 하나라도 있으면 모든 카드 stagger로 등장 (예측 페이지 톤).
               // 픽이 전혀 없는 날(일반 경기 둘러보기)에선 다 정적.
@@ -401,10 +406,39 @@ export function WinnerPredictScreen({
               return (
                 <article key={game.id} className={rowClasses.join(" ")} style={animationStyle}>
                   <span className="predict-row-meta">
-                    <span className="predict-row-time">{shortTime(game.gameTime)}</span>
-                    <span className={`predict-row-status predict-row-status-${game.status}`}>
-                      {game.status === "in_progress" ? "진행중" : game.status === "finished" ? "종료" : game.status === "canceled" ? "취소" : "예정"}
-                    </span>
+                    {resultLabel ? (
+                      <span
+                        className={`predict-row-meta-result ${
+                          game.isCorrect === true ? "is-correct" : "is-wrong"
+                        }`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minWidth: 36,
+                          padding: "5px 7px",
+                          borderRadius: 999,
+                          fontSize: 10,
+                          fontWeight: 900,
+                          lineHeight: 1,
+                          color: "#ffffff",
+                          whiteSpace: "nowrap",
+                          background: game.isCorrect === true ? "var(--bp-success)" : "var(--bp-danger)",
+                          boxShadow: game.isCorrect === true
+                            ? "0 2px 8px rgba(22, 163, 74, 0.25)"
+                            : "0 2px 8px rgba(239, 68, 68, 0.22)"
+                        }}
+                      >
+                        {resultLabel}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="predict-row-time">{shortTime(game.gameTime)}</span>
+                        <span className={`predict-row-status predict-row-status-${game.status}`}>
+                          {game.status === "in_progress" ? "진행중" : game.status === "finished" ? "종료" : game.status === "canceled" ? "취소" : "예정"}
+                        </span>
+                      </>
+                    )}
                   </span>
 
                   {/* Away — grid 1fr auto 1fr로 team-block을 카드 정중앙에 고정 */}
@@ -465,21 +499,26 @@ export function WinnerPredictScreen({
                     <TeamBadge teamId={game.homeTeamId} size="sm" />
                   </button>
 
-                  {game.status !== "canceled" ? (
-                    <VirtualMatchButton
-                      game={{
-                        homeTeamId: game.homeTeamId,
-                        awayTeamId: game.awayTeamId,
-                        homeStarter: game.homeStarter,
-                        awayStarter: game.awayStarter
-                      }}
-                      className="predict-row-play-btn"
-                      idleLabel="경기해보기"
-                      busyLabel="준비중"
-                    />
-                  ) : (
-                    <span className="predict-row-play-placeholder" aria-hidden />
-                  )}
+                  <span
+                    className="predict-row-action"
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 0 }}
+                  >
+                    {game.status !== "canceled" ? (
+                      <VirtualMatchButton
+                        game={{
+                          homeTeamId: game.homeTeamId,
+                          awayTeamId: game.awayTeamId,
+                          homeStarter: game.homeStarter,
+                          awayStarter: game.awayStarter
+                        }}
+                        className="predict-row-play-btn"
+                        idleLabel="경기해보기"
+                        busyLabel="준비중"
+                      />
+                    ) : (
+                      <span className="predict-row-play-placeholder" aria-hidden />
+                    )}
+                  </span>
 
                 </article>
               );

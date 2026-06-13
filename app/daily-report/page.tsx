@@ -32,24 +32,23 @@ export default async function DailyReportPage({ searchParams }: Props) {
 
   // 오늘 날짜 계산 (한국 시각 기준 보정)
   const nowKST = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+  const todayStr = nowKST.toISOString().split("T")[0];
   
   // 기본 조회 날짜: 파라미터가 없으면 '어제 날짜'를 기준으로 합니다.
   const yesterday = new Date(nowKST);
   yesterday.setDate(nowKST.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-  let targetDate = searchParams.date;
+  const supabase = createSupabaseAdminClient();
+  const requestedDate = searchParams.date;
+  let targetDate = requestedDate;
   if (!targetDate || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate)) {
-    targetDate = yesterdayStr;
+    targetDate = await hasPublishedDailyReport(supabase, todayStr) ? todayStr : yesterdayStr;
   }
-
-  // 오늘 날짜 문자열
-  const todayStr = nowKST.toISOString().split("T")[0];
 
   // 조회 날짜가 오늘 날짜 이상인 경우 (아직 경기가 종료되지 않은 당일 또는 미래)
   const isTodayOrFuture = targetDate >= todayStr;
 
-  const supabase = createSupabaseAdminClient();
   const isNoCache = searchParams.nocache === "true";
 
   // 1. Supabase 캐시 테이블(daily_ai_reports)에서 데이터 조회 시도 (nocache가 아닐 때만)
@@ -153,4 +152,22 @@ export default async function DailyReportPage({ searchParams }: Props) {
       backHref={searchParams.backHref}
     />
   );
+}
+
+async function hasPublishedDailyReport(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  reportDate: string
+) {
+  try {
+    const { data, error } = await supabase
+      .from("daily_ai_reports")
+      .select("report_json")
+      .eq("report_date", reportDate)
+      .maybeSingle();
+
+    if (error || !data?.report_json) return false;
+    return !isSkeletonReport(data.report_json);
+  } catch {
+    return false;
+  }
 }

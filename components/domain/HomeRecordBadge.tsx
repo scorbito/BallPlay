@@ -1,13 +1,5 @@
 "use client";
 
-// 홈 히어로의 "내 매치 기록" 뱃지 — 클라이언트 island.
-// 홈 페이지가 force-dynamic 이라도 Next 클라이언트 라우터 캐시가 RSC 페이로드를
-// 재사용해, 경기 후 뒤로가기/탭 이동으로 홈에 오면 전적이 안 바뀌어 보이던 문제 해결.
-// 이 뱃지는 서버 초기값(빠른 첫 페인트)으로 시작하되, mount + focus/pageshow/
-// visibilitychange 마다 bp_account_stats 를 직접 다시 읽어 항상 최신 전적을 표시한다.
-//
-// bp_account_stats RLS: select to anon, authenticated using(true) → 브라우저에서 읽기 가능.
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AccountTierBadge } from "@/components/common/AccountTierBadge";
@@ -40,12 +32,10 @@ export function HomeRecordBadge({ initialWins, initialLosses }: Props) {
           .maybeSingle();
         if (error || cancelled) return;
 
-        const w = data?.wins ?? 0;
-        const l = data?.losses ?? 0;
-        setWins(w);
-        setLosses(l);
+        setWins(data?.wins ?? 0);
+        setLosses(data?.losses ?? 0);
       } catch {
-        // ignore — 실패 시 기존(서버 초기값) 유지
+        // Keep the server-rendered initial record if refresh fails.
       }
     };
 
@@ -71,7 +61,7 @@ export function HomeRecordBadge({ initialWins, initialLosses }: Props) {
         <>
           <AccountTierBadge wins={wins} size={24} />
           <span>
-            내 매치 기록: {wins}승 {losses}패
+            공개매치 기록: {wins}승 {losses}패
           </span>
         </>
       ) : (
