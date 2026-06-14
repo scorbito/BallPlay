@@ -18,16 +18,19 @@ function isComplete(e: LineupEntry): boolean {
   return e.batting.slots.length === 9 && !!e.pitching?.slots?.[PITCHER_STARTER_INDEX];
 }
 
-type Props = { initialRun: PlayoffRun | null; loggedIn: boolean };
+type Props = { initialRun: PlayoffRun | null; loggedIn: boolean; showLatestResult?: boolean };
 type CustomTeamBadgeInfo = { initials?: string; color?: string };
 
-export function PlayoffHubScreen({ initialRun, loggedIn }: Props) {
+export function PlayoffHubScreen({ initialRun, loggedIn, showLatestResult = false }: Props) {
   const { showToast } = useAppState();
   const [run, setRun] = useState<PlayoffRun | null>(initialRun);
   const [customBadgeInfo, setCustomBadgeInfo] = useState<CustomTeamBadgeInfo | null>(null);
   // 이전 run이 이미 종료됐으면 진입 즉시 팀 선택 화면으로.
   const [mode, setMode] = useState<"auto" | "select">(
-    initialRun?.status === "eliminated" || initialRun?.status === "champion" ? "select" : "auto"
+    initialRun?.status === "active" ||
+      (showLatestResult && (initialRun?.status === "eliminated" || initialRun?.status === "champion"))
+      ? "auto"
+      : "select"
   );
   const [starting, startTransition] = useTransition();
 

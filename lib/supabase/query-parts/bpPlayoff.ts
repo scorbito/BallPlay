@@ -27,9 +27,13 @@ export type PlayoffRoundRule = {
 export const PLAYOFF_ROUND_RULES: Record<number, PlayoffRoundRule> = {
   1: { games: 1, winsRequired: 1 },
   2: { games: 1, winsRequired: 1 },
-  3: { games: 1, winsRequired: 1 },
+  3: { games: 3, winsRequired: 2 },
   4: { games: PLAYOFF_FINAL_BEST_OF, winsRequired: PLAYOFF_FINAL_WINS_NEEDED }
 };
+
+export function getPlayoffRoundRule(round: number): PlayoffRoundRule {
+  return PLAYOFF_ROUND_RULES[round] ?? { games: 1, winsRequired: 1 };
+}
 
 export function getPlayoffRoundRuleLabel(round: number): string {
   const rule = PLAYOFF_ROUND_RULES[round];

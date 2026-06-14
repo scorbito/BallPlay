@@ -299,13 +299,13 @@ export function ResultScreen() {
       }
     }
     clearMatchSession();
-    router.push("/stadium/playoff");
+    router.push("/stadium/playoff?result=1");
   };
 
   const closePlayoffChampionPointAward = () => {
     setPlayoffChampionPointAward(null);
     clearMatchSession();
-    router.push("/stadium/playoff");
+    router.push("/stadium/playoff?result=1");
   };
 
   // dev 연출 프리뷰 — 세션 로드/리다이렉트보다 먼저 분기해 연출만 표시.

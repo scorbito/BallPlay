@@ -17,6 +17,7 @@ import { beginPlayoffGame } from "@/lib/actions/playoff";
 import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
   getPlayoffRoundDisplayLabel,
+  getPlayoffRoundRule,
   PLAYOFF_TOTAL_ROUNDS,
   PLAYOFF_FINAL_WINS_NEEDED,
   type PlayoffRun
@@ -70,10 +71,14 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   const pendingGame = run.state.pendingGame ?? null;
   const round = pendingGame?.round ?? run.currentRound;
   // 한국시리즈(마지막 라운드) — 3전 2선승. 완료된 경기들로 시리즈 스코어/차수 계산.
+  const roundRule = getPlayoffRoundRule(round);
+  const isSeriesRound = roundRule.winsRequired > 1;
   const isFinal = round === PLAYOFF_TOTAL_ROUNDS;
   const finalGames = run.state.games.filter((g) => g.round === PLAYOFF_TOTAL_ROUNDS);
   const finalWins = finalGames.filter((g) => g.win).length;
   const finalLosses = finalGames.filter((g) => !g.win).length;
+  const currentRoundGames = run.state.games.filter((g) => g.round === round);
+  const currentSeriesGameNo = currentRoundGames.length + 1;
   const seriesGameNo = finalWins + finalLosses + 1; // 지금 시작/진행할 경기 차수
   const opp = run.state.opponents.find((o) => o.round === round) ?? null;
   const hintFor = (teamId: string, frozen?: RecentLineupHint | null): RecentLineupHint | null =>
@@ -82,7 +87,12 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
   // 상대 라인업 — 실시간 최신(타순 완성) 우선, 없으면 박제 힌트. LineupDetailModal 로 표시.
   const oppTeam = useMemo(() => {
     if (!opp) return null;
-    const t = buildFakeOpponentTeam(opp.teamId, opp.lineupSeed, hintFor(opp.teamId, opp.lineupHint));
+    const t = buildFakeOpponentTeam(
+      opp.teamId,
+      opp.lineupSeed,
+      hintFor(opp.teamId, opp.lineupHint),
+      { elite: opp.round === PLAYOFF_TOTAL_ROUNDS }
+    );
     return t ? { ...t, displayName: opp.teamName } : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opp, liveHints]);
@@ -135,7 +145,8 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       const opponentRaw = buildFakeOpponentTeam(
         savedOpp.teamId,
         savedOpp.lineupSeed,
-        pending.oppLineupHint ?? savedOpp.lineupHint ?? null
+        pending.oppLineupHint ?? savedOpp.lineupHint ?? null,
+        { elite: pending.round === PLAYOFF_TOTAL_ROUNDS }
       );
       if (!opponentRaw) {
         showToast("\uC0C1\uB300 \uD300 \uAD6C\uC131\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.");
@@ -230,18 +241,22 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
       <ul className="playoff-ladder">
         {ladder.map((o) => {
           const isCurrent = o.round === round;
-          const isFinalRow = o.round === PLAYOFF_TOTAL_ROUNDS;
+          const rowRule = getPlayoffRoundRule(o.round);
+          const rowGames = run.state.games.filter((g) => g.round === o.round);
+          const rowWins = rowGames.filter((g) => g.win).length;
+          const rowLosses = rowGames.filter((g) => !g.win).length;
+          const isSeriesRow = rowRule.winsRequired > 1;
           let cls: string;
           let statusText: string;
-          if (isFinalRow && finalGames.length > 0) {
+          if (isSeriesRow && rowGames.length > 0) {
             // 한국시리즈 시리즈 — 스코어로 표시. 2승=승(우승) / 2패=패 / 그 외=현재.
             cls =
-              finalWins >= PLAYOFF_FINAL_WINS_NEEDED
+              rowWins >= rowRule.winsRequired
                 ? "is-win"
-                : finalLosses >= PLAYOFF_FINAL_WINS_NEEDED
+                : rowLosses >= rowRule.winsRequired
                   ? "is-loss"
                   : "is-current";
-            statusText = `${finalWins}승 ${finalLosses}패`;
+            statusText = `${rowWins}승 ${rowLosses}패`;
           } else {
             const g = gameByRound.get(o.round);
             cls = g ? (g.win ? "is-win" : "is-loss") : isCurrent ? "is-current" : "is-upcoming";
@@ -281,6 +296,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
         <div className="playoff-vs">
           <span className="playoff-vs-round">{getPlayoffRoundDisplayLabel(round)}</span>
           <span className="playoff-vs-text">VS</span>
+          {isSeriesRound && !isFinal ? <span className="playoff-vs-series">{currentSeriesGameNo}차전</span> : null}
           {isFinal ? <span className="playoff-vs-series">{seriesGameNo}차전</span> : null}
         </div>
         <div className="playoff-matchup-team">

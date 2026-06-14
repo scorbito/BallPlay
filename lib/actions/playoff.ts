@@ -12,6 +12,7 @@ import {
   getActivePlayoffRun,
   getPlayoffRunById,
   updatePlayoffRun,
+  getPlayoffRoundRule,
   PLAYOFF_TOTAL_ROUNDS,
   PLAYOFF_FINAL_WINS_NEEDED,
   PLAYOFF_ROUND_LABEL,
@@ -209,7 +210,15 @@ export async function beginPlayoffGame(input: {
   if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
   if (run.state.pendingGame) return { ok: true, run };
   // 단판 라운드(1~3)는 라운드당 1경기 — 이미 있으면 막음. 한국시리즈(시리즈)는 여러 경기 허용.
-  if (input.round < PLAYOFF_TOTAL_ROUNDS && run.state.games.some((g) => g.round === input.round)) {
+  const roundRule = getPlayoffRoundRule(input.round);
+  const roundGames = run.state.games.filter((g) => g.round === input.round);
+  const roundWins = roundGames.filter((g) => g.win).length;
+  const roundLosses = roundGames.filter((g) => !g.win).length;
+  if (
+    roundWins >= roundRule.winsRequired ||
+    roundLosses >= roundRule.winsRequired ||
+    roundGames.length >= roundRule.games
+  ) {
     return { ok: true, run };
   }
   if (input.round !== run.currentRound) return { ok: false, error: "현재 라운드와 맞지 않아요." };
@@ -304,6 +313,27 @@ export async function recordPlayoffGame(input: {
     completedAt = now;
   } else {
     currentRound = input.round + 1;
+  }
+
+  // Final decision follows the shared round rules, so changing PLAYOFF_ROUND_RULES
+  // updates both UI labels and series progression.
+  const rule = getPlayoffRoundRule(input.round);
+  const playedInRound = nextState.games.filter((g) => g.round === input.round);
+  const winsInRound = playedInRound.filter((g) => g.win).length;
+  const lossesInRound = playedInRound.filter((g) => !g.win).length;
+  status = run.status;
+  currentRound = run.currentRound;
+  completedAt = null;
+  if (winsInRound >= rule.winsRequired) {
+    if (input.round >= PLAYOFF_TOTAL_ROUNDS) {
+      status = "champion";
+      completedAt = now;
+    } else {
+      currentRound = input.round + 1;
+    }
+  } else if (lossesInRound >= rule.winsRequired || playedInRound.length >= rule.games) {
+    status = "eliminated";
+    completedAt = now;
   }
 
   const updated = await updatePlayoffRun(client, input.runId, userId, {
