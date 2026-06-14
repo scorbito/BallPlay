@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RotateCcw, Share2, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { ModalShell } from "@/components/common/ModalShell";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam } from "@/lib/constants/teams";
 import {
@@ -24,6 +25,8 @@ import { PLAYOFF_TOTAL_ROUNDS } from "@/lib/supabase/query-parts/bpPlayoff";
 import { TierUpHost } from "@/components/common/TierUpHost";
 import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
+import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
+import { POINT_LABEL } from "@/lib/points/config";
 import { claimStadiumRecordPoints, formatStadiumPointToast } from "@/components/domain/points/claimStadiumRecordPoints";
 
 function getPlayableTeamMeta(teamId: string, displayName?: string) {
@@ -49,6 +52,10 @@ export function ResultScreen() {
   const pointAwardAttemptedRef = useRef(false);
   // 플레이오프 결과 기록+이동 진행 중 (버튼 중복 클릭 차단).
   const [playoffReturning, setPlayoffReturning] = useState(false);
+  const [playoffChampionPointAward, setPlayoffChampionPointAward] = useState<{
+    amount: number;
+    balance: number;
+  } | null>(null);
   // 매치 종료 직후 승급 모달 트리거용 — 본인 누적 승수.
   const [accountWins, setAccountWins] = useState<number>(0);
 
@@ -269,7 +276,7 @@ export function ResultScreen() {
     if (s?.source === "playoff" && s.playoffRunId && s.playoffRound != null && s.result) {
       const fs = s.result.finalScore;
       try {
-        await recordPlayoffGame({
+        const result = await recordPlayoffGame({
           runId: s.playoffRunId,
           round: s.playoffRound,
           win: fs.home > fs.away,
@@ -278,10 +285,25 @@ export function ResultScreen() {
           playSeed: s.seed,
           oppTeamId: s.opponentTeamId
         });
+        if (result.ok && result.pointAward?.awarded && result.pointAward.amount > 0) {
+          emitPointBalanceUpdated(result.pointAward.balance);
+          setPlayoffChampionPointAward({
+            amount: result.pointAward.amount,
+            balance: result.pointAward.balance
+          });
+          setPlayoffReturning(false);
+          return;
+        }
       } catch {
         // 기록 실패해도 대진표에서 재시도 가능 — 이동은 진행.
       }
     }
+    clearMatchSession();
+    router.push("/stadium/playoff");
+  };
+
+  const closePlayoffChampionPointAward = () => {
+    setPlayoffChampionPointAward(null);
     clearMatchSession();
     router.push("/stadium/playoff");
   };
@@ -389,6 +411,29 @@ export function ResultScreen() {
       <TierUpHost wins={accountWins} />
       {/* 가을야구 승리/우승 축하 연출 — 승리 시에만 마운트 1회 자동 재생. */}
       {isPlayoffWin ? <PlayoffWinFx variant={isChampion ? "champion" : "win"} /> : null}
+      <ModalShell
+        open={playoffChampionPointAward !== null}
+        title="한국시리즈 우승 보상!"
+        ariaLabel="한국시리즈 우승 BP 보상 안내"
+        onClose={closePlayoffChampionPointAward}
+        panelClassName="playoff-champion-point-panel"
+      >
+        {playoffChampionPointAward ? (
+          <div className="playoff-champion-point-body">
+            <div className="playoff-champion-point-icon" aria-hidden="true">
+              <PointBaseballIcon size={30} />
+            </div>
+            <p>
+              한국시리즈 우승 보상으로
+              <br />
+              <strong>{playoffChampionPointAward.amount.toLocaleString()}{POINT_LABEL}</strong>가 지급됐어요.
+            </p>
+            <button type="button" onClick={closePlayoffChampionPointAward}>
+              확인
+            </button>
+          </div>
+        ) : null}
+      </ModalShell>
       <section className="stadium-result">
         <div
           className={`stadium-result-banner${

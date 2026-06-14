@@ -23,18 +23,9 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
 
   const reason = "prediction_submitted";
-  const { data: claimedRows } = await admin
-    .from("point_reward_claims")
-    .select("amount")
-    .eq("user_id", user.id)
-    .eq("reward_date", gameDate)
-    .like("reward_key", `${reason}:%`);
-  let earnedToday = ((claimedRows ?? []) as Array<{ amount: number | null }>)
-    .reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   let awarded = 0;
   let balance = await getPointBalance(user.id);
   for (const row of (data ?? []) as Array<{ id: string; game_id: string }>) {
-    if (earnedToday + POINT_REWARDS.predictionSubmittedPerGame > POINT_REWARDS.predictionSubmittedDailyMax) break;
     const result = await awardPoints({
       userId: user.id,
       amount: POINT_REWARDS.predictionSubmittedPerGame,
@@ -45,7 +36,6 @@ export async function POST(req: NextRequest) {
       rewardDate: gameDate
     });
     awarded += result.amount;
-    earnedToday += result.amount;
     balance = result.balance;
   }
 

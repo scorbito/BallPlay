@@ -130,6 +130,20 @@
   white-space: nowrap;
 }
 
+.phone-frame-light .stadium-playoff-entry-text .stadium-playoff-entry-prize {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.12);
+  color: var(--bp-accent);
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .phone-frame-light .stadium-playoff-entry > svg {
   color: var(--bp-text-muted);
   flex-shrink: 0;
@@ -697,11 +711,13 @@
 }
 
 .phone-frame-light .playoff-ladder-round {
-  width: 74px;
+  width: clamp(92px, 24vw, 116px);
   flex-shrink: 0;
-  font-size: 10.5px;
+  font-size: 10px;
+  line-height: 1.15;
   font-weight: 850;
   color: var(--bp-text-secondary);
+  word-break: keep-all;
 }
 
 .phone-frame-light .playoff-ladder-row .team-logo,
@@ -1322,6 +1338,65 @@
   box-shadow: 0 0 0 1px rgba(244, 180, 0, 0.55),
     0 8px 30px rgba(244, 180, 0, 0.4);
   animation: playoff-fx-banner-glow 1.6s ease-in-out infinite alternate;
+}
+
+.playoff-champion-point-panel {
+  max-width: 330px;
+  border-color: rgba(244, 180, 0, 0.42);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 54px rgba(15, 23, 42, 0.22);
+}
+
+.playoff-champion-point-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 4px 2px;
+  text-align: center;
+}
+
+.playoff-champion-point-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f59e0b, var(--bp-accent));
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(244, 180, 0, 0.22);
+}
+
+.playoff-champion-point-body p {
+  margin: 0;
+  color: var(--bp-text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.playoff-champion-point-body p strong {
+  color: var(--bp-accent);
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.playoff-champion-point-body button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--bp-accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(232, 74, 138, 0.18);
 }
 
 @keyframes playoff-fx-banner-glow {

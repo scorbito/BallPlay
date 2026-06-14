@@ -101,7 +101,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
       status === "claimed"
         ? "이미 BP 받음"
         : status === "capped"
-          ? "오늘 AI 예측 BP 한도 완료"
+          ? "이 콘텐츠의 BP는 이미 받았어요"
           : statusMessage || "아직 BP를 받을 수 없어요";
 
     return (

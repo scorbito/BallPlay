@@ -4,7 +4,6 @@ import {
   POINT_CONTENT_REWARD_START_AT,
   POINT_REWARDS,
   getContentPointAmount,
-  getContentPointDailyMax,
   type ContentPointType
 } from "@/lib/points/config";
 
@@ -464,23 +463,6 @@ export async function getEarnedAmountForReasonOnDate(
   return rows.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
 }
 
-async function getClaimedContentAmountForRewardDate(
-  client: SupabaseClient,
-  userId: string,
-  rewardKeyPrefix: string,
-  rewardDate: string
-): Promise<number> {
-  const { data, error } = await client
-    .from("point_reward_claims")
-    .select("amount")
-    .eq("user_id", userId)
-    .eq("reward_date", rewardDate)
-    .like("reward_key", `${rewardKeyPrefix}:%`);
-  if (error) return 0;
-  const rows = (data ?? []) as Array<{ amount: number | null }>;
-  return rows.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
-}
-
 export async function claimDailyCheckin(userId: string): Promise<{
   awarded: boolean;
   amount: number;
@@ -543,7 +525,6 @@ export async function claimContentPoints(input: {
   contentType: ContentPointType;
   contentId: string;
 }): Promise<AwardResult> {
-  const admin = createSupabaseAdminClient();
   const reason = `content_${input.contentType}`;
   const eligibility = await getContentRewardEligibility(input);
   if (!eligibility.eligible) {
@@ -557,18 +538,7 @@ export async function claimContentPoints(input: {
     };
   }
   const rewardDate = eligibility.rewardDate;
-  const earnedToday = await getClaimedContentAmountForRewardDate(admin, input.userId, reason, rewardDate);
   const amount = getContentPointAmount(input.contentType);
-  const dailyMax = getContentPointDailyMax(input.contentType);
-  if (earnedToday >= dailyMax) {
-    return {
-      awarded: false,
-      amount: 0,
-      balance: await getPointBalance(input.userId),
-      reason,
-      already_claimed: true
-    };
-  }
 
   return awardPoints({
     userId: input.userId,
@@ -596,7 +566,6 @@ export async function getContentPointClaimStatus(input: {
   const admin = createSupabaseAdminClient();
   const reason = `content_${input.contentType}`;
   const rewardKey = `${reason}:${input.contentId}`;
-  const dailyMax = getContentPointDailyMax(input.contentType);
   const eligibility = await getContentRewardEligibility(input);
   const rewardDate = eligibility.rewardDate;
 
@@ -608,10 +577,9 @@ export async function getContentPointClaimStatus(input: {
     .eq("reward_date", rewardDate)
     .maybeSingle();
 
-  const earnedToday = await getClaimedContentAmountForRewardDate(admin, input.userId, reason, rewardDate);
   return {
     claimed: Boolean(claim),
-    capped: earnedToday >= dailyMax,
+    capped: false,
     balance: await getPointBalance(input.userId),
     eligible: eligibility.eligible,
     ineligibleReason: eligibility.reason

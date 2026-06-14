@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BottomTabs } from "@/components/layout/BottomTabs";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
+import { PredictionCorrectBonusModal } from "@/components/domain/points/PredictionCorrectBonusModal";
 
 type AppShellProps = {
   activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
@@ -97,6 +98,7 @@ export function AppShell({
           </div>
         </div>
         {hideBottomTabs ? null : <BottomTabs activeTab={activeTab} />}
+        <PredictionCorrectBonusModal />
       </section>
     </main>
   );

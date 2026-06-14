@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { POINT_CONTENT_REWARD_START_AT, POINT_REWARDS } from "@/lib/points/config";
-import { awardPoints, getPointBalance, kstDateString } from "@/lib/server/points";
+import { awardPoints, kstDateString } from "@/lib/server/points";
 
 type Params = { params: { gameId: string } };
 
@@ -85,15 +85,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const rewardDate = publishedAt ? kstDateString(new Date(publishedAt)) : kstDateString();
     const eligibleFrom = getEligibilityStart(user.created_at);
     const eligible = publishedAt && new Date(publishedAt).getTime() >= new Date(eligibleFrom).getTime();
-    const { data: claimedRows } = await supabase
-      .from("point_reward_claims")
-      .select("amount")
-      .eq("user_id", user.id)
-      .eq("reward_date", rewardDate)
-      .like("reward_key", "ai_battle_vote:%");
-    const earnedToday = ((claimedRows ?? []) as Array<{ amount: number | null }>)
-      .reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
-    if (eligible && earnedToday + POINT_REWARDS.aiBattleVotePerGame <= POINT_REWARDS.aiBattleVoteDailyMax) {
+    if (eligible) {
       pointAward = await awardPoints({
         userId: user.id,
         amount: POINT_REWARDS.aiBattleVotePerGame,
@@ -107,8 +99,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       pointAward = {
         awarded: false,
         amount: 0,
-        balance: await getPointBalance(user.id),
-        capped: true
+        capped: false
       };
     }
   }

@@ -7,10 +7,8 @@ export const POINT_REWARDS = {
   checkinStreakStep: 5,
   checkinStreakMaxBonus: 30,
   predictionSubmittedPerGame: 20,
-  predictionSubmittedDailyMax: 100,
   predictionCorrectPerGame: 10,
   aiBattleVotePerGame: 20,
-  aiBattleVoteDailyMax: 100,
   stadiumOfficialFirstFive: 20,
   stadiumOfficialAfterFive: 10,
   stadiumOfficialFirstFiveCount: 5,
@@ -20,11 +18,6 @@ export const POINT_REWARDS = {
     daily_report: 20,
     daily_report_game: 10,
     ai_prediction: 20
-  },
-  contentClaimDailyMaxByType: {
-    daily_report: 20,
-    daily_report_game: 50,
-    ai_prediction: 100
   },
   quizComplete: 20,
   quizPerfectBonus: 10
@@ -44,8 +37,4 @@ export const CONTENT_POINT_TYPES: Record<ContentPointType, { label: string }> = 
 
 export function getContentPointAmount(contentType: ContentPointType): number {
   return POINT_REWARDS.contentClaimByType[contentType];
-}
-
-export function getContentPointDailyMax(contentType: ContentPointType): number {
-  return POINT_REWARDS.contentClaimDailyMaxByType[contentType];
 }

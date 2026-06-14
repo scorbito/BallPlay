@@ -47,7 +47,7 @@ async function recordChampion(
   run: PlayoffRun,
   userId: string,
   completedAt: string
-): Promise<void> {
+): Promise<{ awarded: boolean; amount: number; balance: number } | null> {
   try {
     const client = createSupabaseServerClient();
     const nickname = await fetchNickname(userId);
@@ -62,7 +62,7 @@ async function recordChampion(
       completed_at: completedAt
     });
     const rewardDate = kstDateString(new Date(completedAt));
-    await awardPoints({
+    const pointAward = await awardPoints({
       userId,
       amount: POINT_REWARDS.playoffChampion,
       reason: "playoff_champion",
@@ -72,8 +72,14 @@ async function recordChampion(
       rewardDate,
       metadata: { teamId: run.teamId, teamName: run.teamName }
     });
+    return {
+      awarded: pointAward.awarded,
+      amount: pointAward.awarded ? pointAward.amount : 0,
+      balance: pointAward.balance
+    };
   } catch (e) {
     console.warn("[playoff] recordChampion 실패(무시):", (e as Error).message);
+    return null;
   }
 }
 
@@ -238,7 +244,11 @@ export async function recordPlayoffGame(input: {
   scoreOpp: number;
   playSeed: number;
   oppTeamId: string;
-}): Promise<{ ok: true; run: PlayoffRun } | { ok: false; error: string }> {
+}): Promise<{
+  ok: true;
+  run: PlayoffRun;
+  pointAward?: { awarded: boolean; amount: number; balance: number } | null;
+} | { ok: false; error: string }> {
   const { client, userId } = await authed();
   if (!userId) return { ok: false, error: "로그인이 필요해요." };
 
@@ -320,13 +330,14 @@ export async function recordPlayoffGame(input: {
   }
 
   // 우승 확정이면 명예의 전당에 박제. INSERT 실패해도 우승 처리는 유지(에러 무시).
+  let pointAward: { awarded: boolean; amount: number; balance: number } | null = null;
   if (updated.ok && status === "champion" && completedAt) {
-    await recordChampion(updated.run, userId, completedAt);
+    pointAward = await recordChampion(updated.run, userId, completedAt);
   }
 
   // 허브 캐시 무효화 — 결과 후 대진표 진입 시 갱신된 run(라운드/탈락/우승) 반영.
   revalidatePath("/stadium/playoff");
-  return updated;
+  return updated.ok ? { ...updated, pointAward } : updated;
 }
 
 /** 플레이오프 전용 임시 라인업 저장 — 실제 팀 무영향. */

@@ -7,12 +7,7 @@ import { isSkeletonReport } from "@/lib/utils/dailyReportHelper";
 export type HomePointAvailability = Record<string, boolean>;
 
 const EARN_REASONS = [
-  "prediction_submitted",
-  "ai_battle_vote",
-  "stadium_official_completed",
-  "content_ai_prediction",
-  "content_daily_report",
-  "content_daily_report_game"
+  "stadium_official_completed"
 ];
 
 function sumEarnedByReason(rows: Array<{ reason: string | null; amount: number | null }>) {
@@ -95,6 +90,9 @@ export async function getHomePointAvailability(
   const claimedAiPredictionCount = eligibleAiPredictions
     .filter((row) => hasClaim(`content_ai_prediction:${row.gameId}`, row.rewardDate))
     .length;
+  const claimedAiBattleVoteCount = eligibleAiPredictions
+    .filter((row) => hasClaim(`ai_battle_vote:${row.gameId}`, row.rewardDate))
+    .length;
   const gameIds = ((gamesRes.data ?? []) as Array<{ id: string | null }>)
     .map((row) => row.id)
     .filter((gameId): gameId is string => Boolean(gameId));
@@ -126,17 +124,13 @@ export async function getHomePointAvailability(
   return {
     "daily-report": dailyReportDates.some((date) =>
       new Date(`${date}T00:00:00+09:00`).getTime() >= new Date(eligibleFrom).getTime()
-    ) && ((!claimedDailyReport
-        && (earned.get("content_daily_report") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType.daily_report)
-        || (earned.get("content_daily_report_game") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType.daily_report_game),
+    ) && !claimedDailyReport,
     "ai-predict": aiPredictionEligible
-      && claimedAiPredictionCount < aiGameIds.size
-      && (earned.get("content_ai_prediction") ?? 0) < POINT_REWARDS.contentClaimDailyMaxByType.ai_prediction,
+      && claimedAiPredictionCount < aiGameIds.size,
     "ai-battle": aiGameIds.size > 0
-      && (earned.get("ai_battle_vote") ?? 0) < POINT_REWARDS.aiBattleVoteDailyMax,
+      && claimedAiBattleVoteCount < aiGameIds.size,
     "winner-predict": gameIds.length > 0
-      && claimedWinnerPredictionCount < gameIds.length
-      && (earned.get("prediction_submitted") ?? 0) < POINT_REWARDS.predictionSubmittedDailyMax,
+      && claimedWinnerPredictionCount < gameIds.length,
     "quiz": !hasClaim("quiz_completed", today),
     "stadium": (earned.get("stadium_official_completed") ?? 0) < stadiumMax
   };

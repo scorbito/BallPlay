@@ -129,7 +129,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
     setToast({
       id,
       message,
-      pointReward: new RegExp(`\\+\\d[\\d,]*${POINT_LABEL}.*획득`).test(message)
+      pointReward: new RegExp(`\\+?\\d[\\d,]*${POINT_LABEL}.*획득`).test(message)
     });
     window.setTimeout(() => {
       setToast((current) => (current?.id === id ? null : current));

@@ -19,6 +19,31 @@ export const PLAYOFF_ROUND_LABEL: Record<number, string> = {
   4: "한국시리즈"
 };
 
+export type PlayoffRoundRule = {
+  games: number;
+  winsRequired: number;
+};
+
+export const PLAYOFF_ROUND_RULES: Record<number, PlayoffRoundRule> = {
+  1: { games: 1, winsRequired: 1 },
+  2: { games: 1, winsRequired: 1 },
+  3: { games: 1, winsRequired: 1 },
+  4: { games: PLAYOFF_FINAL_BEST_OF, winsRequired: PLAYOFF_FINAL_WINS_NEEDED }
+};
+
+export function getPlayoffRoundRuleLabel(round: number): string {
+  const rule = PLAYOFF_ROUND_RULES[round];
+  if (!rule) return "";
+  if (rule.games <= 1 || rule.winsRequired <= 1) return "단판";
+  return `${rule.games}판 ${rule.winsRequired}선승`;
+}
+
+export function getPlayoffRoundDisplayLabel(round: number): string {
+  const label = PLAYOFF_ROUND_LABEL[round] ?? "가을야구";
+  const ruleLabel = getPlayoffRoundRuleLabel(round);
+  return ruleLabel ? `${label}(${ruleLabel})` : label;
+}
+
 export type PlayoffStatus = "active" | "champion" | "eliminated" | "abandoned";
 
 /** 상대 AI 팀 — run 생성 시 라운드별로 고정(시드로 라인업 박제). */

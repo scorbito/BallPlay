@@ -418,6 +418,8 @@ export function DailyReportScreen({
                   <p className="standings-summary-text">{report.standingsSummary}</p>
                 </div>
 
+                <ContentPointClaimButton contentType="daily_report" contentId={reportContentId} />
+
               </div>
             )}
 
@@ -555,9 +557,6 @@ export function DailyReportScreen({
         )}
 
       </div>
-      {hasReport ? (
-        <ContentPointClaimButton contentType="daily_report" contentId={reportContentId} />
-      ) : null}
       <PageViewCounter />
     </AppShell>
   );

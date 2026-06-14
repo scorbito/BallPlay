@@ -233,6 +233,7 @@ export function WinnerPredictScreen({
       showToast(`잠금 실패: ${result.error}`);
       return;
     }
+    let awardedPoints = 0;
     try {
       const pointRes = await fetch("/api/points/prediction-submit", {
         method: "POST",
@@ -242,9 +243,7 @@ export function WinnerPredictScreen({
       const pointData = await pointRes.json();
       if (pointRes.ok && pointData.ok) {
         emitPointBalanceUpdated(pointData.balance);
-        if (pointData.awarded > 0) {
-          showToast(`+${pointData.awarded}${POINT_LABEL} 획득!`);
-        }
+        awardedPoints = Number(pointData.awarded ?? 0);
       }
     } catch {
       // BP reward failure must not block prediction submission.
@@ -254,7 +253,11 @@ export function WinnerPredictScreen({
       for (const g of editableGames) next[g.id] = true;
       return next;
     });
-    showToast(`${result.locked}개 예측 완료!`);
+    showToast(
+      awardedPoints > 0
+        ? `${result.locked}개 예측 완료!\n${awardedPoints.toLocaleString()}${POINT_LABEL} 획득!`
+        : `${result.locked}개 예측 완료!`
+    );
     void trackEvent("prediction_submitted", {
       gameDate: selectedDateISO,
       lockedCount: result.locked,

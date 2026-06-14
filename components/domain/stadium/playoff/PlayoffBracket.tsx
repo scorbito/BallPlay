@@ -16,7 +16,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { beginPlayoffGame } from "@/lib/actions/playoff";
 import { listLatestBattingLineupsByTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
 import {
-  PLAYOFF_ROUND_LABEL,
+  getPlayoffRoundDisplayLabel,
   PLAYOFF_TOTAL_ROUNDS,
   PLAYOFF_FINAL_WINS_NEEDED,
   type PlayoffRun
@@ -253,7 +253,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
           }
           return (
             <li key={o.round} className={`playoff-ladder-row ${cls}`}>
-              <span className="playoff-ladder-round">{PLAYOFF_ROUND_LABEL[o.round]}</span>
+              <span className="playoff-ladder-round">{getPlayoffRoundDisplayLabel(o.round)}</span>
               <TeamLogo teamId={o.teamId} size="sm" />
               <span className="playoff-ladder-name">{o.teamName}</span>
               <span className="playoff-ladder-seed">{5 - o.round}위</span>
@@ -279,7 +279,7 @@ export function PlayoffBracket({ run }: { run: PlayoffRun }) {
           <span className="playoff-seed">{opp ? `${5 - round}위 · AI` : ""}</span>
         </div>
         <div className="playoff-vs">
-          <span className="playoff-vs-round">{PLAYOFF_ROUND_LABEL[round]}</span>
+          <span className="playoff-vs-round">{getPlayoffRoundDisplayLabel(round)}</span>
           <span className="playoff-vs-text">VS</span>
           {isFinal ? <span className="playoff-vs-series">{seriesGameNo}차전</span> : null}
         </div>

@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { RegisteredLineupList } from "./RegisteredLineupList";
 import { StadiumLineupRankingPreview } from "./StadiumLineupRankingPreview";
 import { PlayoffHallOfFame } from "./PlayoffHallOfFame";
+import { POINT_LABEL, POINT_REWARDS } from "@/lib/points/config";
 import type { LineupRankingRow } from "@/lib/supabase/query-parts/bpLineupRankings";
 import type { AccountStatsRankingRow } from "@/lib/supabase/query-parts/bpAccountStats";
 import type { PlayoffSummary } from "@/lib/supabase/query-parts/bpPlayoff";
@@ -23,9 +24,8 @@ type Props = {
 const SHOW_STADIUM_RANKING_PREVIEW = false;
 
 function formatPlayoffEntryRecord(summary: PlayoffSummary): string | null {
-  if (summary.totalGames > 0) {
-    const champion = summary.championCount > 0 ? ` · 우승 ${summary.championCount}회` : "";
-    return `${summary.wins}승 ${summary.losses}패${champion}`;
+  if (summary.championCount > 0) {
+    return `우승 ${summary.championCount}회`;
   }
   if (summary.totalChallenges > 0) {
     return `총 도전 ${summary.totalChallenges}회`;
@@ -55,7 +55,13 @@ export function LobbyScreen({ topLineupRanking, topAccountRanking, playoffSummar
               </span>
             ) : null}
           </strong>
-          <span>5위에서 시작해 한국시리즈 우승까지</span>
+          <span>
+            한국시리즈 우승 도전 ·{" "}
+            <span className="stadium-playoff-entry-prize">
+              우승상금 {POINT_REWARDS.playoffChampion.toLocaleString()}{POINT_LABEL}
+            </span>
+            (하루한번)
+          </span>
         </span>
         <ChevronRight size={20} aria-hidden="true" />
       </Link>
