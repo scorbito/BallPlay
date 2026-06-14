@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
-import { POINT_LABEL, getContentPointAmount, type ContentPointType } from "@/lib/points/config";
+import { CONTENT_POINT_TYPES, POINT_LABEL, getContentPointAmount, type ContentPointType } from "@/lib/points/config";
 import { useAppState } from "@/lib/state/AppState";
 import { emitPointBalanceUpdated } from "./pointEvents";
 import { PointBaseballIcon } from "./PointBaseballIcon";
@@ -81,7 +81,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
       emitPointBalanceUpdated(data.balance);
       setStatus("claimed");
       if (data.awarded) {
-        showToast(`+${data.amount}${POINT_LABEL} 획득!`);
+        showToast(`+${data.amount}${POINT_LABEL} 획득!\n${CONTENT_POINT_TYPES[contentType].label} 보상`);
       } else {
         showToast(data.ineligibleReason ?? "이 콘텐츠의 BP는 이미 받았어요.");
       }

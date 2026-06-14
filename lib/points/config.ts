@@ -17,7 +17,8 @@ export const POINT_REWARDS = {
   contentClaimByType: {
     daily_report: 20,
     daily_report_game: 10,
-    ai_prediction: 20
+    ai_prediction: 20,
+    weekly_report_team: 10
   },
   quizComplete: 20,
   quizPerfectBonus: 10
@@ -27,12 +28,13 @@ export const POINT_COSTS = {
   prizeEntry: 200
 } as const;
 
-export type ContentPointType = "daily_report" | "daily_report_game" | "ai_prediction";
+export type ContentPointType = "daily_report" | "daily_report_game" | "ai_prediction" | "weekly_report_team";
 
 export const CONTENT_POINT_TYPES: Record<ContentPointType, { label: string }> = {
   daily_report: { label: "일일리포트 종합" },
   daily_report_game: { label: "일일리포트 경기별" },
-  ai_prediction: { label: "AI 승리팀 예측" }
+  ai_prediction: { label: "AI 승리팀 예측" },
+  weekly_report_team: { label: "주간 리포트 팀별" }
 };
 
 export function getContentPointAmount(contentType: ContentPointType): number {

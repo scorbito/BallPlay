@@ -21,15 +21,15 @@ const BASE_BADGE_STYLE = {
 } as const;
 
 const STEAL_OUTCOME_STYLE = {
-  background: "rgba(34, 197, 94, 0.25)",
-  color: "var(--bp-success)",
-  boxShadow: "0 6px 14px rgba(34, 197, 94, 0.16)"
+  background: "linear-gradient(135deg, rgba(251, 191, 36, 0.34), rgba(245, 158, 11, 0.24))",
+  color: "#a16207",
+  boxShadow: "0 6px 14px rgba(245, 158, 11, 0.18)"
 } as const;
 
 const STEAL_FAIL_OUTCOME_STYLE = {
-  background: "rgba(232, 74, 138, 0.18)",
-  color: "var(--bp-accent)",
-  boxShadow: "0 6px 14px rgba(232, 74, 138, 0.12)"
+  background: "linear-gradient(135deg, rgba(251, 191, 36, 0.28), rgba(253, 230, 138, 0.34))",
+  color: "#92400e",
+  boxShadow: "0 6px 14px rgba(245, 158, 11, 0.14)"
 } as const;
 
 export function LineupCard({

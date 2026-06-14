@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
 import type { TeamWeeklyReport } from "@/lib/utils/weeklyReportHelper";
 
 type WeeklyReportScreenProps = {
@@ -218,6 +219,10 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
                             <div className="series-details-content">{team.series2.details}</div>
                           </div>
                         </div>
+                        <ContentPointClaimButton
+                          contentType="weekly_report_team"
+                          contentId={`${currentWeekMon}|${team.teamCode}`}
+                        />
                       </div>
                     )}
                   </div>

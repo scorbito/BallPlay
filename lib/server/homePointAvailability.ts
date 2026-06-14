@@ -3,6 +3,7 @@ import { POINT_CONTENT_REWARD_START_AT, POINT_REWARDS } from "@/lib/points/confi
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { addDaysISO, kstDateString } from "@/lib/server/points";
 import { isSkeletonReport } from "@/lib/utils/dailyReportHelper";
+import { teams } from "@/lib/constants/teams";
 
 export type HomePointAvailability = Record<string, boolean>;
 
@@ -28,9 +29,32 @@ async function getLatestPublishedDailyReport(client: SupabaseClient) {
 
   const report = (data ?? []).find((row) => !isSkeletonReport(row.report_json));
   if (typeof report?.report_date !== "string") return null;
+  const reportJson = report.report_json as { gameReports?: Array<{ gameId?: unknown }> } | null;
+  const gameIds = Array.isArray(reportJson?.gameReports)
+    ? reportJson.gameReports
+        .map((game) => game.gameId)
+        .filter((gameId): gameId is string => typeof gameId === "string" && gameId.length > 0)
+    : [];
   return {
     date: report.report_date,
-    createdAt: typeof report.created_at === "string" ? report.created_at : null
+    createdAt: typeof report.created_at === "string" ? report.created_at : null,
+    gameIds
+  };
+}
+
+async function getLatestPublishedWeeklyReport(client: SupabaseClient) {
+  const { data } = await client
+    .from("weekly_ai_reports")
+    .select("week_id, created_at")
+    .order("week_id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (typeof data?.week_id !== "string" || typeof data?.created_at !== "string") return null;
+  return {
+    weekId: data.week_id,
+    createdAt: data.created_at,
+    rewardDate: kstDateString(new Date(data.created_at))
   };
 }
 
@@ -44,7 +68,7 @@ export async function getHomePointAvailability(
   const start = `${today}T00:00:00+09:00`;
   const end = `${addDaysISO(today, 1)}T00:00:00+09:00`;
 
-  const [gamesRes, aiPredictionsRes, claimsRes, transactionsRes, latestDailyReport] = await Promise.all([
+  const [gamesRes, aiPredictionsRes, claimsRes, transactionsRes, latestDailyReport, latestWeeklyReport] = await Promise.all([
     client
       .from("games")
       .select("id")
@@ -65,7 +89,8 @@ export async function getHomePointAvailability(
       .in("reason", EARN_REASONS)
       .gte("created_at", start)
       .lt("created_at", end),
-    getLatestPublishedDailyReport(client)
+    getLatestPublishedDailyReport(client),
+    getLatestPublishedWeeklyReport(client)
   ]);
 
   const eligibleFrom = userCreatedAt && new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
@@ -117,14 +142,38 @@ export async function getHomePointAvailability(
         : `content_daily_report:${date}`;
       return hasClaim(rewardKey, rewardDate);
     });
+  const latestDailyReportEligible = latestDailyReport
+    ? new Date(`${latestDailyReport.date}T00:00:00+09:00`).getTime() >= new Date(eligibleFrom).getTime()
+    : false;
+  const latestDailyReportRewardDate = latestDailyReport?.createdAt
+    ? kstDateString(new Date(latestDailyReport.createdAt))
+    : latestDailyReport?.date ?? today;
+  const getLatestDailyReportGameRewardKey = (gameId: string) => {
+    if (!latestDailyReport) return null;
+    const contentId = latestDailyReport.createdAt
+      ? `${latestDailyReport.date}|${latestDailyReport.createdAt}|${gameId}`
+      : `${latestDailyReport.date}:${gameId}`;
+    return `content_daily_report_game:${contentId}`;
+  };
+  const hasUnclaimedDailyReportGame = latestDailyReportEligible
+    && (latestDailyReport?.gameIds ?? []).some((gameId) =>
+      !hasClaim(getLatestDailyReportGameRewardKey(gameId) ?? "", latestDailyReportRewardDate)
+    );
   const stadiumMax = (POINT_REWARDS.stadiumOfficialFirstFive * POINT_REWARDS.stadiumOfficialFirstFiveCount)
     + POINT_REWARDS.stadiumOfficialExtraMax;
   const aiPredictionEligible = Array.from(aiGameIds).length > 0;
+  const weeklyReportAvailable = latestWeeklyReport
+    ? new Date(latestWeeklyReport.createdAt).getTime() >= new Date(eligibleFrom).getTime()
+      && teams.some((team) =>
+        !hasClaim(`content_weekly_report_team:${latestWeeklyReport.weekId}|${team.id}`, latestWeeklyReport.rewardDate)
+      )
+    : false;
 
   return {
-    "daily-report": dailyReportDates.some((date) =>
+    "daily-report": (dailyReportDates.some((date) =>
       new Date(`${date}T00:00:00+09:00`).getTime() >= new Date(eligibleFrom).getTime()
-    ) && !claimedDailyReport,
+    ) && !claimedDailyReport) || hasUnclaimedDailyReportGame,
+    "weekly-report": weeklyReportAvailable,
     "ai-predict": aiPredictionEligible
       && claimedAiPredictionCount < aiGameIds.size,
     "ai-battle": aiGameIds.size > 0

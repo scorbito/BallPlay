@@ -383,6 +383,7 @@ export function PlayScreen() {
     })();
     // 삼진 K 효과 시간 — 안타 ball 과 동일하게 modeMul 적용.
     const strikeoutMs = currentEvt && phase === "OUTCOME" && currentEvt.ab.outcome === "K" ? 1500 : 0;
+    const stealMs = currentEvt?.ab.preEvents?.some((pre) => pre.kind === "STEAL_2B") ? 2900 : 0;
     const outcomeMs = (() => {
       if (!currentEvt) return 1100;
       const o = currentEvt.ab.outcome;
@@ -400,7 +401,7 @@ export function PlayScreen() {
       number
     > = {
       SITUATION: 1500 * modeMul,
-      BATTER: 800 * modeMul,
+      BATTER: (stealMs || 800) * modeMul,
       OUTCOME: (outcomeMs + ballMs + strikeoutMs) * modeMul,
       INNING_END: 1200 * modeMul,
       // 투수 교체는 중요 정보라 mode별 명시 (modeMul 미적용).

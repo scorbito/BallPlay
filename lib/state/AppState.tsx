@@ -23,6 +23,14 @@ type CheckinRewardModal = {
   streak: number;
 };
 
+function parsePointToastMessage(message: string): { amountLine: string; subtitle: string } {
+  const lines = message.split("\n").map((line) => line.trim()).filter(Boolean);
+  const amountPattern = new RegExp(`\\+?\\d[\\d,]*${POINT_LABEL}.*획득`);
+  const amountLine = lines.find((line) => amountPattern.test(line)) ?? message;
+  const subtitle = lines.find((line) => line !== amountLine) ?? "BP 보상";
+  return { amountLine, subtitle };
+}
+
 type ProfileSettings = Pick<UserProfile, "nickname" | "mainTeamId" | "interestTeamIds" | "avatarUrl" | "bio">;
 
 type AppState = {
@@ -190,18 +198,33 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
       {toast ? (
         <div className={`toast-message${toast.pointReward ? " point-reward-toast" : ""}`}>
           {toast.pointReward ? (
-            <span className="point-toast-particles" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-            </span>
-          ) : null}
-          <span className="toast-message-text">{toast.message}</span>
+            <>
+              <span className="point-toast-particles" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </span>
+              {(() => {
+                const parsed = parsePointToastMessage(toast.message);
+                return (
+                  <span className="point-toast-content">
+                    <span className="point-toast-icon" aria-hidden="true">
+                      <PointBaseballIcon size={24} />
+                    </span>
+                    <strong>{parsed.amountLine}</strong>
+                    <small>{parsed.subtitle}</small>
+                  </span>
+                );
+              })()}
+            </>
+          ) : (
+            <span className="toast-message-text">{toast.message}</span>
+          )}
         </div>
       ) : null}
     </AppStateContext.Provider>

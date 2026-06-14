@@ -293,6 +293,8 @@ type HomeScreenProps = {
   userRecord?: UserPublicMatchRecord;
   /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
   isAnonymous?: boolean;
+  /** 관리자 여부 — 향후 홈 분기용. */
+  isAdmin?: boolean;
   /** 첫 화면에서 BP 뱃지를 바로 표시하기 위한 서버 계산값. */
   initialPointAvailability?: HomePointAvailability;
 };
@@ -301,10 +303,12 @@ export function HomeScreen({
   user = null,
   userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
   isAnonymous = false,
+  isAdmin = false,
   initialPointAvailability = {}
 }: HomeScreenProps = {}) {
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
   void isAnonymous;
+  void isAdmin;
   void user;
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
@@ -347,6 +351,8 @@ export function HomeScreen({
           // 단일 카드 렌더링 헬퍼 — hero의 좌우 컬럼 분리 배치 + standard 그리드에서 공통 사용.
           const renderCard = (card: HomeCard) => {
             const Icon = card.icon;
+            const available = card.id === "my-team" && isAdmin ? true : card.available;
+            const badge = card.id === "my-team" && isAdmin ? undefined : card.badge;
 
             // 아이콘 영역: iconImage 있으면 이미지, 없으면 lucide.
             // width/height는 next/image의 intrinsic 힌트일 뿐 — 실제 크기는 CSS의 컨테이너(.play-hub-card-icon) + img { width:100% } 가 결정.
@@ -361,7 +367,7 @@ export function HomeScreen({
             );
 
             // Chevron(>) — 클릭 가능한 내부 메뉴에만 노출. 외부 링크(↗ 별도)와 비활성(준비중)은 제외.
-            const showChevron = card.available && !card.external;
+            const showChevron = available && !card.external;
             const cardInner = (
               <>
                 {iconNode}
@@ -392,7 +398,7 @@ export function HomeScreen({
                   >
                     {cardInner}
                   </a>
-                ) : card.available ? (
+                ) : available ? (
                   <Link
                     className={`play-hub-card play-hub-card-${card.id}${card.featured ? " play-hub-card-featured-style" : ""}`}
                     href={card.href}
@@ -409,10 +415,10 @@ export function HomeScreen({
                   cardId={card.id}
                   title={card.title}
                   description={card.description}
-                  available={card.available}
+                  available={available}
                   featured={card.featured}
                   external={card.external}
-                  badge={card.badge}
+                  badge={badge}
                 />
                 <HomePointBadge
                   cardId={card.id}
@@ -454,7 +460,7 @@ export function HomeScreen({
                     />
                   </Link>
                 ) : null}
-                {card.id === "my-team" && card.available ? (
+                {card.id === "my-team" && available ? (
                   <Link
                     href="/my-team"
                     className="home-fall-badge home-my-team-badge"

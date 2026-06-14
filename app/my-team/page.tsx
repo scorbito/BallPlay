@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { MyTeamScreen } from "@/components/domain/MyTeamScreen";
+import { getUserTier } from "@/lib/auth/userTier";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +12,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/my-team" }
 };
 
-export default function MyTeamPage() {
+export default async function MyTeamPage() {
+  const supabase = createSupabaseServerClient();
+  const { tier } = await getUserTier(supabase);
+  if (tier !== "admin") redirect("/");
+
   return <MyTeamScreen />;
 }

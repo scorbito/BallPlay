@@ -60,6 +60,12 @@ function parseDailyReportGameContentId(contentId: string): {
   return { dateISO, publishedAt: null, gameId };
 }
 
+function parseWeeklyReportTeamContentId(contentId: string): { weekId: string; teamId: string } | null {
+  const [weekId, teamId] = contentId.split("|");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekId) || !teamId) return null;
+  return { weekId, teamId };
+}
+
 function getUserContentEligibilityStart(userCreatedAt?: string | null): string {
   if (!userCreatedAt) return POINT_CONTENT_REWARD_START_AT;
   return new Date(userCreatedAt).getTime() > new Date(POINT_CONTENT_REWARD_START_AT).getTime()
@@ -100,6 +106,36 @@ async function resolveContentRewardContext(input: {
       eligible: true,
       publishedAt,
       rewardDate: parsed.publishedAt ? kstDateFromTimestamp(parsed.publishedAt) : parsed.dateISO
+    };
+  }
+
+  if (input.contentType === "weekly_report_team") {
+    const parsed = parseWeeklyReportTeamContentId(input.contentId);
+    if (!parsed) {
+      return { eligible: false, publishedAt: null, rewardDate: kstDateString(), reason: "invalid weekly report" };
+    }
+
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin
+      .from("weekly_ai_reports")
+      .select("created_at")
+      .eq("week_id", parsed.weekId)
+      .maybeSingle();
+
+    if (error || !data?.created_at) {
+      return {
+        eligible: false,
+        publishedAt: null,
+        rewardDate: parsed.weekId,
+        reason: "주간 리포트가 아직 발행되지 않았어요."
+      };
+    }
+
+    const publishedAt = String(data.created_at);
+    return {
+      eligible: true,
+      publishedAt,
+      rewardDate: kstDateFromTimestamp(publishedAt)
     };
   }
 
