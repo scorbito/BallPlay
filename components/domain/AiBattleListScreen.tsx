@@ -134,7 +134,7 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
                 const home = getTeam(g.homeTeamId);
                 const away = getTeam(g.awayTeamId);
                 const finished = g.status === "finished";
-                const canEnter = g.hasPrediction && !isFutureDate;
+                const canEnter = g.hasPrediction;
 
                 return (
                   <li key={g.id} className="ai-battle-game-card">
@@ -145,10 +145,10 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
                         {(g.gameTime ?? "18:30").slice(0, 5)} {g.stadium}
                       </span>
                       <span className="ai-battle-meta-status" style={{
-                        background: finished ? "#f1f3f5" : isFutureDate ? "#f1f3f5" : "#ffe8ec",
-                        color: finished ? "#495057" : isFutureDate ? "#868e96" : "#ff2a85"
+                        background: finished ? "#f1f3f5" : g.hasPrediction ? "#ffe8ec" : "#f1f3f5",
+                        color: finished ? "#495057" : g.hasPrediction ? "#ff2a85" : "#868e96"
                       }}>
-                        {finished ? "경기 종료" : isFutureDate ? "예정" : "배틀 투표중 🔥"}
+                        {finished ? "경기 종료" : g.hasPrediction ? "배틀 투표중 🔥" : "예정"}
                       </span>
                     </div>
 
