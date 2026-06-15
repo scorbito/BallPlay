@@ -924,8 +924,8 @@ export function LineupBuilderScreen() {
         source: "manual"
       });
     }
-    if (!res.ok) showToast(res.error ?? "출전 등록 실패");
-    else showToast("출전 등록됐어요");
+    if (!res.ok) showToast(res.error ?? "공개 실패");
+    else showToast("공개됐어요");
   };
 
   // 출전 철회 — 출전 중 → 출전 준비. 라인업/전적은 그대로 유지하고 매치 풀에서만 빠진다.
@@ -940,9 +940,9 @@ export function LineupBuilderScreen() {
         entryId: currentEntry.entryId,
         teamId: currentEntry.teamId
       });
-      showToast("출전을 내렸어요. 전적은 유지돼요. 언제든 다시 출전할 수 있어요.");
+      showToast("비공개로 전환했어요. 언제든 다시 공개할 수 있어요.");
     } else {
-      showToast(res.error ?? "출전 철회 실패");
+      showToast(res.error ?? "비공개 전환 실패");
     }
   };
 
@@ -975,8 +975,8 @@ export function LineupBuilderScreen() {
         source: "auto_fill"
       });
     }
-    if (!res.ok) showToast(res.error ?? "출전 등록 실패");
-    else showToast("출전 등록됐어요");
+    if (!res.ok) showToast(res.error ?? "공개 실패");
+    else showToast("공개됐어요");
   };
 
   // 가이드 step2의 "확인" — 자동 채움(필요 시) + 공개.
@@ -1006,9 +1006,9 @@ export function LineupBuilderScreen() {
       });
     }
     if (!res.ok) {
-      showToast(res.error ?? "출전 등록 실패");
+      showToast(res.error ?? "공개 실패");
     } else {
-      showToast("출전 등록됐어요");
+      showToast("공개됐어요");
       // 출전 등록 성공 직후 — 바로 "경기장 가기" 유도 (온보딩 마지막 단계).
       setGuideGoStadiumOpen(true);
     }
@@ -1019,7 +1019,7 @@ export function LineupBuilderScreen() {
   const usedTeamIds = useMemo(() => new Set(regularEntries.map((entry) => entry.teamId)), [regularEntries]);
 
   return (
-    <AppShell activeTab="play" title="팀 관리" theme="light" backHref="/" wide>
+    <AppShell activeTab="play" title="라인업 분석" theme="light" backHref="/" wide>
       <header className="lineup-header lineup-header-no-back">
         {/* 헤더 좌측: 동기화 상태 배지 */}
         <LineupSyncBadge syncStatus={syncStatus} />

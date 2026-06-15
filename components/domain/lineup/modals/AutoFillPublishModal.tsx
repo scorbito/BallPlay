@@ -27,7 +27,7 @@ export function AutoFillPublishModal({
     >
       <div className="lineup-confirm-body">
         <p className="lineup-confirm-msg">
-          마무리·불펜 빈 자리를 <strong>자동으로 채워서 출전 등록</strong>합니다.<br />
+          마무리·불펜 빈 자리를 <strong>자동으로 채워서 공개</strong>합니다.<br />
           <br />
           · 마무리 — 세이브 많은 선수<br />
           · 불펜 — 평균자책점 좋은 선수<br />
@@ -49,7 +49,7 @@ export function AutoFillPublishModal({
             disabled={publishProcessing}
             onClick={onConfirm}
           >
-            자동 채움 + 출전
+            자동 채움 + 공개
           </button>
         </div>
       </div>

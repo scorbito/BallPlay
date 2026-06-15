@@ -800,6 +800,13 @@
   width: 96px;
 }
 
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-daily-report .play-hub-card-icon.play-hub-card-icon-image {
+  flex-basis: 102px;
+  width: 102px;
+  height: 82px;
+  margin-left: 0;
+}
+
 .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon.play-hub-card-icon-image img {
   width: 100%;
   height: 100%;

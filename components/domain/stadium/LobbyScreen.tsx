@@ -1,134 +1,180 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { BarChart3, ChevronDown, ChevronRight, List, Lock, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { TeamBadge } from "@/components/common/TeamBadge";
+import { teams } from "@/lib/constants/teams";
+import { MyLineupList } from "./MyLineupList";
 import { RegisteredLineupList } from "./RegisteredLineupList";
-import { StadiumLineupRankingPreview } from "./StadiumLineupRankingPreview";
-import { PlayoffHallOfFame } from "./PlayoffHallOfFame";
-import { POINT_LABEL, POINT_REWARDS } from "@/lib/points/config";
-import type { LineupRankingRow } from "@/lib/supabase/query-parts/bpLineupRankings";
-import type { AccountStatsRankingRow } from "@/lib/supabase/query-parts/bpAccountStats";
-import type { PlayoffSummary } from "@/lib/supabase/query-parts/bpPlayoff";
+import { LineupDetailModal } from "./LineupDetailModal";
+import { AiChallengeModal } from "./AiChallengeModal";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { buildFakeOpponentTeam, type RecentLineupHint } from "@/lib/sim/fakeOpponent";
+import {
+  listLatestLineupsByTeam,
+  type RecentLineupRow
+} from "@/lib/supabase/query-parts/bpRecentLineups";
+import type { SimTeamInput } from "@/lib/sim/types";
 
-// 경기장 메인 — 공개 매치 + 랭킹 진입점으로 단순화.
-// 연습 콘텐츠(친구 매치/내 라인업/AI 대결)는 /play/practice 로 이동.
+type SectionId = "actual" | "mine" | "public";
 
-type Props = {
-  topLineupRanking: LineupRankingRow[];
-  topAccountRanking: AccountStatsRankingRow[];
-  playoffSummary: PlayoffSummary;
-};
+const PREVIEW_SEED = 0;
 
-const SHOW_STADIUM_RANKING_PREVIEW = false;
+export function LobbyScreen() {
+  const [openSections, setOpenSections] = useState<Record<SectionId, boolean>>({
+    actual: true,
+    mine: false,
+    public: false
+  });
+  const [previewTeam, setPreviewTeam] = useState<SimTeamInput | null>(null);
+  const [simulationTeamId, setSimulationTeamId] = useState<string | null>(null);
+  const [recentByTeam, setRecentByTeam] = useState<Record<string, RecentLineupRow>>({});
 
-function formatPlayoffEntryRecord(summary: PlayoffSummary): string | null {
-  if (summary.championCount > 0) {
-    return `우승 ${summary.championCount}회`;
-  }
-  if (summary.totalChallenges > 0) {
-    return `총 도전 ${summary.totalChallenges}회`;
-  }
-  return null;
-}
+  useEffect(() => {
+    const client = createSupabaseBrowserClient();
+    void listLatestLineupsByTeam(client, { withinDays: 14 }).then((res) => {
+      if (res.ok) setRecentByTeam(res.byTeam);
+    });
+  }, []);
 
-export function LobbyScreen({ topLineupRanking, topAccountRanking, playoffSummary }: Props) {
-  const playoffEntryRecord = formatPlayoffEntryRecord(playoffSummary);
-  const [lineupSort, setLineupSort] = useState<"winrate" | "recent">("winrate");
+  const toggleSection = (sectionId: SectionId) => {
+    setOpenSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
+
+  const openActualPreview = (teamId: string) => {
+    const hint: RecentLineupHint | null = recentByTeam[teamId] ?? null;
+    const team = buildFakeOpponentTeam(teamId, PREVIEW_SEED, hint);
+    if (team) setPreviewTeam(team);
+  };
 
   return (
-    <AppShell activeTab="stadium" title="경기장" backHref="/" theme="light" wide>
-      {/* === 가을야구(특별 이벤트) — 명예의 전당 배너 → 도전, 상단 강조 === */}
-      {/* 1. 명예의 전당 — 1줄 요약 배너(전체 목록은 가을야구 페이지에서) */}
-      <PlayoffHallOfFame variant="compact" />
+    <AppShell activeTab="stadium" title="시뮬레이션 로비" backHref="/" theme="light" wide>
+      <SimulationSection
+        id="actual"
+        icon={<BarChart3 size={14} />}
+        title="실제 경기 라인업"
+        subtitle="최근 실제 팀 경기 라인업 기준"
+        isOpen={openSections.actual}
+        onToggle={toggleSection}
+      >
+        <div className="stadium-lobby-grid stadium-sim-team-grid">
+          {teams.map((team) => {
+            const hasRecentLineup = Boolean(recentByTeam[team.id]);
+            return (
+              <div key={team.id} className="stadium-lobby-card stadium-sim-team-card">
+                <span
+                  className="stadium-lobby-card-bar"
+                  style={{ background: team.color }}
+                  aria-hidden="true"
+                />
+                <TeamBadge teamId={team.id} size="md" />
+                <div className="stadium-lobby-card-body">
+                  <strong>{team.name}</strong>
+                  <span>{hasRecentLineup ? "최근 경기 라인업" : "기본 라인업"}</span>
+                </div>
+                <div className="stadium-lobby-card-actions">
+                  <button
+                    type="button"
+                    className="stadium-lobby-card-btn stadium-lobby-card-btn-secondary"
+                    onClick={() => openActualPreview(team.id)}
+                    aria-label={`${team.name} 라인업 보기`}
+                  >
+                    <List size={14} />
+                    <span>라인업</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
+                    onClick={() => setSimulationTeamId(team.id)}
+                    aria-label={`${team.name} 라인업 비교 시뮬레이션`}
+                  >
+                    <BarChart3 size={14} />
+                    <span>시뮬</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </SimulationSection>
 
-      {/* 2. 가을야구(플레이오프) 도전 — 솔로 PvE 진입 */}
-      <Link href="/stadium/playoff" className="stadium-playoff-entry" prefetch>
-        <span className="stadium-playoff-entry-emoji" aria-hidden="true">🏆</span>
-        <span className="stadium-playoff-entry-text">
-          <strong>
-            가을야구 도전
-            {playoffEntryRecord ? (
-              <span className="stadium-playoff-entry-record">
-                {playoffEntryRecord}
-              </span>
-            ) : null}
-          </strong>
-          <span>
-            한국시리즈 우승 도전 ·{" "}
-            <span className="stadium-playoff-entry-prize">
-              우승상금 {POINT_REWARDS.playoffChampion.toLocaleString()}{POINT_LABEL}
-            </span>
-            (하루한번)
-          </span>
-        </span>
-        <ChevronRight size={20} aria-hidden="true" />
-      </Link>
+      <SimulationSection
+        id="mine"
+        icon={<Lock size={14} />}
+        title="내 팀 라인업"
+        subtitle="내가 저장한 라인업"
+        isOpen={openSections.mine}
+        onToggle={toggleSection}
+      >
+        <MyLineupList maxItems={10} />
+      </SimulationSection>
 
-      <Link href="/play/practice" className="stadium-playoff-entry stadium-practice-entry" prefetch>
-        <span className="stadium-playoff-entry-emoji" aria-hidden="true">⚾</span>
-        <span className="stadium-playoff-entry-text">
-          <strong>연습경기장 가기 <small>(친구매치 · AI 대전)</small></strong>
-        </span>
-        <ChevronRight size={20} aria-hidden="true" />
-      </Link>
+      <SimulationSection
+        id="public"
+        icon={<Users size={14} />}
+        title="공개 라인업"
+        subtitle="다른 사용자가 공개한 라인업"
+        isOpen={openSections.public}
+        onToggle={toggleSection}
+      >
+        <RegisteredLineupList sortBy="recent" showHeader={false} />
+      </SimulationSection>
 
-      {/* === 출전팀(상시) — 랭킹 → 리스트 묶음 === */}
-      {/* 3. 출전팀 랭킹 TOP3 — 라인업/계정 누적 탭 전환 */}
-      <div className="stadium-lobby-quick-row">
-        <Link href="/play/practice" className="stadium-playoff-entry stadium-practice-entry stadium-quick-entry" prefetch>
-          <span className="stadium-playoff-entry-emoji" aria-hidden="true">⚾</span>
-          <span className="stadium-playoff-entry-text">
-            <strong>연습경기장</strong>
-            <span>친구매치 · AI 대전</span>
-          </span>
-          <ChevronRight size={20} aria-hidden="true" />
-        </Link>
-        <Link href="/records" className="stadium-playoff-entry stadium-practice-entry stadium-record-entry stadium-quick-entry" prefetch>
-          <span className="stadium-playoff-entry-emoji" aria-hidden="true">📋</span>
-          <span className="stadium-playoff-entry-text">
-            <strong>경기 기록 보기</strong>
-            <span>내 경기 기록</span>
-          </span>
-          <ChevronRight size={20} aria-hidden="true" />
-        </Link>
-      </div>
+      <LineupDetailModal
+        open={previewTeam !== null}
+        team={previewTeam}
+        onClose={() => setPreviewTeam(null)}
+      />
 
-      {SHOW_STADIUM_RANKING_PREVIEW ? (
-        <StadiumLineupRankingPreview
-          lineupRows={topLineupRanking}
-          accountRows={topAccountRanking}
-        />
-      ) : null}
-
-      {/* 4. 출전 팀 풀 — 전체 리스트 (추가 진입 불필요) */}
-      <section className="stadium-lobby-section stadium-lobby-section-main">
-        <header className="stadium-lobby-section-head">
-          <h2 className="stadium-lobby-section-title">출전 팀</h2>
-          <div className="stadium-lineup-sort-toggle" role="tablist" aria-label="출전팀 정렬">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={lineupSort === "winrate"}
-              className={`stadium-lineup-sort-btn ${lineupSort === "winrate" ? "is-active" : ""}`}
-              onClick={() => setLineupSort("winrate")}
-            >
-              랭킹순
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={lineupSort === "recent"}
-              className={`stadium-lineup-sort-btn ${lineupSort === "recent" ? "is-active" : ""}`}
-              onClick={() => setLineupSort("recent")}
-            >
-              최신순
-            </button>
-          </div>
-        </header>
-        <RegisteredLineupList sortBy={lineupSort} showHeader={false} />
-      </section>
+      <AiChallengeModal
+        opponentTeamId={simulationTeamId}
+        onClose={() => setSimulationTeamId(null)}
+      />
     </AppShell>
+  );
+}
+
+type SimulationSectionProps = {
+  id: SectionId;
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+  isOpen: boolean;
+  onToggle: (sectionId: SectionId) => void;
+  children: ReactNode;
+};
+
+function SimulationSection({
+  id,
+  icon,
+  title,
+  subtitle,
+  isOpen,
+  onToggle,
+  children
+}: SimulationSectionProps) {
+  return (
+    <section className={`stadium-lobby-section stadium-sim-section ${isOpen ? "is-open" : ""}`}>
+      <button
+        type="button"
+        className="stadium-sim-section-toggle"
+        aria-expanded={isOpen}
+        onClick={() => onToggle(id)}
+      >
+        <span className="stadium-sim-section-title-wrap">
+          <span className="stadium-sim-section-icon" aria-hidden="true">
+            {icon}
+          </span>
+          <span>
+            <strong>{title}</strong>
+            <small>{subtitle}</small>
+          </span>
+        </span>
+        {isOpen ? <ChevronDown size={18} aria-hidden="true" /> : <ChevronRight size={18} aria-hidden="true" />}
+      </button>
+      {isOpen ? <div className="stadium-sim-section-body">{children}</div> : null}
+    </section>
   );
 }

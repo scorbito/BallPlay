@@ -5,6 +5,9 @@ type TeamBadgeProps = {
   teamId: string;
   size?: "sm" | "md" | "lg";
   showName?: boolean;
+  fallbackName?: string;
+  fallbackInitial?: string;
+  fallbackColor?: string;
 };
 
 const sizeClass = {
@@ -19,8 +22,15 @@ const trophySize = {
   lg: 22
 };
 
-export function TeamBadge({ teamId, size = "md", showName = false }: TeamBadgeProps) {
-  const team = getTeamMeta(teamId);
+export function TeamBadge({
+  teamId,
+  size = "md",
+  showName = false,
+  fallbackName,
+  fallbackInitial,
+  fallbackColor
+}: TeamBadgeProps) {
+  const team = getTeamMeta(teamId, { fallbackName, fallbackInitial, fallbackColor });
   const isNational = teamId === "national";
   const badgeColor = isNational ? "linear-gradient(180deg, #d71920 0%, #e84a8a 49%, #1d4ed8 51%, #0f4c81 100%)" : team.color;
   const badgeAccent = isNational ? "#fb7185" : team.accent ?? team.color;
@@ -68,7 +78,10 @@ function TrophyIcon({ size }: { size: number }) {
   );
 }
 
-function getTeamMeta(teamId: string) {
+function getTeamMeta(
+  teamId: string,
+  fallback?: { fallbackName?: string; fallbackInitial?: string; fallbackColor?: string }
+) {
   try {
     return getTeam(teamId);
   } catch {
@@ -82,13 +95,15 @@ function getTeamMeta(teamId: string) {
         accent: "#d71920"
       };
     }
+    const name = fallback?.fallbackName?.trim() || teamId;
+    const initial = fallback?.fallbackInitial?.trim().slice(0, 2).toUpperCase() || name.slice(0, 1) || "?";
     return {
       id: teamId,
-      name: teamId,
-      shortName: teamId,
-      initial: teamId.charAt(0).toUpperCase() || "?",
-      color: "#475569",
-      accent: "#94a3b8"
+      name,
+      shortName: name,
+      initial,
+      color: fallback?.fallbackColor || "#475569",
+      accent: fallback?.fallbackColor || "#94a3b8"
     };
   }
 }

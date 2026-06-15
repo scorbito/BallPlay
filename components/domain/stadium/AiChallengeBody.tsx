@@ -1,12 +1,12 @@
 "use client";
 
-// AI 대전 매치 미리보기 + 라인업 picker + 시작 버튼.
+// 실제 팀 라인업 비교 시뮬레이션 미리보기 + 라인업 picker + 시작 버튼.
 // AppShell(EnterScreen) 과 ModalShell(AiChallengeModal) 양쪽에서 재사용.
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bot, Sparkles } from "lucide-react";
+import { ArrowRight, BarChart3 } from "lucide-react";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam, teams as ALL_TEAMS } from "@/lib/constants/teams";
 import { getRoster } from "@/lib/rosters";
@@ -26,7 +26,6 @@ import {
 } from "@/lib/sim/statsLoaderWithRecent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getLatestLineupForTeam, type RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
-import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import {
   buildStatsDirectoryWithRecentFormForEntries,
@@ -48,33 +47,11 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [opponentHint, setOpponentHint] = useState<RecentLineupRow | null>(null);
-  const [statsByEntryId, setStatsByEntryId] = useState<Record<string, LineupStats>>({});
 
   useEffect(() => {
     const ready = loadLineupEntries().filter((e) => e.batting.slots.length === 9);
     setMyEntries(ready);
     if (ready.length > 0) setSelectedEntryId(ready[0].entryId);
-  }, []);
-
-  useEffect(() => {
-    void (async () => {
-      const client = createSupabaseBrowserClient();
-      const { data } = await client.auth.getUser();
-      const userId = data.user?.id;
-      if (!userId) return;
-      const linRes = await listMyLineups(client, userId);
-      if (!linRes.ok) return;
-      const published = linRes.rows.filter((r) => r.is_published);
-      if (published.length === 0) return;
-      const ids = published.map((r) => r.id);
-      const statsByLineupId = await fetchLineupStatsBulk(client, ids);
-      const byEntry: Record<string, LineupStats> = {};
-      for (const r of published) {
-        const s = statsByLineupId[r.id];
-        if (s) byEntry[r.entry_id] = s;
-      }
-      setStatsByEntryId(byEntry);
-    })();
   }, []);
 
   useEffect(() => {
@@ -91,7 +68,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
 
   const handleStart = async () => {
     if (!selectedEntry) {
-      setError("출전할 라인업을 선택해주세요.");
+      setError("시뮬레이션에 사용할 라인업을 선택해주세요.");
       return;
     }
 
@@ -250,13 +227,13 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
   return (
     <section className="stadium-enter">
       <header className="stadium-enter-head">
-        <h1 className="stadium-h1">매치 미리보기</h1>
-        <p className="stadium-sub">내 라인업과 상대 라인업을 확인하고 경기를 시작합니다.</p>
+        <h1 className="stadium-h1">라인업 비교</h1>
+        <p className="stadium-sub">내 라인업과 실제 팀 경기 라인업을 확인하고 시뮬레이션합니다.</p>
       </header>
 
       <div className="stadium-enter-vs">
         <div className="stadium-enter-team">
-          <span className="stadium-enter-team-label">내 팀</span>
+          <span className="stadium-enter-team-label">내 라인업</span>
           {selectedEntry ? (
             <>
               <TeamLogo teamId={selectedEntry.teamId} size="lg" />
@@ -268,7 +245,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
         </div>
         <span className="stadium-enter-vs-label">VS</span>
         <div className="stadium-enter-team">
-          <span className="stadium-enter-team-label">상대</span>
+          <span className="stadium-enter-team-label">실제 팀 라인업</span>
           <TeamLogo teamId={opponentTeam.id} size="lg" />
           <strong>{opponentTeam.name}</strong>
         </div>
@@ -276,15 +253,11 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
 
       {myEntries.length > 0 ? (
         <div className="stadium-discover-my-picker">
-          <span className="stadium-discover-my-picker-label">출전 라인업 선택</span>
+          <span className="stadium-discover-my-picker-label">내 라인업 선택</span>
           <div className="stadium-discover-my-picker-list">
             {myEntries.map((entry) => {
               const active = entry.entryId === selectedEntryId;
               const pitcherAuto = entry.pitching === null;
-              const s = statsByEntryId[entry.entryId];
-              const recordTxt = s && s.matches > 0
-                ? ` (${s.wins}승 ${s.losses}패)`
-                : "";
               return (
                 <button
                   key={entry.entryId}
@@ -293,7 +266,7 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
                   onClick={() => setSelectedEntryId(entry.entryId)}
                 >
                   <TeamLogo teamId={entry.teamId} size="sm" />
-                  <span>{entry.name}{recordTxt}</span>
+                  <span>{entry.name}</span>
                   {pitcherAuto ? (
                     <span className="stadium-enter-picker-tag">투수 자동</span>
                   ) : null}
@@ -309,8 +282,8 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
         </div>
       ) : (
         <div className="stadium-enter-empty-box">
-          <p>출전 가능한 라인업이 없습니다.</p>
-          <p className="stadium-enter-empty-hint">라인업 빌더에서 9명 타순을 모두 채워야 출전할 수 있어요.</p>
+          <p>사용할 수 있는 라인업이 없습니다.</p>
+          <p className="stadium-enter-empty-hint">라인업 분석에서 9명 타순을 모두 채워주세요.</p>
           <Link href="/play/lineup" className="stadium-cta-primary" prefetch>
             라인업 만들러 가기
           </Link>
@@ -320,8 +293,8 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
             onClick={handleAiTrialStart}
             disabled={starting}
           >
-            <Bot size={16} />
-            <span>{starting ? "준비 중..." : "AI 자동 라인업으로 체험"}</span>
+            <BarChart3 size={16} />
+            <span>{starting ? "준비 중..." : "자동 라인업으로 체험"}</span>
           </button>
         </div>
       )}
@@ -334,8 +307,8 @@ export function AiChallengeBody({ opponentTeamId, onBeforeStart }: Props) {
         onClick={handleStart}
         disabled={!selectedEntry || starting}
       >
-        <Sparkles size={16} />
-        <span>{starting ? "준비 중..." : "대결 시작"}</span>
+        <BarChart3 size={16} />
+        <span>{starting ? "준비 중..." : "시뮬레이션 시작"}</span>
         <ArrowRight size={16} />
       </button>
     </section>

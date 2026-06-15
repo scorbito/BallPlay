@@ -4,8 +4,8 @@ import { LineupBuilderScreen } from "@/components/domain/LineupBuilderScreen";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "팀 관리",
-  description: "KBO 팀 슬롯을 운영하고 라인업을 자유롭게 구성하세요.",
+  title: "라인업 분석",
+  description: "프로야구 팀 라인업을 구성하고 분석해보세요.",
   alternates: { canonical: "/play/lineup" }
 };
 

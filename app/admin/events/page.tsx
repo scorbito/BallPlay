@@ -307,7 +307,7 @@ export default async function AdminEventsPage() {
   const uniqueVisitors7d = uniqueActorCount(metricRows);
 
   return (
-    <AppShell activeTab="my" title="이벤트 통계" theme="light" backHref="/my/settings" wide>
+    <AppShell activeTab="my" title="이벤트 통계" theme="light" backHref="/" wide>
       <section className="admin-events-hero">
         <div>
           <span className="admin-events-kicker">운영자 전용</span>

@@ -64,6 +64,8 @@ type HomeCard = {
   subtitle?: string;
   /** "추천" 등 강조 카드 — 우상단에 핑크 강조 배지 표시 */
   featured?: boolean;
+  /** 운영자 전용 카드 — 일반 사용자에게는 렌더링하지 않음 */
+  adminOnly?: boolean;
 };
 
 type HomeSection = {
@@ -82,6 +84,8 @@ type HomeSection = {
   heroSubtitle?: string;
   /** 그리드 열 수 — 기본 3, 콘텐츠는 2, 외부 앱은 1 */
   gridCols?: 1 | 2 | 3;
+  /** 운영자 전용 섹션 — 일반 사용자에게는 섹션 자체를 렌더링하지 않음 */
+  adminOnly?: boolean;
 };
 
 const sections: HomeSection[] = [
@@ -238,15 +242,6 @@ const sections: HomeSection[] = [
         icon: Swords,
         iconImage: "/icons/tabs/stadium.png",
         available: true
-      },
-      {
-        id: "lineup-opinion",
-        href: "/play/lineup/ranking",
-        title: "팬 라인업 의견",
-        description: "공개 라인업 참고와 의견 확인",
-        icon: Users,
-        iconImage: "/icons/menu/team-standings.png",
-        available: true
       }
     ]
   },
@@ -298,6 +293,35 @@ const sections: HomeSection[] = [
         external: true
       }
     ]
+  },
+  {
+    id: "admin-only",
+    label: "운영자 전용",
+    variant: "standard",
+    sectionIcon: Trophy,
+    sectionIconImage: "/icons/menu/team-standings.png",
+    gridCols: 3,
+    adminOnly: true,
+    cards: [
+      {
+        id: "playoff",
+        href: "/stadium/playoff",
+        title: "가을야구",
+        description: "운영자 가족용 시뮬레이션",
+        icon: Trophy,
+        iconImage: "/icons/menu/play-off.png",
+        available: true
+      },
+      {
+        id: "admin-events",
+        href: "/admin/events",
+        title: "운영자 이벤트 통계",
+        description: "이벤트·포인트·가을야구 현황",
+        icon: BarChart3,
+        iconImage: "/icons/menu/sim-1000.png",
+        available: true
+      }
+    ]
   }
 ];
 
@@ -323,7 +347,6 @@ export function HomeScreen({
 }: HomeScreenProps = {}) {
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
   void isAnonymous;
-  void isAdmin;
   void user;
   void userRecord;
   return (
@@ -353,6 +376,7 @@ export function HomeScreen({
         // Section 렌더링 함수 — pair wrapper 안에서 재사용하기 위해 추출.
         const renderSection = (section: HomeSection) => {
           const SectionIcon = section.sectionIcon;
+          const visibleCards = section.cards.filter((card) => !card.adminOnly || isAdmin);
           // hero 섹션은 카드가 비대칭 그리드 (모바일: 1 big + 2 small, PC: 3-col).
           // standard 섹션은 gridCols에 따라 1/2/3-col.
           const gridClass =
@@ -447,7 +471,7 @@ export function HomeScreen({
           // 카드 그리드 JSX — standard 섹션에서 사용 (hero는 좌우 컬럼 분리 렌더링)
           const cardsGrid = (
             <div className={gridClass}>
-              {section.cards.map(renderCard)}
+              {visibleCards.map(renderCard)}
             </div>
           );
 
@@ -517,13 +541,11 @@ export function HomeScreen({
         const out: ReactNode[] = [];
         let skip: string | null = null;
         sections.forEach((section, idx) => {
-          if (section.id === "lineup-tools") {
-            return;
-          }
           if (skip === section.id) {
             skip = null;
             return;
           }
+          if (section.adminOnly && !isAdmin) return;
           // predict + kbo-info 연속이면 pair wrapper로 묶기
           if (section.id === "predict" && sections[idx + 1]?.id === "kbo-info") {
             const next = sections[idx + 1];

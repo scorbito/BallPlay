@@ -1,13 +1,13 @@
 "use client";
 
 // 내 라인업 목록 — 본인만 보임 (localStorage 기반).
-// 한 카드의 "도전" 버튼을 누르면 다른 내 라인업을 상대로 골라 대결.
+// 한 카드의 "시뮬" 버튼을 누르면 다른 내 라인업과 비교 시뮬레이션.
 // source: "self" 라 기록 저장은 하지 않음.
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, List, Plus, Swords } from "lucide-react";
-import { TeamLogo } from "@/components/common/TeamLogo";
+import { ArrowRight, BarChart3, List, Plus } from "lucide-react";
+import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
@@ -18,7 +18,6 @@ import { fillMissingPitcherSlotsFromStatsDirectory } from "@/lib/sim/autoPitcher
 import { buildSimTeamInput } from "@/lib/sim/lineupAdapter";
 import { generateSeed, saveMatchSession } from "@/lib/sim/matchSession";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { fetchLineupStatsBulk, listMyLineups, type LineupStats } from "@/lib/supabase/query-parts/bpLineups";
 import {
   buildStatsDirectoryWithRecentFormForEntries,
   getEntryValidPlayerIds
@@ -60,29 +59,6 @@ export function MyLineupList({ maxItems = 10 }: Props) {
   const [opponentEntryId, setOpponentEntryId] = useState<string | null>(null);
   // 라인업이 1개뿐일 때 도전 누르면 안내 모달
   const [needSecondLineupOpen, setNeedSecondLineupOpen] = useState(false);
-  // picker 라벨 옆 전적 표시 — 공개 라인업만 stats 존재 (비공개는 bp_lineups row 없음)
-  const [statsByEntryId, setStatsByEntryId] = useState<Record<string, LineupStats>>({});
-
-  useEffect(() => {
-    void (async () => {
-      const client = createSupabaseBrowserClient();
-      const { data } = await client.auth.getUser();
-      const userId = data.user?.id;
-      if (!userId) return;
-      const linRes = await listMyLineups(client, userId);
-      if (!linRes.ok) return;
-      const published = linRes.rows.filter((r) => r.is_published);
-      if (published.length === 0) return;
-      const ids = published.map((r) => r.id);
-      const statsByLineupId = await fetchLineupStatsBulk(client, ids);
-      const byEntry: Record<string, LineupStats> = {};
-      for (const r of published) {
-        const s = statsByLineupId[r.id];
-        if (s) byEntry[r.entry_id] = s;
-      }
-      setStatsByEntryId(byEntry);
-    })();
-  }, []);
 
   // 마운트 시 1회 + 라인업 변경 이벤트/페이지 가시화/포커스 시 재로드.
   //   - LINEUP_ENTRIES_CHANGED_EVENT (커스텀): 같은 탭 내 빌더에서 publish 직후 발화 →
@@ -252,7 +228,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
           const team = { shortName: getTeamShortName(entry.teamId) };
           return (
             <div key={entry.entryId} className="stadium-discover-card">
-              <TeamLogo teamId={entry.teamId} size="md" />
+              <TeamBadge teamId={entry.teamId} size="md" fallbackName={entry.name} />
               <div className="stadium-discover-card-body">
                 <strong>{entry.name}</strong>
                 <span>{team.shortName} · {formatRelativeDate(entry.updatedAt)}</span>
@@ -267,15 +243,14 @@ export function MyLineupList({ maxItems = 10 }: Props) {
                   <List size={14} />
                   <span>라인업</span>
                 </button>
-                {/* disabled 제거 — 라인업 1개일 때도 클릭 등록되어 안내 모달 노출되도록 */}
                 <button
                   type="button"
                   className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
                   onClick={() => openChallenge(entry)}
-                  aria-label={`${entry.name}로 도전 시작`}
+                  aria-label={`${entry.name} 비교 시뮬레이션`}
                 >
-                  <Swords size={14} />
-                  <span>도전</span>
+                  <BarChart3 size={14} />
+                  <span>시뮬</span>
                 </button>
               </div>
             </div>
@@ -291,7 +266,7 @@ export function MyLineupList({ maxItems = 10 }: Props) {
 
       <ModalShell
         open={myEntry !== null}
-        title="내 라인업끼리 대결"
+        title="내 라인업 비교 시뮬레이션"
         onClose={closeChallenge}
         panelClassName="lineup-confirm-modal-panel challenge-start-modal-panel"
         closeOnBackdrop
@@ -301,33 +276,29 @@ export function MyLineupList({ maxItems = 10 }: Props) {
             <>
               <div className="stadium-enter-vs">
                 <div className="stadium-enter-team">
-                  <span className="stadium-enter-team-label">내 팀</span>
-                  <TeamLogo teamId={myEntry.teamId} size="lg" />
+                  <span className="stadium-enter-team-label">기준 라인업</span>
+                  <TeamBadge teamId={myEntry.teamId} size="lg" fallbackName={myEntry.name} />
                   <strong>{myEntry.name}</strong>
                 </div>
                 <span className="stadium-enter-vs-label">VS</span>
                 <div className="stadium-enter-team">
-                  <span className="stadium-enter-team-label">상대</span>
+                  <span className="stadium-enter-team-label">비교 라인업</span>
                   {opponentEntry ? (
                     <>
-                      <TeamLogo teamId={opponentEntry.teamId} size="lg" />
+                      <TeamBadge teamId={opponentEntry.teamId} size="lg" fallbackName={opponentEntry.name} />
                       <strong>{opponentEntry.name}</strong>
                     </>
                   ) : (
-                    <span className="stadium-enter-empty">상대 선택</span>
+                    <span className="stadium-enter-empty">라인업 선택</span>
                   )}
                 </div>
               </div>
 
               {opponentCandidates.length > 0 ? (
                 <div className="stadium-discover-my-picker">
-                  <span className="stadium-discover-my-picker-label">상대 선택</span>
+                  <span className="stadium-discover-my-picker-label">비교 라인업 선택</span>
                   <div className="stadium-discover-my-picker-list">
                     {opponentCandidates.map((entry) => {
-                      const s = statsByEntryId[entry.entryId];
-                      const recordTxt = s && s.matches > 0
-                        ? ` (${s.wins}승 ${s.losses}패)`
-                        : "";
                       return (
                         <button
                           key={entry.entryId}
@@ -335,8 +306,8 @@ export function MyLineupList({ maxItems = 10 }: Props) {
                           className={`stadium-discover-my-pick ${entry.entryId === opponentEntryId ? "is-active" : ""}`}
                           onClick={() => setOpponentEntryId(entry.entryId)}
                         >
-                          <TeamLogo teamId={entry.teamId} size="sm" />
-                          <span>{entry.name}{recordTxt}</span>
+                          <TeamBadge teamId={entry.teamId} size="sm" fallbackName={entry.name} />
+                          <span>{entry.name}</span>
                         </button>
                       );
                     })}
@@ -350,8 +321,8 @@ export function MyLineupList({ maxItems = 10 }: Props) {
                 disabled={!opponentEntry || starting}
                 onClick={startMatch}
               >
-                <Swords size={16} />
-                <span>{starting ? "시작 중..." : "대결 시작"}</span>
+                <BarChart3 size={16} />
+                <span>{starting ? "준비 중..." : "시뮬레이션 시작"}</span>
                 <ArrowRight size={16} />
               </button>
             </>
@@ -359,17 +330,17 @@ export function MyLineupList({ maxItems = 10 }: Props) {
         </div>
       </ModalShell>
 
-      {/* 라인업 1개일 때 도전 클릭 시 안내 모달 — 새 라인업 만들기 CTA 포함 */}
+      {/* 라인업 1개일 때 시뮬레이션 클릭 시 안내 모달 — 새 라인업 만들기 CTA 포함 */}
       <ModalShell
         open={needSecondLineupOpen}
-        title="라인업이 2개 필요해요"
+        title="비교할 라인업이 필요해요"
         onClose={() => setNeedSecondLineupOpen(false)}
         panelClassName="lineup-confirm-modal-panel"
         closeOnBackdrop
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            내 라인업끼리 대결하려면 <strong>라인업이 2개</strong> 필요해요.<br />
+            내 라인업끼리 비교하려면 <strong>라인업이 2개</strong> 필요해요.<br />
             새 라인업을 하나 더 만들어보세요.
           </p>
           <div className="lineup-confirm-actions">

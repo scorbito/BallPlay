@@ -1,6 +1,6 @@
 "use client";
 
-// AI 대전 도전 모달 — LobbyScreen "AI와 대결" 카드의 "도전" 버튼이 이 모달을 띄움.
+// 실제 팀 라인업 비교 시뮬레이션 모달.
 // 페이지(/stadium/enter) 와 동일 내용을 AiChallengeBody 로 공유.
 
 import { ModalShell } from "@/components/common/ModalShell";
@@ -16,7 +16,7 @@ export function AiChallengeModal({ opponentTeamId, onClose }: Props) {
   return (
     <ModalShell
       open={opponentTeamId !== null}
-      title="AI와 대결"
+      title="라인업 비교 시뮬레이션"
       onClose={onClose}
       panelClassName="lineup-confirm-modal-panel ai-challenge-modal-panel challenge-start-modal-panel"
       closeOnBackdrop

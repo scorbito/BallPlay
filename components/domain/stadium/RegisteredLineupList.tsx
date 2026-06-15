@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, List, RefreshCw, Swords } from "lucide-react";
-import { TeamLogo } from "@/components/common/TeamLogo";
+import { ArrowRight, BarChart3, List, RefreshCw } from "lucide-react";
+import { TeamBadge } from "@/components/common/TeamBadge";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDetailModal } from "./LineupDetailModal";
 import { getTeam } from "@/lib/constants/teams";
@@ -12,7 +12,6 @@ import type { SimTeamInput } from "@/lib/sim/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import {
-  fetchLineupStatsBulk,
   fetchPublishedLineupsByIds,
   listMyLineups,
   listPublishedByRecent,
@@ -53,11 +52,6 @@ function formatOwnerLabel(row: PublishedLineupRow): string {
   return row.owner_display_name?.trim() || row.owner_nickname?.trim() || "익명";
 }
 
-function formatRecord(stats: LineupStats | undefined): string {
-  if (!stats || stats.matches === 0) return "전적 없음";
-  return `${stats.wins}승 ${stats.losses}패`;
-}
-
 function compareByRecord(
   a: PublishedLineupRow,
   b: PublishedLineupRow,
@@ -82,6 +76,10 @@ function getTeamShortName(teamId: string): string {
   }
 }
 
+function isCustomTeamId(teamId: string): boolean {
+  return teamId.startsWith("custom:") || teamId.startsWith("custom-team:");
+}
+
 function mergePublishedEntries(localEntries: LineupEntry[], dbEntries: LineupEntry[]): LineupEntry[] {
   const map = new Map<string, LineupEntry>();
   for (const entry of [...localEntries, ...dbEntries]) {
@@ -102,7 +100,6 @@ export function RegisteredLineupList({
   const [rows, setRows] = useState<PublishedLineupRow[] | null>(null);
   const [statsByLineupId, setStatsByLineupId] = useState<Record<string, LineupStats>>({});
   const [myPublishedEntries, setMyPublishedEntries] = useState<LineupEntry[]>([]);
-  const [myStatsByEntryId, setMyStatsByEntryId] = useState<Record<string, LineupStats>>({});
   const [userId, setUserId] = useState<string | null>(null);
   const [ownerIdForExclude, setOwnerIdForExclude] = useState<string | null>(null);
   const [selectedOpponent, setSelectedOpponent] = useState<PublishedLineupRow | null>(null);
@@ -153,6 +150,7 @@ export function RegisteredLineupList({
           ? fetched.rows.filter((row) => row.owner_user_id !== filterUid)
           : fetched.rows
         )
+          .filter((row) => !isCustomTeamId(row.team_id))
           .sort((a, b) => compareByRecord(a, b, sorted.statsByLineupId))
           .slice(0, maxItems);
         listCacheRef.current[cacheKey] = { rows: filtered, statsByLineupId: sorted.statsByLineupId };
@@ -167,8 +165,9 @@ export function RegisteredLineupList({
         setError(res.error);
         return;
       }
-      listCacheRef.current[cacheKey] = { rows: res.rows, statsByLineupId: res.statsByLineupId };
-      setRows(res.rows);
+      const rows = res.rows.filter((row) => !isCustomTeamId(row.team_id));
+      listCacheRef.current[cacheKey] = { rows, statsByLineupId: res.statsByLineupId };
+      setRows(rows);
       setStatsByLineupId(res.statsByLineupId);
     },
     [includeMine, maxItems, sortBy]
@@ -209,21 +208,6 @@ export function RegisteredLineupList({
           const merged = mergePublishedEntries(myPublished, dbPublished);
           setMyPublishedEntries(merged);
           if (merged.length > 0) setMyEntryId((prev) => prev ?? merged[0].entryId);
-
-          const idByEntry: Record<string, string> = {};
-          for (const row of myLineupsRes.rows) {
-            if (row.is_published) idByEntry[row.entry_id] = row.id;
-          }
-          const ids = Object.values(idByEntry);
-          if (ids.length > 0) {
-            const statsByLineupId = await fetchLineupStatsBulk(client, ids);
-            const statsByEntry: Record<string, LineupStats> = {};
-            for (const [entryId, lineupId] of Object.entries(idByEntry)) {
-              const stats = statsByLineupId[lineupId];
-              if (stats) statsByEntry[entryId] = stats;
-            }
-            setMyStatsByEntryId(statsByEntry);
-          }
         }
       }
 
@@ -355,8 +339,8 @@ export function RegisteredLineupList({
   if (rows.length === 0) {
     return (
       <section className="stadium-discover-empty">
-        <strong>아직 출전 등록된 라인업이 없어요</strong>
-        <p>팀 관리에서 타자 9명과 선발 투수를 채운 뒤 &lsquo;출전 등록&rsquo;을 눌러보세요.</p>
+        <strong>아직 공개된 라인업이 없어요</strong>
+        <p>라인업 분석에서 타자 9명과 선발 투수를 채운 뒤 공개해보세요.</p>
       </section>
     );
   }
@@ -377,15 +361,13 @@ export function RegisteredLineupList({
       <section className="stadium-discover-list">
         {rows.map((row) => {
           const isMine = row.owner_user_id === ownerIdForExclude;
-          const stats = statsByLineupId[row.id];
           return (
             <div key={row.id} className="stadium-discover-card stadium-registered-card">
-              <TeamLogo teamId={row.team_id} size="md" fallbackName={row.name} />
+              <TeamBadge teamId={row.team_id} size="md" fallbackName={row.name} />
               <div className="stadium-discover-card-body">
                 <strong>{row.name}</strong>
                 <span className="stadium-registered-meta">
-                  {formatOwnerLabel(row)} · {getTeamShortName(row.team_id)} ·{" "}
-                  <span className="stadium-registered-record">{formatRecord(stats)}</span>
+                  {formatOwnerLabel(row)} · {getTeamShortName(row.team_id)}
                 </span>
               </div>
               <div className="stadium-lobby-card-actions">
@@ -396,19 +378,19 @@ export function RegisteredLineupList({
                   aria-label={`${row.name} 라인업 보기`}
                 >
                   <List size={14} />
-                  <span>라인업</span>
+                  <span>보기</span>
                 </button>
                 {isMine ? (
-                  <span className="stadium-mine-tag" aria-label="내 출전 팀">내 팀</span>
+                  <span className="stadium-mine-tag" aria-label="내 공개 라인업">내 라인업</span>
                 ) : (
                   <button
                     type="button"
                     className="stadium-lobby-card-btn stadium-lobby-card-btn-primary"
                     onClick={() => handleChallenge(row)}
-                    aria-label={`${row.name}에 도전`}
+                    aria-label={`${row.name} 비교 시뮬레이션`}
                   >
-                    <Swords size={14} />
-                    <span>도전</span>
+                    <BarChart3 size={14} />
+                    <span>시뮬</span>
                   </button>
                 )}
               </div>
@@ -421,7 +403,7 @@ export function RegisteredLineupList({
 
       <ModalShell
         open={selectedOpponent !== null}
-        title="도전 시작"
+        title="비교 시뮬레이션"
         onClose={() => setSelectedOpponent(null)}
         panelClassName="lineup-confirm-modal-panel challenge-start-modal-panel"
         closeOnBackdrop
@@ -431,16 +413,20 @@ export function RegisteredLineupList({
             <>
               <div className="stadium-enter-vs">
                 <div className="stadium-enter-team">
-                  <span className="stadium-enter-team-label">{formatOwnerLabel(selectedOpponent)}</span>
-                  <TeamLogo teamId={selectedOpponent.team_id} size="lg" fallbackName={selectedOpponent.name} />
+                  <span className="stadium-enter-team-label">공개 라인업</span>
+                  <TeamBadge
+                    teamId={selectedOpponent.team_id}
+                    size="lg"
+                    fallbackName={selectedOpponent.name}
+                  />
                   <strong>{selectedOpponent.name}</strong>
                 </div>
                 <span className="stadium-enter-vs-label">VS</span>
                 <div className="stadium-enter-team">
-                  <span className="stadium-enter-team-label">내 팀</span>
+                  <span className="stadium-enter-team-label">내 라인업</span>
                   {myEntry ? (
                     <>
-                      <TeamLogo
+                      <TeamBadge
                         teamId={myEntry.teamId}
                         size="lg"
                         fallbackName={myEntry.name}
@@ -450,18 +436,16 @@ export function RegisteredLineupList({
                       <strong>{myEntry.name}</strong>
                     </>
                   ) : (
-                    <span className="stadium-enter-empty">출전 팀 없음</span>
+                    <span className="stadium-enter-empty">공개 라인업 없음</span>
                   )}
                 </div>
               </div>
 
               {myPublishedEntries.length > 1 ? (
                 <div className="stadium-discover-my-picker">
-                  <span className="stadium-discover-my-picker-label">내 출전 팀 선택</span>
+                  <span className="stadium-discover-my-picker-label">내 공개 라인업 선택</span>
                   <div className="stadium-discover-my-picker-list">
                     {myPublishedEntries.map((entry) => {
-                      const stats = myStatsByEntryId[entry.entryId];
-                      const recordTxt = stats && stats.matches > 0 ? ` (${stats.wins}승 ${stats.losses}패)` : "";
                       return (
                         <button
                           key={entry.entryId}
@@ -469,14 +453,14 @@ export function RegisteredLineupList({
                           className={`stadium-discover-my-pick ${entry.entryId === myEntryId ? "is-active" : ""}`}
                           onClick={() => setMyEntryId(entry.entryId)}
                         >
-                          <TeamLogo
+                          <TeamBadge
                             teamId={entry.teamId}
                             size="sm"
                             fallbackName={entry.name}
                             fallbackInitial={entry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.initials : undefined}
                             fallbackColor={entry.teamId.startsWith("custom:") ? myCustomBadgeInfo?.color : undefined}
                           />
-                          <span>{entry.name}{recordTxt}</span>
+                          <span>{entry.name}</span>
                         </button>
                       );
                     })}
@@ -490,8 +474,8 @@ export function RegisteredLineupList({
                 disabled={!myEntry || starting}
                 onClick={startChallenge}
               >
-                <Swords size={16} />
-                <span>{starting ? "시작 중..." : "도전 시작"}</span>
+                <BarChart3 size={16} />
+                <span>{starting ? "준비 중..." : "시뮬레이션 시작"}</span>
                 <ArrowRight size={16} />
               </button>
             </>
@@ -501,21 +485,21 @@ export function RegisteredLineupList({
 
       <ModalShell
         open={needPublishGateOpen}
-        title="출전 팀이 필요해요"
+        title="공개 라인업이 필요해요"
         onClose={() => setNeedPublishGateOpen(false)}
         panelClassName="lineup-confirm-modal-panel"
         closeOnBackdrop
       >
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
-            다른 출전 팀과 도전하려면 본인의 출전 등록 팀이 있어야 해요.
+            공개 라인업과 비교 시뮬레이션을 하려면 내 라인업도 공개 상태여야 해요.
           </p>
           <div className="lineup-confirm-actions">
             <button type="button" className="lineup-confirm-cancel" onClick={() => setNeedPublishGateOpen(false)}>
               닫기
             </button>
-            <Link href="/play" className="lineup-confirm-primary" prefetch>
-              팀 관리
+            <Link href="/play/lineup" className="lineup-confirm-primary" prefetch>
+              라인업 분석
             </Link>
           </div>
         </div>

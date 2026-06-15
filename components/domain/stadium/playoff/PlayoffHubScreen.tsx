@@ -69,7 +69,7 @@ export function PlayoffHubScreen({ initialRun, loggedIn, showLatestResult = fals
   };
 
   return (
-    <AppShell activeTab="stadium" title="가을야구" backHref="/stadium/lobby" theme="light" wide>
+    <AppShell activeTab="stadium" title="가을야구" backHref="/" theme="light" wide>
       {/* 명예의 전당 — 가을야구 우승자 전체 목록(경기장에서 이리로 이동) */}
       <PlayoffHallOfFame variant="full" />
 

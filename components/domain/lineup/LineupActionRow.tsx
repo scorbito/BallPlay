@@ -42,8 +42,6 @@ export function LineupActionRow({
   publishProcessing,
   poolCount,
   enableTeamMatchActions = true,
-  currentEntryStats,
-  currentEntryAwayStats,
   selectedTeamShortName,
   onModeChange,
   onRecentOpen,
@@ -58,21 +56,11 @@ export function LineupActionRow({
           <p className="lineup-action-hint">
             특별 라인업 · 여러 팀 선수 풀에서 자유롭게 편집할 수 있어요.
           </p>
-        ) : currentEntry?.isPublished ? (() => {
-          const wins = currentEntryStats?.wins ?? 0;
-          const losses = currentEntryStats?.losses ?? 0;
-          // 원정/방어 전적은 도전받은 적 있을 때(matches>0)만 노출 — 평소엔 간결하게.
-          const away = currentEntryAwayStats;
-          const hasAway = !!away && away.matches > 0;
-          return (
-            <p className="lineup-action-hint lineup-action-hint-published">
-              출전 중 · {hasAway ? "홈 " : ""}{wins}승 {losses}패
-              {hasAway ? (
-                <span className="lineup-action-hint-away"> · 원정 {away!.wins}승 {away!.losses}패</span>
-              ) : null}
-            </p>
-          );
-        })() : currentEntry ? (
+        ) : currentEntry?.isPublished ? (
+          <p className="lineup-action-hint lineup-action-hint-published">
+            공개중
+          </p>
+        ) : currentEntry ? (
           <button
             type="button"
             className="lineup-recent-load-btn"
@@ -117,8 +105,8 @@ export function LineupActionRow({
           const tip = !canSync
             ? "잠시 후 다시 시도해주세요"
             : isOn
-              ? "출전 중 — 누르면 출전을 내립니다 (라인업·전적은 유지)"
-              : publishRequirementMessage ?? "출전 등록하면 다른 사람이 도전할 수 있어요";
+              ? "공개중 — 누르면 비공개로 전환합니다"
+              : publishRequirementMessage ?? "공개하면 다른 사용자가 라인업을 참고할 수 있어요";
           return (
             <button
               type="button"
@@ -128,7 +116,7 @@ export function LineupActionRow({
               onClick={isOn ? onWithdraw : onPublishRequest}
             >
               <Eye size={12} />
-              {isOn ? "출전 중" : "출전 등록"}
+              {isOn ? "공개중" : "공개"}
             </button>
           );
         })() : null}

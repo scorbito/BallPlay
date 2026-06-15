@@ -5,6 +5,7 @@ import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/sup
 import { teams } from "@/lib/constants/teams";
 import { SIM_ENGINE_VERSION } from "@/lib/sim/version";
 import { getLatestBattingLineupForTeam } from "@/lib/supabase/query-parts/bpRecentLineups";
+import { getUserTier } from "@/lib/auth/userTier";
 import type { RecentLineupHint } from "@/lib/sim/fakeOpponent";
 import type { SavedLineup, SavedPitcherLineup } from "@/lib/types/lineup";
 import {
@@ -86,8 +87,8 @@ async function recordChampion(
 
 async function authed() {
   const client = createSupabaseServerClient();
-  const { data: { user } } = await client.auth.getUser();
-  return { client, userId: user?.id ?? null };
+  const userTier = await getUserTier(client);
+  return { client, userId: userTier.user?.id ?? null, isAdmin: userTier.tier === "admin" };
 }
 
 /** 가을야구 경기 1건을 공식 누적 전적(bp_records)에도 기록 — 경기장 경기는 모두 공식 인정.
@@ -142,8 +143,9 @@ export async function startPlayoffRun(input: {
   teamId: string;
   teamName: string;
 }): Promise<{ ok: true; run: PlayoffRun } | { ok: false; error: string }> {
-  const { client, userId } = await authed();
+  const { client, userId, isAdmin } = await authed();
   if (!userId) return { ok: false, error: "로그인이 필요해요." };
+  if (!isAdmin) return { ok: false, error: "운영자 전용 기능입니다." };
 
   // 진행 중 도전이 있으면 종료(새 도전 시작)
   const existing = await getActivePlayoffRun(client, userId);
@@ -202,8 +204,9 @@ export async function beginPlayoffGame(input: {
   myDisplayName?: string;
   oppLineupHint?: RecentLineupHint | null;
 }): Promise<{ ok: true; run: PlayoffRun } | { ok: false; error: string }> {
-  const { client, userId } = await authed();
+  const { client, userId, isAdmin } = await authed();
   if (!userId) return { ok: false, error: "로그인이 필요해요." };
+  if (!isAdmin) return { ok: false, error: "운영자 전용 기능입니다." };
 
   const run = await getPlayoffRunById(client, input.runId, userId);
   if (!run) return { ok: false, error: "가을야구 도전을 찾을 수 없어요." };
@@ -258,8 +261,9 @@ export async function recordPlayoffGame(input: {
   run: PlayoffRun;
   pointAward?: { awarded: boolean; amount: number; balance: number } | null;
 } | { ok: false; error: string }> {
-  const { client, userId } = await authed();
+  const { client, userId, isAdmin } = await authed();
   if (!userId) return { ok: false, error: "로그인이 필요해요." };
+  if (!isAdmin) return { ok: false, error: "운영자 전용 기능입니다." };
 
   const run = await getPlayoffRunById(client, input.runId, userId);
   if (!run) return { ok: false, error: "도전을 찾을 수 없어요." };
@@ -376,8 +380,9 @@ export async function updatePlayoffLineup(input: {
   batting: SavedLineup;
   pitching: SavedPitcherLineup;
 }): Promise<{ ok: true; run: PlayoffRun } | { ok: false; error: string }> {
-  const { client, userId } = await authed();
+  const { client, userId, isAdmin } = await authed();
   if (!userId) return { ok: false, error: "로그인이 필요해요." };
+  if (!isAdmin) return { ok: false, error: "운영자 전용 기능입니다." };
   const run = await getPlayoffRunById(client, input.runId, userId);
   if (!run) return { ok: false, error: "도전을 찾을 수 없어요." };
   if (run.status !== "active") return { ok: false, error: "이미 종료된 도전이에요." };
@@ -397,8 +402,9 @@ export async function updatePlayoffLineup(input: {
 
 /** 도전 포기(새 도전 시작 등 내부용). */
 export async function abandonPlayoffRun(runId: string): Promise<{ ok: boolean }> {
-  const { client, userId } = await authed();
+  const { client, userId, isAdmin } = await authed();
   if (!userId) return { ok: false };
+  if (!isAdmin) return { ok: false };
   await updatePlayoffRun(client, runId, userId, {
     status: "abandoned",
     completed_at: new Date().toISOString()
@@ -408,8 +414,9 @@ export async function abandonPlayoffRun(runId: string): Promise<{ ok: boolean }>
 
 /** 진행 중 이탈 = 패배(탈락) 처리. 뒤로가기로 나가면 호출. */
 export async function forfeitPlayoffRun(runId: string): Promise<{ ok: boolean }> {
-  const { client, userId } = await authed();
+  const { client, userId, isAdmin } = await authed();
   if (!userId) return { ok: false };
+  if (!isAdmin) return { ok: false };
   await updatePlayoffRun(client, runId, userId, {
     status: "eliminated",
     completed_at: new Date().toISOString()

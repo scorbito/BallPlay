@@ -1,6 +1,8 @@
+import { notFound } from "next/navigation";
 import { PlayoffHubScreen } from "@/components/domain/stadium/playoff/PlayoffHubScreen";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getLatestPlayoffRun } from "@/lib/supabase/query-parts/bpPlayoff";
+import { getUserTier } from "@/lib/auth/userTier";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +12,9 @@ export default async function PlayoffPage({
   searchParams?: { result?: string };
 }) {
   const supabase = createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userTier = await getUserTier(supabase);
+  if (userTier.tier !== "admin") notFound();
+  const user = userTier.user;
   const latestRun = user ? await getLatestPlayoffRun(supabase, user.id) : null;
   const showLatestResult = searchParams?.result === "1";
 

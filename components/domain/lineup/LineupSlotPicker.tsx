@@ -102,15 +102,10 @@ export function LineupSlotPicker({
                 >
                   <TeamBadge teamId={entry.teamId} size="sm" />
                   <span className="lineup-slot-menu-name">{entry.name}</span>
-                  <span className="lineup-slot-menu-record">
-                    {stats && stats.matches > 0
-                      ? `${stats.wins}승 ${stats.losses}패`
-                      : "0승 0패"}
-                  </span>
                   {entry.isPublished ? (
-                    <span className="lineup-slot-menu-badge is-public" title="경기장 출전 중">출전</span>
+                    <span className="lineup-slot-menu-badge is-public" title="공개중">공개중</span>
                   ) : (
-                    <span className="lineup-slot-menu-badge" title="필수 라인업 완성 후 출전할 수 있습니다">출전 준비</span>
+                    <span className="lineup-slot-menu-badge" title="비공개 상태">비공개</span>
                   )}
                 </button>
                 <div className="lineup-slot-menu-actions">
@@ -212,19 +207,15 @@ export function LineupSlotPicker({
             </li>
           ) : null}
 
-          {/* 은퇴한 팀 — 읽기 전용. 전적은 보존되지만 편집/출전 불가. 슬롯 한도엔 미포함. */}
+          {/* 은퇴한 팀 — 읽기 전용. 슬롯 한도엔 미포함. */}
           {archivedTeams.length > 0 ? (
             <>
               <li className="lineup-slot-archived-head">은퇴한 팀</li>
               {archivedTeams.map((t) => {
-                const s = t.stats;
                 return (
                   <li key={t.entry.entryId} className="lineup-slot-archived-item">
                     <TeamBadge teamId={t.entry.teamId} size="sm" />
                     <span className="lineup-slot-menu-name">{t.entry.name}</span>
-                    <span className="lineup-slot-menu-record">
-                      {s && s.matches > 0 ? `${s.wins}승 ${s.losses}패` : "기록 없음"}
-                    </span>
                     <span className="lineup-slot-menu-badge is-retired" title="은퇴한 팀">
                       은퇴
                     </span>
