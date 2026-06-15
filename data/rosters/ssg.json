@@ -1,10 +1,19 @@
 {
   "teamId": "ssg",
   "teamName": "SSG 랜더스",
-  "_scrapedAt": "2026-06-08T03:46:25.986Z",
+  "_scrapedAt": "2026-06-15T04:03:02.728Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
+    {
+      "id": "ssg-0",
+      "name": "신상연",
+      "jerseyNumber": 0,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
+    },
     {
       "id": "ssg-1",
       "name": "김민",
@@ -12,7 +21,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 30
+      "seasonGames": 33
     },
     {
       "id": "ssg-p55801",
@@ -30,7 +39,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 59
+      "seasonGames": 65
     },
     {
       "id": "ssg-p55896",
@@ -57,7 +66,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 56
+      "seasonGames": 62
     },
     {
       "id": "ssg-4",
@@ -156,7 +165,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 38
+      "seasonGames": 44
     },
     {
       "id": "ssg-11",
@@ -191,7 +200,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 48
+      "seasonGames": 53
     },
     {
       "id": "ssg-15",
@@ -200,7 +209,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 36
+      "seasonGames": 37
     },
     {
       "id": "ssg-16",
@@ -209,7 +218,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 7
+      "seasonGames": 11
     },
     {
       "id": "ssg-18",
@@ -227,7 +236,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 23
+      "seasonGames": 24
     },
     {
       "id": "ssg-20",
@@ -236,7 +245,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 37
+      "seasonGames": 43
     },
     {
       "id": "ssg-21",
@@ -263,7 +272,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "ssg-24",
@@ -281,7 +290,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 0
+      "seasonGames": 3
     },
     {
       "id": "ssg-27",
@@ -290,7 +299,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "R",
-      "seasonGames": 59
+      "seasonGames": 65
     },
     {
       "id": "ssg-28",
@@ -299,7 +308,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 20
+      "seasonGames": 21
     },
     {
       "id": "ssg-29",
@@ -317,7 +326,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "ssg-31",
@@ -326,7 +335,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 33
+      "seasonGames": 38
     },
     {
       "id": "ssg-32",
@@ -335,7 +344,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 51
+      "seasonGames": 56
     },
     {
       "id": "ssg-33",
@@ -380,7 +389,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 54
+      "seasonGames": 59
     },
     {
       "id": "ssg-38",
@@ -389,7 +398,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 26
+      "seasonGames": 28
     },
     {
       "id": "ssg-39",
@@ -398,7 +407,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "ssg-47",
@@ -407,7 +416,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 0
+      "seasonGames": 1
     },
     {
       "id": "ssg-41",
@@ -416,7 +425,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "ssg-42",
@@ -425,7 +434,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 22
+      "seasonGames": 25
     },
     {
       "id": "ssg-43",
@@ -461,7 +470,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 6
+      "seasonGames": 11
     },
     {
       "id": "ssg-48",
@@ -523,7 +532,16 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 58
+      "seasonGames": 63
+    },
+    {
+      "id": "ssg-55",
+      "name": "해치",
+      "jerseyNumber": 55,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
     },
     {
       "id": "ssg-56",
@@ -541,7 +559,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 18
+      "seasonGames": 20
     },
     {
       "id": "ssg-58",
@@ -577,7 +595,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "ssg-62",
@@ -613,7 +631,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 1
+      "seasonGames": 5
     },
     {
       "id": "ssg-66",
@@ -631,7 +649,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 5
+      "seasonGames": 8
     },
     {
       "id": "ssg-90",
@@ -649,7 +667,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 30
+      "seasonGames": 33
     },
     {
       "id": "ssg-93",
@@ -667,7 +685,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 28
+      "seasonGames": 31
     },
     {
       "id": "ssg-98",
@@ -748,15 +766,6 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 0
-    },
-    {
-      "id": "ssg-108",
-      "name": "신상연",
-      "jerseyNumber": 108,
-      "primaryPosition": "P",
-      "throwingHand": "R",
-      "battingHand": "R",
       "seasonGames": 0
     },
     {
