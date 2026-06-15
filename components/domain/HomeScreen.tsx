@@ -517,6 +517,9 @@ export function HomeScreen({
         const out: ReactNode[] = [];
         let skip: string | null = null;
         sections.forEach((section, idx) => {
+          if (section.id === "lineup-tools") {
+            return;
+          }
           if (skip === section.id) {
             skip = null;
             return;
