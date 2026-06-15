@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { waitUntil } from "@vercel/functions";
 import { syncStatsSnapshot } from "@/lib/server/kbo/syncStats";
+import { upsertRecent10TopPlayers } from "@/lib/server/recent10/upsertTopPlayers";
 
 // 10팀 × 4페이지 × 0.8s 딜레이 + 응답 시간 = ~60~90s. 여유 두고 300s.
 // 응답은 즉시 반환, 실제 작업은 waitUntil로 백그라운드. cron-job.org 30s 타임아웃 회피.
@@ -35,8 +36,10 @@ export async function GET(request: NextRequest) {
 
   waitUntil(
     syncStatsSnapshot(snapshotDate)
-      .then((result) => {
+      .then(async (result) => {
         console.log("[sync-kbo-stats]", JSON.stringify(result));
+        const recent10Result = await upsertRecent10TopPlayers();
+        console.log("[recent10-top]", JSON.stringify(recent10Result));
       })
       .catch((err) => {
         console.error("[sync-kbo-stats] failed:", err);

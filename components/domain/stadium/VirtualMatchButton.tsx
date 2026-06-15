@@ -9,7 +9,7 @@ type Props = {
   /** 대전 팀 2개(+선택 선발). 어떤 경기 row 든 이 형태로만 맞춰 넘기면 된다. */
   game: SpectatorMatchGame;
   className?: string;
-  /** 평상시 라벨. 기본 "가상 경기". */
+  /** 평상시 라벨. 기본 "경기 시뮬". */
   idleLabel?: string;
   /** 준비 중 라벨. 기본 "준비". */
   busyLabel?: string;
@@ -26,9 +26,9 @@ type Props = {
 export function VirtualMatchButton({
   game,
   className,
-  idleLabel = "경기해보기",
+  idleLabel = "경기 시뮬",
   busyLabel = "준비",
-  title = "최신 라인업과 오늘 선발로 가상 경기를 시작",
+  title = "최신 라인업과 오늘 선발로 경기 시뮬레이션을 확인",
   onStarted
 }: Props) {
   const router = useRouter();

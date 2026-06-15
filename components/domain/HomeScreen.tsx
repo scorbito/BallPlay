@@ -198,6 +198,15 @@ const sections: HomeSection[] = [
         available: true
       },
       {
+        id: "recent10-top",
+        href: "/recent10-top",
+        title: "최근 10경기 TOP",
+        description: "타율·홈런·도루·ERA 랭킹",
+        icon: BarChart3,
+        iconImage: "/icons/menu/10game-top10.png",
+        available: true
+      },
+      {
         id: "weekly-report",
         href: "/weekly-report",
         title: "주간 리포트",
@@ -393,6 +402,16 @@ export function HomeScreen({
             const Icon = card.icon;
             const available = card.id === "my-team" && isAdmin ? true : card.available;
             const badge = card.id === "my-team" && isAdmin ? undefined : card.badge;
+            const displayTitle =
+              card.id === "recent10-top"
+                ? "최근 경기 TOP10"
+                : card.id === "ai-battle"
+                  ? "AI 승부 맞대결"
+                  : card.id === "daily-report"
+                    ? "일일 리포트"
+                    : card.title;
+            const displayDescription =
+              card.id === "recent10-top" ? "타율·홈런·도루·ERA 랭킹" : card.description;
 
             // 아이콘 영역: iconImage 있으면 이미지, 없으면 lucide.
             // width/height는 next/image의 intrinsic 힌트일 뿐 — 실제 크기는 CSS의 컨테이너(.play-hub-card-icon) + img { width:100% } 가 결정.
@@ -412,13 +431,13 @@ export function HomeScreen({
               <>
                 {iconNode}
                 <span className="play-hub-card-text">
-                  <strong className="play-hub-card-title">{card.title}</strong>
+                  <strong className="play-hub-card-title">{displayTitle}</strong>
                   {card.subtitle ? (
                     <span className="play-hub-card-subtitle">{card.subtitle}</span>
                   ) : null}
                   {/* description은 PC(≥1025px)에서만 노출 — CSS @media에서 처리 */}
-                  {card.description ? (
-                    <span className="play-hub-card-description">{card.description}</span>
+                  {displayDescription ? (
+                    <span className="play-hub-card-description">{displayDescription}</span>
                   ) : null}
                 </span>
                 {showChevron ? (
@@ -453,8 +472,8 @@ export function HomeScreen({
                 )}
                 <HomeCardCorner
                   cardId={card.id}
-                  title={card.title}
-                  description={card.description}
+                  title={displayTitle}
+                  description={displayDescription}
                   available={available}
                   featured={card.featured}
                   external={card.external}

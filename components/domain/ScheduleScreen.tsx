@@ -650,7 +650,7 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
                     <VirtualMatchButton
                       game={{ homeTeamId: game.homeTeamId, awayTeamId: game.awayTeamId }}
                       className="sched-game-sim-btn"
-                      idleLabel="경기해보기"
+                      idleLabel="경기 시뮬"
                       busyLabel="준비"
                     />
                   ) : null}

@@ -5,19 +5,19 @@
       "team_id": "lg",
       "season": 2026,
       "rank": 1,
-      "wins": 40,
+      "wins": 41,
       "losses": 24,
       "draws": 0,
       "games_behind": "-",
       "form": [
         "win",
         "win",
-        "win",
         "lose",
+        "win",
         "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.448+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "395620e5-ae39-4b8b-91b6-b0c5cfdcbd17",
@@ -27,7 +27,7 @@
       "wins": 38,
       "losses": 25,
       "draws": 1,
-      "games_behind": "1.5",
+      "games_behind": "2",
       "form": [
         "win",
         "win",
@@ -36,26 +36,26 @@
         "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.448+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "9b13295a-2882-483d-b9d8-f2da7db8f43d",
       "team_id": "samsung",
       "season": 2026,
       "rank": 3,
-      "wins": 35,
+      "wins": 36,
       "losses": 27,
       "draws": 1,
       "games_behind": "4",
       "form": [
         "lose",
-        "lose",
         "win",
         "lose",
+        "win",
         "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.448+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "726b48e4-a238-43e5-925f-e025acc1dac9",
@@ -63,56 +63,56 @@
       "season": 2026,
       "rank": 4,
       "wins": 34,
-      "losses": 30,
-      "draws": 1,
-      "games_behind": "6",
-      "form": [
-        "win",
-        "lose",
-        "lose",
-        "lose",
-        "win"
-      ],
-      "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.448+00:00"
-    },
-    {
-      "id": "8f1be603-49eb-445c-86d2-5244fefb3517",
-      "team_id": "hanwha",
-      "season": 2026,
-      "rank": 5,
-      "wins": 32,
-      "losses": 30,
+      "losses": 31,
       "draws": 1,
       "games_behind": "7",
       "form": [
         "lose",
-        "win",
-        "win",
         "lose",
+        "lose",
+        "win",
         "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.448+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "b3b63f28-14de-41d0-8336-c8141d472f92",
       "team_id": "doosan",
       "season": 2026,
-      "rank": 6,
-      "wins": 32,
+      "rank": 5,
+      "wins": 33,
       "losses": 31,
       "draws": 2,
       "games_behind": "7.5",
       "form": [
-        "win",
         "lose",
         "win",
         "win",
+        "lose",
+        "win"
+      ],
+      "source_payload": null,
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
+    },
+    {
+      "id": "8f1be603-49eb-445c-86d2-5244fefb3517",
+      "team_id": "hanwha",
+      "season": 2026,
+      "rank": 6,
+      "wins": 32,
+      "losses": 31,
+      "draws": 1,
+      "games_behind": "8",
+      "form": [
+        "win",
+        "win",
+        "lose",
+        "lose",
         "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.449+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "c51f14a3-5e3b-48b1-b4e7-fc9a789f6415",
@@ -122,7 +122,7 @@
       "wins": 28,
       "losses": 34,
       "draws": 1,
-      "games_behind": "11",
+      "games_behind": "11.5",
       "form": [
         "lose",
         "win",
@@ -131,7 +131,7 @@
         "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.449+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "b8461109-d296-4b4a-a73b-256534f1591b",
@@ -139,266 +139,86 @@
       "season": 2026,
       "rank": 8,
       "wins": 27,
-      "losses": 36,
+      "losses": 37,
       "draws": 1,
-      "games_behind": "12.5",
+      "games_behind": "13.5",
       "form": [
         "lose",
         "lose",
-        "lose",
         "win",
+        "lose",
         "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.449+00:00"
-    },
-    {
-      "id": "c673e432-d8e3-4c9b-8fe7-eb4ee6ffa003",
-      "team_id": "lotte",
-      "season": 2026,
-      "rank": 9,
-      "wins": 24,
-      "losses": 38,
-      "draws": 1,
-      "games_behind": "15",
-      "form": [
-        "lose",
-        "win",
-        "lose",
-        "win",
-        "lose"
-      ],
-      "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.449+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     },
     {
       "id": "0d39e8d0-fad6-4004-b78b-506eacdce13d",
       "team_id": "kiwoom",
       "season": 2026,
-      "rank": 10,
-      "wins": 25,
+      "rank": 9,
+      "wins": 26,
       "losses": 40,
       "draws": 1,
       "games_behind": "15.5",
       "form": [
+        "lose",
+        "lose",
         "win",
-        "lose",
-        "lose",
         "win",
         "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-13T13:15:11.449+00:00"
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
+    },
+    {
+      "id": "c673e432-d8e3-4c9b-8fe7-eb4ee6ffa003",
+      "team_id": "lotte",
+      "season": 2026,
+      "rank": 10,
+      "wins": 24,
+      "losses": 39,
+      "draws": 1,
+      "games_behind": "16",
+      "form": [
+        "win",
+        "lose",
+        "win",
+        "lose",
+        "lose"
+      ],
+      "source_payload": null,
+      "synced_at": "2026-06-15T13:00:23.4+00:00"
     }
   ],
   "starterStats": [
     {
-      "team": "kiwoom",
-      "reqTeam": "kiwoom",
-      "foundTeam": "kiwoom",
-      "name": "로젠버그",
-      "snapshot_date": "2026-06-13",
-      "stats": {
-        "k": 24,
-        "bb": 8,
-        "hr": 1,
-        "ip": 22,
-        "k9": 9.82,
-        "bb9": 3.27,
-        "era": 4.5,
-        "hr9": 0.41,
-        "name": "로젠버그",
-        "role": "SP",
-        "whip": 1.64,
-        "wins": 0,
-        "holds": 0,
-        "saves": 0,
-        "losses": 1,
-        "playerId": "kiwoom-30",
-        "earnedRuns": 11,
-        "hitsAllowed": 28,
-        "throwingHand": "L",
-        "staminaPitches": 80
-      }
-    },
-    {
-      "team": "hanwha",
-      "reqTeam": "hanwha",
-      "foundTeam": "hanwha",
-      "name": "왕옌청",
-      "snapshot_date": "2026-06-13",
-      "stats": {
-        "k": 57,
-        "bb": 28,
-        "hr": 5,
-        "ip": 67,
-        "k9": 7.66,
-        "bb9": 3.76,
-        "era": 3.49,
-        "hr9": 0.67,
-        "name": "왕옌청",
-        "role": "SP",
-        "whip": 1.46,
-        "wins": 5,
-        "holds": 0,
-        "saves": 0,
-        "losses": 3,
-        "playerId": "hanwha-19",
-        "earnedRuns": 26,
-        "hitsAllowed": 70,
-        "throwingHand": "L",
-        "staminaPitches": 93
-      }
-    },
-    {
-      "team": "samsung",
-      "reqTeam": "samsung",
-      "foundTeam": "samsung",
-      "name": "양창섭",
-      "snapshot_date": "2026-06-13",
-      "stats": {
-        "k": 35,
-        "bb": 10,
-        "hr": 5,
-        "ip": 40.7,
-        "k9": 7.74,
-        "bb9": 2.21,
-        "era": 4.43,
-        "hr9": 1.11,
-        "name": "양창섭",
-        "role": "SP",
-        "whip": 1.23,
-        "wins": 4,
-        "holds": 0,
-        "saves": 0,
-        "losses": 0,
-        "playerId": "samsung-42",
-        "earnedRuns": 20,
-        "hitsAllowed": 40,
-        "throwingHand": "R",
-        "staminaPitches": 80
-      }
-    },
-    {
-      "team": "ssg",
-      "name": "해치",
-      "stats": null,
-      "message": "No snapshot found in DB"
-    },
-    {
-      "team": "lg",
-      "reqTeam": "lg",
-      "foundTeam": "lg",
-      "name": "임찬규",
-      "snapshot_date": "2026-06-13",
-      "stats": {
-        "k": 36,
-        "bb": 23,
-        "hr": 5,
-        "ip": 65.3,
-        "k9": 4.96,
-        "bb9": 3.17,
-        "era": 3.72,
-        "hr9": 0.69,
-        "name": "임찬규",
-        "role": "SP",
-        "whip": 1.55,
-        "wins": 6,
-        "holds": 0,
-        "saves": 0,
-        "losses": 1,
-        "playerId": "lg-1",
-        "earnedRuns": 27,
-        "hitsAllowed": 78,
-        "throwingHand": "R",
-        "staminaPitches": 98
-      }
-    },
-    {
-      "team": "lotte",
-      "reqTeam": "lotte",
-      "foundTeam": "lotte",
-      "name": "비슬리",
-      "snapshot_date": "2026-06-13",
-      "stats": {
-        "k": 74,
-        "bb": 19,
-        "hr": 5,
-        "ip": 63,
-        "k9": 10.57,
-        "bb9": 2.71,
-        "era": 4.86,
-        "hr9": 0.71,
-        "name": "비슬리",
-        "role": "SP",
-        "whip": 1.51,
-        "wins": 4,
-        "holds": 0,
-        "saves": 0,
-        "losses": 3,
-        "playerId": "lotte-23",
-        "earnedRuns": 34,
-        "hitsAllowed": 76,
-        "throwingHand": "R",
-        "staminaPitches": 95
-      }
-    },
-    {
-      "team": "kia",
-      "reqTeam": "kia",
-      "foundTeam": "kia",
-      "name": "김태형",
-      "snapshot_date": "2026-06-13",
-      "stats": {
-        "k": 19,
-        "bb": 18,
-        "hr": 5,
-        "ip": 31.3,
-        "k9": 5.46,
-        "bb9": 5.18,
-        "era": 5.17,
-        "hr9": 1.44,
-        "name": "김태형",
-        "role": "RP",
-        "whip": 1.76,
-        "wins": 1,
-        "holds": 0,
-        "saves": 0,
-        "losses": 1,
-        "playerId": "kia-10",
-        "earnedRuns": 18,
-        "hitsAllowed": 37,
-        "throwingHand": "R",
-        "staminaPitches": 56
-      }
-    },
-    {
       "team": "doosan",
       "reqTeam": "doosan",
       "foundTeam": "doosan",
-      "name": "곽빈",
-      "snapshot_date": "2026-06-13",
+      "name": "최승용",
+      "snapshot_date": "2026-06-15",
       "stats": {
-        "k": 79,
-        "bb": 24,
-        "hr": 4,
-        "ip": 66.7,
-        "k9": 10.66,
-        "bb9": 3.24,
-        "era": 3.38,
-        "hr9": 0.54,
-        "name": "곽빈",
+        "k": 40,
+        "bb": 23,
+        "hr": 5,
+        "ip": 58,
+        "k9": 6.21,
+        "bb9": 3.57,
+        "era": 4.97,
+        "hr9": 0.78,
+        "name": "최승용",
         "role": "SP",
-        "whip": 1.38,
-        "wins": 4,
+        "whip": 1.57,
+        "wins": 1,
         "holds": 0,
         "saves": 0,
-        "losses": 3,
-        "playerId": "doosan-47",
-        "earnedRuns": 25,
+        "losses": 5,
+        "playerId": "doosan-28",
+        "earnedRuns": 32,
         "hitsAllowed": 68,
-        "throwingHand": "R",
-        "staminaPitches": 100
+        "throwingHand": "L",
+        "staminaPitches": 87
       }
     },
     {
@@ -406,7 +226,7 @@
       "reqTeam": "kt",
       "foundTeam": "kt",
       "name": "고영표",
-      "snapshot_date": "2026-06-13",
+      "snapshot_date": "2026-06-15",
       "stats": {
         "k": 78,
         "bb": 11,
@@ -431,40 +251,243 @@
       }
     },
     {
-      "team": "nc",
-      "reqTeam": "nc",
-      "foundTeam": "nc",
-      "name": "김준원",
-      "snapshot_date": "2026-06-13",
+      "team": "samsung",
+      "reqTeam": "samsung",
+      "foundTeam": "samsung",
+      "name": "원태인",
+      "snapshot_date": "2026-06-15",
       "stats": {
-        "k": 7,
-        "bb": 2,
+        "k": 48,
+        "bb": 15,
+        "hr": 3,
+        "ip": 57,
+        "k9": 7.58,
+        "bb9": 2.37,
+        "era": 3.95,
+        "hr9": 0.47,
+        "name": "원태인",
+        "role": "SP",
+        "whip": 1.35,
+        "wins": 2,
+        "holds": 0,
+        "saves": 0,
+        "losses": 5,
+        "playerId": "samsung-18",
+        "earnedRuns": 25,
+        "hitsAllowed": 62,
+        "throwingHand": "R",
+        "staminaPitches": 103
+      }
+    },
+    {
+      "team": "kiwoom",
+      "reqTeam": "kiwoom",
+      "foundTeam": "kiwoom",
+      "name": "하영민",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 44,
+        "bb": 21,
+        "hr": 6,
+        "ip": 49.3,
+        "k9": 8.03,
+        "bb9": 3.83,
+        "era": 4.2,
+        "hr9": 1.1,
+        "name": "하영민",
+        "role": "SP",
+        "whip": 1.52,
+        "wins": 2,
+        "holds": 0,
+        "saves": 0,
+        "losses": 4,
+        "playerId": "kiwoom-50",
+        "earnedRuns": 23,
+        "hitsAllowed": 54,
+        "throwingHand": "R",
+        "staminaPitches": 80
+      }
+    },
+    {
+      "team": "ssg",
+      "reqTeam": "ssg",
+      "foundTeam": "ssg",
+      "name": "김민준",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 2,
+        "bb": 3,
         "hr": 0,
-        "ip": 5.7,
-        "k9": 11.05,
-        "bb9": 3.16,
-        "era": 0,
+        "ip": 3.7,
+        "k9": 4.86,
+        "bb9": 7.3,
+        "era": 12.27,
         "hr9": 0,
-        "name": "김준원",
+        "name": "김민준",
         "role": "RP",
-        "whip": 1.06,
+        "whip": 1.64,
         "wins": 0,
         "holds": 0,
         "saves": 0,
-        "losses": 0,
-        "playerId": "nc-15",
-        "earnedRuns": 0,
-        "hitsAllowed": 4,
+        "losses": 1,
+        "playerId": "ssg-5",
+        "earnedRuns": 5,
+        "hitsAllowed": 3,
         "throwingHand": "R",
-        "staminaPitches": 26
+        "staminaPitches": 67
+      }
+    },
+    {
+      "team": "lotte",
+      "reqTeam": "lotte",
+      "foundTeam": "lotte",
+      "name": "김진욱",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 54,
+        "bb": 20,
+        "hr": 8,
+        "ip": 70.3,
+        "k9": 6.91,
+        "bb9": 2.56,
+        "era": 3.2,
+        "hr9": 1.02,
+        "name": "김진욱",
+        "role": "SP",
+        "whip": 1.17,
+        "wins": 3,
+        "holds": 0,
+        "saves": 0,
+        "losses": 3,
+        "playerId": "lotte-15",
+        "earnedRuns": 25,
+        "hitsAllowed": 62,
+        "throwingHand": "L",
+        "staminaPitches": 105
+      }
+    },
+    {
+      "team": "kia",
+      "reqTeam": "kia",
+      "foundTeam": "kia",
+      "name": "시라카와",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 5,
+        "bb": 6,
+        "hr": 1,
+        "ip": 8.7,
+        "k9": 5.17,
+        "bb9": 6.21,
+        "era": 3.12,
+        "hr9": 1.03,
+        "name": "시라카와",
+        "role": "SP",
+        "whip": 1.5,
+        "wins": 1,
+        "holds": 0,
+        "saves": 0,
+        "losses": 1,
+        "playerId": "kia-63",
+        "earnedRuns": 3,
+        "hitsAllowed": 7,
+        "throwingHand": "R",
+        "staminaPitches": 80
+      }
+    },
+    {
+      "team": "lg",
+      "reqTeam": "lg",
+      "foundTeam": "lg",
+      "name": "웰스",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 45,
+        "bb": 16,
+        "hr": 2,
+        "ip": 54.7,
+        "k9": 7.4,
+        "bb9": 2.63,
+        "era": 2.63,
+        "hr9": 0.33,
+        "name": "웰스",
+        "role": "SP",
+        "whip": 1.08,
+        "wins": 3,
+        "holds": 0,
+        "saves": 0,
+        "losses": 2,
+        "playerId": "lg-68",
+        "earnedRuns": 16,
+        "hitsAllowed": 43,
+        "throwingHand": "L",
+        "staminaPitches": 98
+      }
+    },
+    {
+      "team": "nc",
+      "reqTeam": "nc",
+      "foundTeam": "nc",
+      "name": "구창모",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 56,
+        "bb": 21,
+        "hr": 8,
+        "ip": 68.3,
+        "k9": 7.38,
+        "bb9": 2.77,
+        "era": 3.69,
+        "hr9": 1.05,
+        "name": "구창모",
+        "role": "SP",
+        "whip": 1.24,
+        "wins": 6,
+        "holds": 0,
+        "saves": 0,
+        "losses": 2,
+        "playerId": "nc-59",
+        "earnedRuns": 28,
+        "hitsAllowed": 64,
+        "throwingHand": "L",
+        "staminaPitches": 102
+      }
+    },
+    {
+      "team": "hanwha",
+      "reqTeam": "hanwha",
+      "foundTeam": "hanwha",
+      "name": "화이트",
+      "snapshot_date": "2026-06-15",
+      "stats": {
+        "k": 23,
+        "bb": 5,
+        "hr": 3,
+        "ip": 33.7,
+        "k9": 6.14,
+        "bb9": 1.34,
+        "era": 2.67,
+        "hr9": 0.8,
+        "name": "화이트",
+        "role": "SP",
+        "whip": 0.98,
+        "wins": 3,
+        "holds": 0,
+        "saves": 0,
+        "losses": 2,
+        "playerId": "hanwha-24",
+        "earnedRuns": 10,
+        "hitsAllowed": 28,
+        "throwingHand": "R",
+        "staminaPitches": 101
       }
     }
   ],
   "teamOffense": {
     "lotte": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.744",
-      "team_avg_avg": "0.276",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.740",
+      "team_avg_avg": "0.274",
       "top_hitters": [
         {
           "name": "박재엽",
@@ -477,53 +500,53 @@
         },
         {
           "name": "레이예스",
-          "avg": "0.352",
-          "obp": "0.412",
-          "slg": "0.530",
-          "ops": "0.942",
+          "avg": "0.358",
+          "obp": "0.418",
+          "slg": "0.543",
+          "ops": "0.961",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "고승민",
-          "avg": "0.309",
-          "obp": "0.342",
-          "slg": "0.493",
-          "ops": "0.835",
+          "avg": "0.308",
+          "obp": "0.344",
+          "slg": "0.483",
+          "ops": "0.827",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "전민재",
-          "avg": "0.282",
-          "obp": "0.340",
-          "slg": "0.420",
-          "ops": "0.760",
+          "avg": "0.276",
+          "obp": "0.332",
+          "slg": "0.408",
+          "ops": "0.740",
           "hr": 0,
           "rbi": 0
         },
         {
-          "name": "나승엽",
-          "avg": "0.269",
-          "obp": "0.336",
-          "slg": "0.417",
-          "ops": "0.753",
+          "name": "김동현",
+          "avg": "0.200",
+          "obp": "0.286",
+          "slg": "0.440",
+          "ops": "0.726",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "kia": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.766",
-      "team_avg_avg": "0.270",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.754",
+      "team_avg_avg": "0.266",
       "top_hitters": [
         {
           "name": "김도영",
-          "avg": "0.272",
-          "obp": "0.373",
-          "slg": "0.562",
-          "ops": "0.935",
+          "avg": "0.274",
+          "obp": "0.377",
+          "slg": "0.564",
+          "ops": "0.941",
           "hr": 0,
           "rbi": 0
         },
@@ -538,19 +561,19 @@
         },
         {
           "name": "한준수",
-          "avg": "0.294",
-          "obp": "0.418",
-          "slg": "0.483",
-          "ops": "0.901",
+          "avg": "0.292",
+          "obp": "0.419",
+          "slg": "0.479",
+          "ops": "0.898",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "나성범",
-          "avg": "0.286",
-          "obp": "0.382",
-          "slg": "0.515",
-          "ops": "0.897",
+          "avg": "0.282",
+          "obp": "0.378",
+          "slg": "0.502",
+          "ops": "0.880",
           "hr": 0,
           "rbi": 0
         },
@@ -566,15 +589,15 @@
       ]
     },
     "lg": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.740",
-      "team_avg_avg": "0.264",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.746",
+      "team_avg_avg": "0.266",
       "top_hitters": [
         {
           "name": "오스틴",
-          "avg": "0.349",
-          "obp": "0.420",
-          "slg": "0.659",
+          "avg": "0.353",
+          "obp": "0.424",
+          "slg": "0.655",
           "ops": "1.079",
           "hr": 0,
           "rbi": 0
@@ -589,38 +612,38 @@
           "rbi": 0
         },
         {
-          "name": "문보경",
-          "avg": "0.296",
-          "obp": "0.438",
-          "slg": "0.416",
-          "ops": "0.854",
-          "hr": 0,
-          "rbi": 0
-        },
-        {
           "name": "문정빈",
-          "avg": "0.244",
-          "obp": "0.314",
-          "slg": "0.489",
-          "ops": "0.803",
+          "avg": "0.271",
+          "obp": "0.333",
+          "slg": "0.563",
+          "ops": "0.896",
           "hr": 0,
           "rbi": 0
         },
         {
-          "name": "오지환",
-          "avg": "0.276",
-          "obp": "0.354",
-          "slg": "0.422",
-          "ops": "0.776",
+          "name": "문보경",
+          "avg": "0.284",
+          "obp": "0.421",
+          "slg": "0.396",
+          "ops": "0.817",
+          "hr": 0,
+          "rbi": 0
+        },
+        {
+          "name": "문성주",
+          "avg": "0.327",
+          "obp": "0.386",
+          "slg": "0.389",
+          "ops": "0.775",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "kt": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.820",
-      "team_avg_avg": "0.269",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.825",
+      "team_avg_avg": "0.271",
       "top_hitters": [
         {
           "name": "이재원",
@@ -641,6 +664,15 @@
           "rbi": 0
         },
         {
+          "name": "권동진",
+          "avg": "0.351",
+          "obp": "0.468",
+          "slg": "0.532",
+          "ops": "1.000",
+          "hr": 0,
+          "rbi": 0
+        },
+        {
           "name": "조대현",
           "avg": "0.000",
           "obp": "1.000",
@@ -651,28 +683,19 @@
         },
         {
           "name": "최원준",
-          "avg": "0.386",
-          "obp": "0.459",
+          "avg": "0.384",
+          "obp": "0.458",
           "slg": "0.535",
-          "ops": "0.994",
-          "hr": 0,
-          "rbi": 0
-        },
-        {
-          "name": "권동진",
-          "avg": "0.342",
-          "obp": "0.467",
-          "slg": "0.493",
-          "ops": "0.960",
+          "ops": "0.993",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "hanwha": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.856",
-      "team_avg_avg": "0.324",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.818",
+      "team_avg_avg": "0.312",
       "top_hitters": [
         {
           "name": "장규현",
@@ -684,47 +707,47 @@
           "rbi": 0
         },
         {
-          "name": "박정현",
-          "avg": "0.429",
-          "obp": "0.429",
-          "slg": "0.857",
-          "ops": "1.286",
-          "hr": 0,
-          "rbi": 0
-        },
-        {
           "name": "페라자",
-          "avg": "0.329",
-          "obp": "0.425",
-          "slg": "0.558",
-          "ops": "0.983",
+          "avg": "0.325",
+          "obp": "0.421",
+          "slg": "0.553",
+          "ops": "0.974",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "강백호",
-          "avg": "0.323",
+          "avg": "0.322",
           "obp": "0.398",
-          "slg": "0.566",
-          "ops": "0.964",
+          "slg": "0.571",
+          "ops": "0.969",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "문현빈",
-          "avg": "0.292",
+          "avg": "0.285",
+          "obp": "0.382",
+          "slg": "0.492",
+          "ops": "0.874",
+          "hr": 0,
+          "rbi": 0
+        },
+        {
+          "name": "김태연",
+          "avg": "0.325",
           "obp": "0.391",
-          "slg": "0.504",
-          "ops": "0.895",
+          "slg": "0.481",
+          "ops": "0.872",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "doosan": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.729",
-      "team_avg_avg": "0.263",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.731",
+      "team_avg_avg": "0.266",
       "top_hitters": [
         {
           "name": "박준순",
@@ -736,47 +759,47 @@
           "rbi": 0
         },
         {
-          "name": "카메론",
-          "avg": "0.299",
-          "obp": "0.372",
-          "slg": "0.504",
-          "ops": "0.876",
+          "name": "김인태",
+          "avg": "0.280",
+          "obp": "0.438",
+          "slg": "0.440",
+          "ops": "0.878",
           "hr": 0,
           "rbi": 0
         },
         {
-          "name": "오명진",
-          "avg": "0.284",
-          "obp": "0.382",
-          "slg": "0.486",
+          "name": "카메론",
+          "avg": "0.297",
+          "obp": "0.370",
+          "slg": "0.498",
           "ops": "0.868",
           "hr": 0,
           "rbi": 0
         },
         {
-          "name": "김인태",
-          "avg": "0.250",
-          "obp": "0.419",
-          "slg": "0.417",
-          "ops": "0.836",
+          "name": "오명진",
+          "avg": "0.275",
+          "obp": "0.375",
+          "slg": "0.463",
+          "ops": "0.838",
           "hr": 0,
           "rbi": 0
         },
         {
-          "name": "양의지",
-          "avg": "0.256",
-          "obp": "0.358",
-          "slg": "0.435",
-          "ops": "0.793",
+          "name": "조수행",
+          "avg": "0.341",
+          "obp": "0.431",
+          "slg": "0.386",
+          "ops": "0.817",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "nc": {
-      "snapshot_date": "2026-06-13",
+      "snapshot_date": "2026-06-15",
       "team_avg_ops": "0.738",
-      "team_avg_avg": "0.263",
+      "team_avg_avg": "0.264",
       "top_hitters": [
         {
           "name": "오장한",
@@ -789,123 +812,132 @@
         },
         {
           "name": "박건우",
-          "avg": "0.309",
-          "obp": "0.394",
-          "slg": "0.525",
-          "ops": "0.919",
-          "hr": 0,
-          "rbi": 0
-        },
-        {
-          "name": "이우성",
-          "avg": "0.355",
-          "obp": "0.393",
-          "slg": "0.479",
-          "ops": "0.872",
+          "avg": "0.308",
+          "obp": "0.390",
+          "slg": "0.519",
+          "ops": "0.909",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "김주원",
-          "avg": "0.296",
-          "obp": "0.379",
-          "slg": "0.469",
-          "ops": "0.848",
+          "avg": "0.300",
+          "obp": "0.382",
+          "slg": "0.482",
+          "ops": "0.864",
+          "hr": 0,
+          "rbi": 0
+        },
+        {
+          "name": "이우성",
+          "avg": "0.352",
+          "obp": "0.389",
+          "slg": "0.472",
+          "ops": "0.861",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "박민우",
-          "avg": "0.306",
-          "obp": "0.420",
-          "slg": "0.427",
-          "ops": "0.847",
+          "avg": "0.313",
+          "obp": "0.424",
+          "slg": "0.436",
+          "ops": "0.860",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "samsung": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.755",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.754",
       "team_avg_avg": "0.264",
       "top_hitters": [
         {
           "name": "구자욱",
-          "avg": "0.321",
-          "obp": "0.415",
-          "slg": "0.537",
-          "ops": "0.952",
+          "avg": "0.324",
+          "obp": "0.411",
+          "slg": "0.529",
+          "ops": "0.940",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "박승규",
-          "avg": "0.290",
-          "obp": "0.393",
-          "slg": "0.549",
-          "ops": "0.942",
+          "avg": "0.284",
+          "obp": "0.390",
+          "slg": "0.533",
+          "ops": "0.923",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "최형우",
-          "avg": "0.317",
+          "avg": "0.316",
           "obp": "0.434",
-          "slg": "0.481",
-          "ops": "0.915",
+          "slg": "0.474",
+          "ops": "0.908",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "류지혁",
-          "avg": "0.303",
-          "obp": "0.390",
-          "slg": "0.453",
-          "ops": "0.843",
+          "avg": "0.307",
+          "obp": "0.399",
+          "slg": "0.454",
+          "ops": "0.853",
           "hr": 0,
           "rbi": 0
         },
         {
-          "name": "이재현",
-          "avg": "0.243",
-          "obp": "0.353",
-          "slg": "0.486",
-          "ops": "0.839",
+          "name": "디아즈",
+          "avg": "0.295",
+          "obp": "0.370",
+          "slg": "0.480",
+          "ops": "0.850",
           "hr": 0,
           "rbi": 0
         }
       ]
     },
     "kiwoom": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.675",
-      "team_avg_avg": "0.238",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.695",
+      "team_avg_avg": "0.249",
       "top_hitters": [
+        {
+          "name": "원성준",
+          "avg": "0.500",
+          "obp": "0.571",
+          "slg": "0.500",
+          "ops": "1.071",
+          "hr": 0,
+          "rbi": 0
+        },
         {
           "name": "여동욱",
           "avg": "0.250",
-          "obp": "0.429",
-          "slg": "0.563",
-          "ops": "0.992",
+          "obp": "0.464",
+          "slg": "0.500",
+          "ops": "0.964",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "히우라",
-          "avg": "0.286",
-          "obp": "0.364",
-          "slg": "0.490",
-          "ops": "0.854",
+          "avg": "0.276",
+          "obp": "0.344",
+          "slg": "0.466",
+          "ops": "0.810",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "서건창",
-          "avg": "0.300",
-          "obp": "0.404",
-          "slg": "0.400",
-          "ops": "0.804",
+          "avg": "0.288",
+          "obp": "0.403",
+          "slg": "0.384",
+          "ops": "0.787",
           "hr": 0,
           "rbi": 0
         },
@@ -917,22 +949,13 @@
           "ops": "0.768",
           "hr": 0,
           "rbi": 0
-        },
-        {
-          "name": "임병욱",
-          "avg": "0.255",
-          "obp": "0.316",
-          "slg": "0.440",
-          "ops": "0.756",
-          "hr": 0,
-          "rbi": 0
         }
       ]
     },
     "ssg": {
-      "snapshot_date": "2026-06-13",
-      "team_avg_ops": "0.787",
-      "team_avg_avg": "0.277",
+      "snapshot_date": "2026-06-15",
+      "team_avg_ops": "0.780",
+      "team_avg_avg": "0.274",
       "top_hitters": [
         {
           "name": "석정우",
@@ -954,16 +977,16 @@
         },
         {
           "name": "최정",
-          "avg": "0.303",
-          "obp": "0.394",
-          "slg": "0.627",
-          "ops": "1.021",
+          "avg": "0.295",
+          "obp": "0.390",
+          "slg": "0.606",
+          "ops": "0.996",
           "hr": 0,
           "rbi": 0
         },
         {
           "name": "박성한",
-          "avg": "0.355",
+          "avg": "0.357",
           "obp": "0.461",
           "slg": "0.472",
           "ops": "0.933",

@@ -57,6 +57,8 @@ import "@/styles/dark-quiz.css";
 import "@/styles/admin-events.css";
 import "@/styles/light-bp-core.css";
 import "@/styles/light-tier-up.css";
+import "@/styles/news.css";
+import "@/styles/recent10-top.css";
 import "@/styles/weekly-report.css";
 import "@/styles/daily-report.css";
 

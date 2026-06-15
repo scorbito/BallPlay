@@ -270,7 +270,7 @@ export function AiWinnerRevealScreen({
               awayStarter: game.awayStarter
             }}
             className="ai-reveal-sim-btn"
-            idleLabel={`${home.shortName} vs ${away.shortName} 가상경기 해보기`}
+            idleLabel="경기 시뮬"
             busyLabel="준비 중"
           />
         )}

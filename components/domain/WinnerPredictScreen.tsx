@@ -515,7 +515,7 @@ export function WinnerPredictScreen({
                           awayStarter: game.awayStarter
                         }}
                         className="predict-row-play-btn"
-                        idleLabel="경기해보기"
+                        idleLabel="경기 시뮬"
                         busyLabel="준비중"
                       />
                     ) : (

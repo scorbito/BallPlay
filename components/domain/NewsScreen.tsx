@@ -4,7 +4,7 @@
 // 팀 필터 칩으로 클라이언트 필터 (서버 재요청 없이 즉시).
 // 초기 SSR 후 "더 보기" 버튼으로 페이지네이션 (브라우저 supabase 클라이언트 직접 사용).
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Loader2, Newspaper } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TEAM_FILTER_OPTIONS, titleMatchesTeam } from "@/lib/news/teamFilter";
@@ -34,6 +34,83 @@ type Props = {
   initialNews: BpNewsRow[];
   pageSize: number;
 };
+
+function normalizeImageUrl(value: string | null | undefined): string | null {
+  const src = value?.trim();
+  if (!src) return null;
+  if (src.startsWith("//")) return `https:${src}`;
+  return src;
+}
+
+function NewsThumbnail({ newsId, imageUrl }: { newsId: number; imageUrl: string | null }) {
+  const wrapRef = useRef<HTMLSpanElement | null>(null);
+  const [src, setSrc] = useState(() => normalizeImageUrl(imageUrl));
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setSrc(normalizeImageUrl(imageUrl));
+    setFailed(false);
+  }, [imageUrl]);
+
+  useEffect(() => {
+    if (src || failed) return;
+    const target = wrapRef.current;
+    if (!target) return;
+
+    let cancelled = false;
+    let observer: IntersectionObserver | null = null;
+
+    const resolveImage = async () => {
+      try {
+        const res = await fetch(`/api/news/image?id=${encodeURIComponent(String(newsId))}`, {
+          cache: "no-store"
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as { imageUrl?: string | null };
+        const nextSrc = normalizeImageUrl(json.imageUrl);
+        if (!cancelled && nextSrc) setSrc(nextSrc);
+      } catch {
+        // Keep the fallback icon when the source page blocks image discovery.
+      }
+    };
+
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            observer?.disconnect();
+            void resolveImage();
+          }
+        },
+        { rootMargin: "240px" }
+      );
+      observer.observe(target);
+    } else {
+      void resolveImage();
+    }
+
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+    };
+  }, [failed, newsId, src]);
+
+  return (
+    <span className="news-thumb-wrap news-thumb-resolved" ref={wrapRef}>
+      <Newspaper size={20} className="news-thumb-ph" aria-hidden />
+      {src && !failed ? (
+        <img
+          src={src}
+          alt=""
+          className="news-thumb-img"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+        />
+      ) : null}
+    </span>
+  );
+}
 
 export function NewsScreen({ initialNews, pageSize }: Props) {
   const [team, setTeam] = useState<string | null>(null);
@@ -122,6 +199,7 @@ export function NewsScreen({ initialNews, pageSize }: Props) {
                 rel="noopener noreferrer"
                 className="news-link"
               >
+                <NewsThumbnail newsId={n.id} imageUrl={n.image_url} />
                 <span className="news-thumb-wrap">
                   <Newspaper size={20} className="news-thumb-ph" aria-hidden />
                   {n.image_url ? (
