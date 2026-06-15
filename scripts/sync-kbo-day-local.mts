@@ -1,10 +1,11 @@
 // Run the end-of-day KBO maintenance job locally:
 //   1. sync games for the date
-//   2. sync lineups for the date
-//   3. sync standings for the season
-//   4. sync player stat snapshots and recent-10 rankings
-//   5. generate and cache the daily AI report
-//   6. generate and cache tomorrow's 1000-game simulations
+//   2. sync upcoming KBO schedule range
+//   3. sync lineups for the date
+//   4. sync standings for the season
+//   5. sync player stat snapshots and recent-10 rankings
+//   6. generate and cache the daily AI report
+//   7. generate and cache tomorrow's 1000-game simulations
 //
 // Usage:
 //   npm run sync:kbo-day
@@ -13,6 +14,7 @@
 //   npm run sync:kbo-day -- 2026-06-16 --skip-games --skip-lineups --skip-standings --skip-stats --skip-report
 //   npm run sync:kbo-day -- 2026-06-16 --skip-stats
 //   npm run sync:kbo-day -- 2026-06-16 --skip-report
+//   npm run sync:kbo-day -- 2026-06-16 --skip-schedule
 //   npm run sync:kbo-day -- 2026-06-16 --skip-sim1000
 
 import { readFileSync } from "node:fs";
@@ -60,7 +62,10 @@ const skipRecent10 = args.includes("--skip-recent10");
 const skipReport = args.includes("--skip-report");
 const skipLineups = args.includes("--skip-lineups");
 const skipStandings = args.includes("--skip-standings");
+const skipSchedule = args.includes("--skip-schedule");
 const skipSim1000 = args.includes("--skip-sim1000");
+const scheduleFrom = kstDateOffset(-1);
+const scheduleTo = kstDateOffset(30);
 const sim1000Date = kstDateOffset(1);
 
 loadLocalEnv();
@@ -95,7 +100,7 @@ const season = Number(targetDate.slice(0, 4));
 console.log(`[sync:kbo-day] start date=${targetDate}`);
 
 if (!skipGames) {
-  console.log("[sync:kbo-day] 1/6 games");
+  console.log("[sync:kbo-day] 1/7 games");
   const gameResults = await syncGamesInRange(targetDate, targetDate, { delayMs: 200 });
   const gameTotals = gameResults.reduce(
     (acc, result) => ({
@@ -106,27 +111,42 @@ if (!skipGames) {
   );
   console.log("[sync:kbo-day] games", JSON.stringify({ totals: gameTotals, results: gameResults }, null, 2));
 } else {
-  console.log("[sync:kbo-day] 1/6 games skipped");
+  console.log("[sync:kbo-day] 1/7 games skipped");
+}
+
+if (!skipSchedule) {
+  console.log(`[sync:kbo-day] 2/7 upcoming schedule ${scheduleFrom}..${scheduleTo}`);
+  const scheduleResults = await syncGamesInRange(scheduleFrom, scheduleTo, { delayMs: 200 });
+  const scheduleTotals = scheduleResults.reduce(
+    (acc, result) => ({
+      inserted: acc.inserted + result.inserted,
+      updated: acc.updated + result.updated
+    }),
+    { inserted: 0, updated: 0 }
+  );
+  console.log("[sync:kbo-day] schedule", JSON.stringify({ totals: scheduleTotals, results: scheduleResults }, null, 2));
+} else {
+  console.log("[sync:kbo-day] 2/7 upcoming schedule skipped");
 }
 
 if (!skipLineups) {
-  console.log("[sync:kbo-day] 2/6 lineups");
+  console.log("[sync:kbo-day] 3/7 lineups");
   const lineups = await syncLineupsForDate(targetDate);
   console.log("[sync:kbo-day] lineups", JSON.stringify(lineups, null, 2));
 } else {
-  console.log("[sync:kbo-day] 2/6 lineups skipped");
+  console.log("[sync:kbo-day] 3/7 lineups skipped");
 }
 
 if (!skipStandings) {
-  console.log("[sync:kbo-day] 3/6 standings");
+  console.log("[sync:kbo-day] 4/7 standings");
   const standings = await syncStandings(season);
   console.log("[sync:kbo-day] standings", JSON.stringify(standings, null, 2));
 } else {
-  console.log("[sync:kbo-day] 3/6 standings skipped");
+  console.log("[sync:kbo-day] 4/7 standings skipped");
 }
 
 if (!skipStats) {
-  console.log("[sync:kbo-day] 4/6 stats snapshot");
+  console.log("[sync:kbo-day] 5/7 stats snapshot");
   const stats = await syncStatsSnapshot(targetDate, { year: season });
   console.log("[sync:kbo-day] stats", JSON.stringify(stats, null, 2));
 
@@ -135,11 +155,11 @@ if (!skipStats) {
     console.log("[sync:kbo-day] recent10", JSON.stringify(recent10, null, 2));
   }
 } else {
-  console.log("[sync:kbo-day] 4/6 stats snapshot skipped");
+  console.log("[sync:kbo-day] 5/7 stats snapshot skipped");
 }
 
 if (!skipReport) {
-  console.log("[sync:kbo-day] 5/6 daily report");
+  console.log("[sync:kbo-day] 6/7 daily report");
 
   const games = await listGamesFromDb({ from: targetDate, to: targetDate });
   if (games.length === 0) {
@@ -185,11 +205,11 @@ if (!skipReport) {
     }
   }
 } else {
-  console.log("[sync:kbo-day] 5/6 daily report skipped");
+  console.log("[sync:kbo-day] 6/7 daily report skipped");
 }
 
 if (!skipSim1000) {
-  console.log(`[sync:kbo-day] 6/6 sim-1000 date=${sim1000Date}`);
+  console.log(`[sync:kbo-day] 7/7 sim-1000 date=${sim1000Date}`);
   const outcome = await runDailySimAndUpsert(admin, sim1000Date);
 
   if (!outcome.ok) {
@@ -211,7 +231,7 @@ if (!skipSim1000) {
     )
   );
 } else {
-  console.log("[sync:kbo-day] 6/6 sim-1000 skipped");
+  console.log("[sync:kbo-day] 7/7 sim-1000 skipped");
 }
 
 console.log("[sync:kbo-day] done");
