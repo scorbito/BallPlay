@@ -1,24 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { POINT_CONTENT_REWARD_START_AT, POINT_REWARDS } from "@/lib/points/config";
+import { POINT_CONTENT_REWARD_START_AT } from "@/lib/points/config";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { addDaysISO, kstDateString } from "@/lib/server/points";
 import { isSkeletonReport } from "@/lib/utils/dailyReportHelper";
 import { teams } from "@/lib/constants/teams";
 
 export type HomePointAvailability = Record<string, boolean>;
-
-const EARN_REASONS = [
-  "stadium_official_completed"
-];
-
-function sumEarnedByReason(rows: Array<{ reason: string | null; amount: number | null }>) {
-  const earned = new Map<string, number>();
-  for (const row of rows) {
-    if (!row.reason) continue;
-    earned.set(row.reason, (earned.get(row.reason) ?? 0) + Number(row.amount ?? 0));
-  }
-  return earned;
-}
 
 async function getLatestPublishedDailyReport(client: SupabaseClient) {
   const { data } = await client
@@ -65,10 +52,8 @@ export async function getHomePointAvailability(
 ): Promise<HomePointAvailability> {
   const today = kstDateString();
   const yesterday = addDaysISO(today, -1);
-  const start = `${today}T00:00:00+09:00`;
-  const end = `${addDaysISO(today, 1)}T00:00:00+09:00`;
 
-  const [gamesRes, aiPredictionsRes, claimsRes, transactionsRes, latestDailyReport, latestWeeklyReport] = await Promise.all([
+  const [gamesRes, aiPredictionsRes, claimsRes, latestDailyReport, latestWeeklyReport] = await Promise.all([
     client
       .from("games")
       .select("id")
@@ -81,14 +66,6 @@ export async function getHomePointAvailability(
       .from("point_reward_claims")
       .select("reward_key,reward_date,amount")
       .eq("user_id", userId),
-    client
-      .from("point_transactions")
-      .select("reason, amount")
-      .eq("user_id", userId)
-      .eq("type", "earn")
-      .in("reason", EARN_REASONS)
-      .gte("created_at", start)
-      .lt("created_at", end),
     getLatestPublishedDailyReport(client),
     getLatestPublishedWeeklyReport(client)
   ]);
@@ -108,10 +85,6 @@ export async function getHomePointAvailability(
       .map((row) => `${row.reward_key}|${row.reward_date}`)
   );
   const hasClaim = (rewardKey: string, rewardDate: string) => claims.has(`${rewardKey}|${rewardDate}`);
-  const earned = sumEarnedByReason(
-    (transactionsRes.data ?? []) as Array<{ reason: string | null; amount: number | null }>
-  );
-
   const claimedAiPredictionCount = eligibleAiPredictions
     .filter((row) => hasClaim(`content_ai_prediction:${row.gameId}`, row.rewardDate))
     .length;
@@ -159,8 +132,6 @@ export async function getHomePointAvailability(
     && (latestDailyReport?.gameIds ?? []).some((gameId) =>
       !hasClaim(getLatestDailyReportGameRewardKey(gameId) ?? "", latestDailyReportRewardDate)
     );
-  const stadiumMax = (POINT_REWARDS.stadiumOfficialFirstFive * POINT_REWARDS.stadiumOfficialFirstFiveCount)
-    + POINT_REWARDS.stadiumOfficialExtraMax;
   const aiPredictionEligible = Array.from(aiGameIds).length > 0;
   const weeklyReportAvailable = latestWeeklyReport
     ? new Date(latestWeeklyReport.createdAt).getTime() >= new Date(eligibleFrom).getTime()
@@ -181,6 +152,6 @@ export async function getHomePointAvailability(
     "winner-predict": gameIds.length > 0
       && claimedWinnerPredictionCount < gameIds.length,
     "quiz": !hasClaim("quiz_completed", today),
-    "stadium": (earned.get("stadium_official_completed") ?? 0) < stadiumMax
+    "stadium": false
   };
 }

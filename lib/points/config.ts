@@ -9,16 +9,12 @@ export const POINT_REWARDS = {
   predictionSubmittedPerGame: 20,
   predictionCorrectPerGame: 10,
   aiBattleVotePerGame: 20,
-  stadiumOfficialFirstFive: 20,
-  stadiumOfficialAfterFive: 10,
-  stadiumOfficialFirstFiveCount: 5,
-  stadiumOfficialExtraMax: 100,
   playoffChampion: 1000,
   contentClaimByType: {
     daily_report: 20,
     daily_report_game: 10,
     ai_prediction: 20,
-    weekly_report_team: 10
+    weekly_report_team: 20
   },
   quizComplete: 20,
   quizPerfectBonus: 10

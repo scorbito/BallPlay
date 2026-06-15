@@ -14,7 +14,6 @@ const earnGuides = [
   { title: "출석", detail: "첫 방문 시 출석 보상" },
   { title: "승리팀 예측", detail: "예측 참여와 적중 보너스" },
   { title: "AI 배틀", detail: "응원하는 주장에 투표" },
-  { title: "경기장", detail: "공식 경기 완료 후 결과 확인" },
   { title: "일일리포트", detail: "종합/경기별 리포트 하단 버튼" },
   { title: "AI 승리팀 예측", detail: "경기별 예측 콘텐츠 하단 버튼" },
   { title: "퀴즈", detail: "퀴즈 완료와 만점 보너스" },

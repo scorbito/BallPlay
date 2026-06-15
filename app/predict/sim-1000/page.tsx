@@ -27,7 +27,7 @@ function addDays(dateISO: string, days: number): string {
 }
 
 function areGamesDone(games: Array<{ status: string | null | undefined }>): boolean {
-  return games.length > 0 && games.every((g) => g.status === "finished" || g.status === "canceled");
+  return games.every((g) => g.status === "finished" || g.status === "canceled");
 }
 
 export default async function Sim1000ListPage({

@@ -6,7 +6,6 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { PointBaseballIcon } from "./PointBaseballIcon";
 
 const POINT_CARD_IDS = new Set([
-  "stadium",
   "ai-predict",
   "ai-battle",
   "winner-predict",
