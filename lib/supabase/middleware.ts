@@ -7,6 +7,12 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 const HEADER_USER_ID = "x-bp-user-id";
 const HEADER_IS_ANON = "x-bp-is-anon";
 
+function hasSupabaseAuthCookie(request: NextRequest): boolean {
+  return request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("auth-token") && cookie.value.length > 0);
+}
+
 export async function updateSupabaseSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -19,6 +25,11 @@ export async function updateSupabaseSession(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete(HEADER_USER_ID);
   requestHeaders.delete(HEADER_IS_ANON);
+
+  if (!hasSupabaseAuthCookie(request)) {
+    requestHeaders.set(HEADER_IS_ANON, "0");
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   // 세션 갱신(getUser)이 set/remove 쿠키를 발생시킬 수 있음 → 모아뒀다가 최종 response에 적용.
   const pendingCookies: Array<{ name: string; value: string; options: CookieOptions }> = [];
@@ -51,6 +62,8 @@ export async function updateSupabaseSession(request: NextRequest) {
   if (data?.user) {
     requestHeaders.set(HEADER_USER_ID, data.user.id);
     requestHeaders.set(HEADER_IS_ANON, data.user.is_anonymous ? "1" : "0");
+  } else {
+    requestHeaders.set(HEADER_IS_ANON, "0");
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });

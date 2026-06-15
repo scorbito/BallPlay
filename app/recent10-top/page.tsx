@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { unstable_noStore as noStore } from "next/cache";
 import { Recent10TopScreen } from "@/components/domain/Recent10TopScreen";
 import { getRecent10SnapshotDate, getRecent10TopPlayers } from "@/lib/recent10/topPlayers";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "최근 10경기 TOP",
@@ -10,7 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Recent10TopPage() {
-  noStore();
   const [initialByCategory, snapshotDate] = await Promise.all([
     getRecent10TopPlayers(10),
     getRecent10SnapshotDate()

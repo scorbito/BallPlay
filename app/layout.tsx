@@ -1,9 +1,7 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import type { Metadata, Viewport } from "next";
-import { unstable_noStore as noStore } from "next/cache";
 import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { InstallAppBanner } from "@/components/domain/InstallAppBanner";
@@ -137,8 +135,6 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  noStore();
-
   // 미들웨어가 이미 getUser()로 검증하고 헤더로 user 정보를 넘겨줌 → 여기서 재호출 안 함.
   // (auth.getUser()는 Supabase Auth 서버 네트워크 왕복이라 페이지마다 비용 큼)
   // 헤더 없을 때만(미들웨어 미경유 등 예외) fallback으로 getUser 1회.
@@ -201,7 +197,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </ErrorBoundary>
         {/* Vercel 무료 분석 — 페이지뷰/방문자/Web Vitals. 추가 설정 0, env 불필요. */}
         <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

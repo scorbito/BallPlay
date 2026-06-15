@@ -33,3 +33,7 @@ data/ground*.jpg
 # Scratch and local test scripts
 scratch/
 scripts/
+!/scripts/
+/scripts/*
+!/scripts/sync-kbo-day-local.mts
+!/scripts/sync-kbo-stats-local.mts

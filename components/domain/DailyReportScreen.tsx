@@ -10,9 +10,7 @@ import {
   ChevronRight,
   Trophy,
   Flame,
-  AlertTriangle,
   Lightbulb,
-  Share2,
   Copy,
   Check
 } from "lucide-react";
@@ -20,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
-import type { KboDailyReport, GameReport } from "@/lib/utils/dailyReportHelper";
+import type { KboDailyReport } from "@/lib/utils/dailyReportHelper";
 import { PageViewCounter } from "@/components/domain/PageViewCounter";
 import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
 
@@ -31,9 +29,7 @@ type DailyReportScreenProps = {
   isPending?: boolean;
   isNoGames?: boolean;
   isFailed?: boolean;
-  initialIsGenerating?: boolean;
   isNoReport?: boolean;
-  isAdmin?: boolean;
   focus?: string;
   backHref?: string;
   reportPublishedAt?: string | null;
@@ -59,9 +55,7 @@ export function DailyReportScreen({
   isPending = false, 
   isNoGames = false,
   isFailed: initialIsFailed = false,
-  initialIsGenerating = false,
   isNoReport: initialIsNoReport = false,
-  isAdmin = false,
   focus,
   backHref,
   reportPublishedAt = null
@@ -71,27 +65,22 @@ export function DailyReportScreen({
   
   // 클라이언트 내부 상태 관리
   const [report, setReport] = useState<KboDailyReport>(initialReport);
-  const [isGenerating, setIsGenerating] = useState(initialIsGenerating);
   const [isFailed, setIsFailed] = useState(initialIsFailed);
   const [isNoReport, setIsNoReport] = useState(initialIsNoReport);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [contentPublishedAt, setContentPublishedAt] = useState<string | null>(reportPublishedAt);
 
-  const hasReport = !isPending && !isNoGames && !isFailed && !isGenerating && !isNoReport;
+  const hasReport = !isPending && !isNoGames && !isFailed && !isNoReport;
   const reportContentId = contentPublishedAt ? `${reportDate}|${contentPublishedAt}` : reportDate;
   const [copied, setCopied] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const router = useRouter();
 
   // 날짜나 서버 리프레시 시 상태 갱신
   useEffect(() => {
     setReport(initialReport);
-    setIsGenerating(initialIsGenerating);
     setIsFailed(initialIsFailed);
     setIsNoReport(initialIsNoReport);
     setContentPublishedAt(reportPublishedAt);
-    setErrorMsg(null);
-  }, [initialReport, initialIsGenerating, initialIsFailed, initialIsNoReport, reportDate, reportPublishedAt]);
+  }, [initialReport, initialIsFailed, initialIsNoReport, reportDate, reportPublishedAt]);
 
   // 포커스 경기 자동 확장 및 탭 전환
   useEffect(() => {
@@ -100,76 +89,7 @@ export function DailyReportScreen({
       setActiveTab("games");
     }
   }, [focus]);
-
-  // 비동기 리포트 생성 API 호출
-  useEffect(() => {
-    if (!isGenerating) return;
-
-    let active = true;
-    const triggerGeneration = async () => {
-      try {
-        const res = await fetch("/api/daily-report/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date: reportDate })
-        });
-        const data = await res.json();
-
-        if (!active) return;
-
-        if (res.ok && data.ok && data.report) {
-          setReport(data.report);
-          setContentPublishedAt(typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString());
-          setIsGenerating(false);
-        } else {
-          throw new Error(data.error || "일일 리포트 생성에 실패했습니다.");
-        }
-      } catch (err) {
-        if (!active) return;
-        console.error(err);
-        setErrorMsg((err as Error).message);
-        setIsFailed(true);
-        setIsGenerating(false);
-      }
-    };
-
-    void triggerGeneration();
-    return () => {
-      active = false;
-    };
-  }, [isGenerating, reportDate]);
-
-  // 운영자 수동 리포트 생성 요청 핸들러
-  const handleGenerateReport = async () => {
-    if (generating) return;
-    
-    if (!confirm(`[운영자] ${reportDate} 날짜에 대해 일일 AI 분석 리포트를 재생성(재발행)하시겠습니까?\n(제미나이 API 일일 무료 호출 쿼터가 소모됩니다.)`)) {
-      return;
-    }
-
-    setGenerating(true);
-    try {
-      const res = await fetch("/api/admin/daily-report/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: reportDate })
-      });
-      
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(resData.error || "리포트 생성에 실패했습니다.");
-      }
-
-      alert("성공적으로 일일 AI 리포트가 발행되었습니다!");
-      router.refresh(); // 서버 데이터 새로고침
-    } catch (err) {
-      alert(`[에러] ${(err as Error).message}`);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  // 날짜 포맷팅 (예: "2026년 6월 9일 (화)")
+  // Date label formatting
   const [yStr, mStr, dStr] = reportDate.split("-");
   const formattedDate = `${parseInt(yStr, 10)}년 ${parseInt(mStr, 10)}월 ${parseInt(dStr, 10)}일 (${getDayOfWeekKr(reportDate)})`;
 
@@ -252,21 +172,6 @@ export function DailyReportScreen({
           </button>
         </div>
 
-        {/* 운영자 수동 리포트 발행 바 */}
-        {isAdmin && (
-          <div className="daily-admin-bar">
-            <button
-              type="button"
-              className="daily-admin-btn"
-              disabled={generating}
-              onClick={handleGenerateReport}
-            >
-              <Flame size={16} className={generating ? "admin-spin" : ""} />
-              <span>{generating ? "AI 일일 리포트 분석 중..." : "AI 일일 리포트 강제 발행 (운영자)"}</span>
-            </button>
-          </div>
-        )}
-
         {/* 탭 네비게이션 */}
         {hasReport && (
           <div className="daily-tabs">
@@ -289,25 +194,9 @@ export function DailyReportScreen({
 
         {!hasReport ? (
           <div className="daily-report-empty-state">
-            {isGenerating ? (
-              <div className="generating-spinner-wrap">
-                <span className="spinner" />
-              </div>
-            ) : (
-              <div className="empty-icon-wrap">
-                <FileText size={48} className="empty-icon" />
-              </div>
-            )}
-            
-            {isGenerating && (
-              <>
-                <p className="empty-title">AI가 일일 리포트를 생성하고 있습니다</p>
-                <p className="empty-subtitle">
-                  경기 결과와 관련 뉴스를 종합하여 분석을 진행하고 있습니다.<br />
-                  리포트 작성 완료 및 발행까지 약 20~30초 정도 소요되니 잠시만 기다려 주세요.
-                </p>
-              </>
-            )}
+            <div className="empty-icon-wrap">
+              <FileText size={48} className="empty-icon" />
+            </div>
             {isNoGames && (
               <>
                 <p className="empty-title">예정되거나 진행된 경기가 없는 날입니다</p>
@@ -330,14 +219,7 @@ export function DailyReportScreen({
               <>
                 <p className="empty-title">해당 일자의 AI 일일 리포트 발행에 실패했습니다</p>
                 <p className="empty-subtitle" style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "center" }}>
-                  {errorMsg ? (
-                    <span style={{ color: "#ef4444", fontWeight: 700 }}>
-                      사유: {errorMsg}
-                    </span>
-                  ) : (
-                    <span>일시적인 분석 오류 혹은 데이터 누락으로 리포트가 발행되지 않았습니다.</span>
-                  )}
-                  {isAdmin && <span>운영자이신 경우 상단의 &apos;강제 발행&apos; 버튼으로 재생성을 시도하실 수 있습니다.</span>}
+                  <span>일시적인 분석 오류 또는 데이터 누락으로 리포트가 발행되지 않았습니다.</span>
                 </p>
               </>
             )}
@@ -346,7 +228,6 @@ export function DailyReportScreen({
                 <p className="empty-title">발행된 일일 리포트가 없습니다</p>
                 <p className="empty-subtitle">
                   해당 날짜에는 AI 일일 리포트가 자동으로 발행되지 않았습니다.<br />
-                  {isAdmin && <span>운영자이신 경우 상단의 &apos;강제 발행&apos; 버튼으로 리포트를 생성하실 수 있습니다.</span>}
                 </p>
               </>
             )}

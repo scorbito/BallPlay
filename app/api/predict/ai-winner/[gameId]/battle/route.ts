@@ -3,12 +3,15 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const PUBLIC_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900"
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { gameId: string } }
 ) {
   const supabase = createSupabaseAdminClient();
-  const now = new Date().toISOString();
 
   // bp_ai_battle_predictions 테이블에서 해당 game_id에 맞는 배틀 데이터 조회
   // admin client를 사용하여 양팀 데이터 존재 여부로 공개 여부를 판단합니다.
@@ -33,5 +36,5 @@ export async function GET(
     ok: true,
     gameId: params.gameId,
     predictions: isReleased ? list : []
-  });
+  }, { headers: PUBLIC_CACHE_HEADERS });
 }

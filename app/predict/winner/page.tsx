@@ -6,7 +6,6 @@ import {
   listMyPredictionResultsForDate,
   type BpPredictionResultRow
 } from "@/lib/supabase/query-parts/bpPredictions";
-import { refreshStartersIfStale } from "@/lib/server/kbo/refreshStarters";
 
 export const dynamic = "force-dynamic";
 
@@ -64,27 +63,6 @@ export default async function WinnerPredictPage({
   // listGamesFromDb는 ascending 정렬 — prev는 마지막 row(가장 가까운 과거), next는 첫 row(가장 가까운 미래).
   const prevDate = prevLookback.length > 0 ? prevLookback[prevLookback.length - 1].date : null;
   const nextDate = nextLookahead.length > 0 ? nextLookahead[0].date : null;
-
-  // 오늘 또는 미래 날짜면 선발 투수 on-demand refresh (throttle 10분, all-filled시 skip).
-  // 과거 경기는 갱신 의미 없으므로 skip.
-  if (selectedDate >= today) {
-    const refreshed = await refreshStartersIfStale(selectedDate);
-    if (refreshed.refreshed) {
-      gamesResult = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => gamesResult);
-    }
-  }
-
-  // 다음 경기일 selectedDate 이후 미래에 있고, 현재 selectedDate(=보통 오늘)의 경기가
-  // 모두 끝났으면 — 사용자가 → 누르면 즉시 보여줄 수 있도록 백그라운드 prefetch.
-  // refreshStartersIfStale 내부의 all-filled / throttle 가드로 비용 없음.
-  if (nextDate && nextDate > today && selectedDate === today) {
-    const todayAllDone =
-      gamesResult.length > 0 &&
-      gamesResult.every((g) => g.status === "finished" || g.status === "canceled");
-    if (todayAllDone) {
-      void refreshStartersIfStale(nextDate);
-    }
-  }
 
   const isToday = selectedDate === today;
   const isFuture = selectedDate > today;

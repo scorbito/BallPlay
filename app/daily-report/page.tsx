@@ -1,10 +1,8 @@
 import { Metadata } from "next";
 import { DailyReportScreen } from "@/components/domain/DailyReportScreen";
-import { listGamesFromDb, listStandingsFromDb } from "@/lib/supabase/query-parts/core";
+import { listGamesFromDb } from "@/lib/supabase/query-parts/core";
 import { buildDailyReportSkeleton, isSkeletonReport } from "@/lib/utils/dailyReportHelper";
-import { generateDailyReportWithGemini } from "@/lib/server/kbo/geminiDailyReport";
-import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUserTier } from "@/lib/auth/userTier";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 
 export const metadata: Metadata = {
@@ -25,11 +23,6 @@ type Props = {
 };
 
 export default async function DailyReportPage({ searchParams }: Props) {
-  // 0) admin 등급 검증
-  const userClient = createSupabaseServerClient();
-  const { tier } = await getUserTier(userClient);
-  const isAdmin = tier === "admin";
-
   // 오늘 날짜 계산 (한국 시각 기준 보정)
   const nowKST = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
   const todayStr = nowKST.toISOString().split("T")[0];
@@ -84,20 +77,13 @@ export default async function DailyReportPage({ searchParams }: Props) {
         initialReport={cachedReport} 
         reportDate={targetDate}
         reportPublishedAt={cachedReportPublishedAt}
-        isAdmin={isAdmin}
         focus={searchParams.focus}
         backHref={searchParams.backHref}
       />
     );
   }
 
-  // 2. 캐시가 없거나 실시간 강제 생성이 필요한 경우
-  const isAutoGenerateTarget = targetDate === yesterdayStr || targetDate === todayStr;
-  if (isAutoGenerateTarget) {
-    console.log(`[Daily Report Cache Miss] 신규 AI 일일 리포트 자동 생성 트리거 예정. date: ${targetDate}`);
-  } else {
-    console.log(`[Daily Report Cache Miss] 과거 날짜(${targetDate})이므로 자동 생성을 수행하지 않고 placeholder를 렌더링합니다.`);
-  }
+  console.log(`[Daily Report Cache Miss] date: ${targetDate}. Run local sync:kbo-day to generate this report.`);
 
   // 해당 날짜의 경기 데이터 조회
   const games = await listGamesFromDb({
@@ -117,7 +103,6 @@ export default async function DailyReportPage({ searchParams }: Props) {
         initialReport={emptySkeleton} 
         reportDate={targetDate}
         isNoGames={true}
-        isAdmin={isAdmin}
         focus={searchParams.focus}
         backHref={searchParams.backHref}
       />
@@ -132,7 +117,6 @@ export default async function DailyReportPage({ searchParams }: Props) {
         initialReport={emptySkeleton} 
         reportDate={targetDate}
         isPending={true}
-        isAdmin={isAdmin}
         focus={searchParams.focus}
         backHref={searchParams.backHref}
       />
@@ -148,9 +132,7 @@ export default async function DailyReportPage({ searchParams }: Props) {
     <DailyReportScreen 
       initialReport={basicSkeleton} 
       reportDate={targetDate}
-      initialIsGenerating={isAutoGenerateTarget}
-      isNoReport={!isAutoGenerateTarget}
-      isAdmin={isAdmin}
+      isNoReport={true}
       focus={searchParams.focus}
       backHref={searchParams.backHref}
     />

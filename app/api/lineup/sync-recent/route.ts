@@ -4,6 +4,7 @@
 //   - 인증 없음. throttle 이 KBO 호출 부담 자체를 막아주므로 무한 호출에도 안전.
 
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { ensureSync } from "@/lib/server/kbo/ensureSync";
 import { syncLineupsForDate } from "@/lib/server/kbo/syncLineups";
 
@@ -16,7 +17,18 @@ function kstYesterday(): string {
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
-export async function POST() {
+function isAuthorized(request: NextRequest): boolean {
+  const auth = request.headers.get("authorization");
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  return auth === `Bearer ${secret}`;
+}
+
+export async function POST(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   const yesterday = kstYesterday();
   const result = await ensureSync(
     `lineups-sync:${yesterday}`,

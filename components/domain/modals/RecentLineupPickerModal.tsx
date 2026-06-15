@@ -29,13 +29,11 @@ export function RecentLineupPickerModal({ open, teamId, onClose, onPick }: Props
   const [rows, setRows] = useState<RecentLineupRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setLoading(true);
-    setSyncing(false);
     setError(null);
     const client = createSupabaseBrowserClient();
 
@@ -52,23 +50,6 @@ export function RecentLineupPickerModal({ open, teamId, onClose, onPick }: Props
       }
       setLoading(false);
 
-      // 2) 항상 백그라운드 sync 시도. 어제 경기 라인업이 DB 에 없을 수 있어서
-      //    초기 표시 데이터가 있어도 최신 sync 시도. 서버 throttle 30분으로 KBO 호출 부담 없음.
-      setSyncing(true);
-      try {
-        const syncRes = await fetch("/api/lineup/sync-recent", { method: "POST" });
-        if (cancelled) return;
-        const syncJson = await syncRes.json().catch(() => null);
-        // sync 가 실제로 실행된 경우(=throttle 미적용)만 재조회. throttle hit 면 갱신 의미 없음.
-        if (syncJson?.result?.ran && !cancelled) {
-          const res2 = await fetchOnce();
-          if (cancelled) return;
-          if (res2.ok) setRows(res2.rows);
-        }
-      } catch {
-        // 네트워크 실패 — 기존 표시 데이터 유지
-      }
-      if (!cancelled) setSyncing(false);
     })();
 
     return () => {
@@ -90,7 +71,7 @@ export function RecentLineupPickerModal({ open, teamId, onClose, onPick }: Props
         {loading ? (
           <div className="recent-lineup-state">
             <Loader2 size={18} className="recent-lineup-spinner" />
-            <span>{syncing ? "KBO에서 최신 라인업 가져오는 중..." : "불러오는 중..."}</span>
+            <span>불러오는 중...</span>
           </div>
         ) : error ? (
           <div className="recent-lineup-state recent-lineup-state-error">

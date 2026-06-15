@@ -3,14 +3,8 @@ import { revalidatePath } from "next/cache";
 import { syncGamesInRange } from "@/lib/server/kbo/syncGames";
 import { syncLineupsForDate } from "@/lib/server/kbo/syncLineups";
 import { syncStandings } from "@/lib/server/kbo/syncStandings";
-import { listGamesFromDb, listStandingsFromDb } from "@/lib/supabase/query-parts/core";
-import { buildDailyReportSkeleton } from "@/lib/utils/dailyReportHelper";
-import { generateDailyReportWithGemini } from "@/lib/server/kbo/geminiDailyReport";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
-
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function isAuthorized(request: NextRequest): boolean {
   const auth = request.headers.get("authorization");
@@ -85,74 +79,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 3. 일일 리포트(daily_ai_reports) 자동 생성 및 캐싱 (scope !== 'week' 일 때만 연쇄 구동)
-    let dailyReport: any = { skipped: true };
-    if (scope !== "week") {
-      try {
-        const requestedReportDate = url.searchParams.get("reportDate");
-        const reportDate = requestedReportDate && DATE_RE.test(requestedReportDate)
-          ? requestedReportDate
-          : scope === "today"
-            ? to
-            : from;
-
-        const gamesForDate = await listGamesFromDb({ from: reportDate, to: reportDate });
-        const hasUnfinished = gamesForDate.some(g => g.status === "scheduled" || g.status === "in_progress");
-
-        if (gamesForDate.length > 0 && !hasUnfinished) {
-          const supabase = createSupabaseAdminClient();
-          
-          // 중복 생성 방지: 이미 해당 날짜의 일일 리포트 캐시가 DB에 있으면 스킵
-          const { data: existingReport } = await supabase
-            .from("daily_ai_reports")
-            .select("report_date")
-            .eq("report_date", reportDate)
-            .maybeSingle();
-
-          if (existingReport) {
-            dailyReport = { skipped: true, reason: "Daily report already exists in DB", date: reportDate };
-          } else {
-            // 뉴스 조회
-            const { data: newsData } = await supabase
-              .from("bp_news")
-              .select("title")
-              .gte("published_at", `${reportDate}T00:00:00+09:00`)
-              .lte("published_at", `${reportDate}T23:59:59+09:00`)
-              .order("published_at", { ascending: false });
-            const newsTitles = (newsData ?? []).map(n => n.title);
-
-            // 순위표 조회
-            const yearNum = Number(reportDate.slice(0, 4));
-            const standingsData = await listStandingsFromDb(yearNum);
-
-            // 뼈대 생성 및 AI 분석
-            const basicSkeleton = buildDailyReportSkeleton(gamesForDate, reportDate);
-            const aiReport = await generateDailyReportWithGemini(basicSkeleton, newsTitles, standingsData);
-
-            if (aiReport) {
-              // 캐시 적재
-              await supabase.from("daily_ai_reports").upsert({
-                report_date: reportDate,
-                report_json: aiReport,
-                created_at: new Date().toISOString()
-              });
-
-              dailyReport = { ok: true, cached: true, date: reportDate };
-            } else {
-              dailyReport = { error: "AI 리포트 생성 실패 (null 반환)", date: reportDate };
-            }
-          }
-        } else {
-          dailyReport = { 
-            skipped: true, 
-            date: reportDate,
-            reason: gamesForDate.length === 0 ? "No games found" : "Some games are still in progress" 
-          };
-        }
-      } catch (err) {
-        dailyReport = { error: (err as Error).message };
-      }
-    }
+    const dailyReport = { skipped: true, reason: "Daily reports are generated only by the local sync:kbo-day command." };
 
     // ISR 캐시 무효화 — schedule/홈 페이지가 revalidate 24시간이라
     // cron이 새 결과를 sync해도 캐시 만료 전엔 안 보임. 명시적으로 무효화.

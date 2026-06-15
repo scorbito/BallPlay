@@ -26,17 +26,12 @@ function addDays(dateISO: string, days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function areGamesDone(games: Array<{ status: string | null | undefined }>): boolean {
-  return games.every((g) => g.status === "finished" || g.status === "canceled");
-}
-
 export default async function Sim1000ListPage({
   searchParams
 }: {
   searchParams: { date?: string };
 }) {
   const today = kstToday();
-  const tomorrow = addDays(today, 1);
   const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
   const requestedDate = explicitDate ?? today;
 
@@ -70,21 +65,6 @@ export default async function Sim1000ListPage({
   // game_id → game meta 인덱스. 시뮬 행에 시각·구장 부가.
   // gameOrder: gamesForDate 의 등장 순서(=game_time 정렬) — AI 예측·승리팀 예측과 동일한
   // listGamesFromDb 순서라, 이 인덱스로 시뮬 카드를 정렬하면 3개 페이지 경기 순서가 일치.
-  const todayGamesForGate = isAdmin
-    ? selectedDate === today
-      ? gamesForDate
-      : await listGamesFromDb({ from: today, to: today }).catch(() => [])
-    : [];
-  const tomorrowGamesForGate = isAdmin
-    ? selectedDate === tomorrow
-      ? gamesForDate
-      : await listGamesFromDb({ from: tomorrow, to: tomorrow }).catch(() => [])
-    : [];
-  const adminCanPrepareTomorrow =
-    isAdmin && areGamesDone(todayGamesForGate) && tomorrowGamesForGate.length > 0;
-  const canAdminRerunSelectedDate =
-    isAdmin && (selectedDate === today || (selectedDate === tomorrow && adminCanPrepareTomorrow));
-
   const gameMeta = new Map<string, (typeof gamesForDate)[number]>();
   const gameOrder = new Map<string, number>();
   gamesForDate.forEach((g, i) => {
@@ -134,7 +114,6 @@ export default async function Sim1000ListPage({
     : [];
   const dateList = [...dates];
   if (!dateList.includes(today)) dateList.push(today);
-  if (adminCanPrepareTomorrow && !dateList.includes(tomorrow)) dateList.push(tomorrow);
   const sorted = [...dateList].sort();
   let prevDate: string | null = null;
   let nextDate: string | null = null;
@@ -156,8 +135,6 @@ export default async function Sim1000ListPage({
       prevDate={prevDate}
       nextDate={nextDate}
       games={cards}
-      isAdmin={isAdmin}
-      canAdminRerun={canAdminRerunSelectedDate}
       accuracyStats={accuracyStats}
       locked={locked}
     />

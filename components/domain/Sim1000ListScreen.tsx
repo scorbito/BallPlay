@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, ChevronLeft, ChevronRight, Dices, Flame, Loader2, Lock, RefreshCw, Target } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Dices, Flame, Lock, Target } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
-import { useAppState } from "@/lib/state/AppState";
 import { getTeam } from "@/lib/constants/teams";
 import { SIM_1000_VIEWED_KEY } from "@/components/domain/HomeCardPulse";
 import { trackEvent } from "@/lib/analytics/events";
@@ -43,10 +41,6 @@ type Props = {
   prevDate: string | null;
   nextDate: string | null;
   games: Sim1000GameCard[];
-  /** 운영자만 true — "다시 돌리기" 버튼 노출 */
-  isAdmin?: boolean;
-  /** 운영자가 현재 선택 날짜의 시뮬을 수동 재실행할 수 있으면 true. */
-  canAdminRerun?: boolean;
   /** 시즌 누적 적중률 (live 집계). undefined 또는 total 0 이면 안내 표시. */
   accuracyStats?: Sim1000AccuracyStats;
   /** 소프트 게이트 — 비로그인/익명이면 true. 매치업·누적 적중률만 보이고 수치는 로그인 유도. */
@@ -108,15 +102,9 @@ export function Sim1000ListScreen({
   prevDate,
   nextDate,
   games,
-  isAdmin = false,
-  canAdminRerun,
   accuracyStats,
   locked = false
 }: Props) {
-  const router = useRouter();
-  const { showToast } = useAppState();
-  const [rerunning, setRerunning] = useState(false);
-
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 시뮬 결과로 복귀.
   const loginHref = `/login?next=${encodeURIComponent(`/predict/sim-1000?date=${selectedDate}`)}`;
 
@@ -135,44 +123,6 @@ export function Sim1000ListScreen({
     }
   }, [isToday, games.length, locked, selectedDate]);
 
-  // 운영자 "다시 돌리기" — 09:00 cron 이후 발표 라인업/선발 교체 등이 반영된 데이터로 다시 시뮬.
-  async function handleRerun() {
-    if (rerunning) return;
-    setRerunning(true);
-    showToast("다시 돌리는 중이에요. 수 초 걸려요…");
-    try {
-      const res = await fetch("/api/admin/sim-1000/rerun", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: selectedDate })
-      });
-      const json = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        ran?: number;
-        failed?: number;
-        error?: string;
-      };
-      if (!res.ok || !json.ok) {
-        showToast(`다시 돌리기 실패: ${json.error ?? res.statusText}`);
-        return;
-      }
-      const ran = json.ran ?? 0;
-      const failed = json.failed ?? 0;
-      showToast(
-        failed > 0
-          ? `다시 돌렸어요 (${ran}경기 성공, ${failed}경기 실패)`
-          : `다시 돌렸어요 (${ran}경기)`
-      );
-      router.refresh();
-    } catch (err) {
-      showToast(`다시 돌리기 실패: ${(err as Error).message}`);
-    } finally {
-      setRerunning(false);
-    }
-  }
-
-  const showRerun = canAdminRerun ?? (isAdmin && isToday);
-
   return (
     <AppShell
       activeTab="home"
@@ -180,24 +130,6 @@ export function Sim1000ListScreen({
       theme="light"
       backHref="/"
       wide
-      headerAction={
-        showRerun ? (
-          <button
-            type="button"
-            className="sim1000-admin-rerun"
-            onClick={handleRerun}
-            disabled={rerunning}
-            aria-label="시뮬 다시 돌리기 (운영자)"
-          >
-            {rerunning ? (
-              <Loader2 size={13} strokeWidth={2.5} className="sim1000-admin-spin" aria-hidden="true" />
-            ) : (
-              <RefreshCw size={13} strokeWidth={2.5} aria-hidden="true" />
-            )}
-            <span>{rerunning ? "돌리는 중…" : "다시 돌리기"}</span>
-          </button>
-        ) : null
-      }
     >
       <section className="sim1000-screen">
         {/* ── 설명 (카드 없이 텍스트만) ── */}

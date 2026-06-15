@@ -1,10 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
-import { fetchOnDemandStarterStats } from "@/lib/server/kbo/fetchOnDemandStarterStats";
 import { getRoster } from "@/lib/rosters";
 import { makeFallbackBatter, makeFallbackPitcher } from "@/lib/sim/leagueAverage";
 import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
 import type { SimBatter, SimPitcher } from "@/lib/sim/types";
+
+const PUBLIC_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900"
+};
 
 function findRosterPlayerIdByName(teamId: string, name: string | null, isPitcher: boolean): string | null {
   if (!name) return null;
@@ -48,8 +51,7 @@ export async function GET(
   const { home_team_id: homeTeamId, away_team_id: awayTeamId, home_starter: homeStarterName, away_starter: awayStarterName, game_date: gameDate } = game;
   const season = new Date(gameDate).getFullYear();
 
-  // 2. 선발 투수 온디맨드 크롤링 수행
-  await fetchOnDemandStarterStats(adminClient, [homeTeamId, awayTeamId], gameDate);
+  // 2. 저장된 스탯 스냅샷만 읽는다. 요청 중 KBO 스크래핑은 cron sync-kbo-stats로 분리한다.
   const stats = await buildStatsDirectoryWithRecentForm(adminClient, [homeTeamId, awayTeamId], {
     asOfDate: gameDate
   });
@@ -295,5 +297,5 @@ export async function GET(
       losses: awayH2HWins,
       draws: h2hDraws
     }
-  });
+  }, { headers: PUBLIC_CACHE_HEADERS });
 }

@@ -3,10 +3,14 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const PUBLIC_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300"
+};
+
 /** GET ?ids=uuid1,uuid2,... → 홈+원정 예측이 모두 있는 game_id 배열 반환 */
 export async function GET(req: NextRequest) {
   const ids = req.nextUrl.searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
-  if (ids.length === 0) return NextResponse.json([]);
+  if (ids.length === 0) return NextResponse.json([], { headers: PUBLIC_CACHE_HEADERS });
 
   const supabase = createSupabaseAdminClient();
   const { data } = await supabase
@@ -25,5 +29,5 @@ export async function GET(req: NextRequest) {
     if (sides.has("home") && sides.has("away")) active.push(id);
   });
 
-  return NextResponse.json(active);
+  return NextResponse.json(active, { headers: PUBLIC_CACHE_HEADERS });
 }
