@@ -136,7 +136,8 @@
 
 .phone-frame-light .recent10-card-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 180px));
+  justify-content: center;
   gap: 12px;
   margin-top: 12px;
   perspective: 900px;
@@ -211,6 +212,39 @@
   color: color-mix(in srgb, var(--team-color, #e84a8a) 85%, #0b1f3a);
   font-size: 12px;
   font-weight: 950;
+}
+
+.phone-frame-light .recent10-player-card.rank-1 .recent10-rank,
+.phone-frame-light .recent10-player-card.rank-2 .recent10-rank,
+.phone-frame-light .recent10-player-card.rank-3 .recent10-rank {
+  color: #ffffff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 8px 16px rgba(20, 30, 50, 0.16);
+}
+
+.phone-frame-light .recent10-player-card.rank-1 .recent10-rank {
+  top: 8px;
+  left: 8px;
+  min-width: 48px;
+  height: 34px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f7c948, #f59e0b);
+  font-size: 15px;
+}
+
+.phone-frame-light .recent10-player-card.rank-2 .recent10-rank {
+  min-width: 44px;
+  height: 30px;
+  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+  font-size: 13px;
+}
+
+.phone-frame-light .recent10-player-card.rank-3 .recent10-rank {
+  min-width: 42px;
+  height: 28px;
+  background: linear-gradient(135deg, #d6a36a, #b45309);
+  font-size: 12.5px;
 }
 
 .phone-frame-light .recent10-team {

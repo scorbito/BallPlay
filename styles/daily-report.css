@@ -833,10 +833,17 @@
   gap: 10px;
 }
 
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-text,
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-daily-report .play-hub-card-text {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-title,
 .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-daily-report .play-hub-card-title {
   display: block;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.18;
   white-space: normal;
   overflow: visible;
@@ -859,7 +866,7 @@
 
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
     display: -webkit-box;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.18;
     white-space: normal;
     overflow: hidden;
