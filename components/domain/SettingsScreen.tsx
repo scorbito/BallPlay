@@ -138,7 +138,7 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false }: Settings
   };
 
   return (
-    <AppShell activeTab="home" title="설정" theme="light" backHref="/">
+    <AppShell activeTab="settings" title="설정" theme="light" backHref="/">
       {/* 연동 계정 정보 — 마이 프로필 영역에서 옮겨옴.
           익명 로그인 사용자는 연동 정보가 없으므로 "익명 로그인" 안내 + 로그아웃 노출. */}
       <section className="settings-account-section" aria-label="연동 계정">

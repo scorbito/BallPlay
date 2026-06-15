@@ -7,7 +7,7 @@ import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 import { PredictionCorrectBonusModal } from "@/components/domain/points/PredictionCorrectBonusModal";
 
 type AppShellProps = {
-  activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule";
+  activeTab?: "home" | "play" | "stadium" | "records" | "my" | "schedule" | "settings";
   title?: ReactNode;
   /** 타이틀 좌우 장식. "slashes" = 핑크 사선 두 줄(경기 진행 화면용). */
   titleDecoration?: "slashes";
