@@ -62,12 +62,12 @@ import "@/styles/daily-report.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ballnori.com";
 const SITE_TITLE = "야구놀이터";
-const SITE_DESCRIPTION = "야구놀이터에서 승리팀 예측, 라인업 짜기 등 야구 미니 게임을 가볍게 즐겨보세요.";
+const SITE_DESCRIPTION = "야구놀이터에서 프로야구 승리팀 예측, AI 승부 맞대결, 경기 리포트와 야구 정보를 확인하세요.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
+    default: `${SITE_TITLE} - 프로야구 AI 예측·분석`,
     template: `%s | ${SITE_TITLE}`
   },
   description: SITE_DESCRIPTION,
@@ -79,11 +79,11 @@ export const metadata: Metadata = {
   keywords: [
     "야구놀이터",
     "ballplay",
-    "KBO 예측",
+    "프로야구 예측",
     "승리팀 예측",
-    "야구 라인업",
-    "야구 미니게임",
-    "프로야구 놀이"
+    "AI 야구 분석",
+    "프로야구 정보",
+    "야구 라인업 분석"
   ],
   authors: [{ name: "야구놀이터" }],
   manifest: "/manifest.webmanifest",
@@ -105,13 +105,13 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: SITE_URL,
     siteName: SITE_TITLE,
-    title: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
+    title: `${SITE_TITLE} - 프로야구 AI 예측·분석`,
     description: SITE_DESCRIPTION
     // images는 app/opengraph-image.tsx가 자동 제공 (1200x630 PNG 동적 생성)
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_TITLE} - 야구 미니 게임 & 예측`,
+    title: `${SITE_TITLE} - 프로야구 AI 예측·분석`,
     description: SITE_DESCRIPTION
     // images는 app/twitter-image.tsx가 자동 제공
   },

@@ -786,3 +786,64 @@
     align-self: center;
   }
 }
+
+.phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon.play-hub-card-icon-image {
+  flex: 0 0 84px;
+  width: 84px;
+  height: 72px;
+  margin-left: 4px;
+  overflow: visible;
+}
+
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-icon.play-hub-card-icon-image {
+  flex-basis: 96px;
+  width: 96px;
+}
+
+.phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon.play-hub-card-icon-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card {
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 16px;
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-icon {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.phone-frame-light .play-hub-hero-cards > :first-child .play-hub-card-text {
+  margin-top: 0;
+}
+
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-predict .play-hub-card {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(232, 74, 138, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(232, 74, 138, 0.16) 0%, rgba(37, 99, 235, 0.13) 56%, rgba(255, 255, 255, 0.94) 100%);
+  border-color: rgba(124, 58, 237, 0.14);
+}
+
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-predict .play-hub-card:hover,
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-predict .play-hub-card:active {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(232, 74, 138, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(232, 74, 138, 0.16) 0%, rgba(37, 99, 235, 0.13) 56%, rgba(255, 255, 255, 0.94) 100%);
+  border-color: rgba(124, 58, 237, 0.14);
+}
+
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card {
+  background: linear-gradient(135deg, #f04681, var(--bp-accent, #e84a8a));
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(232, 74, 138, 0.24);
+}
+
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-title,
+.phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-chevron {
+  color: #ffffff;
+}

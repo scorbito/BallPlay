@@ -18,7 +18,6 @@ import {
   Users
 } from "lucide-react";
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
-import { HomeRecordBadge } from "@/components/domain/HomeRecordBadge";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 import { HomePointBadge } from "@/components/domain/points/HomePointBadge";
@@ -48,7 +47,6 @@ function BaseballIcon({ size = 24 }: { size?: number }) {
 }
 import { AppShell } from "@/components/layout/AppShell";
 import { TierUpHost } from "@/components/common/TierUpHost";
-import { getAccountTierByWins } from "@/lib/tiers/accountTier";
 
 type HomeCard = {
   id: string;
@@ -88,49 +86,10 @@ type HomeSection = {
 
 const sections: HomeSection[] = [
   {
-    id: "lineup-play",
-    label: "내 라인업 플레이",
+    id: "ai-analysis",
+    label: "프로야구 AI 예측·분석",
     variant: "hero",
-    heroSubtitle: "나만의 라인업으로 승부하세요!",
-    gridCols: 3,
-    cards: [
-      {
-        id: "stadium",
-        href: "/stadium",
-        title: "경기장 들어가기",
-        description: "라인업 경기 시뮬 + 친구 대결",
-        icon: Swords,
-        iconImage: "/icons/tabs/stadium.png",
-        available: true
-      },
-      {
-        id: "lineup",
-        href: "/play/lineup",
-        title: "팀 라인업 짜기",
-        description: "9인 타순 + 수비 위치 구성",
-        icon: ListChecks,
-        iconImage: "/icons/tabs/play.png",
-        available: true,
-        featured: true
-      },
-      {
-        id: "my-team",
-        href: "/my-team",
-        title: "나만의 팀",
-        description: "선수를 모아 만드는 커스텀 구단",
-        icon: Users,
-        iconImage: "/icons/menu/my-team.png",
-        available: false,
-        badge: "준비중"
-      }
-    ]
-  },
-  {
-    id: "predict",
-    label: "승부 예측",
-    variant: "standard",
-    sectionIcon: Trophy,
-    sectionIconImage: "/icons/sections/predict.png",
+    heroSubtitle: "오늘의 프로야구 경기 예측, 승부 맞대결, 리포트를 한눈에 확인하세요.",
     gridCols: 3,
     cards: [
       {
@@ -146,18 +105,55 @@ const sections: HomeSection[] = [
         id: "ai-battle",
         href: "/predict/battle",
         title: "AI 승부 맞대결",
-        description: "Gemini vs GPT 승리 근거 대결",
+        description: "Gemini vs GPT 승리 근거 비교",
         icon: Swords,
         iconImage: "/icons/menu/ai-battle.png",
         available: true
       },
       {
+        id: "daily-report",
+        href: "/daily-report",
+        title: "일일 리포트",
+        description: "경기 결과와 주요 흐름 요약",
+        icon: FileText,
+        iconImage: "/icons/menu/daily-report.png",
+        available: true
+      }
+    ]
+  },
+  {
+    id: "predict",
+    label: "예측 참여",
+    variant: "standard",
+    sectionIcon: Trophy,
+    sectionIconImage: "/icons/sections/predict.png",
+    gridCols: 3,
+    cards: [
+      {
         id: "winner-predict",
         href: "/predict/winner",
         title: "승리팀 예측하기",
-        description: "다음 경기 승리팀",
+        description: "오늘 경기 승리팀 선택",
         icon: Target,
         iconImage: "/icons/menu/predict-winner.png",
+        available: true
+      },
+      {
+        id: "predict-ranking",
+        href: "/predict/ranking",
+        title: "예측 기록",
+        description: "참여 기록과 적중 흐름",
+        icon: Trophy,
+        iconImage: "/icons/menu/team-standings.png",
+        available: true
+      },
+      {
+        id: "sim-1000",
+        href: "/predict/sim-1000",
+        title: "1000판 시뮬레이션",
+        description: "오늘 경기 1000판 결과",
+        icon: BarChart3,
+        iconImage: "/icons/menu/sim-1000.png",
         available: true
       }
     ]
@@ -174,33 +170,15 @@ const sections: HomeSection[] = [
         id: "schedule",
         href: "/schedule",
         title: "경기 일정",
-        description: "이번 주 KBO 일정",
+        description: "이번 주 프로야구 일정",
         icon: CalendarDays,
         iconImage: "/icons/menu/schedule.png",
         available: true
       },
       {
-        id: "daily-report",
-        href: "/daily-report",
-        title: "일일 리포트",
-        description: "어제 경기 결과 및 AI 종합 요약 리포트",
-        icon: FileText,
-        iconImage: "/icons/menu/daily-report.png",
-        available: true
-      },
-      {
-        id: "weekly-report",
-        href: "/weekly-report",
-        title: "주간 리포트",
-        description: "한 주간의 KBO 성적 분석 리포트",
-        icon: FileText,
-        iconImage: "/icons/menu/weekly-report.png",
-        available: true
-      },
-      {
         id: "today-results",
         href: "/schedule?focus=today",
-        title: "오늘 경기 결과",
+        title: "경기 결과",
         description: "오늘 경기 스코어",
         icon: ClipboardCheck,
         iconImage: "/icons/menu/today-results.png",
@@ -216,12 +194,58 @@ const sections: HomeSection[] = [
         available: true
       },
       {
+        id: "weekly-report",
+        href: "/weekly-report",
+        title: "주간 리포트",
+        description: "한 주간의 프로야구 성적 분석 리포트",
+        icon: FileText,
+        iconImage: "/icons/menu/weekly-report.png",
+        available: true
+      },
+      {
         id: "news",
         href: "/news",
         title: "야구 뉴스",
-        description: "KBO 헤드라인·트레이드",
+        description: "프로야구 헤드라인·트레이드",
         icon: FileText,
         iconImage: "/icons/menu/baseball-news.png",
+        available: true
+      }
+    ]
+  },
+  {
+    id: "lineup-tools",
+    label: "라인업 분석 도구",
+    variant: "standard",
+    sectionIcon: ListChecks,
+    sectionIconImage: "/icons/tabs/play.png",
+    gridCols: 3,
+    cards: [
+      {
+        id: "lineup",
+        href: "/play/lineup",
+        title: "라인업 분석",
+        description: "팀별 타순과 수비 위치 구성",
+        icon: ListChecks,
+        iconImage: "/icons/tabs/play.png",
+        available: true
+      },
+      {
+        id: "stadium",
+        href: "/stadium",
+        title: "라인업 시뮬레이션",
+        description: "라인업 기반 경기 흐름 참고",
+        icon: Swords,
+        iconImage: "/icons/tabs/stadium.png",
+        available: true
+      },
+      {
+        id: "lineup-opinion",
+        href: "/play/lineup/ranking",
+        title: "팬 라인업 의견",
+        description: "공개 라인업 참고와 의견 확인",
+        icon: Users,
+        iconImage: "/icons/menu/team-standings.png",
         available: true
       }
     ]
@@ -232,17 +256,8 @@ const sections: HomeSection[] = [
     variant: "standard",
     sectionIcon: Play,
     sectionIconImage: "/icons/sections/content.png",
-    gridCols: 3,
+    gridCols: 2,
     cards: [
-      {
-        id: "sim-1000",
-        href: "/predict/sim-1000",
-        title: "1000판 시뮬레이션",
-        description: "오늘 경기 1000판 결과",
-        icon: BarChart3,
-        iconImage: "/icons/menu/sim-1000.png",
-        available: true
-      },
       {
         id: "videos",
         href: "/videos",
@@ -310,6 +325,7 @@ export function HomeScreen({
   void isAnonymous;
   void isAdmin;
   void user;
+  void userRecord;
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
       <header className="play-hub-header">
@@ -424,59 +440,6 @@ export function HomeScreen({
                   cardId={card.id}
                   initialAvailable={initialPointAvailability[card.id]}
                 />
-                {/* 가을야구 모드 오픈 — 경기장 카드 상단에 겹쳐 강조. 카드 링크와 별도(형제)
-                    Link 라 뱃지 탭은 가을야구, 카드 나머지 탭은 경기장 로비로. */}
-                {card.id === "stadium" ? (
-                  <Link
-                    href="/stadium/playoff"
-                    className="home-fall-badge"
-                    aria-label="가을야구 모드 오픈 — 도전하러 가기"
-                    prefetch={false}
-                  >
-                    <Image
-                      src="/badges/fall-baseball-open.png"
-                      alt="가을야구 모드 오픈"
-                      width={1117}
-                      height={223}
-                      className="home-fall-badge-img"
-                      priority
-                    />
-                  </Link>
-                ) : null}
-                {card.id === "lineup" ? (
-                  <Link
-                    href="/play/lineup"
-                    className="home-fall-badge home-lineup-badge"
-                    aria-label="국가대표 라인업 추가"
-                    prefetch={false}
-                  >
-                    <Image
-                      src="/badges/국가대표라인업추가.png"
-                      alt="국가대표 라인업 추가"
-                      width={695}
-                      height={359}
-                      className="home-fall-badge-img"
-                      priority
-                    />
-                  </Link>
-                ) : null}
-                {card.id === "my-team" && available ? (
-                  <Link
-                    href="/my-team"
-                    className="home-fall-badge home-my-team-badge"
-                    aria-label="나만의 팀"
-                    prefetch={false}
-                  >
-                    <Image
-                      src="/badges/나만의팀뱃지.png"
-                      alt="나만의 팀"
-                      width={695}
-                      height={359}
-                      className="home-fall-badge-img"
-                      priority
-                    />
-                  </Link>
-                ) : null}
               </div>
             );
           };
@@ -500,49 +463,27 @@ export function HomeScreen({
                     <div className="play-hub-hero-text">
                       <div className="play-hub-hero-title-row">
                         <h2 className="play-hub-hero-title">{section.label}</h2>
-                        {section.id === "lineup-play" ? (
-                          <HomeRecordBadge
-                            initialWins={userRecord.wins}
-                            initialLosses={userRecord.losses}
-                          />
-                        ) : null}
                       </div>
                       {/* 부제 + 매치 기록 뱃지를 한 줄 flex row로 묶음 — 좁은 화면에서는 flex-wrap으로 뱃지가 다음 줄로 떨어짐. */}
-                      {section.heroSubtitle && section.id !== "lineup-play" ? (
+                      {section.heroSubtitle ? (
                         <div className="play-hub-hero-subtitle-row">
                           {section.heroSubtitle ? (
                             <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
                           ) : null}
-                          {section.id === "lineup-play" ? (
-                            // 클라이언트 island — 경기 후 라우터 캐시가 옛 전적을 보여줘도
-                            // mount/focus/pageshow 마다 bp_account_stats 재조회해 최신화.
-                            <HomeRecordBadge
-                              initialWins={userRecord.wins}
-                              initialLosses={userRecord.losses}
-                            />
-                          ) : null}
                         </div>
                       ) : null}
                     </div>
-                    {section.heroIllustration ? (() => {
-                      // 등급 모자 일러스트 — 사용자 현재 등급에 맞춰 cap 이미지 선택.
-                      // 등급 없음(0승) 케이스는 기본 일러스트 그대로.
-                      const tier = section.id === "lineup-play"
-                        ? getAccountTierByWins(userRecord.wins)
-                        : null;
-                      const illustSrc = tier?.capPath ?? section.heroIllustration;
-                      return (
-                        <div className="play-hub-hero-illust">
-                          <Image
-                            src={illustSrc}
-                            alt=""
-                            width={160}
-                            height={160}
-                            priority
-                          />
-                        </div>
-                      );
-                    })() : null}
+                    {section.heroIllustration ? (
+                      <div className="play-hub-hero-illust">
+                        <Image
+                          src={section.heroIllustration}
+                          alt=""
+                          width={160}
+                          height={160}
+                          priority
+                        />
+                      </div>
+                    ) : null}
                   </div>
                   {cardsGrid}
                 </div>
