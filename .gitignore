@@ -32,6 +32,7 @@ data/ground*.jpg
 
 # Scratch and local test scripts
 scratch/
+.sync-state/
 scripts/
 !/scripts/
 /scripts/*

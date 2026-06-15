@@ -10,6 +10,7 @@
 // Usage:
 //   npm run sync:kbo-day
 //   npm run sync:kbo-day -- 2026-06-16
+//   npm run sync:kbo-day -- 2026-06-16 --force
 //   npm run sync:kbo-day -- 2026-06-16 --force-report
 //   npm run sync:kbo-day -- 2026-06-16 --skip-games --skip-lineups --skip-standings --skip-stats --skip-report
 //   npm run sync:kbo-day -- 2026-06-16 --skip-stats
@@ -17,10 +18,12 @@
 //   npm run sync:kbo-day -- 2026-06-16 --skip-schedule
 //   npm run sync:kbo-day -- 2026-06-16 --skip-sim1000
 
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MIN_STATS_SNAPSHOT_ROWS = 100;
 
 function loadLocalEnv() {
   const envText = readFileSync(resolve(process.cwd(), ".env.local"), "utf8");
@@ -53,8 +56,54 @@ function isFinishedStatus(status: string | null | undefined): boolean {
   return status === "finished" || status === "canceled";
 }
 
+function markerPathFor(targetDate: string, simDate: string): string {
+  return resolve(process.cwd(), ".sync-state", "kbo-day", `${targetDate}__sim-${simDate}.done.json`);
+}
+
+function writeCompletionMarker(path: string, payload: unknown) {
+  mkdirSync(resolve(process.cwd(), ".sync-state", "kbo-day"), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
+
+async function hasStatsSnapshot(admin: SupabaseClient, snapshotDate: string): Promise<boolean> {
+  const { count, error } = await admin
+    .from("bp_player_stats_snapshots")
+    .select("snapshot_date", { count: "exact", head: true })
+    .eq("snapshot_date", snapshotDate);
+
+  if (error) {
+    console.warn(`[sync:kbo-day] stats existing check failed: ${error.message}`);
+    return false;
+  }
+
+  return (count ?? 0) >= MIN_STATS_SNAPSHOT_ROWS;
+}
+
+async function getSim1000ExistingState(admin: SupabaseClient, gameDate: string) {
+  const [{ count: gameCount, error: gameError }, { count: simCount, error: simError }] = await Promise.all([
+    admin
+      .from("games")
+      .select("id", { count: "exact", head: true })
+      .eq("game_date", gameDate)
+      .neq("status", "cancelled"),
+    admin
+      .from("bp_sim_results")
+      .select("game_id", { count: "exact", head: true })
+      .eq("game_date", gameDate)
+  ]);
+
+  if (gameError) console.warn(`[sync:kbo-day] sim-1000 games check failed: ${gameError.message}`);
+  if (simError) console.warn(`[sync:kbo-day] sim-1000 existing check failed: ${simError.message}`);
+
+  return {
+    gameCount: gameError ? null : gameCount ?? 0,
+    simCount: simError ? null : simCount ?? 0
+  };
+}
+
 const args = process.argv.slice(2);
 const targetDate = args.find((arg) => DATE_RE.test(arg)) ?? kstYesterday();
+const force = args.includes("--force");
 const forceReport = args.includes("--force-report");
 const skipGames = args.includes("--skip-games");
 const skipStats = args.includes("--skip-stats");
@@ -67,6 +116,14 @@ const skipSim1000 = args.includes("--skip-sim1000");
 const scheduleFrom = kstDateOffset(-1);
 const scheduleTo = kstDateOffset(30);
 const sim1000Date = kstDateOffset(1);
+const completionMarkerPath = markerPathFor(targetDate, sim1000Date);
+
+if (!force && existsSync(completionMarkerPath)) {
+  console.log(`[sync:kbo-day] already completed for date=${targetDate}, sim1000Date=${sim1000Date}`);
+  console.log(`[sync:kbo-day] marker=${completionMarkerPath}`);
+  console.log("[sync:kbo-day] use --force to run again");
+  process.exit(0);
+}
 
 loadLocalEnv();
 
@@ -147,8 +204,12 @@ if (!skipStandings) {
 
 if (!skipStats) {
   console.log("[sync:kbo-day] 5/7 stats snapshot");
-  const stats = await syncStatsSnapshot(targetDate, { year: season });
-  console.log("[sync:kbo-day] stats", JSON.stringify(stats, null, 2));
+  if (!force && await hasStatsSnapshot(admin, targetDate)) {
+    console.log(`[sync:kbo-day] stats skipped: snapshot already exists for ${targetDate}`);
+  } else {
+    const stats = await syncStatsSnapshot(targetDate, { year: season });
+    console.log("[sync:kbo-day] stats", JSON.stringify(stats, null, 2));
+  }
 
   if (!skipRecent10) {
     const recent10 = await upsertRecent10TopPlayers();
@@ -210,28 +271,51 @@ if (!skipReport) {
 
 if (!skipSim1000) {
   console.log(`[sync:kbo-day] 7/7 sim-1000 date=${sim1000Date}`);
-  const outcome = await runDailySimAndUpsert(admin, sim1000Date);
+  const existingSim = await getSim1000ExistingState(admin, sim1000Date);
 
-  if (!outcome.ok) {
-    throw new Error(`sim-1000 failed: ${outcome.error}`);
+  if (existingSim.gameCount === 0) {
+    console.log(`[sync:kbo-day] sim-1000 skipped: no games for ${sim1000Date}`);
+  } else if (
+    !force &&
+    existingSim.gameCount !== null &&
+    existingSim.simCount !== null &&
+    existingSim.simCount >= existingSim.gameCount
+  ) {
+    console.log(
+      `[sync:kbo-day] sim-1000 skipped: already cached (${existingSim.simCount}/${existingSim.gameCount}) for ${sim1000Date}`
+    );
+  } else {
+    const outcome = await runDailySimAndUpsert(admin, sim1000Date);
+
+    if (!outcome.ok) {
+      throw new Error(`sim-1000 failed: ${outcome.error}`);
+    }
+
+    console.log(
+      "[sync:kbo-day] sim-1000",
+      JSON.stringify(
+        {
+          gameDate: outcome.gameDate,
+          total: outcome.total,
+          ran: outcome.ran,
+          failed: outcome.failed,
+          results: outcome.results
+        },
+        null,
+        2
+      )
+    );
   }
-
-  console.log(
-    "[sync:kbo-day] sim-1000",
-    JSON.stringify(
-      {
-        gameDate: outcome.gameDate,
-        total: outcome.total,
-        ran: outcome.ran,
-        failed: outcome.failed,
-        results: outcome.results
-      },
-      null,
-      2
-    )
-  );
 } else {
   console.log("[sync:kbo-day] 7/7 sim-1000 skipped");
 }
 
+writeCompletionMarker(completionMarkerPath, {
+  targetDate,
+  scheduleFrom,
+  scheduleTo,
+  sim1000Date,
+  completedAt: new Date().toISOString()
+});
+console.log(`[sync:kbo-day] completion marker written: ${completionMarkerPath}`);
 console.log("[sync:kbo-day] done");
