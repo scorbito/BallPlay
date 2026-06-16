@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AiChatSheet } from "@/components/domain/AiChatSheet";
 
 type TabId = "home" | "ai" | "schedule" | "settings";
 
@@ -30,6 +31,7 @@ const tabs: readonly TabDef[] = [
 export function BottomTabs({ activeTab }: BottomTabsProps) {
   const pathname = usePathname();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const pendingTimerRef = useRef<number | null>(null);
 
   const clearPendingTimer = () => {
@@ -55,7 +57,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
     <>
       <nav className="bottom-tab" aria-label="하단 메뉴">
         {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
+          const isActive = activeTab === tab.id || (tab.id === "ai" && chatOpen);
 
           if (tab.disabled) {
             return (
@@ -86,6 +88,27 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
             }, 200);
           };
 
+          if (tab.id === "ai") {
+            return (
+              <button
+                className={`tab-item ${isActive ? "tab-item-active" : ""}`}
+                type="button"
+                key={tab.id}
+                onClick={() => {
+                  clearPendingTimer();
+                  setPendingHref(null);
+                  setChatOpen(true);
+                }}
+                aria-pressed={chatOpen}
+              >
+                <span className="tab-item-icon tab-item-icon-chatbot">
+                  <Image src="/icons/menu/chatbot.png" alt="" width={32} height={32} priority={isActive} />
+                </span>
+                <span>AI 챗봇</span>
+              </button>
+            );
+          }
+
           return (
             <Link
               className={`tab-item ${isActive ? "tab-item-active" : ""}`}
@@ -108,6 +131,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
           <span>이동 중...</span>
         </div>
       ) : null}
+      <AiChatSheet open={chatOpen} onOpenChange={setChatOpen} />
     </>
   );
 }
