@@ -34,6 +34,7 @@ export function PredictionCorrectBonusModal() {
       const today = kstDateKey();
       try {
         if (window.localStorage.getItem(CHECKED_DATE_KEY) === today) return;
+        window.localStorage.setItem(CHECKED_DATE_KEY, today);
       } catch {
         // localStorage is an optimization only.
       }
@@ -43,19 +44,26 @@ export function PredictionCorrectBonusModal() {
           method: "POST",
           cache: "no-store"
         });
-        if (!res.ok) return;
-        const data = (await res.json()) as PredictionCorrectResponse;
-        try {
-          window.localStorage.setItem(CHECKED_DATE_KEY, today);
-        } catch {
-          // localStorage is an optimization only.
+        if (!res.ok) {
+          try {
+            window.localStorage.removeItem(CHECKED_DATE_KEY);
+          } catch {
+            // localStorage is an optimization only.
+          }
+          return;
         }
+        const data = (await res.json()) as PredictionCorrectResponse;
         const amount = Number(data.awarded ?? 0);
         const count = Number(data.awardedCount ?? 0);
         if (!data.ok || amount <= 0 || count <= 0 || canceled) return;
         if (typeof data.balance === "number") emitPointBalanceUpdated(data.balance);
         setBonus({ amount, count });
       } catch {
+        try {
+          window.localStorage.removeItem(CHECKED_DATE_KEY);
+        } catch {
+          // localStorage is an optimization only.
+        }
         // 적중 보너스 확인 실패는 화면 사용을 막지 않는다.
       }
     }

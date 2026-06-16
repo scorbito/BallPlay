@@ -61,6 +61,16 @@ type AppStateProviderProps = {
   initialIsAnonymous?: boolean;
 };
 
+const CHECKIN_ATTEMPT_KEY_PREFIX = "ballplay:points:checkin:lastAttempt";
+
+function kstDateKey(): string {
+  return new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function checkinAttemptKey(profileId: string | undefined, isAnonymous: boolean): string {
+  return `${CHECKIN_ATTEMPT_KEY_PREFIX}:${profileId ?? (isAnonymous ? "anonymous" : "guest")}`;
+}
+
 export function AppStateProvider({ children, initialProfile, initialIsAnonymous = false }: AppStateProviderProps) {
   const [profileSettings, setProfileSettings] = useState<ProfileSettings>(
     initialProfile
@@ -83,7 +93,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   );
   const [toast, setToast] = useState<Toast | null>(null);
   const [checkinRewardModal, setCheckinRewardModal] = useState<CheckinRewardModal | null>(null);
-  const checkinAttemptedRef = useRef(false);
+  const checkinAttemptedRef = useRef<string | null>(null);
 
   useVisibilityRefresh();
 
@@ -108,16 +118,31 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   }, []);
 
   useEffect(() => {
-    if (checkinAttemptedRef.current) return;
-    checkinAttemptedRef.current = true;
+    const identity = initialProfile?.id ?? (initialIsAnonymous ? "anonymous" : "guest");
+    if (checkinAttemptedRef.current === identity) return;
+    checkinAttemptedRef.current = identity;
 
     (async () => {
+      const today = kstDateKey();
+      const storageKey = checkinAttemptKey(initialProfile?.id, initialIsAnonymous);
+
+      try {
+        if (window.localStorage.getItem(storageKey) === today) return;
+      } catch {
+        // localStorage is an optimization only.
+      }
+
       try {
         const client = createSupabaseBrowserClient();
         await ensureAnonymousClient(client);
         const res = await fetch("/api/points/checkin", { method: "POST" });
         const data = await res.json();
         if (!res.ok || !data.ok) return;
+        try {
+          window.localStorage.setItem(storageKey, today);
+        } catch {
+          // localStorage is an optimization only.
+        }
         emitPointBalanceUpdated(Number(data.balance));
         if (data.awarded) {
           setCheckinRewardModal({
@@ -130,7 +155,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
         // 출석 보상은 진입 보조 기능이라 실패해도 화면 진입은 막지 않는다.
       }
     })();
-  }, []);
+  }, [initialProfile?.id, initialIsAnonymous]);
 
   const showToast = (message: string) => {
     const id = Date.now();

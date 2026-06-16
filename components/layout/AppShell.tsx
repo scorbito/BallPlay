@@ -72,12 +72,12 @@ export function AppShell({
                     <ArrowLeft size={18} />
                   </button>
                 ) : backHref ? (
-                  <Link className="header-back" href={backHref} aria-label="뒤로" prefetch>
+                  <Link className="header-back" href={backHref} aria-label="뒤로" prefetch={false}>
                     <ArrowLeft size={18} />
                   </Link>
                 ) : null}
               </div>
-              <Link className={`brand${titleDecoration ? ` brand-deco-${titleDecoration}` : ""}`} href="/" prefetch>
+              <Link className={`brand${titleDecoration ? ` brand-deco-${titleDecoration}` : ""}`} href="/" prefetch={false}>
                 {titleDecoration === "slashes" ? (
                   <span className="brand-deco-side" aria-hidden="true" />
                 ) : null}

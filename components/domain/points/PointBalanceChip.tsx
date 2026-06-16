@@ -10,6 +10,9 @@ type BalanceResponse = {
   authenticated: boolean;
 };
 
+const BALANCE_CACHE_KEY = "ballplay:points:balance-cache";
+const BALANCE_CACHE_TTL_MS = 60_000;
+
 const earnGuides = [
   { title: "출석", detail: "첫 방문 시 출석 보상" },
   { title: "승리팀 예측", detail: "예측 참여와 적중 보너스" },
@@ -19,16 +22,52 @@ const earnGuides = [
   { title: "퀴즈", detail: "퀴즈 완료와 만점 보너스" },
 ];
 
+function readCachedBalance(): number | null {
+  try {
+    const raw = window.sessionStorage.getItem(BALANCE_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as { balance?: unknown; cachedAt?: unknown };
+    const balance = Number(cached.balance);
+    const cachedAt = Number(cached.cachedAt);
+    if (!Number.isFinite(balance) || !Number.isFinite(cachedAt)) return null;
+    if (Date.now() - cachedAt > BALANCE_CACHE_TTL_MS) return null;
+    return balance;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedBalance(balance: number): void {
+  try {
+    window.sessionStorage.setItem(
+      BALANCE_CACHE_KEY,
+      JSON.stringify({ balance, cachedAt: Date.now() })
+    );
+  } catch {
+    // cache is best-effort only.
+  }
+}
+
 export function PointBalanceChip() {
   const [balance, setBalance] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: { force?: boolean }) => {
+    if (!options?.force) {
+      const cached = readCachedBalance();
+      if (cached !== null) {
+        setBalance(cached);
+        return;
+      }
+    }
+
     try {
       const res = await fetch("/api/points/balance", { cache: "no-store" });
       const data = (await res.json()) as BalanceResponse;
-      setBalance(Number(data.balance ?? 0));
+      const nextBalance = Number(data.balance ?? 0);
+      setBalance(nextBalance);
+      writeCachedBalance(nextBalance);
     } catch {
       setBalance(0);
     }
@@ -41,8 +80,12 @@ export function PointBalanceChip() {
   useEffect(() => {
     const onUpdated = (event: Event) => {
       const detail = (event as CustomEvent<{ balance?: number }>).detail;
-      if (typeof detail?.balance === "number") setBalance(detail.balance);
-      else void refresh();
+      if (typeof detail?.balance === "number") {
+        setBalance(detail.balance);
+        writeCachedBalance(detail.balance);
+      } else {
+        void refresh({ force: true });
+      }
     };
     window.addEventListener(POINT_BALANCE_UPDATED_EVENT, onUpdated);
     return () => window.removeEventListener(POINT_BALANCE_UPDATED_EVENT, onUpdated);

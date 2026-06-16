@@ -129,9 +129,11 @@ export function AiWinnerRevealScreen({
   const [statsData, setStatsData] = useState<any | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
+  const [statsRequestKey, setStatsRequestKey] = useState(0);
 
   useEffect(() => {
-    if (statsData || statsLoading) return;
+    if (activeTab !== "stats") return;
+    if (statsData || statsLoading || statsError) return;
 
     setStatsLoading(true);
     setStatsError(null);
@@ -151,7 +153,7 @@ export function AiWinnerRevealScreen({
       .finally(() => {
         setStatsLoading(false);
       });
-  }, [gameId, statsData, statsLoading]);
+  }, [activeTab, gameId, statsData, statsError, statsLoading, statsRequestKey]);
 
   // mount 직후 1회 — 과거 경기면 4로 즉시 점프 (연출 스킵).
   // 오늘 경기는 재진입이라도 매번 애니메이션 재생 (사용자 영상 제작 워크플로우).
@@ -430,7 +432,9 @@ export function AiWinnerRevealScreen({
                   type="button"
                   onClick={() => {
                     setStatsData(null);
+                    setStatsError(null);
                     setStatsLoading(false);
+                    setStatsRequestKey((value) => value + 1);
                   }}
                   className="retry-btn"
                 >

@@ -30,18 +30,38 @@ export async function POST() {
 
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
 
+  const rows = (data ?? []) as CorrectPredictionRow[];
+  const rewardKeys = rows.map((row) => `prediction_correct:${row.id}`);
+  const claimedKeys = new Set<string>();
+
+  if (rewardKeys.length > 0) {
+    const { data: claims, error: claimsError } = await admin
+      .from("point_reward_claims")
+      .select("reward_key")
+      .eq("user_id", user.id)
+      .in("reward_key", rewardKeys);
+
+    if (claimsError) return NextResponse.json({ ok: false, error: claimsError.message }, { status: 500 });
+    for (const claim of claims ?? []) {
+      if (typeof claim.reward_key === "string") claimedKeys.add(claim.reward_key);
+    }
+  }
+
   let awarded = 0;
   let awardedCount = 0;
   let balance = await getPointBalance(user.id);
 
-  for (const row of (data ?? []) as CorrectPredictionRow[]) {
+  for (const row of rows) {
+    const rewardKey = `prediction_correct:${row.id}`;
+    if (claimedKeys.has(rewardKey)) continue;
+
     const result = await awardPoints({
       userId: user.id,
       amount: POINT_REWARDS.predictionCorrectPerGame,
       reason: "prediction_correct",
       referenceType: "game",
       referenceId: row.game_id,
-      rewardKey: `prediction_correct:${row.id}`,
+      rewardKey,
       rewardDate: row.game_date,
       metadata: {
         predicted_winner_team_id: row.predicted_winner_team_id,
@@ -62,7 +82,7 @@ export async function POST() {
     ok: true,
     awarded,
     awardedCount,
-    checked: data?.length ?? 0,
+    checked: rows.length,
     balance
   });
 }
