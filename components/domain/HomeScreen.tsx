@@ -45,6 +45,34 @@ function BaseballIcon({ size = 24 }: { size?: number }) {
     </svg>
   );
 }
+
+// 큼직한 베이스(루)가 강조된 다이아몬드 SVG 아이콘
+function LineupDiamondIcon({ size = 18 }: { size?: number }) {
+  // size가 작게 전달되더라도 베이스가 큼직하게 잘 보이도록 크기를 18px로 고정합니다.
+  const finalSize = 18;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={finalSize}
+      height={finalSize}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#FF2A7A"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ overflow: "visible" }}
+    >
+      <path d="M12 4 L20 12 L12 20 L4 12 Z" />
+      {/* 네 모서리의 루(베이스) 크기를 r=4.5로 큼직하게 키움 */}
+      <circle cx="12" cy="4" r={4.5} fill="#FF2A7A" stroke="none" />
+      <circle cx="20" cy="12" r={4.5} fill="#FF2A7A" stroke="none" />
+      <circle cx="12" cy="20" r={4.5} fill="#FF2A7A" stroke="none" />
+      <circle cx="4" cy="12" r={4.5} fill="#FF2A7A" stroke="none" />
+    </svg>
+  );
+}
+
 import { AppShell } from "@/components/layout/AppShell";
 import { TierUpHost } from "@/components/common/TierUpHost";
 
@@ -231,8 +259,7 @@ const sections: HomeSection[] = [
     id: "lineup-tools",
     label: "라인업 분석 도구",
     variant: "standard",
-    sectionIcon: ListChecks,
-    sectionIconImage: "/icons/tabs/play.png",
+    sectionIcon: LineupDiamondIcon,
     gridCols: 3,
     cards: [
       {

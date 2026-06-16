@@ -60,11 +60,29 @@ export async function answerAiChat(question: string, history: AiChatHistoryMessa
     };
   }
 
-  const contextText = buildContextText(trimmed, history);
-  const dateISO = parseDateFromQuestion(trimmed) ?? parseDateFromQuestion(contextText) ?? kstToday();
-  const team = detectTeam(trimmed) ?? detectTeam(contextText);
-  const player = detectPlayer(trimmed, team?.id) ?? detectPlayer(contextText, team?.id);
+  // 1차 파서 호출: LLM으로 질문의 의도와 엔티티 파싱
+  const parsed = await parseIntentWithLLM(trimmed, history);
+  const dateISO = parsed.date || kstToday();
+  const team = parsed.team ? (TEAM_INFOS.find((t) => t.id === parsed.team) || null) : null;
+  const player = parsed.player ? detectPlayer(parsed.player, team?.id) : null;
 
+  if (parsed.intent === "player_stats" && player) {
+    return answerPlayerStats(trimmed, player, history);
+  }
+
+  if (parsed.intent === "daily_report") {
+    return answerDailyReport(trimmed, dateISO, history);
+  }
+
+  if (parsed.intent === "game_schedule") {
+    return answerGameSchedule(trimmed, dateISO, team, history);
+  }
+
+  if (parsed.intent === "ai_prediction") {
+    return answerAiPrediction(trimmed, dateISO, team, history);
+  }
+
+  // 파서의 분류가 실패했을 경우(unknown)를 위한 최소한의 규칙 기반 폴백 분기
   if (player) {
     return answerPlayerStats(trimmed, player, history);
   }
@@ -73,11 +91,11 @@ export async function answerAiChat(question: string, history: AiChatHistoryMessa
     return answerDailyReport(trimmed, dateISO, history);
   }
 
-  if (isScheduleQuestion(trimmed) && !isPredictionQuestion(trimmed)) {
+  if (isScheduleQuestion(trimmed)) {
     return answerGameSchedule(trimmed, dateISO, team, history);
   }
 
-  if (isPredictionQuestion(trimmed) || team) {
+  if (team) {
     return answerAiPrediction(trimmed, dateISO, team, history);
   }
 
@@ -464,4 +482,124 @@ function formatRate(value: number): string {
 
 function buildContextText(question: string, history: AiChatHistoryMessage[]): string {
   return [...history.slice(-6).map((message) => message.text), question].join("\n");
+}
+
+export type LlmParsedIntent = {
+  intent: "ai_prediction" | "daily_report" | "game_schedule" | "player_stats" | "unknown";
+  date: string | null;
+  team: string | null;
+  player: string | null;
+};
+
+export async function parseIntentWithLLM(
+  question: string,
+  history: AiChatHistoryMessage[]
+): Promise<LlmParsedIntent> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const fallback: LlmParsedIntent = {
+    intent: "unknown",
+    date: null,
+    team: null,
+    player: null
+  };
+
+  if (!apiKey) return fallback;
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const today = kstToday();
+    const yesterday = addDays(today, -1);
+    const tomorrow = addDays(today, 1);
+    const twoDaysAgo = addDays(today, -2);
+
+    const systemPrompt = `
+당신은 KBO 야구 정보 서비스인 "야구놀이터"의 자연어 처리 분석기입니다.
+사용자의 질문과 최근 대화 이력을 바탕으로 의도(intent)와 매개변수(date, team, player)를 JSON 객체로 파싱해야 합니다.
+
+오늘 날짜(KST 기준)는 **${today}** 입니다.
+- 어제 날짜: ${yesterday}
+- 내일 날짜: ${tomorrow}
+- 그제/그저께 날짜: ${twoDaysAgo}
+
+의도(intent) 분류 기준:
+1. "ai_prediction": AI 승부 예측, 경기 전망, 승률, 누가 이길지, 어떤 팀이 유리할지 묻는 경우.
+2. "daily_report": 일일 리포트, 브리핑, 종합 요약 등을 묻는 경우.
+3. "game_schedule": 경기 일정, 경기 결과, 스코어, 경기 시간, 경기 장소, 선발투수 등을 묻는 경우.
+4. "player_stats": 특정 선수의 성적, 스탯, 기록, 스냅샷 등을 묻는 경우.
+5. "unknown": 일상적인 인사나 위 네 가지 범주에 명확히 속하지 않는 경우.
+
+매개변수(Entity) 추출 기준:
+- **date**: 질문에서 언급된 날짜를 반드시 YYYY-MM-DD 형식으로 변환하여 기입하세요.
+  - "오늘", "방금", "지금" 등: "${today}"
+  - "어제", "지난 경기" 등: "${yesterday}"
+  - "내일", "다음 경기" 등: "${tomorrow}"
+  - "그제", "그저께": "${twoDaysAgo}"
+  - "5월 12일" 등 월일 표현: "${today.slice(0, 4)}-05-12" (올해 연도 반영)
+  - 날짜에 대한 언급이나 유추가 전혀 불가능한 경우: null
+- **team**: 언급된 KBO 구단명. 반드시 아래 정의된 10개 구단의 영문 ID 중 하나로 변환하여 기입하세요.
+  - "doosan" (두산, 베어스)
+  - "lg" (엘지, 트윈스, LG)
+  - "kt" (케이티, 위즈, KT)
+  - "ssg" (SSG, 랜더스, 쓱)
+  - "nc" (NC, 다이노스, 엔씨)
+  - "kiwoom" (키움, 히어로즈)
+  - "samsung" (삼성, 라이온즈, 삼송)
+  - "lotte" (롯데, 자이언츠, 꼴데)
+  - "kia" (KIA, 타이거즈, 기아, 갸)
+  - "hanwha" (한화, 이글스, 칰)
+  - 질문에서 구단명이 전혀 언급되지 않았거나 특정할 수 없는 경우: null
+- **player**: 질문에서 언급된 선수 이름 (예: "김도영", "류현진", "원태인" 등). 
+  - 이전 대화에서 선수를 언급했는데 이번 질문에서 "그 선수", "걔", "그 투수" 등으로 가리킬 경우, 대화 이력을 참고하여 해당 선수의 실제 이름을 적어주세요.
+  - 선수 이름에 대한 언급이 없는 경우: null
+
+출력 형식:
+- 오직 JSON 객체만 반환해야 합니다. 다른 텍스트나 설명, 마크다운 기호(\`\`\`json 등)는 절대 포함하지 마세요.
+- 예시: {"intent": "ai_prediction", "date": "${today}", "team": "samsung", "player": null}
+`;
+
+    const contents = [
+      {
+        role: "user" as const,
+        parts: [
+          {
+            text: [
+              systemPrompt,
+              history.length > 0
+                ? `최근 대화:\n${history.map((m) => `${m.role === "user" ? "사용자" : "챗봇"}: ${m.text}`).join("\n")}`
+                : "",
+              `사용자 질문: ${question}`
+            ].filter(Boolean).join("\n\n")
+          }
+        ]
+      }
+    ];
+
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: process.env.BALLPLAY_CHAT_MODEL ?? "gemini-2.5-flash-lite",
+        contents,
+        config: {
+          temperature: 0.1,
+          maxOutputTokens: 150,
+          responseMimeType: "application/json"
+        }
+      }),
+      5000,
+      "LLM intent parser timed out"
+    );
+
+    const jsonText = response.text?.trim();
+    if (!jsonText) return fallback;
+
+    const parsed = JSON.parse(jsonText) as Partial<LlmParsedIntent>;
+    return {
+      intent: parsed.intent || "unknown",
+      date: parsed.date || null,
+      team: parsed.team || null,
+      player: parsed.player || null
+    };
+  } catch (err) {
+    console.warn("[ai-chat] parseIntentWithLLM failed:", err);
+    return fallback;
+  }
 }
