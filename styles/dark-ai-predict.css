@@ -1330,7 +1330,24 @@
   color: var(--bp-text);
 }
 
+.phone-frame-light .ai-reveal-card-oneliner-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.phone-frame-light .ai-reveal-card-avatar {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(15, 23, 42, 0.14));
+}
+
 .phone-frame-light .ai-reveal-card-oneliner {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: 15px;
   font-weight: 600;
@@ -1342,6 +1359,7 @@
 .phone-frame-light .ai-reveal-card-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   padding: 6px 8px;
   background: transparent;
@@ -1351,7 +1369,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  align-self: flex-start;
+  align-self: center;
 }
 
 .phone-frame-light .ai-reveal-card-toggle:hover {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, RotateCcw, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -9,6 +10,8 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
 import type { GameStatus } from "@/lib/types/api-contracts";
+import aiClaudeSrc from "@/data/Images/ai_claude.png";
+import aiGptRightSrc from "@/data/Images/ai_gpt_right.png";
 
 const AiWinnerStatsTab = dynamic(
   () => import("./AiWinnerStatsTab").then((m) => m.AiWinnerStatsTab),
@@ -58,6 +61,12 @@ const AI_LABEL: Record<AiProvider, string> = {
   gemini: "Gemini",
   claude: "Claude",
   gpt: "GPT"
+};
+
+const AI_AVATAR_SRC: Record<AiProvider, StaticImageData | string> = {
+  gemini: "/images/ai승부대결_gemini.png",
+  claude: aiClaudeSrc,
+  gpt: aiGptRightSrc
 };
 
 const REVEAL_DELAY_MS = 700;      // 각 AI 카드 등장 간격
@@ -344,7 +353,17 @@ export function AiWinnerRevealScreen({
                         <span className="ai-reveal-card-key-label">핵심</span>
                         <span className="ai-reveal-card-key-value">{p.key_factor}</span>
                       </div>
-                      <p className="ai-reveal-card-oneliner">{p.one_liner}</p>
+                      <div className="ai-reveal-card-oneliner-row">
+                        <Image
+                          src={AI_AVATAR_SRC[p.ai_provider]}
+                          alt={`${AI_LABEL[p.ai_provider]} AI 캐릭터`}
+                          width={64}
+                          height={64}
+                          sizes="64px"
+                          className={`ai-reveal-card-avatar ai-reveal-card-avatar-${p.ai_provider}`}
+                        />
+                        <p className="ai-reveal-card-oneliner">{p.one_liner}</p>
+                      </div>
                       <button
                         type="button"
                         className="ai-reveal-card-toggle"

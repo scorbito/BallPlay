@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { DailyReportScreen } from "@/components/domain/DailyReportScreen";
 import { listGamesFromDb } from "@/lib/supabase/query-parts/core";
-import { buildDailyReportSkeleton, isSkeletonReport } from "@/lib/utils/dailyReportHelper";
+import { buildDailyReportSkeleton, isSkeletonReport, type KboDailyReport } from "@/lib/utils/dailyReportHelper";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 
@@ -22,6 +22,12 @@ type Props = {
   };
 };
 
+type PublishedDailyReport = {
+  reportDate: string;
+  report: KboDailyReport;
+  publishedAt: string | null;
+};
+
 export default async function DailyReportPage({ searchParams }: Props) {
   // 오늘 날짜 계산 (한국 시각 기준 보정)
   const nowKST = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
@@ -34,15 +40,15 @@ export default async function DailyReportPage({ searchParams }: Props) {
 
   const supabase = createSupabaseAdminClient();
   const requestedDate = searchParams.date;
-  let targetDate = requestedDate;
-  if (!targetDate || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate)) {
-    targetDate = await hasPublishedDailyReport(supabase, todayStr) ? todayStr : yesterdayStr;
-  }
+  const isNoCache = searchParams.nocache === "true";
+  const hasValidRequestedDate = Boolean(requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate));
+  const latestPublishedReport = isNoCache ? null : await getLatestPublishedDailyReport(supabase, todayStr);
+  let targetDate = hasValidRequestedDate
+    ? requestedDate!
+    : latestPublishedReport?.reportDate ?? yesterdayStr;
 
   // 조회 날짜가 오늘 날짜 이상인 경우 (아직 경기가 종료되지 않은 당일 또는 미래)
   const isTodayOrFuture = targetDate >= todayStr;
-
-  const isNoCache = searchParams.nocache === "true";
 
   // 1. Supabase 캐시 테이블(daily_ai_reports)에서 데이터 조회 시도 (nocache가 아닐 때만)
   let cachedReport = null;
@@ -78,6 +84,17 @@ export default async function DailyReportPage({ searchParams }: Props) {
         reportDate={targetDate}
         reportPublishedAt={cachedReportPublishedAt}
         focus={searchParams.focus}
+        backHref={searchParams.backHref}
+      />
+    );
+  }
+
+  if (!searchParams.focus && latestPublishedReport && latestPublishedReport.reportDate !== targetDate) {
+    return (
+      <DailyReportScreen
+        initialReport={latestPublishedReport.report}
+        reportDate={latestPublishedReport.reportDate}
+        reportPublishedAt={latestPublishedReport.publishedAt}
         backHref={searchParams.backHref}
       />
     );
@@ -139,20 +156,34 @@ export default async function DailyReportPage({ searchParams }: Props) {
   );
 }
 
-async function hasPublishedDailyReport(
+async function getLatestPublishedDailyReport(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
-  reportDate: string
-) {
+  latestDate: string
+): Promise<PublishedDailyReport | null> {
   try {
     const { data, error } = await supabase
       .from("daily_ai_reports")
-      .select("report_json")
-      .eq("report_date", reportDate)
-      .maybeSingle();
+      .select("report_date, report_json, created_at")
+      .lte("report_date", latestDate)
+      .order("report_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(30);
 
-    if (error || !data?.report_json) return false;
-    return !isSkeletonReport(data.report_json);
+    if (error || !data) return null;
+
+    for (const row of data) {
+      if (!row.report_json || isSkeletonReport(row.report_json)) continue;
+      if (typeof row.report_date !== "string") continue;
+
+      return {
+        reportDate: row.report_date,
+        report: row.report_json as KboDailyReport,
+        publishedAt: typeof row.created_at === "string" ? row.created_at : null
+      };
+    }
   } catch {
-    return false;
+    return null;
   }
+
+  return null;
 }

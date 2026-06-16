@@ -126,7 +126,7 @@ function WeeklySeriesPreview({ seriesRows }: { seriesRows: AiWeeklySeries[] }) {
   const [activeTab, setActiveTab] = useState<"early" | "weekend">("early");
 
   const groups: Array<{ id: AiWeeklySeries["group"]; title: string; sub: string }> = [
-    { id: "early", title: "주초 시리즈", sub: "화-목 매치업" },
+    { id: "early", title: "주중 시리즈", sub: "화-목 매치업" },
     { id: "weekend", title: "주말 시리즈", sub: "금-일 매치업" }
   ];
 
@@ -164,7 +164,7 @@ function WeeklySeriesPreview({ seriesRows }: { seriesRows: AiWeeklySeries[] }) {
         <h2>이번 주 AI 시리즈 예측</h2>
       </header>
 
-      {/* 주초 / 주말 탭 버튼 */}
+      {/* 주중 / 주말 탭 버튼 */}
       <div className="ai-weekly-tabs">
         {groups.map((group) => (
           <button
