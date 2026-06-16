@@ -13,13 +13,40 @@ function kstToday(): string {
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
+async function getLatestBattleContentDate(): Promise<string | null> {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("bp_ai_battle_predictions")
+    .select("game_date, game_id, target_side")
+    .order("game_date", { ascending: false })
+    .limit(300);
+  if (error || !data) return null;
+
+  const byDate = new Map<string, Map<string, Set<string>>>();
+  for (const row of data as Array<{ game_date: string; game_id: string; target_side: string }>) {
+    if (!byDate.has(row.game_date)) byDate.set(row.game_date, new Map());
+    const games = byDate.get(row.game_date)!;
+    if (!games.has(row.game_id)) games.set(row.game_id, new Set());
+    games.get(row.game_id)!.add(row.target_side);
+  }
+
+  for (const [date, games] of Array.from(byDate.entries())) {
+    for (const sides of Array.from(games.values())) {
+      if (sides.has("home") && sides.has("away")) return date;
+    }
+  }
+  return null;
+}
+
 export default async function AiBattleListPage({
   searchParams
 }: {
   searchParams: { date?: string };
 }) {
   const today = kstToday();
-  const selectedDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : today;
+  const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
+  const latestContentDate = explicitDate ? null : await getLatestBattleContentDate();
+  const selectedDate = explicitDate ?? latestContentDate ?? today;
 
   // DB에서 해당 날짜의 KBO 경기 목록 조회
   const rawGames = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);

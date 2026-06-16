@@ -416,6 +416,10 @@ export function HomeScreen({
 
             // 아이콘 영역: iconImage 있으면 이미지, 없으면 lucide.
             // width/height는 next/image의 intrinsic 힌트일 뿐 — 실제 크기는 CSS의 컨테이너(.play-hub-card-icon) + img { width:100% } 가 결정.
+            const cardDisplayTitle = card.id === "recent10-top" ? "요즘 폼 TOP10" : displayTitle;
+            const cardDisplayDescription =
+              card.id === "recent10-top" ? "최근 흐름이 좋은 선수들" : displayDescription;
+
             const iconNode = card.iconImage ? (
               <span className="play-hub-card-icon play-hub-card-icon-image">
                 <Image src={card.iconImage} alt="" width={160} height={160} />
@@ -432,13 +436,13 @@ export function HomeScreen({
               <>
                 {iconNode}
                 <span className="play-hub-card-text">
-                  <strong className="play-hub-card-title">{displayTitle}</strong>
+                  <strong className="play-hub-card-title">{cardDisplayTitle}</strong>
                   {card.subtitle ? (
                     <span className="play-hub-card-subtitle">{card.subtitle}</span>
                   ) : null}
                   {/* description은 PC(≥1025px)에서만 노출 — CSS @media에서 처리 */}
-                  {displayDescription ? (
-                    <span className="play-hub-card-description">{displayDescription}</span>
+                  {cardDisplayDescription ? (
+                    <span className="play-hub-card-description">{cardDisplayDescription}</span>
                   ) : null}
                 </span>
                 {showChevron ? (
@@ -473,8 +477,8 @@ export function HomeScreen({
                 )}
                 <HomeCardCorner
                   cardId={card.id}
-                  title={displayTitle}
-                  description={displayDescription}
+                  title={cardDisplayTitle}
+                  description={cardDisplayDescription}
                   available={available}
                   featured={card.featured}
                   external={card.external}

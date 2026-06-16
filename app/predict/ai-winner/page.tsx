@@ -10,6 +10,7 @@ import {
 import { listAiWeeklySeriesForWeek } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
 import { getUserTier } from "@/lib/auth/userTier";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,16 @@ function pickNextDate(selectedDate: string, gameDates: string[]): string | null 
   return sorted[0] ?? null;
 }
 
+async function getLatestAiWinnerContentDate(client: SupabaseClient): Promise<string | null> {
+  const { data, error } = await client
+    .from("bp_ai_predictions")
+    .select("game_date")
+    .order("game_date", { ascending: false })
+    .limit(1);
+  if (error) return null;
+  return typeof data?.[0]?.game_date === "string" ? data[0].game_date : null;
+}
+
 export default async function AiWinnerPredictPage({
   searchParams
 }: {
@@ -69,7 +80,15 @@ export default async function AiWinnerPredictPage({
   // ?date=YYYY-MM-DD 형식이면 그 날짜. 없으면 일단 오늘로 시도 후 경기 없으면 다음 경기일로 점프.
   const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
 
-  let selectedDate = explicitDate ?? today;
+  const supabase = createSupabaseServerClient();
+  const userTier = await getUserTier(supabase);
+  const isAdmin = userTier.tier === "admin";
+  const adminClient = createSupabaseAdminClient();
+  const latestContentDate = explicitDate
+    ? null
+    : await getLatestAiWinnerContentDate(isAdmin ? adminClient : supabase);
+
+  let selectedDate = explicitDate ?? latestContentDate ?? today;
   let gamesForDate = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);
   const shouldShowWeeklyPreview = isMonday(selectedDate) && gamesForDate.length === 0;
 
@@ -97,22 +116,19 @@ export default async function AiWinnerPredictPage({
   const prevDate = pickPrevDate(selectedDate, prevLookback.map((g) => g.date));
   const nextDate = pickNextDate(selectedDate, nextLookahead.map((g) => g.date));
 
-  const supabase = createSupabaseServerClient();
   const weeklySeriesResult = shouldShowWeeklyPreview
-    ? await listAiWeeklySeriesForWeek(createSupabaseAdminClient(), selectedDate)
+    ? await listAiWeeklySeriesForWeek(adminClient, selectedDate)
     : { ok: true as const, rows: [] };
 
   // 운영자(admin) 는 시간 게이트(published_at) 만 우회 — 그 외 동작은 일반 유저와 동일.
   // service_role 클라이언트로 RLS 우회 → 발행 전 픽도 미리 봄 (영상 사전 제작용).
-  const userTier = await getUserTier(supabase);
-  const isAdmin = userTier.tier === "admin";
   // 소프트 게이트: 비로그인/익명(guest)은 AI 픽을 못 본다. 매치업·AI 종합 적중률(미끼)만 노출.
   // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 픽 데이터를 서버에서 비워 보내
   // 개발자도구로도 훔쳐볼 수 없게 한다.
   const locked = userTier.tier === "guest";
   // 예측은 항상 service_role 로 전부 읽고(발행 전 포함) 서버에서 "3개 AI 완료" 여부로 게이트한다.
   // (기존 09시 published_at RLS 게이트 → 3개 AI 입력 완료 시 공개로 변경.)
-  const predictionsClient = createSupabaseAdminClient();
+  const predictionsClient = adminClient;
 
   // 예측 + 시즌 통계 병렬 (게임 데이터는 위에서 이미 확보)
   // 예측은 VIEW(bp_ai_predictions_with_result) 에서 가져옴 — 점수 입력 즉시 is_correct_live 채워짐.

@@ -37,16 +37,25 @@ export type SimBatter = {
 
   pa: number;
   ab: number;
+  games?: number;
+  runs?: number;
   hits: number;
   doubles: number;
   triples: number;
   homers: number;
+  totalBases?: number;
   walks: number;
+  intentionalWalks?: number;
   hbp: number;
   strikeouts: number;
+  rbi?: number;
+  sac?: number;
+  sf?: number;
+  gidp?: number;
   sb?: number;
   cs?: number;
   sba?: number;
+  stolenBasePct?: number;
 
   avg: number;
   obp: number;
@@ -73,16 +82,27 @@ export type SimPitcher = {
   throwingHand: "L" | "R";
   role: PitcherRole;
 
+  games?: number;
   ip: number;
   k: number;
   bb: number;
+  hbp?: number;
   hr: number;
   hitsAllowed: number;
+  runsAllowed?: number;
   earnedRuns: number;
   saves: number;        // 세이브 수 — 라인업→엔진 변환 시 마무리 식별에 사용
   holds?: number;       // 홀드 (셋업맨 식별, v1.1+)
   wins?: number;
   losses?: number;
+  winningPercentage?: number;
+  completeGames?: number;
+  shutouts?: number;
+  qualityStarts?: number;
+  blownSaves?: number;
+  battersFaced?: number;
+  pitches?: number;
+  opponentAvg?: number;
 
   era: number;
   whip: number;

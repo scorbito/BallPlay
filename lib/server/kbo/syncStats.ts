@@ -422,18 +422,27 @@ function buildNameMap(roster: RosterPlayer[]): Map<string, string> {
 function makeSimBatter(row: RawRow, playerId: string, roster: RosterPlayer[]): SimBatter | null {
   const player = roster.find((p) => p.id === playerId);
   if (!player) return null;
+  const games = num(row.g);
   const pa = num(row.pa);
   const ab = num(row.ab);
+  const runs = num(row.r);
   const h = num(row.h);
   const doubles = num(row.doubles);
   const triples = num(row.triples);
   const homers = num(row.hr);
+  const totalBases = num(row.tb);
   const bb = num(row.bb);
+  const intentionalWalks = num(row.ibb);
   const hbp = num(row.hbp);
   const so = num(row.so);
+  const rbi = num(row.rbi);
+  const sac = num(row.sac);
+  const sf = num(row.sf);
+  const gidp = num(row.gdp);
   const sb = num(row.sb);
   const cs = num(row.cs);
   const sba = Math.max(num(row.sba), sb + cs);
+  const stolenBasePct = num(row.sbPct);
 
   const avg = num(row.avg) || (ab > 0 ? h / ab : 0);
   const obp = num(row.obp) || (pa > 0 ? (h + bb + hbp) / pa : 0);
@@ -454,16 +463,25 @@ function makeSimBatter(row: RawRow, playerId: string, roster: RosterPlayer[]): S
     battingHand: (player.battingHand as SimBatter["battingHand"]) ?? "R",
     pa,
     ab,
+    games,
+    runs,
     hits: h,
     doubles,
     triples,
     homers,
+    totalBases,
     walks: bb,
+    intentionalWalks,
     hbp,
     strikeouts: so,
+    rbi,
+    sac,
+    sf,
+    gidp,
     sb,
     cs,
     sba,
+    stolenBasePct,
     avg: round3(avg),
     obp: round3(obp),
     slg: round3(slg),
@@ -478,16 +496,27 @@ function makeSimBatter(row: RawRow, playerId: string, roster: RosterPlayer[]): S
 function makeSimPitcher(row: RawRow, playerId: string, roster: RosterPlayer[]): SimPitcher | null {
   const player = roster.find((p) => p.id === playerId);
   if (!player) return null;
+  const games = num(row.g);
   const ip = num(row.ip);
   const k = num(row.so);
   const bb = num(row.bb);
+  const hbp = num(row.hbp);
   const hr = num(row.hr);
   const hitsAllowed = num(row.h);
+  const runsAllowed = num(row.r);
   const earnedRuns = num(row.er);
   const saves = num(row.sv);
   const holds = num(row.hld);
   const wins = num(row.w);
   const losses = num(row.l);
+  const winningPercentage = num(row.wpct);
+  const completeGames = num(row.cg);
+  const shutouts = num(row.sho);
+  const qualityStarts = num(row.qs);
+  const blownSaves = num(row.bsv);
+  const battersFaced = num(row.tbf);
+  const pitches = num(row.np);
+  const opponentAvg = num(row.oavg);
 
   const era = num(row.era) || (ip > 0 ? (earnedRuns * 9) / ip : 0);
   const whip = num(row.whip) || (ip > 0 ? (hitsAllowed + bb) / ip : 0);
@@ -508,16 +537,27 @@ function makeSimPitcher(row: RawRow, playerId: string, roster: RosterPlayer[]): 
     name: player.name,
     throwingHand: (player.throwingHand as SimPitcher["throwingHand"]) ?? "R",
     role,
+    games,
     ip: Math.round(ip * 10) / 10,
     k,
     bb,
+    hbp,
     hr,
     hitsAllowed,
+    runsAllowed,
     earnedRuns,
     saves,
     holds,
     wins,
     losses,
+    winningPercentage,
+    completeGames,
+    shutouts,
+    qualityStarts,
+    blownSaves,
+    battersFaced,
+    pitches,
+    opponentAvg,
     era: round2(era),
     whip: round2(whip),
     k9: round2(k9),

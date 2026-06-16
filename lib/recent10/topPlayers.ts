@@ -52,15 +52,22 @@ type PlayerMeta = {
 };
 
 type BatterDiff = {
+  games: number;
   pa: number;
   ab: number;
+  runs: number;
   hits: number;
   doubles: number;
   triples: number;
   homers: number;
   walks: number;
+  intentionalWalks: number;
   hbp: number;
   strikeouts: number;
+  rbi: number;
+  sac: number;
+  sf: number;
+  gidp: number;
   sb: number;
   cs: number;
   tb: number;
@@ -71,13 +78,25 @@ type BatterDiff = {
 };
 
 type PitcherDiff = {
+  games: number;
   ip: number;
   hitsAllowed: number;
   homers: number;
   walks: number;
   hbp: number;
   strikeouts: number;
+  runsAllowed: number;
   earnedRuns: number;
+  saves: number;
+  holds: number;
+  wins: number;
+  losses: number;
+  completeGames: number;
+  shutouts: number;
+  qualityStarts: number;
+  blownSaves: number;
+  battersFaced: number;
+  pitches: number;
   era: number;
   whip: number;
 };
@@ -91,12 +110,15 @@ const playerMetaById = buildPlayerMetaMap();
 function createEmptyResult(): Record<Recent10CategoryId, Recent10TopPlayer[]> {
   return {
     avg: [],
-    hr: [],
+    obp: [],
+    slg: [],
     ops: [],
+    hr: [],
     sb: [],
     era: [],
     strikeouts: [],
-    hbp: []
+    saves: [],
+    holds: []
   };
 }
 
@@ -172,15 +194,22 @@ function diffDays(fromDate: string, toDate: string): number {
 }
 
 function batterDiff(latest: Record<string, unknown>, previous: Record<string, unknown>): BatterDiff {
+  const games = diffNumber(latest, previous, "games");
   const hits = diffNumber(latest, previous, "hits");
+  const runs = diffNumber(latest, previous, "runs");
   const doubles = diffNumber(latest, previous, "doubles");
   const triples = diffNumber(latest, previous, "triples");
   const homers = diffNumber(latest, previous, "homers");
   const walks = diffNumber(latest, previous, "walks");
+  const intentionalWalks = diffNumber(latest, previous, "intentionalWalks");
   const hbp = diffNumber(latest, previous, "hbp");
   const ab = diffNumber(latest, previous, "ab");
   const pa = diffNumber(latest, previous, "pa");
   const strikeouts = diffNumber(latest, previous, "strikeouts");
+  const rbi = diffNumber(latest, previous, "rbi");
+  const sac = diffNumber(latest, previous, "sac");
+  const sf = diffNumber(latest, previous, "sf");
+  const gidp = diffNumber(latest, previous, "gidp");
   const sb = diffNumber(latest, previous, "sb");
   const cs = diffNumber(latest, previous, "cs");
   const singles = Math.max(0, hits - doubles - triples - homers);
@@ -192,13 +221,20 @@ function batterDiff(latest: Record<string, unknown>, previous: Record<string, un
   return {
     pa,
     ab,
+    games,
+    runs,
     hits,
     doubles,
     triples,
     homers,
     walks,
+    intentionalWalks,
     hbp,
     strikeouts,
+    rbi,
+    sac,
+    sf,
+    gidp,
     sb,
     cs,
     tb,
@@ -210,16 +246,50 @@ function batterDiff(latest: Record<string, unknown>, previous: Record<string, un
 }
 
 function pitcherDiff(latest: Record<string, unknown>, previous: Record<string, unknown>): PitcherDiff {
+  const games = diffNumber(latest, previous, "games");
   const ip = diffNumber(latest, previous, "ip");
   const hitsAllowed = diffNumber(latest, previous, "hitsAllowed");
   const homers = diffNumber(latest, previous, "hr");
   const walks = diffNumber(latest, previous, "bb");
   const hbp = diffNumber(latest, previous, "hbp");
   const strikeouts = diffNumber(latest, previous, "k");
+  const runsAllowed = diffNumber(latest, previous, "runsAllowed");
   const earnedRuns = diffNumber(latest, previous, "earnedRuns");
+  const saves = diffNumber(latest, previous, "saves");
+  const holds = diffNumber(latest, previous, "holds");
+  const wins = diffNumber(latest, previous, "wins");
+  const losses = diffNumber(latest, previous, "losses");
+  const completeGames = diffNumber(latest, previous, "completeGames");
+  const shutouts = diffNumber(latest, previous, "shutouts");
+  const qualityStarts = diffNumber(latest, previous, "qualityStarts");
+  const blownSaves = diffNumber(latest, previous, "blownSaves");
+  const battersFaced = diffNumber(latest, previous, "battersFaced");
+  const pitches = diffNumber(latest, previous, "pitches");
   const era = ip > 0 ? (earnedRuns * 9) / ip : 0;
   const whip = ip > 0 ? (hitsAllowed + walks) / ip : 0;
-  return { ip, hitsAllowed, homers, walks, hbp, strikeouts, earnedRuns, era, whip };
+  return {
+    games,
+    ip,
+    hitsAllowed,
+    homers,
+    walks,
+    hbp,
+    strikeouts,
+    runsAllowed,
+    earnedRuns,
+    saves,
+    holds,
+    wins,
+    losses,
+    completeGames,
+    shutouts,
+    qualityStarts,
+    blownSaves,
+    battersFaced,
+    pitches,
+    era,
+    whip
+  };
 }
 
 function makeBatterEntry(
@@ -247,13 +317,23 @@ function makeBatterEntry(
     };
   }
 
-  if (category === "hr") {
-    if (s.homers <= 0) return null;
+  if (category === "obp") {
+    if (s.pa < 20 || s.obp <= 0) return null;
     return {
       ...base,
-      value: s.homers,
-      displayValue: `${s.homers}홈런`,
-      subText: `${s.hits}안타 · OPS ${fmtRate(s.ops)}`
+      value: s.obp,
+      displayValue: fmtRate(s.obp),
+      subText: `출루 ${s.hits + s.walks + s.hbp}회 · ${s.pa}타석`
+    };
+  }
+
+  if (category === "slg") {
+    if (s.pa < 20 || s.ab <= 0 || s.slg <= 0) return null;
+    return {
+      ...base,
+      value: s.slg,
+      displayValue: fmtRate(s.slg),
+      subText: `총루타 ${s.tb} · ${s.homers}홈런`
     };
   }
 
@@ -267,6 +347,16 @@ function makeBatterEntry(
     };
   }
 
+  if (category === "hr") {
+    if (s.homers <= 0) return null;
+    return {
+      ...base,
+      value: s.homers,
+      displayValue: `${s.homers}홈런`,
+      subText: `${s.hits}안타 · OPS ${fmtRate(s.ops)}`
+    };
+  }
+
   if (category === "sb") {
     if (s.sb <= 0) return null;
     return {
@@ -274,16 +364,6 @@ function makeBatterEntry(
       value: s.sb,
       displayValue: `${s.sb}도루`,
       subText: `${s.cs}실패 · 출루율 ${fmtRate(s.obp)}`
-    };
-  }
-
-  if (category === "hbp") {
-    if (s.hbp <= 0) return null;
-    return {
-      ...base,
-      value: s.hbp,
-      displayValue: `${s.hbp}사구`,
-      subText: `${s.pa}타석 · 출루율 ${fmtRate(s.obp)}`
     };
   }
 
@@ -325,7 +405,47 @@ function makePitcherEntry(
     };
   }
 
+  if (category === "saves") {
+    if (s.saves <= 0) return null;
+    return {
+      ...base,
+      value: s.saves,
+      displayValue: `${s.saves}세이브`,
+      subText: `${fmtIp(s.ip)}이닝 · ERA ${fmtEra(s.era)}`
+    };
+  }
+
+  if (category === "holds") {
+    if (s.holds <= 0) return null;
+    return {
+      ...base,
+      value: s.holds,
+      displayValue: `${s.holds}홀드`,
+      subText: `${fmtIp(s.ip)}이닝 · ERA ${fmtEra(s.era)}`
+    };
+  }
+
   return null;
+}
+
+function applyCompetitionRanks(
+  entries: Omit<Recent10TopPlayer, "rank">[],
+  limit: number
+): Recent10TopPlayer[] {
+  let previousDisplayValue = "";
+  let currentRank = 0;
+
+  return entries.slice(0, limit).map((entry, index) => {
+    if (index === 0 || entry.displayValue !== previousDisplayValue) {
+      currentRank = index + 1;
+      previousDisplayValue = entry.displayValue;
+    }
+
+    return {
+      ...entry,
+      rank: currentRank
+    };
+  });
 }
 
 async function loadSnapshotDates(): Promise<string[]> {
@@ -484,10 +604,12 @@ const loadPrecomputedRecent10 = cache(async (): Promise<PrecomputedRecent10 | nu
 
   const byCategory = createEmptyResult();
   let windowStartDate: string | null = null;
+  const seenCategories = new Set<Recent10CategoryId>();
 
   for (const row of data as PrecomputedRecent10Row[]) {
     if (!isRecent10CategoryId(row.category)) continue;
     windowStartDate = windowStartDate ?? row.window_start_date ?? null;
+    seenCategories.add(row.category);
     byCategory[row.category].push({
       category: row.category,
       rank: row.rank,
@@ -500,6 +622,10 @@ const loadPrecomputedRecent10 = cache(async (): Promise<PrecomputedRecent10 | nu
       subText: row.sub_text,
       stats: row.stats ?? {}
     });
+  }
+
+  if (["obp", "slg", "saves", "holds"].some((category) => !seenCategories.has(category as Recent10CategoryId))) {
+    return null;
   }
 
   return {
@@ -550,15 +676,22 @@ export async function getRecent10TopPlayers(limit = 10): Promise<Record<Recent10
       entries.sort((a, b) => {
         const primary = category.sort === "asc" ? a.value - b.value : b.value - a.value;
         if (primary !== 0) return primary;
+        if (category.id === "era") {
+          const aStats = a.stats as Partial<PitcherDiff>;
+          const bStats = b.stats as Partial<PitcherDiff>;
+          const ipDiff = (bStats.ip ?? 0) - (aStats.ip ?? 0);
+          if (ipDiff !== 0) return ipDiff;
+          const whipDiff = (aStats.whip ?? 0) - (bStats.whip ?? 0);
+          if (whipDiff !== 0) return whipDiff;
+          const strikeoutDiff = (bStats.strikeouts ?? 0) - (aStats.strikeouts ?? 0);
+          if (strikeoutDiff !== 0) return strikeoutDiff;
+        }
         return a.playerName.localeCompare(b.playerName, "ko");
       });
 
       return [
         category.id,
-        entries.slice(0, limit).map((entry, index) => ({
-          ...entry,
-          rank: index + 1
-        }))
+        applyCompetitionRanks(entries, limit)
       ];
     })
   ) as Record<Recent10CategoryId, Recent10TopPlayer[]>;

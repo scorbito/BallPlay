@@ -40,9 +40,23 @@ export default async function WeeklyReportPage({ searchParams }: Props) {
   // 오늘 날짜 계산 (한국 시각 기준 보정)
   const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
   const todayMonStr = getMondayOfDate(new Date(now.toISOString().split("T")[0]));
+  const supabase = createSupabaseAdminClient();
   
   // 기본 주차: URL 파라미터 week가 있으면 사용하고, 없으면 '지난주 월요일'을 기본으로 봅니다.
-  let startMonStr = searchParams.week;
+  const explicitWeek = searchParams.week && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.week)
+    ? searchParams.week
+    : null;
+  let latestCachedWeek: string | null = null;
+  if (!explicitWeek) {
+    const { data: latestRow } = await supabase
+      .from("weekly_ai_reports")
+      .select("week_id")
+      .order("week_id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    latestCachedWeek = typeof latestRow?.week_id === "string" ? latestRow.week_id : null;
+  }
+  let startMonStr = explicitWeek ?? latestCachedWeek ?? addDays(todayMonStr, -7);
   if (!startMonStr || !/^\d{4}-\d{2}-\d{2}$/.test(startMonStr)) {
     startMonStr = addDays(todayMonStr, -7); // 기본값: 지난주 월요일
   }
@@ -57,7 +71,7 @@ export default async function WeeklyReportPage({ searchParams }: Props) {
   const weekName = `${monthNum}월 ${weekNum}주차 (${monthNum}/${dayNum} ~ ${parseInt(endSunStr.split("-")[1], 10)}/${parseInt(endSunStr.split("-")[2], 10)})`;
 
   // 조회하려는 주차가 현재 진행 중인 주차이거나 미래의 주간인지 판단
-  const isPending = startMonStr >= todayMonStr;
+  const isPending = startMonStr >= todayMonStr && latestCachedWeek !== startMonStr;
 
   if (isPending) {
     return (
@@ -69,8 +83,6 @@ export default async function WeeklyReportPage({ searchParams }: Props) {
       />
     );
   }
-
-  const supabase = createSupabaseAdminClient();
 
   const isNoCache = searchParams.nocache === "true";
 

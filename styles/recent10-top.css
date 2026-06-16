@@ -136,9 +136,9 @@
 
 .phone-frame-light .recent10-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 180px));
+  grid-template-columns: repeat(auto-fit, minmax(146px, 168px));
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   margin-top: 12px;
   perspective: 900px;
 }
@@ -146,7 +146,7 @@
 .phone-frame-light .recent10-player-card {
   position: relative;
   min-width: 0;
-  aspect-ratio: 0.78;
+  aspect-ratio: 1 / 1.04;
   overflow: hidden;
   padding: 12px 10px;
   border: 1px solid color-mix(in srgb, var(--team-color, #e84a8a) 25%, #ffffff);

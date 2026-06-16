@@ -50,19 +50,19 @@ export function Recent10TopScreen({ initialByCategory, snapshotDate }: Props) {
   const rows = initialByCategory[activeCategory] ?? [];
 
   return (
-    <AppShell activeTab="home" title="최근 경기 TOP10" backHref="/" theme="light" wide>
+    <AppShell activeTab="home" title="요즘 폼 TOP10" backHref="/" theme="light" wide>
       <section className="recent10-hero">
         <div className="recent10-hero-icon">
           <Sparkles size={20} />
         </div>
         <div className="recent10-hero-copy">
           <span>{formatSnapshotDate(snapshotDate)}</span>
-          <h1>최근 경기 TOP10</h1>
-          <p>최근 스냅샷 구간에서 돋보인 선수들을 기록별로 모았어요.</p>
+          <h1>요즘 폼 좋은 선수들</h1>
+          <p>최근 경기 흐름에서 눈에 띄는 선수들을 기록별로 모았어요.</p>
         </div>
       </section>
 
-      <div className="recent10-tabs" role="tablist" aria-label="최근 경기 TOP10 분류">
+      <div className="recent10-tabs" role="tablist" aria-label="요즘 폼 TOP10 분류">
         {RECENT10_CATEGORIES.map((item) => (
           <button
             key={item.id}

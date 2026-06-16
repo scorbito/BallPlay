@@ -15,6 +15,7 @@
     "scrape:stats": "node scripts/scrape-kbo-stats.mjs",
     "sync:kbo-day": "tsx scripts/sync-kbo-day-local.mts",
     "sync:kbo-stats": "tsx scripts/sync-kbo-stats-local.mts",
+    "sync:team-game-stats": "tsx scripts/sync-team-game-stats-local.mts",
     "scrape:recent10:probe": "node scripts/scrape-kbo-recent10.mjs --probe",
     "scrape:recent10:smoke": "node scripts/scrape-kbo-recent10.mjs --team=doosan --limit=5",
     "scrape:recent10": "node scripts/scrape-kbo-recent10.mjs",

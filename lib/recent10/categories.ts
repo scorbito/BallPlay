@@ -1,11 +1,14 @@
 export type Recent10CategoryId =
   | "avg"
-  | "hr"
+  | "obp"
+  | "slg"
   | "ops"
+  | "hr"
   | "sb"
   | "era"
   | "strikeouts"
-  | "hbp";
+  | "saves"
+  | "holds";
 
 export type Recent10TopPlayer = {
   category: Recent10CategoryId;
@@ -34,15 +37,23 @@ export const RECENT10_CATEGORIES: Recent10Category[] = [
     id: "avg",
     label: "타율",
     title: "타율 TOP",
-    description: "최근 경기에서 가장 정교했던 타자",
+    description: "요즘 가장 정교하게 치는 타자",
     kind: "batter",
     sort: "desc"
   },
   {
-    id: "hr",
-    label: "홈런",
-    title: "홈런 TOP",
-    description: "최근 경기에서 가장 강한 한 방을 보여준 타자",
+    id: "obp",
+    label: "출루율",
+    title: "출루율 TOP",
+    description: "최근 가장 꾸준히 살아나가는 타자",
+    kind: "batter",
+    sort: "desc"
+  },
+  {
+    id: "slg",
+    label: "장타율",
+    title: "장타율 TOP",
+    description: "최근 장타 감각이 좋은 타자",
     kind: "batter",
     sort: "desc"
   },
@@ -50,7 +61,15 @@ export const RECENT10_CATEGORIES: Recent10Category[] = [
     id: "ops",
     label: "OPS",
     title: "OPS TOP",
-    description: "최근 경기에서 출루와 장타를 동시에 만든 타자",
+    description: "출루와 장타를 함께 만든 타자",
+    kind: "batter",
+    sort: "desc"
+  },
+  {
+    id: "hr",
+    label: "홈런",
+    title: "홈런 TOP",
+    description: "최근 담장을 가장 많이 넘긴 타자",
     kind: "batter",
     sort: "desc"
   },
@@ -58,15 +77,15 @@ export const RECENT10_CATEGORIES: Recent10Category[] = [
     id: "sb",
     label: "도루",
     title: "도루 TOP",
-    description: "최근 경기에서 가장 많이 뛴 선수",
+    description: "최근 가장 많이 뛴 선수",
     kind: "batter",
     sort: "desc"
   },
   {
     id: "era",
     label: "ERA",
-    title: "평균자책 TOP",
-    description: "최근 경기에서 가장 적게 실점한 투수",
+    title: "ERA TOP",
+    description: "최근 가장 안정적으로 막은 투수",
     kind: "pitcher",
     sort: "asc"
   },
@@ -74,16 +93,24 @@ export const RECENT10_CATEGORIES: Recent10Category[] = [
     id: "strikeouts",
     label: "탈삼진",
     title: "탈삼진 TOP",
-    description: "최근 경기에서 가장 많은 삼진을 잡은 투수",
+    description: "최근 가장 많은 삼진을 잡은 투수",
     kind: "pitcher",
     sort: "desc"
   },
   {
-    id: "hbp",
-    label: "몸으로 출루",
-    title: "몸으로 출루 TOP",
-    description: "최근 경기에서 몸에 맞는 공으로 가장 많이 출루한 타자",
-    kind: "batter",
+    id: "saves",
+    label: "세이브",
+    title: "세이브 TOP",
+    description: "최근 뒷문을 책임진 마무리 투수",
+    kind: "pitcher",
+    sort: "desc"
+  },
+  {
+    id: "holds",
+    label: "홀드",
+    title: "홀드 TOP",
+    description: "최근 리드를 지켜낸 불펜 투수",
+    kind: "pitcher",
     sort: "desc"
   }
 ];

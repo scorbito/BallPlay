@@ -33,13 +33,17 @@ export default async function Sim1000ListPage({
 }) {
   const today = kstToday();
   const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
-  const requestedDate = explicitDate ?? today;
 
   const supabase = createSupabaseServerClient();
 
   // 운영자(admin) 여부 — "다시 돌리기" 버튼 노출 분기용. 일반 사용자는 false.
   const userTier = await getUserTier(supabase);
   const isAdmin = userTier.tier === "admin";
+  const latestResult = explicitDate
+    ? null
+    : await listSimResultDates(supabase, isAdmin ? { limit: 1 } : { to: today, limit: 1 });
+  const latestContentDate = latestResult?.ok ? latestResult.dates[0] ?? null : null;
+  const requestedDate = explicitDate ?? latestContentDate ?? today;
   const selectedDate = !isAdmin && requestedDate > today ? today : requestedDate;
   // 소프트 게이트: 비로그인/익명(guest)은 시뮬 수치를 못 본다. 매치업·누적 적중률(미끼)만 노출.
   // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 민감 수치를 서버에서 비워 보내

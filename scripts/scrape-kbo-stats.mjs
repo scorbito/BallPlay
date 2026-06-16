@@ -707,18 +707,27 @@ function findPlayerInRoster(name, roster, kind) {
 function makeSimBatter(row, roster) {
   const player = findPlayerInRoster(row.name, roster, "batter");
   if (!player) return null;
+  const games = row.g || 0;
   const pa = row.pa || 0;
   const ab = row.ab || 0;
+  const runs = row.r || 0;
   const h = row.h || 0;
   const doubles = row.doubles || 0;
   const triples = row.triples || 0;
   const homers = row.hr || 0;
+  const totalBases = row.tb || 0;
   const bb = row.bb || 0;
+  const intentionalWalks = row.ibb || 0;
   const hbp = row.hbp || 0;
   const so = row.so || 0;
+  const rbi = row.rbi || 0;
+  const sac = row.sac || 0;
+  const sf = row.sf || 0;
+  const gidp = row.gdp || 0;
   const sb = row.sb || 0;
   const cs = row.cs || 0;
   const sba = Math.max(row.sba || 0, sb + cs);
+  const stolenBasePct = row.sbPct || 0;
 
   // KBO 페이지의 AVG/OBP/SLG는 그대로 사용 (이미 계산된 값)
   // 누락된 부수 지표는 계산
@@ -737,16 +746,25 @@ function makeSimBatter(row, roster) {
     battingHand: player.battingHand ?? "R",
     pa,
     ab,
+    games,
+    runs,
     hits: h,
     doubles,
     triples,
     homers,
+    totalBases,
     walks: bb,
+    intentionalWalks,
     hbp,
     strikeouts: so,
+    rbi,
+    sac,
+    sf,
+    gidp,
     sb,
     cs,
     sba,
+    stolenBasePct,
     avg: round3(avg),
     obp: round3(obp),
     slg: round3(slg),
@@ -761,16 +779,27 @@ function makeSimBatter(row, roster) {
 function makeSimPitcher(row, roster) {
   const player = findPlayerInRoster(row.name, roster, "pitcher");
   if (!player) return null;
+  const games = row.g || 0;
   const ip = row.ip || 0;
   const k = row.so || 0;
   const bb = row.bb || 0;
+  const hbp = row.hbp || 0;
   const hr = row.hr || 0;
   const hitsAllowed = row.h || 0;
+  const runsAllowed = row.r || 0;
   const earnedRuns = row.er || 0;
   const saves = row.sv || 0;
   const holds = row.hld || 0;
   const wins = row.w || 0;
   const losses = row.l || 0;
+  const winningPercentage = row.wpct || 0;
+  const completeGames = row.cg || 0;
+  const shutouts = row.sho || 0;
+  const qualityStarts = row.qs || 0;
+  const blownSaves = row.bsv || 0;
+  const battersFaced = row.tbf || 0;
+  const pitches = row.np || 0;
+  const opponentAvg = row.oavg || 0;
 
   const era = row.era || (ip > 0 ? (earnedRuns * 9) / ip : 0);
   const whip = row.whip || (ip > 0 ? (hitsAllowed + bb) / ip : 0);
@@ -789,16 +818,27 @@ function makeSimPitcher(row, roster) {
     name: player.name,
     throwingHand: player.throwingHand ?? "R",
     role,
+    games,
     ip: Math.round(ip * 10) / 10,
     k,
     bb,
+    hbp,
     hr,
     hitsAllowed,
+    runsAllowed,
     earnedRuns,
     saves,
     holds,
     wins,
     losses,
+    winningPercentage,
+    completeGames,
+    shutouts,
+    qualityStarts,
+    blownSaves,
+    battersFaced,
+    pitches,
+    opponentAvg,
     era: round2(era),
     whip: round2(whip),
     k9: round2(k9),

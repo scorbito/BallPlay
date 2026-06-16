@@ -2,10 +2,11 @@
 //   1. sync games for the date
 //   2. sync upcoming KBO schedule range
 //   3. sync lineups for the date
-//   4. sync standings for the season
-//   5. sync player stat snapshots and recent-10 rankings
-//   6. generate and cache the daily AI report
-//   7. generate and cache tomorrow's 1000-game simulations
+//   4. sync team game stats for the date
+//   5. sync standings for the season
+//   6. sync player stat snapshots and recent-10 rankings
+//   7. generate and cache the daily AI report
+//   8. generate and cache tomorrow's 1000-game simulations
 //
 // Usage:
 //   npm run sync:kbo-day
@@ -16,6 +17,7 @@
 //   npm run sync:kbo-day -- 2026-06-16 --skip-stats
 //   npm run sync:kbo-day -- 2026-06-16 --skip-report
 //   npm run sync:kbo-day -- 2026-06-16 --skip-schedule
+//   npm run sync:kbo-day -- 2026-06-16 --skip-team-stats
 //   npm run sync:kbo-day -- 2026-06-16 --skip-sim1000
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -40,15 +42,26 @@ function formatDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function kstYesterday(): string {
-  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  kst.setDate(kst.getDate() - 1);
-  return formatDate(kst);
+function parseLocalDate(dateText: string): Date {
+  const [year, month, day] = dateText.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
 
-function kstDateOffset(days: number): string {
-  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  kst.setDate(kst.getDate() + days);
+function addDays(dateText: string, days: number): string {
+  const date = parseLocalDate(dateText);
+  date.setDate(date.getDate() + days);
+  return formatDate(date);
+}
+
+function kstNow(): Date {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+}
+
+function defaultTargetDate(): string {
+  const kst = kstNow();
+  if (kst.getHours() < 6) {
+    kst.setDate(kst.getDate() - 1);
+  }
   return formatDate(kst);
 }
 
@@ -102,7 +115,7 @@ async function getSim1000ExistingState(admin: SupabaseClient, gameDate: string) 
 }
 
 const args = process.argv.slice(2);
-const targetDate = args.find((arg) => DATE_RE.test(arg)) ?? kstYesterday();
+const targetDate = args.find((arg) => DATE_RE.test(arg)) ?? defaultTargetDate();
 const force = args.includes("--force");
 const forceReport = args.includes("--force-report");
 const skipGames = args.includes("--skip-games");
@@ -110,12 +123,13 @@ const skipStats = args.includes("--skip-stats");
 const skipRecent10 = args.includes("--skip-recent10");
 const skipReport = args.includes("--skip-report");
 const skipLineups = args.includes("--skip-lineups");
+const skipTeamStats = args.includes("--skip-team-stats");
 const skipStandings = args.includes("--skip-standings");
 const skipSchedule = args.includes("--skip-schedule");
 const skipSim1000 = args.includes("--skip-sim1000");
-const scheduleFrom = kstDateOffset(-1);
-const scheduleTo = kstDateOffset(30);
-const sim1000Date = kstDateOffset(1);
+const scheduleFrom = addDays(targetDate, -1);
+const scheduleTo = addDays(targetDate, 30);
+const sim1000Date = addDays(targetDate, 1);
 const completionMarkerPath = markerPathFor(targetDate, sim1000Date);
 
 if (!force && existsSync(completionMarkerPath)) {
@@ -131,6 +145,7 @@ const [
   { createSupabaseAdminClient },
   { syncGamesInRange },
   { syncLineupsForDate },
+  { syncTeamGameStatsForDate },
   { syncStandings },
   { syncStatsSnapshot },
   { upsertRecent10TopPlayers },
@@ -142,6 +157,7 @@ const [
   import("@/lib/supabase/server"),
   import("@/lib/server/kbo/syncGames"),
   import("@/lib/server/kbo/syncLineups"),
+  import("@/lib/server/kbo/syncTeamGameStats"),
   import("@/lib/server/kbo/syncStandings"),
   import("@/lib/server/kbo/syncStats"),
   import("@/lib/server/recent10/upsertTopPlayers"),
@@ -187,23 +203,31 @@ if (!skipSchedule) {
 }
 
 if (!skipLineups) {
-  console.log("[sync:kbo-day] 3/7 lineups");
+  console.log("[sync:kbo-day] 3/8 lineups");
   const lineups = await syncLineupsForDate(targetDate);
   console.log("[sync:kbo-day] lineups", JSON.stringify(lineups, null, 2));
 } else {
-  console.log("[sync:kbo-day] 3/7 lineups skipped");
+  console.log("[sync:kbo-day] 3/8 lineups skipped");
+}
+
+if (!skipTeamStats) {
+  console.log("[sync:kbo-day] 4/8 team game stats");
+  const teamStats = await syncTeamGameStatsForDate(targetDate, { gameDelayMs: 2500 });
+  console.log("[sync:kbo-day] team game stats", JSON.stringify(teamStats, null, 2));
+} else {
+  console.log("[sync:kbo-day] 4/8 team game stats skipped");
 }
 
 if (!skipStandings) {
-  console.log("[sync:kbo-day] 4/7 standings");
+  console.log("[sync:kbo-day] 5/8 standings");
   const standings = await syncStandings(season);
   console.log("[sync:kbo-day] standings", JSON.stringify(standings, null, 2));
 } else {
-  console.log("[sync:kbo-day] 4/7 standings skipped");
+  console.log("[sync:kbo-day] 5/8 standings skipped");
 }
 
 if (!skipStats) {
-  console.log("[sync:kbo-day] 5/7 stats snapshot");
+  console.log("[sync:kbo-day] 6/8 stats snapshot");
   if (!force && await hasStatsSnapshot(admin, targetDate)) {
     console.log(`[sync:kbo-day] stats skipped: snapshot already exists for ${targetDate}`);
   } else {
@@ -216,11 +240,11 @@ if (!skipStats) {
     console.log("[sync:kbo-day] recent10", JSON.stringify(recent10, null, 2));
   }
 } else {
-  console.log("[sync:kbo-day] 5/7 stats snapshot skipped");
+  console.log("[sync:kbo-day] 6/8 stats snapshot skipped");
 }
 
 if (!skipReport) {
-  console.log("[sync:kbo-day] 6/7 daily report");
+  console.log("[sync:kbo-day] 7/8 daily report");
 
   const games = await listGamesFromDb({ from: targetDate, to: targetDate });
   if (games.length === 0) {
@@ -266,11 +290,11 @@ if (!skipReport) {
     }
   }
 } else {
-  console.log("[sync:kbo-day] 6/7 daily report skipped");
+  console.log("[sync:kbo-day] 7/8 daily report skipped");
 }
 
 if (!skipSim1000) {
-  console.log(`[sync:kbo-day] 7/7 sim-1000 date=${sim1000Date}`);
+  console.log(`[sync:kbo-day] 8/8 sim-1000 date=${sim1000Date}`);
   const existingSim = await getSim1000ExistingState(admin, sim1000Date);
 
   if (existingSim.gameCount === 0) {
@@ -307,7 +331,7 @@ if (!skipSim1000) {
     );
   }
 } else {
-  console.log("[sync:kbo-day] 7/7 sim-1000 skipped");
+  console.log("[sync:kbo-day] 8/8 sim-1000 skipped");
 }
 
 writeCompletionMarker(completionMarkerPath, {

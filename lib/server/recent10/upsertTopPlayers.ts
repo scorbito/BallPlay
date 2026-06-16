@@ -108,15 +108,22 @@ function playerTeam(row: SnapshotRow): string {
 }
 
 function batterDiff(latest: Record<string, unknown>, previous: Record<string, unknown>): Record<string, number> {
+  const games = diffNumber(latest, previous, "games");
   const hits = diffNumber(latest, previous, "hits");
+  const runs = diffNumber(latest, previous, "runs");
   const doubles = diffNumber(latest, previous, "doubles");
   const triples = diffNumber(latest, previous, "triples");
   const homers = diffNumber(latest, previous, "homers");
   const walks = diffNumber(latest, previous, "walks");
+  const intentionalWalks = diffNumber(latest, previous, "intentionalWalks");
   const hbp = diffNumber(latest, previous, "hbp");
   const ab = diffNumber(latest, previous, "ab");
   const pa = diffNumber(latest, previous, "pa");
   const strikeouts = diffNumber(latest, previous, "strikeouts");
+  const rbi = diffNumber(latest, previous, "rbi");
+  const sac = diffNumber(latest, previous, "sac");
+  const sf = diffNumber(latest, previous, "sf");
+  const gidp = diffNumber(latest, previous, "gidp");
   const sb = diffNumber(latest, previous, "sb");
   const cs = diffNumber(latest, previous, "cs");
   const singles = Math.max(0, hits - doubles - triples - homers);
@@ -125,20 +132,78 @@ function batterDiff(latest: Record<string, unknown>, previous: Record<string, un
   const obpDenom = ab + walks + hbp;
   const obp = obpDenom > 0 ? (hits + walks + hbp) / obpDenom : 0;
   const slg = ab > 0 ? tb / ab : 0;
-  return { pa, ab, hits, doubles, triples, homers, walks, hbp, strikeouts, sb, cs, tb, avg, obp, slg, ops: obp + slg };
+  return {
+    games,
+    pa,
+    ab,
+    runs,
+    hits,
+    doubles,
+    triples,
+    homers,
+    walks,
+    intentionalWalks,
+    hbp,
+    strikeouts,
+    rbi,
+    sac,
+    sf,
+    gidp,
+    sb,
+    cs,
+    tb,
+    avg,
+    obp,
+    slg,
+    ops: obp + slg
+  };
 }
 
 function pitcherDiff(latest: Record<string, unknown>, previous: Record<string, unknown>): Record<string, number> {
+  const games = diffNumber(latest, previous, "games");
   const ip = diffNumber(latest, previous, "ip");
   const hitsAllowed = diffNumber(latest, previous, "hitsAllowed");
   const homers = diffNumber(latest, previous, "hr");
   const walks = diffNumber(latest, previous, "bb");
   const hbp = diffNumber(latest, previous, "hbp");
   const strikeouts = diffNumber(latest, previous, "k");
+  const runsAllowed = diffNumber(latest, previous, "runsAllowed");
   const earnedRuns = diffNumber(latest, previous, "earnedRuns");
+  const saves = diffNumber(latest, previous, "saves");
+  const holds = diffNumber(latest, previous, "holds");
+  const wins = diffNumber(latest, previous, "wins");
+  const losses = diffNumber(latest, previous, "losses");
+  const completeGames = diffNumber(latest, previous, "completeGames");
+  const shutouts = diffNumber(latest, previous, "shutouts");
+  const qualityStarts = diffNumber(latest, previous, "qualityStarts");
+  const blownSaves = diffNumber(latest, previous, "blownSaves");
+  const battersFaced = diffNumber(latest, previous, "battersFaced");
+  const pitches = diffNumber(latest, previous, "pitches");
   const era = ip > 0 ? (earnedRuns * 9) / ip : 0;
   const whip = ip > 0 ? (hitsAllowed + walks) / ip : 0;
-  return { ip, hitsAllowed, homers, walks, hbp, strikeouts, earnedRuns, era, whip };
+  return {
+    games,
+    ip,
+    hitsAllowed,
+    homers,
+    walks,
+    hbp,
+    strikeouts,
+    runsAllowed,
+    earnedRuns,
+    saves,
+    holds,
+    wins,
+    losses,
+    completeGames,
+    shutouts,
+    qualityStarts,
+    blownSaves,
+    battersFaced,
+    pitches,
+    era,
+    whip
+  };
 }
 
 function makeBatterEntry(category: Recent10CategoryId, latest: SnapshotRow, previous: SnapshotRow): Omit<TopRow, "rank"> | null {
@@ -159,21 +224,25 @@ function makeBatterEntry(category: Recent10CategoryId, latest: SnapshotRow, prev
     if (s.pa < 20 || s.ab <= 0 || s.hits <= 0) return null;
     return { ...base, value: s.avg, display_value: fmtRate(s.avg), sub_text: `${s.ab}타수 ${s.hits}안타` };
   }
-  if (category === "hr") {
-    if (s.homers <= 0) return null;
-    return { ...base, value: s.homers, display_value: `${s.homers}홈런`, sub_text: `${s.hits}안타 · OPS ${fmtRate(s.ops)}` };
+  if (category === "obp") {
+    if (s.pa < 20 || s.obp <= 0) return null;
+    return { ...base, value: s.obp, display_value: fmtRate(s.obp), sub_text: `출루 ${s.hits + s.walks + s.hbp}회 · ${s.pa}타석` };
+  }
+  if (category === "slg") {
+    if (s.pa < 20 || s.ab <= 0 || s.slg <= 0) return null;
+    return { ...base, value: s.slg, display_value: fmtRate(s.slg), sub_text: `총루타 ${s.tb} · ${s.homers}홈런` };
   }
   if (category === "ops") {
     if (s.pa < 20 || s.ops <= 0) return null;
     return { ...base, value: s.ops, display_value: fmtRate(s.ops), sub_text: `타율 ${fmtRate(s.avg)} · ${s.homers}홈런` };
   }
+  if (category === "hr") {
+    if (s.homers <= 0) return null;
+    return { ...base, value: s.homers, display_value: `${s.homers}홈런`, sub_text: `${s.hits}안타 · OPS ${fmtRate(s.ops)}` };
+  }
   if (category === "sb") {
     if (s.sb <= 0) return null;
     return { ...base, value: s.sb, display_value: `${s.sb}도루`, sub_text: `${s.cs}실패 · 출루율 ${fmtRate(s.obp)}` };
-  }
-  if (category === "hbp") {
-    if (s.hbp <= 0) return null;
-    return { ...base, value: s.hbp, display_value: `${s.hbp}사구`, sub_text: `${s.pa}타석 · 출루율 ${fmtRate(s.obp)}` };
   }
   return null;
 }
@@ -200,7 +269,22 @@ function makePitcherEntry(category: Recent10CategoryId, latest: SnapshotRow, pre
     if (s.strikeouts <= 0) return null;
     return { ...base, value: s.strikeouts, display_value: `${s.strikeouts}K`, sub_text: `${fmtIp(s.ip)}이닝 · ERA ${fmtEra(s.era)}` };
   }
+  if (category === "saves") {
+    if (s.saves <= 0) return null;
+    return { ...base, value: s.saves, display_value: `${s.saves}세이브`, sub_text: `${fmtIp(s.ip)}이닝 · ERA ${fmtEra(s.era)}` };
+  }
+  if (category === "holds") {
+    if (s.holds <= 0) return null;
+    return { ...base, value: s.holds, display_value: `${s.holds}홀드`, sub_text: `${fmtIp(s.ip)}이닝 · ERA ${fmtEra(s.era)}` };
+  }
   return null;
+}
+
+function applyDisplayRanks(entries: Omit<TopRow, "rank">[], limit: number): TopRow[] {
+  return entries.slice(0, limit).map((entry, index) => ({
+    ...entry,
+    rank: index + 1
+  }));
 }
 
 async function loadSnapshotDates(): Promise<string[]> {
@@ -338,9 +422,17 @@ function buildRows(window: { latestDate: string; previousDate: string; rows: Sna
     entries.sort((a, b) => {
       const primary = category.sort === "asc" ? a.value - b.value : b.value - a.value;
       if (primary !== 0) return primary;
+      if (category.id === "era") {
+        const ipDiff = (b.stats.ip ?? 0) - (a.stats.ip ?? 0);
+        if (ipDiff !== 0) return ipDiff;
+        const whipDiff = (a.stats.whip ?? 0) - (b.stats.whip ?? 0);
+        if (whipDiff !== 0) return whipDiff;
+        const strikeoutDiff = (b.stats.strikeouts ?? 0) - (a.stats.strikeouts ?? 0);
+        if (strikeoutDiff !== 0) return strikeoutDiff;
+      }
       return a.player_name.localeCompare(b.player_name, "ko");
     });
-    rows.push(...entries.slice(0, 10).map((row, index) => ({ ...row, rank: index + 1 })));
+    rows.push(...applyDisplayRanks(entries, 10));
   }
   return rows;
 }

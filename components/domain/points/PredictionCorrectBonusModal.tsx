@@ -18,6 +18,12 @@ type BonusState = {
   count: number;
 };
 
+const CHECKED_DATE_KEY = "ballplay:points:prediction-correct:lastCheckedDate";
+
+function kstDateKey(): string {
+  return new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
 export function PredictionCorrectBonusModal() {
   const [bonus, setBonus] = useState<BonusState | null>(null);
 
@@ -25,6 +31,13 @@ export function PredictionCorrectBonusModal() {
     let canceled = false;
 
     async function settleCorrectPredictions() {
+      const today = kstDateKey();
+      try {
+        if (window.localStorage.getItem(CHECKED_DATE_KEY) === today) return;
+      } catch {
+        // localStorage is an optimization only.
+      }
+
       try {
         const res = await fetch("/api/points/prediction-correct", {
           method: "POST",
@@ -32,6 +45,11 @@ export function PredictionCorrectBonusModal() {
         });
         if (!res.ok) return;
         const data = (await res.json()) as PredictionCorrectResponse;
+        try {
+          window.localStorage.setItem(CHECKED_DATE_KEY, today);
+        } catch {
+          // localStorage is an optimization only.
+        }
         const amount = Number(data.awarded ?? 0);
         const count = Number(data.awardedCount ?? 0);
         if (!data.ok || amount <= 0 || count <= 0 || canceled) return;
