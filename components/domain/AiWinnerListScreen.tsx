@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -10,6 +11,8 @@ import { getTeam } from "@/lib/constants/teams";
 import { trackEvent } from "@/lib/analytics/events";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import type { GameStatus } from "@/lib/types/api-contracts";
+import aiClaudeSrc from "@/data/Images/ai_claude.png";
+import aiGptRightSrc from "@/data/Images/ai_gpt_right.png";
 import type {
   AiOverallStats,
   AiProvider,
@@ -61,6 +64,12 @@ const AI_LABEL: Record<AiProvider, string> = {
   gemini: "Gemini",
   claude: "Claude",
   gpt: "GPT"
+};
+
+const AI_AVATAR_SRC: Record<AiProvider, StaticImageData | string> = {
+  gemini: "/images/ai승부대결_gemini.png",
+  claude: aiClaudeSrc,
+  gpt: aiGptRightSrc
 };
 
 // AI 표시 순서 — 사용자 요청에 따라 GPT → Gemini → Claude 고정.
@@ -354,7 +363,14 @@ export function AiWinnerListScreen({
               const correct = stat?.correct_count ?? 0;
               return (
                 <div key={name} className={`ai-winner-provider-mini ai-winner-provider-${name}`}>
-                  <span className="ai-winner-provider-name">{AI_LABEL[name]}</span>
+                  <Image
+                    src={AI_AVATAR_SRC[name]}
+                    alt={`${AI_LABEL[name]} AI 캐릭터`}
+                    width={28}
+                    height={28}
+                    sizes="28px"
+                    className="ai-winner-provider-avatar"
+                  />
                   <span className="ai-winner-provider-acc">{acc !== null && acc !== undefined ? `${acc}%` : "—"}</span>
                   <span className="ai-winner-provider-count">{correct}/{total}</span>
                 </div>
@@ -671,6 +687,7 @@ export function AiWinnerListScreen({
                               awayStarter: g.awayStarter
                             }}
                             className="ai-winner-card-cta ai-winner-card-cta-sim"
+                            idleLabel="경기 시뮬레이션"
                           />
                         )}
                       </div>

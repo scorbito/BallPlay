@@ -106,7 +106,7 @@ export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: 
             awayTeamId: series.awayTeamId
           }}
           className="ai-reveal-sim-btn"
-          idleLabel="경기 시뮬"
+          idleLabel="경기 시뮬레이션"
           busyLabel="준비 중"
         />
 

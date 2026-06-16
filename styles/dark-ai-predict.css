@@ -17,7 +17,7 @@
   grid-template-columns: 1.1fr 1.4fr;
   align-items: stretch;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 8px 14px;
   background: linear-gradient(135deg, rgba(232, 74, 138, 0.10), rgba(232, 74, 138, 0.04));
   border: 1px solid rgba(232, 74, 138, 0.25);
   border-radius: 14px;
@@ -71,28 +71,27 @@
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 4px 2px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 6px;
+  justify-content: center;
+  padding: 0 2px;
+  background: transparent;
+  border-radius: 0;
   min-width: 0;
 }
 
-.phone-frame-light .ai-winner-provider-name {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: -0.2px;
-  white-space: nowrap;
+.phone-frame-light .ai-winner-provider-avatar {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  flex: 0 0 54px;
+  margin-bottom: 0;
+  filter: drop-shadow(0 4px 6px rgba(15, 23, 42, 0.12));
 }
 
-.phone-frame-light .ai-winner-provider-gemini .ai-winner-provider-name { color: #1E88E5; }
-.phone-frame-light .ai-winner-provider-claude .ai-winner-provider-name { color: #D97757; }
-.phone-frame-light .ai-winner-provider-gpt    .ai-winner-provider-name { color: #10A37F; }
-
 .phone-frame-light .ai-winner-provider-acc {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
   color: var(--bp-text);
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .phone-frame-light .ai-winner-provider-count {
@@ -100,6 +99,7 @@
   font-weight: 600;
   color: var(--bp-text-muted);
   white-space: nowrap;
+  line-height: 1;
 }
 
 /* ── 날짜 네비게이션 (이전/다음 + 현재 날짜) ── */

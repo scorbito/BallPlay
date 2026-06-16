@@ -279,7 +279,7 @@ export function AiWinnerRevealScreen({
               awayStarter: game.awayStarter
             }}
             className="ai-reveal-sim-btn"
-            idleLabel="경기 시뮬"
+            idleLabel="경기 시뮬레이션"
             busyLabel="준비 중"
           />
         )}
