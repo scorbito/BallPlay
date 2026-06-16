@@ -204,7 +204,8 @@ const sections: HomeSection[] = [
         description: "타율·홈런·도루·ERA 랭킹",
         icon: BarChart3,
         iconImage: "/icons/menu/10game-top10.png",
-        available: true
+        available: true,
+        badge: "NEW"
       },
       {
         id: "weekly-report",

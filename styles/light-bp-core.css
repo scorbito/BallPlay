@@ -886,6 +886,23 @@
   color: var(--bp-text-muted);
 }
 
+.phone-frame-light .tab-item-badge-new {
+  background: var(--bp-accent);
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(232, 74, 138, 0.26);
+}
+
+.bottom-tab .tab-item-chatbot {
+  position: relative;
+}
+
+.bottom-tab .tab-item-chatbot .tab-item-badge-new {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-46px);
+  z-index: 2;
+}
+
 /* ── 가이드(온보딩) 모달 — 흰 패널 ── */
 .phone-frame-light .guide-modal-backdrop {
   align-items: flex-start;

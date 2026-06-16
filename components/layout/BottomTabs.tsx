@@ -91,7 +91,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
           if (tab.id === "ai") {
             return (
               <button
-                className={`tab-item ${isActive ? "tab-item-active" : ""}`}
+                className={`tab-item tab-item-chatbot ${isActive ? "tab-item-active" : ""}`}
                 type="button"
                 key={tab.id}
                 onClick={() => {
@@ -101,6 +101,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
                 }}
                 aria-pressed={chatOpen}
               >
+                <span className="tab-item-badge tab-item-badge-new">NEW</span>
                 <span className="tab-item-icon tab-item-icon-chatbot">
                   <Image src="/icons/menu/chatbot.png" alt="" width={32} height={32} priority={isActive} />
                 </span>
