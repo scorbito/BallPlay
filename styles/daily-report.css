@@ -802,9 +802,9 @@
 }
 
 .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-daily-report .play-hub-card-icon.play-hub-card-icon-image {
-  flex-basis: 92px;
-  width: 92px;
-  height: 76px;
+  flex-basis: 104px;
+  width: 104px;
+  height: 86px;
   margin-left: 0;
 }
 
@@ -859,9 +859,9 @@
   }
 
   .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-daily-report .play-hub-card-icon.play-hub-card-icon-image {
-    flex-basis: 80px;
-    width: 80px;
-    height: 66px;
+    flex-basis: 92px;
+    width: 92px;
+    height: 76px;
   }
 
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
