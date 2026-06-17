@@ -24,7 +24,7 @@ export async function GET() {
     // 2단계: 폴백 (메모리 합산 집계)
     const { data: rows, error: rawError } = await supabase
       .from("bp_team_game_stats")
-      .select("*");
+      .select("team_id, total_bases, late_runs, sacrifice_hits, sacrifice_flies, hits, walks, hbp, runs, stolen_bases, caught_stealing, pitcher_strikeouts, pitcher_earned_runs, pitcher_walks_hbp, errors");
 
     if (rawError) {
       console.error("[rankings/special] Fallback raw query failed:", rawError.message);
