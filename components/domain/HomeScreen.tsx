@@ -20,7 +20,6 @@ import {
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
-import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -72,7 +71,6 @@ function LineupDiamondIcon({ size = 18 }: { size?: number }) {
 }
 
 import { AppShell } from "@/components/layout/AppShell";
-import { TierUpHost } from "@/components/common/TierUpHost";
 
 type HomeCard = {
   id: string;
@@ -171,10 +169,10 @@ const sections: HomeSection[] = [
       {
         id: "predict-ranking",
         href: "/predict/ranking",
-        title: "예측 기록",
+        title: "예측 순위",
         description: "참여 기록과 적중 흐름",
         icon: Trophy,
-        iconImage: "/icons/menu/team-standings.png",
+        iconImage: "/icons/menu/prediction-rank.png",
         available: true
       },
       {
@@ -363,8 +361,6 @@ const sections: HomeSection[] = [
 type HomeScreenProps = {
   /** Supabase Auth User 객체 */
   user?: any;
-  /** 현재 사용자의 공개 매치 누적 전적 (히어로 뱃지용). 미로그인 시 zeros. */
-  userRecord?: UserPublicMatchRecord;
   /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
   isAnonymous?: boolean;
   /** 관리자 여부 — 향후 홈 분기용. */
@@ -373,14 +369,12 @@ type HomeScreenProps = {
 
 export function HomeScreen({
   user = null,
-  userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
   isAnonymous = false,
   isAdmin = false
 }: HomeScreenProps = {}) {
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
   void isAnonymous;
   void user;
-  void userRecord;
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
       <header className="play-hub-header">
@@ -405,207 +399,191 @@ export function HomeScreen({
       </header>
 
       {(() => {
-        // Section 렌더링 함수 — pair wrapper 안에서 재사용하기 위해 추출.
-        const renderSection = (section: HomeSection) => {
-          const SectionIcon = section.sectionIcon;
-          const visibleCards = section.cards.filter((card) => !card.adminOnly || isAdmin);
-          // hero 섹션은 카드가 비대칭 그리드 (모바일: 1 big + 2 small, PC: 3-col).
-          // standard 섹션은 gridCols에 따라 1/2/3-col.
-          const gridClass =
-            section.variant === "hero"
-              ? "play-hub-grid play-hub-hero-cards"
-              : section.gridCols === 1
-                ? "play-hub-grid play-hub-grid-1"
-                : section.gridCols === 2
-                  ? "play-hub-grid play-hub-grid-2"
-                  : "play-hub-grid play-hub-grid-3";
+        // 단일 카드 렌더링 헬퍼
+        const renderCard = (card: HomeCard) => {
+          const Icon = card.icon;
+          const available = card.id === "my-team" && isAdmin ? true : card.available;
+          const badge = card.id === "my-team" && isAdmin ? undefined : card.badge;
+          const displayTitle =
+            card.id === "recent10-top"
+              ? "최근 경기 TOP10"
+              : card.id === "ai-battle"
+                ? "AI 승부 맞대결"
+                : card.id === "daily-report"
+                  ? "일일 리포트"
+                  : card.title;
+          const displayDescription =
+            card.id === "recent10-top" ? "타율·홈런·도루·ERA 랭킹" : card.description;
 
-          // 단일 카드 렌더링 헬퍼 — hero의 좌우 컬럼 분리 배치 + standard 그리드에서 공통 사용.
-          const renderCard = (card: HomeCard) => {
-            const Icon = card.icon;
-            const available = card.id === "my-team" && isAdmin ? true : card.available;
-            const badge = card.id === "my-team" && isAdmin ? undefined : card.badge;
-            const displayTitle =
-              card.id === "recent10-top"
-                ? "최근 경기 TOP10"
-                : card.id === "ai-battle"
-                  ? "AI 승부 맞대결"
-                  : card.id === "daily-report"
-                    ? "일일 리포트"
-                    : card.title;
-            const displayDescription =
-              card.id === "recent10-top" ? "타율·홈런·도루·ERA 랭킹" : card.description;
+          const cardDisplayTitle = card.id === "recent10-top" ? "요즘 폼 TOP10" : displayTitle;
+          const cardDisplayDescription =
+            card.id === "recent10-top" ? "최근 흐름이 좋은 선수들" : displayDescription;
 
-            // 아이콘 영역: iconImage 있으면 이미지, 없으면 lucide.
-            // width/height는 next/image의 intrinsic 힌트일 뿐 — 실제 크기는 CSS의 컨테이너(.play-hub-card-icon) + img { width:100% } 가 결정.
-            const cardDisplayTitle = card.id === "recent10-top" ? "요즘 폼 TOP10" : displayTitle;
-            const cardDisplayDescription =
-              card.id === "recent10-top" ? "최근 흐름이 좋은 선수들" : displayDescription;
-
-            const iconNode = card.iconImage ? (
-              <span className="play-hub-card-icon play-hub-card-icon-image">
-                <Image src={card.iconImage} alt="" width={160} height={160} />
-              </span>
-            ) : (
-              <span className="play-hub-card-icon">
-                <Icon size={22} />
-              </span>
-            );
-
-            // Chevron(>) — 클릭 가능한 내부 메뉴에만 노출. 외부 링크(↗ 별도)와 비활성(준비중)은 제외.
-            const showChevron = available && !card.external;
-            const cardInner = (
-              <>
-                {iconNode}
-                <span className="play-hub-card-text">
-                  <strong className="play-hub-card-title">{cardDisplayTitle}</strong>
-                  {card.subtitle ? (
-                    <span className="play-hub-card-subtitle">{card.subtitle}</span>
-                  ) : null}
-                  {/* description은 PC(≥1025px)에서만 노출 — CSS @media에서 처리 */}
-                  {cardDisplayDescription ? (
-                    <span className="play-hub-card-description">{cardDisplayDescription}</span>
-                  ) : null}
-                </span>
-                {showChevron ? (
-                  <ChevronRight className="play-hub-card-chevron" size={18} aria-hidden="true" />
-                ) : null}
-              </>
-            );
-
-            return (
-              <div className={`play-hub-card-wrap play-hub-card-wrap-${card.id}`} key={card.id}>
-                {card.external ? (
-                  <a
-                    className={`play-hub-card play-hub-card-external play-hub-card-${card.id}`}
-                    href={card.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {cardInner}
-                  </a>
-                ) : available ? (
-                  <Link
-                    className={`play-hub-card play-hub-card-${card.id}${card.featured ? " play-hub-card-featured-style" : ""}`}
-                    href={card.href}
-                    prefetch={false}
-                  >
-                    {cardInner}
-                  </Link>
-                ) : (
-                  <div className={`play-hub-card play-hub-card-disabled play-hub-card-${card.id}`} aria-disabled="true">
-                    {cardInner}
-                  </div>
-                )}
-                <HomeCardCorner
-                  cardId={card.id}
-                  title={cardDisplayTitle}
-                  description={cardDisplayDescription}
-                  available={available}
-                  featured={card.featured}
-                  external={card.external}
-                  badge={badge}
-                />
-              </div>
-            );
-          };
-
-          // 카드 그리드 JSX — standard 섹션에서 사용 (hero는 좌우 컬럼 분리 렌더링)
-          const cardsGrid = (
-            <div className={gridClass}>
-              {visibleCards.map(renderCard)}
-            </div>
+          const iconNode = card.iconImage ? (
+            <span className="play-hub-card-icon play-hub-card-icon-image">
+              <Image src={card.iconImage} alt="" width={160} height={160} />
+            </span>
+          ) : (
+            <span className="play-hub-card-icon">
+              <Icon size={22} />
+            </span>
           );
 
-          if (section.variant === "hero") {
-            // hero variant: 패턴 배경 + 헤더(텍스트 + 일러스트) + 카드들이 모두 한 컨테이너 안.
-            return (
-              <section
-                className={`play-hub-section play-hub-section-${section.variant}`}
-                key={section.id}
-              >
-                <div className="play-hub-hero">
-                  <div className="play-hub-hero-header">
-                    <div className="play-hub-hero-text">
-                      <div className="play-hub-hero-title-row">
-                        <h2 className="play-hub-hero-title">{section.label}</h2>
-                      </div>
-                      {/* 부제 + 매치 기록 뱃지를 한 줄 flex row로 묶음 — 좁은 화면에서는 flex-wrap으로 뱃지가 다음 줄로 떨어짐. */}
-                      {section.heroSubtitle ? (
-                        <div className="play-hub-hero-subtitle-row">
-                          {section.heroSubtitle ? (
-                            <p className="play-hub-hero-subtitle">{section.heroSubtitle}</p>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
-                    {section.heroIllustration ? (
-                      <div className="play-hub-hero-illust">
-                        <Image
-                          src={section.heroIllustration}
-                          alt=""
-                          width={160}
-                          height={160}
-                          priority
-                        />
-                      </div>
-                    ) : null}
-                  </div>
-                  {cardsGrid}
-                </div>
-              </section>
-            );
-          }
+          const showChevron = available && !card.external;
+          const cardInner = (
+            <>
+              {iconNode}
+              <span className="play-hub-card-text">
+                <strong className="play-hub-card-title">{cardDisplayTitle}</strong>
+                {card.subtitle ? (
+                  <span className="play-hub-card-subtitle">{card.subtitle}</span>
+                ) : null}
+                {cardDisplayDescription ? (
+                  <span className="play-hub-card-description">{cardDisplayDescription}</span>
+                ) : null}
+              </span>
+              {showChevron ? (
+                <ChevronRight className="play-hub-card-chevron" size={18} aria-hidden="true" />
+              ) : null}
+            </>
+          );
 
           return (
-            <section
-              className={`play-hub-section play-hub-section-${section.variant}`}
-              key={section.id}
-            >
-              <h2 className="play-hub-section-label">
-                {section.sectionIconImage ? (
-                  <span className="play-hub-section-icon play-hub-section-icon-image">
-                    <Image src={section.sectionIconImage} alt="" width={20} height={20} />
-                  </span>
-                ) : SectionIcon ? (
-                  <span className="play-hub-section-icon">
-                    <SectionIcon size={14} />
-                  </span>
-                ) : null}
-                {section.label}
-              </h2>
-              {cardsGrid}
-            </section>
+            <div className={`play-hub-card-wrap play-hub-card-wrap-${card.id}`} key={card.id}>
+              {card.external ? (
+                <a
+                  className={`play-hub-card play-hub-card-external play-hub-card-${card.id}`}
+                  href={card.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {cardInner}
+                </a>
+              ) : available ? (
+                <Link
+                  className={`play-hub-card play-hub-card-${card.id}${card.featured ? " play-hub-card-featured-style" : ""}`}
+                  href={card.href}
+                  prefetch={false}
+                >
+                  {cardInner}
+                </Link>
+              ) : (
+                <div className={`play-hub-card play-hub-card-disabled play-hub-card-${card.id}`} aria-disabled="true">
+                  {cardInner}
+                </div>
+              )}
+              <HomeCardCorner
+                cardId={card.id}
+                title={cardDisplayTitle}
+                description={cardDisplayDescription}
+                available={available}
+                featured={card.featured}
+                external={card.external}
+                badge={badge}
+              />
+            </div>
           );
         };
 
-        // 섹션 렌더링 — predict + kbo-info는 PC에서 한 줄 배치 위해 .play-hub-section-pair로 묶음.
-        const out: ReactNode[] = [];
-        let skip: string | null = null;
-        sections.forEach((section, idx) => {
-          if (skip === section.id) {
-            skip = null;
-            return;
-          }
-          if (section.adminOnly && !isAdmin) return;
-          // predict + kbo-info 연속이면 pair wrapper로 묶기
-          if (section.id === "predict" && sections[idx + 1]?.id === "kbo-info") {
-            const next = sections[idx + 1];
-            out.push(
-              <div className="play-hub-section-pair" key="pair-predict-info">
-                {renderSection(section)}
-                {renderSection(next)}
+        // 상단 AI 예측·분석 영역 렌더링
+        const aiSection = sections.find((s) => s.id === "ai-analysis");
+        const aiSectionNode = aiSection ? (
+          <section
+            className={`play-hub-section play-hub-section-${aiSection.variant}`}
+            key={aiSection.id}
+          >
+            <div className="play-hub-hero">
+              <div className="play-hub-hero-header">
+                <div className="play-hub-hero-text">
+                  <div className="play-hub-hero-title-row">
+                    <h2 className="play-hub-hero-title">{aiSection.label}</h2>
+                  </div>
+                  {aiSection.heroSubtitle ? (
+                    <div className="play-hub-hero-subtitle-row">
+                      <p className="play-hub-hero-subtitle">{aiSection.heroSubtitle}</p>
+                    </div>
+                  ) : null}
+                </div>
+                {aiSection.heroIllustration ? (
+                  <div className="play-hub-hero-illust">
+                    <Image
+                      src={aiSection.heroIllustration}
+                      alt=""
+                      width={160}
+                      height={160}
+                      priority
+                    />
+                  </div>
+                ) : null}
               </div>
-            );
-            skip = "kbo-info";
-            return;
-          }
-          out.push(renderSection(section));
+              <div className="play-hub-grid play-hub-hero-cards">
+                {aiSection.cards.filter((card) => !card.adminOnly || isAdmin).map(renderCard)}
+              </div>
+            </div>
+          </section>
+        ) : null;
+
+        // 하단 플랫 메뉴용 카드들 수집 (ai-analysis, related 제외)
+        const otherSections = sections.filter((s) => s.id !== "ai-analysis" && s.id !== "related");
+        const bottomCards: HomeCard[] = [];
+        otherSections.forEach((section) => {
+          if (section.adminOnly && !isAdmin) return;
+          section.cards.forEach((card) => {
+            if (card.adminOnly && !isAdmin) return;
+            bottomCards.push(card);
+          });
         });
-        return out;
+
+        // 요즘 폼 TOP10 (recent10-top) 카드를 신규 메뉴 강조를 위해 첫 번째로 배치
+        const recentTopIdx = bottomCards.findIndex((c) => c.id === "recent10-top");
+        if (recentTopIdx > -1) {
+          const [recentTopCard] = bottomCards.splice(recentTopIdx, 1);
+          bottomCards.unshift(recentTopCard);
+        }
+
+        const bottomSectionNode = (
+          <section className="play-hub-section play-hub-section-standard" key="bottom-menus">
+            <div className="play-hub-grid play-hub-grid-3 play-hub-flexible-grid">
+              {bottomCards.map(renderCard)}
+            </div>
+          </section>
+        );
+
+        // 외부 웹앱 추천 배너 (related 섹션)
+        const relatedSection = sections.find((s) => s.id === "related");
+        const seungyoCard = relatedSection?.cards.find((c) => c.id === "oneul-seungyo");
+
+        const externalBannerNode = seungyoCard ? (
+          <div className="play-hub-external-banner-wrap" key="external-banner">
+            <span className="play-hub-external-banner-label">함께 보면 좋은 야구 앱</span>
+            <a
+              className="play-hub-external-banner"
+              href={seungyoCard.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div className="play-hub-external-banner-content">
+                {seungyoCard.iconImage ? (
+                  <span className="play-hub-external-banner-logo">
+                    <Image src={seungyoCard.iconImage} alt="" width={44} height={44} />
+                  </span>
+                ) : null}
+                <div className="play-hub-external-banner-text">
+                  <strong className="play-hub-external-banner-title">
+                    {seungyoCard.title} <span className="play-hub-external-banner-subtitle">{seungyoCard.subtitle}</span>
+                  </strong>
+                  <p className="play-hub-external-banner-desc">{seungyoCard.description}</p>
+                </div>
+              </div>
+              <span className="play-hub-external-banner-action">
+                바로가기 <ChevronRight size={16} />
+              </span>
+            </a>
+          </div>
+        ) : null;
+
+        return [aiSectionNode, bottomSectionNode, externalBannerNode];
       })()}
-      {/* 승급 모달 — 홈 진입 시 자동 감지. 익명/0승은 detector 내부에서 no-op. */}
-      <TierUpHost wins={userRecord.wins} />
     </AppShell>
   );
 }

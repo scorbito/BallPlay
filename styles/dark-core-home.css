@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
  * Home dark theme — spec: data/oneul-seungyo-home-spec
  * Scoped under .phone-frame-dark so default theme is untouched.
  * ============================================================ */
@@ -552,5 +552,88 @@
 
 .phone-frame-dark .home-hero-record-badge {
   color: var(--hd-text-primary);
+}
+
+/* ── 하단 메뉴용 반응형 flexible grid ── */
+.phone-frame-dark .play-hub-flexible-grid {
+  display: grid !important;
+  /* 기본 모바일에서는 3열 배치 (최소 너비 약 95px) */
+  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)) !important;
+  gap: 8px !important;
+}
+
+/* 400px 이상 스마트폰에서 조금 더 널널하게 배치 */
+@media (min-width: 400px) {
+  .phone-frame-dark .play-hub-flexible-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+  }
+}
+
+/* 태블릿 해상도 대응 */
+@media (min-width: 768px) {
+  .phone-frame-dark .play-hub-flexible-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)) !important;
+    gap: 12px !important;
+  }
+}
+
+/* 데스크톱 해상도 대응 */
+@media (min-width: 1025px) {
+  .phone-frame-dark .play-hub-flexible-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+/* ── 외부 서비스 추천 배너 (다크모드) ── */
+.phone-frame-dark .play-hub-external-banner-wrap {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-dark .play-hub-external-banner-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--hd-text-muted);
+  margin-left: 4px;
+}
+
+.phone-frame-dark .play-hub-external-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: linear-gradient(135deg, rgba(13, 27, 49, 0.8), rgba(9, 20, 36, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.phone-frame-dark .play-hub-external-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.phone-frame-dark .play-hub-external-banner-title {
+  color: var(--hd-text-primary);
+}
+
+.phone-frame-dark .play-hub-external-banner-subtitle {
+  color: var(--hd-text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.phone-frame-dark .play-hub-external-banner-desc {
+  color: var(--hd-text-muted);
+}
+
+.phone-frame-dark .play-hub-external-banner-action {
+  color: var(--hd-text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 

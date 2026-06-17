@@ -1,4 +1,4 @@
-﻿.win-hero {
+.win-hero {
   position: relative;
   overflow: hidden;
   min-height: 184px;
@@ -512,5 +512,156 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* ── 하단 메뉴용 반응형 flexible grid ── */
+.phone-frame-light .play-hub-flexible-grid {
+  display: grid !important;
+  /* 기본 모바일에서는 3열 배치 (최소 너비 약 95px) */
+  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)) !important;
+  gap: 8px !important;
+}
+
+/* 400px 이상 스마트폰에서 조금 더 널널하게 배치 */
+@media (min-width: 400px) {
+  .phone-frame-light .play-hub-flexible-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+  }
+}
+
+/* 태블릿 해상도 대응 */
+@media (min-width: 768px) {
+  .phone-frame-light .play-hub-flexible-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)) !important;
+    gap: 12px !important;
+  }
+}
+
+/* 데스크톱 해상도 대응 */
+@media (min-width: 1025px) {
+  .phone-frame-light .play-hub-flexible-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+/* ── 외부 서비스 추천 배너 ── */
+.phone-frame-light .play-hub-external-banner-wrap {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .play-hub-external-banner-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.phone-frame-light .play-hub-external-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+}
+
+.phone-frame-light .play-hub-external-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(148, 163, 184, 0.12);
+  border-color: #cbd5e1;
+}
+
+.phone-frame-light .play-hub-external-banner-title {
+  color: #0f172a;
+}
+
+.phone-frame-light .play-hub-external-banner-subtitle {
+  color: #475569;
+}
+
+.phone-frame-light .play-hub-external-banner-desc {
+  color: #64748b;
+}
+
+.phone-frame-light .play-hub-external-banner-action {
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+/* 배너 공통 자식 스타일 */
+.play-hub-external-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.play-hub-external-banner-logo {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-hub-external-banner-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-hub-external-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.play-hub-external-banner-title {
+  font-size: 15px;
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.play-hub-external-banner-subtitle {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.play-hub-external-banner-desc {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.play-hub-external-banner-action {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background-color 0.15s ease;
 }
 

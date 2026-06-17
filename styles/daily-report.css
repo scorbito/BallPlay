@@ -835,9 +835,12 @@
 
 .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-text,
 .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-daily-report .play-hub-card-text {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  flex: 1 !important;
 }
 
 .phone-frame-light .play-hub-hero-cards > .play-hub-card-wrap-ai-battle .play-hub-card-title,
@@ -849,6 +852,7 @@
   overflow: visible;
   text-overflow: clip;
   word-break: keep-all;
+  text-align: center !important;
 }
 
 @media (max-width: 430px) {
