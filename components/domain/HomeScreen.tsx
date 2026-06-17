@@ -20,9 +20,7 @@ import {
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
-import { HomePointBadge } from "@/components/domain/points/HomePointBadge";
 import { type UserPublicMatchRecord } from "@/lib/supabase/query-parts/bpUserRecords";
-import type { HomePointAvailability } from "@/lib/server/homePointAvailability";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -371,16 +369,13 @@ type HomeScreenProps = {
   isAnonymous?: boolean;
   /** 관리자 여부 — 향후 홈 분기용. */
   isAdmin?: boolean;
-  /** 첫 화면에서 BP 뱃지를 바로 표시하기 위한 서버 계산값. */
-  initialPointAvailability?: HomePointAvailability;
 };
 
 export function HomeScreen({
   user = null,
   userRecord = { wins: 0, losses: 0, total: 0, winRate: 0 },
   isAnonymous = false,
-  isAdmin = false,
-  initialPointAvailability = {}
+  isAdmin = false
 }: HomeScreenProps = {}) {
   // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
   void isAnonymous;
@@ -510,10 +505,6 @@ export function HomeScreen({
                   featured={card.featured}
                   external={card.external}
                   badge={badge}
-                />
-                <HomePointBadge
-                  cardId={card.id}
-                  initialAvailable={initialPointAvailability[card.id]}
                 />
               </div>
             );

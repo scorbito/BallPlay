@@ -1,7 +1,6 @@
 import { HomeScreen } from "@/components/domain/HomeScreen";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { getAccountStats } from "@/lib/supabase/query-parts/bpAccountStats";
-import { getHomePointAvailability } from "@/lib/server/homePointAvailability";
 import { getUserTier } from "@/lib/auth/userTier";
 
 export const dynamic = "force-dynamic";
@@ -11,14 +10,9 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser();
   const userTier = await getUserTier(supabase);
   const adminClient = createSupabaseAdminClient();
-  const [record, pointAvailability] = await Promise.all([
-    user
-      ? getAccountStats(adminClient, user.id)
-      : Promise.resolve({ wins: 0, losses: 0, total: 0, winRate: 0 }),
-    user
-      ? getHomePointAvailability(user.id, adminClient, user.created_at)
-      : Promise.resolve({})
-  ]);
+  const record = user
+    ? await getAccountStats(adminClient, user.id)
+    : { wins: 0, losses: 0, total: 0, winRate: 0 };
   const isAnonymous = Boolean(user?.is_anonymous);
 
   return (
@@ -27,7 +21,6 @@ export default async function HomePage() {
       userRecord={record}
       isAnonymous={isAnonymous}
       isAdmin={userTier.tier === "admin"}
-      initialPointAvailability={pointAvailability}
     />
   );
 }
