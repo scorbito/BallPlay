@@ -248,6 +248,16 @@ const sections: HomeSection[] = [
         icon: FileText,
         iconImage: "/icons/menu/baseball-news.png",
         available: true
+      },
+      {
+        id: "special-rankings",
+        href: "/rankings/special",
+        title: "별별팀랭킹",
+        description: "재미있고 독특한 10가지 구단 랭킹",
+        icon: Trophy,
+        iconImage: "/icons/menu/predict-ranking.png",
+        available: true,
+        badge: "NEW"
       }
     ]
   },
