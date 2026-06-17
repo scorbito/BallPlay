@@ -1,15 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam, teams } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
-import { refreshTodayGamesAction } from "@/lib/actions/refreshTodayGames";
 import type { Game } from "@/lib/types/domain";
 
 const WEEKDAYS_SUN = ["일", "월", "화", "수", "목", "금", "토"];
@@ -70,7 +69,7 @@ type ScheduleScreenProps = {
 };
 
 export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
-  const { profile, showToast } = useAppState();
+  const { profile } = useAppState();
   const router = useRouter();
   const searchParams = useSearchParams();
   const today = new Date();
@@ -143,34 +142,6 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
     }
   }, [focusToday]);
 
-  // 갱신 — KBO API 호출해서 오늘 경기 결과 DB 동기화 → router.refresh()로 페이지 재페치
-  const [refreshing, startRefresh] = useTransition();
-  const handleRefresh = useCallback(() => {
-    startRefresh(async () => {
-      const result = await refreshTodayGamesAction();
-      if (!result.ok) {
-        showToast(`갱신 실패: ${result.error}`);
-        return;
-      }
-      router.refresh();
-
-      // 진단 친화 토스트
-      if (result.source === "none") {
-        showToast(`KBO: ${result.kboError ?? "?"} / 네이버: ${result.naverError ?? "?"}`);
-        return;
-      }
-      if (result.totalFromApi === 0) {
-        const kboNote = result.kboError ? ` / KBO 에러: ${result.kboError}` : "";
-        showToast(`API ${result.source}: 오늘(${result.date}) 경기 0건${kboNote}`);
-        return;
-      }
-      const changed = result.inserted + result.updated;
-      const kboNote = result.kboError ? ` / KBO 에러: ${result.kboError}` : "";
-      showToast(
-        `갱신 완료 — API(${result.source}) ${result.totalFromApi}경기 / 종료 ${result.finishedCount} / DB 반영 ${changed}${kboNote}`
-      );
-    });
-  }, [router, showToast]);
 
   // 외부 클릭 시 팀 드롭다운 닫기
   useEffect(() => {
@@ -353,16 +324,6 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
     selectDate(next);
   };
 
-  // 오늘 선택된 상태인지 + 오늘 경기 진행 상태 분석
-  const isTodaySelected = isSameDate(selectedDate, today);
-  const todayGames = isTodaySelected ? selectedGames : [];
-  const allTodayFinished = todayGames.length > 0 &&
-    todayGames.every((g) => g.status === "finished" || g.status === "canceled");
-  // 갱신 버튼: 오늘 날짜일 때 노출. "이미 모든 경기 종료" 상태일 때만 숨김.
-  //   - 0경기 표시 상태 → 노출 (DB에 today row가 없을 수 있어 한 번 fetch 필요)
-  //   - 미완료 경기 있음 → 노출
-  //   - 모두 종료 → 숨김
-  const canShowRefresh = isTodaySelected && !allTodayFinished;
 
   // focus=today 진입 시 — 오늘 경기 결과가 있으면 오늘, 없으면 결과가 있는 가장 최근 날짜로.
   // 시즌 휴식일/오늘 미시작 경기뿐일 때 "결과 0건" 빈 화면 대신 어제(또는 직전 경기일) 결과 보여줌.
@@ -585,19 +546,16 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
             </button>
           </div>
           <div className="sched-day-head-right">
-            {canShowRefresh ? (
-              <button
-                type="button"
-                className="sched-day-refresh"
-                onClick={handleRefresh}
-                disabled={refreshing}
-                aria-label="경기 결과 갱신"
-                title="경기 결과 갱신"
-              >
-                <RefreshCw size={14} className={refreshing ? "sched-day-refresh-spin" : ""} />
-                <span>{refreshing ? "갱신 중..." : "갱신"}</span>
-              </button>
-            ) : null}
+            <Link
+              className="sched-day-refresh"
+              href="/rankings"
+              prefetch={false}
+              aria-label="팀순위 보기"
+              title="팀순위 보기"
+            >
+              <Trophy size={14} />
+              <span>팀순위</span>
+            </Link>
           </div>
         </div>
 

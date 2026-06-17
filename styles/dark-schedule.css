@@ -260,24 +260,28 @@
   min-height: 30px;
 }
 
-/* 오늘 경기 결과 갱신 버튼 — 미완료 경기 있을 때만 노출 */
+/* 일정 카드 우측 액션 버튼 */
 .phone-frame-light .sched-day-refresh {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
   border-radius: 999px;
-  border: 1px solid var(--bp-line);
-  background: var(--bp-bg-soft, #f5f6f8);
-  color: var(--bp-text-secondary);
+  border: 1px solid rgba(232, 74, 138, 0.32);
+  background: rgba(232, 74, 138, 0.08);
+  color: var(--bp-accent);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .phone-frame-light .sched-day-refresh:hover:not(:disabled) {
-  background: var(--bp-bg-card);
-  color: var(--bp-text);
+  background: rgba(232, 74, 138, 0.14);
+  border-color: rgba(232, 74, 138, 0.5);
+  color: var(--bp-accent-strong);
 }
 
 .phone-frame-light .sched-day-refresh:disabled {
