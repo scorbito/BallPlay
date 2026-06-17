@@ -166,7 +166,7 @@ export default function SpecialRankingsPage() {
 
   return (
     <AppShell activeTab="home" title="별별팀랭킹" theme="light" backHref="/" wide>
-      <div className="max-w-md mx-auto px-4 py-5 bg-[#f8fafc] min-h-screen">
+      <div className="max-w-md mx-auto px-4 py-5 bg-[#f8fafc] min-h-screen phone-frame-light">
         {/* 상단 소개 배너 */}
         <header className="mb-6 text-center">
           <h1 className="text-2xl font-black text-slate-800 tracking-tight flex justify-center items-center gap-2">
@@ -177,20 +177,26 @@ export default function SpecialRankingsPage() {
           </p>
         </header>
 
-        {/* 탭 카테고리 (가로 스크롤 영역) */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide -mx-4 px-4">
+        {/* 탭 카테고리 (요즘폼 TOP10 스타일의 여러 줄 바둑판식 레이아웃) */}
+        <div className="recent10-tabs mb-6" role="tablist" aria-label="별별팀랭킹 분류">
           {TABS.map((tab) => {
             const isActive = tab.id === activeTab;
             return (
               <button
                 key={tab.id}
                 type="button"
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 border ${
-                  isActive
-                    ? "bg-[#FF2A7A] border-[#FF2A7A] text-white shadow-md shadow-pink-100"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
+                className={`recent10-tab ${isActive ? "is-active" : ""}`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: "0 10px",
+                  fontSize: "12px",
+                  height: "32px"
+                }}
               >
                 <span>{tab.icon}</span>
                 <span>{tab.label}</span>
