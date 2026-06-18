@@ -46,10 +46,8 @@ export default async function Sim1000ListPage({
   const latestContentDate = latestResult?.ok ? latestResult.dates[0] ?? null : null;
   const requestedDate = explicitDate ?? latestContentDate ?? today;
   const selectedDate = !isAdmin && requestedDate > today ? today : requestedDate;
-  // 소프트 게이트: 비로그인/익명(guest)은 시뮬 수치를 못 본다. 매치업·누적 적중률(미끼)만 노출.
-  // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 민감 수치를 서버에서 비워 보내
-  // 개발자도구로도 훔쳐볼 수 없게 한다. AI 예측 page 와 동일 기준 (userTier.tier === "guest").
-  const locked = userTier.tier === "guest";
+  // 로그인 게이트 제거(2026-06-18) — 비로그인도 시뮬 수치 열람. 로그인 유도는 경품/참여로 전환.
+  const locked = false;
 
   // 시뮬 결과 + 게임 부가 정보 병렬.
   // listGamesFromDb 는 admin client (선발 컬럼 포함) — 매치업 시각·구장 보강용.

@@ -127,7 +127,8 @@ export default async function AiWinnerPredictPage({
   // 소프트 게이트: 비로그인/익명(guest)은 AI 픽을 못 본다. 매치업·AI 종합 적중률(미끼)만 노출.
   // 정식 로그인(free/pro/admin)만 해제. 잠긴 사용자에겐 픽 데이터를 서버에서 비워 보내
   // 개발자도구로도 훔쳐볼 수 없게 한다.
-  const locked = userTier.tier === "guest";
+  // 로그인 게이트 제거(2026-06-18) — 비로그인도 AI 픽 열람. 로그인 유도는 경품/참여 기능으로 전환.
+  const locked = false;
   // 예측은 항상 service_role 로 전부 읽고(발행 전 포함) 서버에서 "3개 AI 완료" 여부로 게이트한다.
   // (기존 09시 published_at RLS 게이트 → 3개 AI 입력 완료 시 공개로 변경.)
   const predictionsClient = adminClient;

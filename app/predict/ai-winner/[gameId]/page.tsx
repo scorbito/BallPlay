@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
@@ -74,17 +74,12 @@ export default async function AiWinnerRevealPage({
   // RLS 가 published_at <= now() 만 노출하므로 admin 만 service_role 클라이언트로 우회.
   const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
   const isAdmin = userTier.tier === "admin";
-  const locked = userTier.tier === "guest";
   const today = kstToday();
   const isFuture = gameRow.game_date > today;
 
-  // AI 예측 상세(reveal)는 정식 로그인 전용. 비로그인/익명(guest)은 로그인으로 보낸다.
-  // (리스트는 소프트 게이트로 매치업만 노출하지만, 상세는 곧 결과 전체라 하드 게이트.)
-  if (locked) {
-    redirect(`/login?next=${encodeURIComponent(`/predict/ai-winner/${params.gameId}`)}`);
-  }
-
-  // 예측은 항상 service_role 로 전부 읽고(발행 전 포함) 서버에서 "3개 AI 완료" 여부로 게이트한다.
+  // 로그인 게이트 제거(2026-06-18) — AI 예측은 누구나 열람. 로그인 유도는 경품/참여 기능으로 전환.
+  // 단, "3개 AI 완료" 발행 게이트(predictionsPublished)는 유지 — 입력 중인 미완성 픽은 가린다.
+  // 예측은 항상 service_role 로 전부 읽고(발행 전 포함) 서버에서 발행 여부로 게이트한다.
   const adminClient = createSupabaseAdminClient();
 
   // 1. 해당 날짜의 모든 경기 조회

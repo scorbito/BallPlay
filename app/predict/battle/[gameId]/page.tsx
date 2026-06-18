@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { getUserTierByIdentity } from "@/lib/auth/userTier";
 import { getRequestIdentity } from "@/lib/auth/requestUser";
@@ -53,15 +53,9 @@ export default async function AiBattleRevealPage({ params }: { params: { gameId:
 
   if (gameError || !gameRow) notFound();
 
-  // 2. 권한 정보 획득
+  // 2. 권한 정보 — 로그인 게이트 제거(2026-06-18). 운영자만 발행 전 미리보기 유지.
   const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
   const isAdmin = userTier.tier === "admin";
-  const locked = userTier.tier === "guest";
-
-  // 비로그인/익명은 배틀 상세를 보지 못하게 가드
-  if (locked) {
-    redirect(`/login?next=${encodeURIComponent(`/predict/battle/${params.gameId}`)}`);
-  }
 
   // 3. 배틀 예측 데이터 조회 (adminClient 사용)
   const adminClient = createSupabaseAdminClient();
