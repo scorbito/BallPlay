@@ -40,6 +40,11 @@ function addDays(dateStr: string, days: number) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
 }
 
+function hasKnownStadium(stadium: string | null | undefined): stadium is string {
+  const normalized = stadium?.trim();
+  return Boolean(normalized && normalized !== "미정" && normalized !== "誘몄젙");
+}
+
 export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> {
   const dateStr = formatDateInput(date);
   const { games, source } = await fetchGamesForDate(dateStr);
@@ -70,12 +75,11 @@ export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> 
   }
 
   for (const row of updates) {
-    // 선발 투수는 null이 오면 기존 값 보존 (KBO가 발표 후 응답에서 누락하는 케이스 방지).
-    // 값이 있을 때만 덮어씀. 또한 starter_fetched_at은 항상 갱신 → throttle 정상 작동.
+    // Keep existing nullable fields when the upstream schedule omits them.
+    // This prevents late schedule syncs from replacing known stadiums or starters with placeholders.
     const payload: Record<string, unknown> = {
       game_date: row.game_date,
       game_time: row.game_time,
-      stadium: row.stadium,
       home_team_id: row.home_team_id,
       away_team_id: row.away_team_id,
       home_score: row.home_score,
@@ -84,6 +88,7 @@ export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> 
       innings: row.innings,
       starter_fetched_at: new Date().toISOString()
     };
+    if (hasKnownStadium(row.stadium)) payload.stadium = row.stadium;
     if (row.home_starter !== null) payload.home_starter = row.home_starter;
     if (row.away_starter !== null) payload.away_starter = row.away_starter;
 
@@ -101,7 +106,11 @@ export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> 
   return { date: dateStr, source, inserted, updated, skipped: 0 };
 }
 
-export async function syncGamesInRange(fromDate: KboDateInput, toDate: KboDateInput, options?: { delayMs?: number }): Promise<SyncResult[]> {
+export async function syncGamesInRange(
+  fromDate: KboDateInput,
+  toDate: KboDateInput,
+  options?: { delayMs?: number }
+): Promise<SyncResult[]> {
   const results: SyncResult[] = [];
   let cursor = formatDateInput(fromDate);
   const end = formatDateInput(toDate);
