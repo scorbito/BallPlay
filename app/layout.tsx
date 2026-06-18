@@ -1,13 +1,10 @@
-import { Suspense } from "react";
-import { headers } from "next/headers";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { InstallAppBanner } from "@/components/domain/InstallAppBanner";
 import { AuthRefreshOnVisible } from "@/components/common/AuthRefreshOnVisible";
 import { CustomCursor } from "@/components/common/CustomCursor";
-import { AppStateLoader } from "./app-state-loader";
+import { AppStateProvider } from "@/lib/state/AppState";
 import "./globals.css";
 import "@/styles/light-home.css";
 import "@/styles/light-auth-onboarding.css";
@@ -134,26 +131,10 @@ export const viewport: Viewport = {
   themeColor: "#06101e"
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // 미들웨어가 이미 getUser()로 검증하고 헤더로 user 정보를 넘겨줌 → 여기서 재호출 안 함.
-  // (auth.getUser()는 Supabase Auth 서버 네트워크 왕복이라 페이지마다 비용 큼)
-  // 헤더 없을 때만(미들웨어 미경유 등 예외) fallback으로 getUser 1회.
-  const hdrs = headers();
-  const headerUserId = hdrs.get("x-bp-user-id");
-  const headerIsAnon = hdrs.get("x-bp-is-anon");
-
-  let userId: string | null;
-  let isAnonymous: boolean;
-  if (headerUserId !== null || headerIsAnon !== null) {
-    userId = headerUserId && headerUserId.length > 0 ? headerUserId : null;
-    isAnonymous = headerIsAnon === "1";
-  } else {
-    const ssr = createSupabaseServerClient();
-    const { data: authData } = await ssr.auth.getUser();
-    userId = authData?.user?.id ?? null;
-    isAnonymous = Boolean(authData?.user?.is_anonymous);
-  }
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // 루트 레이아웃은 user 정보를 서버에서 읽지 않는다(headers()/getUser() 제거).
+  // 레이아웃이 동적 API를 쓰면 전 페이지가 동적 렌더로 강제돼 정적/ISR 캐시가 불가능해지기 때문.
+  // user 의존 데이터(프로필/익명여부/체크인)는 AppStateProvider 가 클라이언트에서 /api/profile/me 로 로드한다.
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   return (
@@ -182,18 +163,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <span className="initial-loader-dot" />
           </span>
         </div>
-        {/* AppState 데이터 페치를 Suspense로 감싸 — 페치 중에도 위의 initial-loader가 즉시 노출됨.
-            fallback은 null이라 추가 빈 화면 없음 (loader가 그대로 유지).
+        {/* AppStateProvider 는 클라이언트 컴포넌트 — 마운트 후 /api/profile/me 로 프로필을 로드한다.
+            서버 데이터 의존이 없어 children(페이지)은 즉시 렌더되고, initial-loader 는 data-loaded 전까지 노출.
             ErrorBoundary로 감싸 클라이언트 사이드 에러 발생 시 자동 reload로 복구. */}
         <ErrorBoundary>
-          <Suspense fallback={null}>
-            <AppStateLoader isAnonymous={isAnonymous} userId={userId}>
-              {children}
-              <InstallAppBanner />
-              <AuthRefreshOnVisible />
-              <CustomCursor />
-            </AppStateLoader>
-          </Suspense>
+          <AppStateProvider>
+            {children}
+            <InstallAppBanner />
+            <AuthRefreshOnVisible />
+            <CustomCursor />
+          </AppStateProvider>
         </ErrorBoundary>
         {/* Vercel 무료 분석 — 페이지뷰/방문자/Web Vitals. 추가 설정 0, env 불필요. */}
         <Analytics />

@@ -5,10 +5,10 @@ import {
   getCachedWeeklyLineupRanking
 } from "@/lib/supabase/query-parts/bpLineupRankings";
 
-// 공개 매치 결과가 누적되는 동안 자주 갱신되므로 짧은 ISR.
-// 라우트 차원의 revalidate 와 별개로, 실제 쿼리 결과는 unstable_cache(60초)로
-// 사용자 전체가 공유한다. 본인 user_id 종속 로직이 라인업 랭킹엔 없음 → 단순 캐시 OK.
-export const revalidate = 60;
+// 동적 렌더 유지 — 쿼리 결과는 내부 unstable_cache(60초)로 전체 공유라 DB 부하는 낮다.
+// (라우트 정적화는 내부 admin 클라가 no-store 라 빌드 때 빈 데이터로 구워질 위험이 있어 보류.
+//  추후 캐시 가능 클라이언트로 바꾸면 ISR(○) 전환 가능.)
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "출전팀 랭킹",

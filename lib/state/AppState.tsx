@@ -91,6 +91,11 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
     : initialProfile?.defaultPublicScope === "private" ? "나만 보기"
     : "전체 공개"
   );
+  // user 식별 정보(프로필/익명여부)는 서버가 아니라 클라이언트에서 로드(/api/profile/me).
+  // 루트 레이아웃이 headers()/getUser() 를 안 하게 만들어 전 페이지가 정적/ISR 캐시 가능해지도록 한 것.
+  const [isAnonymous, setIsAnonymous] = useState(initialIsAnonymous);
+  const [profileId, setProfileId] = useState<string | undefined>(initialProfile?.id);
+  const [identityLoaded, setIdentityLoaded] = useState(Boolean(initialProfile));
   const [toast, setToast] = useState<Toast | null>(null);
   const [checkinRewardModal, setCheckinRewardModal] = useState<CheckinRewardModal | null>(null);
   const checkinAttemptedRef = useRef<string | null>(null);
@@ -103,28 +108,61 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   }, []);
 
   useEffect(() => {
-    if (!initialProfile) return;
-    setProfileSettings({
-      nickname: initialProfile.nickname,
-      mainTeamId: initialProfile.mainTeamId,
-      interestTeamIds: initialProfile.interestTeamIds ?? [],
-      avatarUrl: initialProfile.avatarImageUrl ?? null,
-      bio: initialProfile.bio ?? null
-    });
-  }, [initialProfile?.nickname, initialProfile?.mainTeamId, initialProfile?.avatarImageUrl, initialProfile?.bio]);
-
-  useEffect(() => {
     document.documentElement.setAttribute("data-loaded", "true");
   }, []);
 
+  // 클라이언트 프로필 로드 — 서버(layout)가 프로필을 주입하지 않으므로 마운트 후 직접 가져온다.
+  // initialProfile 이 주어진 경우(레거시 경로)엔 이미 반영돼 있으니 생략.
   useEffect(() => {
-    const identity = initialProfile?.id ?? (initialIsAnonymous ? "anonymous" : "guest");
+    if (initialProfile) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/profile/me", { cache: "no-store" });
+        if (!res.ok) {
+          if (!cancelled) setIdentityLoaded(true);
+          return;
+        }
+        const data = await res.json();
+        if (cancelled) return;
+        const p = data.profile as UserProfileRecord | null;
+        if (p) {
+          setProfileSettings({
+            nickname: p.nickname,
+            mainTeamId: p.mainTeamId,
+            interestTeamIds: p.interestTeamIds ?? [],
+            avatarUrl: p.avatarImageUrl ?? null,
+            bio: p.bio ?? null
+          });
+          setNotificationsEnabled(p.notificationsEnabled ?? true);
+          setPublicScope(
+            p.defaultPublicScope === "friends" ? "친구 공개"
+            : p.defaultPublicScope === "private" ? "나만 보기"
+            : "전체 공개"
+          );
+          setProfileId(p.id);
+        }
+        setIsAnonymous(Boolean(data.isAnonymous));
+        setIdentityLoaded(true);
+      } catch {
+        if (!cancelled) setIdentityLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProfile]);
+
+  // 출석 보상 — 식별 정보가 확정된 뒤(identityLoaded) 1회 시도.
+  useEffect(() => {
+    if (!identityLoaded) return;
+    const identity = profileId ?? (isAnonymous ? "anonymous" : "guest");
     if (checkinAttemptedRef.current === identity) return;
     checkinAttemptedRef.current = identity;
 
     (async () => {
       const today = kstDateKey();
-      const storageKey = checkinAttemptKey(initialProfile?.id, initialIsAnonymous);
+      const storageKey = checkinAttemptKey(profileId, isAnonymous);
 
       try {
         if (window.localStorage.getItem(storageKey) === today) return;
@@ -155,7 +193,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
         // 출석 보상은 진입 보조 기능이라 실패해도 화면 진입은 막지 않는다.
       }
     })();
-  }, [initialProfile?.id, initialIsAnonymous]);
+  }, [identityLoaded, profileId, isAnonymous]);
 
   const showToast = (message: string) => {
     const id = Date.now();
@@ -173,7 +211,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
     notificationsEnabled,
     publicScope,
     profile: { ...profileSettings, interestTeamIds: profileSettings.interestTeamIds },
-    isAnonymous: initialIsAnonymous,
+    isAnonymous,
     toast,
     updateProfile: (nextProfile) => {
       setProfileSettings((current) => ({ ...current, ...nextProfile }));
@@ -188,7 +226,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
       showToast(`${scope}로 변경했어요.`);
     },
     showToast
-  }), [initialIsAnonymous, notificationsEnabled, profileSettings, publicScope, toast]);
+  }), [isAnonymous, notificationsEnabled, profileSettings, publicScope, toast]);
 
   return (
     <AppStateContext.Provider value={value}>
