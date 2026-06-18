@@ -42,10 +42,10 @@ export default async function Sim1000ListPage({
   const isAdmin = userTier.tier === "admin";
   const latestResult = explicitDate
     ? null
-    : await listSimResultDates(supabase, isAdmin ? { limit: 1 } : { to: today, limit: 1 });
+    : await listSimResultDates(supabase, { limit: 1 });
   const latestContentDate = latestResult?.ok ? latestResult.dates[0] ?? null : null;
   const requestedDate = explicitDate ?? latestContentDate ?? today;
-  const selectedDate = !isAdmin && requestedDate > today ? today : requestedDate;
+  const selectedDate = requestedDate;
   // 로그인 게이트 제거(2026-06-18) — 비로그인도 시뮬 수치 열람. 로그인 유도는 경품/참여로 전환.
   const locked = false;
 
@@ -113,7 +113,7 @@ export default async function Sim1000ListPage({
   // 단, "오늘" 은 결과 유무와 무관하게 next 후보에 포함 — 운영자가 임의 시간에
   // 시뮬을 돌리는 워크플로우라 오늘 결과가 없어도 오늘 페이지로 이동 가능해야 함.
   const dates = datesResult.ok
-    ? datesResult.dates.filter((date) => isAdmin || date <= today)
+    ? datesResult.dates
     : [];
   const dateList = [...dates];
   if (!dateList.includes(today)) dateList.push(today);

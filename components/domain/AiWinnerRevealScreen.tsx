@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
@@ -80,6 +80,66 @@ function markSeen(gameId: string): void {
   } catch {
     // ignore quota errors
   }
+}
+
+function ConfidenceDonut({ value, color }: { value: number; color: string }) {
+  const animateRef = useRef<SVGAnimateElement | null>(null);
+  const pct = Math.max(0, Math.min(100, Math.round(value * 100)));
+  const radius = 24;
+  const circumference = 2 * Math.PI * radius;
+  const filled = (pct / 100) * circumference;
+  const emptyDash = `0 ${circumference}`;
+  const filledDash = `${filled} ${circumference - filled}`;
+
+  const replay = () => {
+    animateRef.current?.beginElement();
+  };
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      animateRef.current?.beginElement();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [filledDash]);
+
+  return (
+    <button
+      type="button"
+      className="ai-reveal-confidence-donut"
+      aria-label={`승률 ${pct}% 애니메이션 다시 보기`}
+      onClick={replay}
+    >
+      <svg viewBox="0 0 58 58" width="58" height="58" aria-hidden="true">
+        <circle
+          className="ai-reveal-confidence-donut-track"
+          cx="29"
+          cy="29"
+          r={radius}
+        />
+        <circle
+          className="ai-reveal-confidence-donut-value"
+          cx="29"
+          cy="29"
+          r={radius}
+          stroke={color}
+          strokeDasharray={filledDash}
+        >
+          <animate
+            ref={animateRef}
+            attributeName="stroke-dasharray"
+            from={emptyDash}
+            to={filledDash}
+            dur="0.9s"
+            begin="indefinite"
+            fill="freeze"
+            calcMode="spline"
+            keySplines="0.16 1 0.3 1"
+          />
+        </circle>
+      </svg>
+      <span className="ai-reveal-confidence-donut-text">{pct}%</span>
+    </button>
+  );
 }
 
 /** 다수결·가중평균 계산. */
@@ -334,21 +394,28 @@ export function AiWinnerRevealScreen({
                       className={`ai-reveal-card ai-reveal-card-${p.ai_provider} ${visible ? "is-visible" : ""}`}
                       aria-hidden={!visible}
                     >
-                      <header className="ai-reveal-card-head">
-                        <span className="ai-reveal-card-ai">
-                          {AI_LABEL[p.ai_provider]}
-                          {p.model_name ? <span className="ai-reveal-card-model"> · {p.model_name}</span> : null}
-                        </span>
-                        {finished ? (
-                          <span className={`ai-reveal-card-result ${isCorrect ? "is-correct" : isWrong ? "is-wrong" : ""}`}>
-                            {isCorrect ? "적중" : isWrong ? "실패" : "—"}
+                      <div className="ai-reveal-card-prediction-head">
+                        <div className="ai-reveal-card-prediction-main">
+                          <span className="ai-reveal-card-ai">
+                            {AI_LABEL[p.ai_provider]}
+                            {p.model_name ? <span className="ai-reveal-card-model"> · {p.model_name}</span> : null}
                           </span>
-                        ) : null}
-                      </header>
-                      <div className="ai-reveal-card-pick">
-                        <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
-                        <span className="ai-reveal-card-team">{winnerTeam.shortName} 승</span>
-                        <span className="ai-reveal-card-confidence">{Math.round(p.confidence * 100)}%</span>
+                          <div className="ai-reveal-card-pick">
+                            <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
+                            <span className="ai-reveal-card-team">{winnerTeam.shortName} 승</span>
+                            {finished ? (
+                              <span className={`ai-reveal-card-result ${isCorrect ? "is-correct" : isWrong ? "is-wrong" : ""}`}>
+                                {isCorrect ? "적중" : isWrong ? "실패" : "—"}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="ai-reveal-card-prediction-side">
+                        <ConfidenceDonut
+                          value={p.confidence}
+                          color={winnerTeam.color}
+                        />
+                        </div>
                       </div>
                       <div className="ai-reveal-card-key">
                         <span className="ai-reveal-card-key-label">핵심</span>

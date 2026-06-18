@@ -1253,6 +1253,29 @@
   gap: 8px;
 }
 
+.phone-frame-light .ai-reveal-card-prediction-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.phone-frame-light .ai-reveal-card-prediction-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-reveal-card-prediction-side {
+  margin-left: auto;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
 .phone-frame-light .ai-reveal-card-ai {
   font-size: 14px;
   font-weight: 900;
@@ -1295,9 +1318,10 @@
 }
 
 .phone-frame-light .ai-reveal-card-team {
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 900;
   color: var(--bp-text);
+  line-height: 1.05;
 }
 
 .phone-frame-light .ai-reveal-card-confidence {
@@ -1306,6 +1330,55 @@
   font-weight: 900;
   color: var(--bp-accent);
   font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .ai-reveal-confidence-donut {
+  position: relative;
+  display: inline-flex;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phone-frame-light .ai-reveal-confidence-donut svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.phone-frame-light .ai-reveal-confidence-donut-track,
+.phone-frame-light .ai-reveal-confidence-donut-value {
+  fill: none;
+  stroke-width: 6;
+}
+
+.phone-frame-light .ai-reveal-confidence-donut-track {
+  stroke: #edf2f7;
+}
+
+.phone-frame-light .ai-reveal-confidence-donut-value {
+  stroke-linecap: round;
+}
+
+.phone-frame-light .ai-reveal-confidence-donut-text {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  font-weight: 950;
+  color: var(--bp-text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .ai-reveal-confidence-donut:active {
+  transform: scale(0.97);
 }
 
 .phone-frame-light .ai-reveal-card-key {

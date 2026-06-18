@@ -347,8 +347,6 @@ function AiStartersSection({
         </div>
       </div>
 
-      <StarterPitcherVsComparison home={starters.home} away={starters.away} />
-
       <div className="ai-stats-starter-metrics" ref={sectionRef}>
         {(["era", "whip", "k9", "bb9"] as const).map((metric, idx) => {
           const label =
@@ -395,6 +393,8 @@ function AiStartersSection({
           );
         })}
       </div>
+
+      <StarterPitcherVsComparison home={starters.home} away={starters.away} />
 
     </section>
   );
@@ -471,7 +471,7 @@ function StarterPitcherVsComparison({ home, away }: StarterPitcherVsComparisonPr
   const awayStats = away.vsOpponent;
 
   return (
-    <div className="mb-5 border-b border-dashed border-slate-200 pb-4">
+    <div className="mt-5 border-t border-dashed border-slate-200 pt-4">
       <VsMetricRow
         left={getVsOpponentLabel(homeStats)}
         label="상대전 표본"
