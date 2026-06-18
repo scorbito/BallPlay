@@ -8,7 +8,8 @@ import {
   type BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { listAiWeeklySeriesForWeek } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
-import { getUserTier } from "@/lib/auth/userTier";
+import { getUserTierByIdentity } from "@/lib/auth/userTier";
+import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -81,7 +82,8 @@ export default async function AiWinnerPredictPage({
   const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
 
   const supabase = createSupabaseServerClient();
-  const userTier = await getUserTier(supabase);
+  // 미들웨어 헤더 재사용 — auth.getUser() 네트워크 왕복 생략.
+  const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
   const isAdmin = userTier.tier === "admin";
   const adminClient = createSupabaseAdminClient();
   const latestContentDate = explicitDate

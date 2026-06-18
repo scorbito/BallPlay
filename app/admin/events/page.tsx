@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Activity, BarChart3, Clock, ListChecks, Percent, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { AdminBpAdjustPanel } from "@/components/domain/admin/AdminBpAdjustPanel";
-import { getUserTier } from "@/lib/auth/userTier";
+import { getUserTierByIdentity } from "@/lib/auth/userTier";
+import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { getPointBalance } from "@/lib/server/points";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -258,11 +259,12 @@ export default async function AdminEventsPage() {
   noStore();
 
   const serverClient = createSupabaseServerClient();
-  const { tier } = await getUserTier(serverClient);
+  const identity = getRequestIdentity();
+  const { tier } = await getUserTierByIdentity(serverClient, identity);
   if (tier !== "admin") notFound();
-  const { data: { user } } = await serverClient.auth.getUser();
-  if (!user) notFound();
-  const myBpBalance = await getPointBalance(user.id);
+  const userId = identity.userId;
+  if (!userId) notFound();
+  const myBpBalance = await getPointBalance(userId);
 
   const adminClient = createSupabaseAdminClient();
   const now = Date.now();

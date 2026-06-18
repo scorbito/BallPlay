@@ -7,7 +7,8 @@ import {
   type BpSimResultRow,
   type Sim1000AccuracyStats
 } from "@/lib/supabase/query-parts/bpSimResults";
-import { getUserTier } from "@/lib/auth/userTier";
+import { getUserTierByIdentity } from "@/lib/auth/userTier";
+import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { Sim1000ListScreen, type Sim1000GameCard } from "@/components/domain/Sim1000ListScreen";
 
 
@@ -37,7 +38,7 @@ export default async function Sim1000ListPage({
   const supabase = createSupabaseServerClient();
 
   // 운영자(admin) 여부 — "다시 돌리기" 버튼 노출 분기용. 일반 사용자는 false.
-  const userTier = await getUserTier(supabase);
+  const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
   const isAdmin = userTier.tier === "admin";
   const latestResult = explicitDate
     ? null

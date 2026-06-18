@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUserTier } from "@/lib/auth/userTier";
+import { getUserTierByIdentity } from "@/lib/auth/userTier";
+import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { AiBattleRevealScreen } from "@/components/domain/AiBattleRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type { BattlePredictionRow } from "@/components/domain/AiWinnerBattleTab";
@@ -53,7 +54,7 @@ export default async function AiBattleRevealPage({ params }: { params: { gameId:
   if (gameError || !gameRow) notFound();
 
   // 2. 권한 정보 획득
-  const userTier = await getUserTier(supabase);
+  const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
   const isAdmin = userTier.tier === "admin";
   const locked = userTier.tier === "guest";
 

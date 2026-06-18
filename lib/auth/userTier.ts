@@ -55,6 +55,37 @@ export async function getUserTier(client: SupabaseClient): Promise<UserTierResul
   return { tier: "free", user };
 }
 
+// 미들웨어 헤더로 이미 확보한 식별자(userId/isAnonymous)로 tier 판정 — auth.getUser() 생략판.
+// getUserTier와 동일 로직이되 네트워크 왕복(getUser) 없이 tier 테이블만 조회한다.
+// user 객체가 필요 없는 호출부(홈·예측 리스트 등)에서 요청당 getUser 1~2회를 절감.
+export async function getUserTierByIdentity(
+  client: SupabaseClient,
+  identity: { userId: string | null; isAnonymous: boolean }
+): Promise<UserTierResult> {
+  if (!identity.userId) return { tier: "guest", user: null };
+  if (identity.isAnonymous) return { tier: "guest", user: null };
+
+  const { data, error } = await client
+    .from("bp_user_tier")
+    .select("user_id, tier, expires_at")
+    .eq("user_id", identity.userId)
+    .maybeSingle();
+
+  if (error || !data) return { tier: "free", user: null };
+
+  const row = data as TierRow;
+  if (row.tier === "admin") return { tier: "admin", user: null };
+  if (row.tier === "pro") {
+    if (!row.expires_at) return { tier: "pro", user: null };
+    if (new Date(row.expires_at).getTime() > Date.now()) {
+      return { tier: "pro", user: null, expiresAt: row.expires_at };
+    }
+    return { tier: "free", user: null };
+  }
+
+  return { tier: "free", user: null };
+}
+
 // 등급별 라벨/색상 — UI 통일용
 export const TIER_LABEL: Record<UserTier, string> = {
   guest: "게스트",

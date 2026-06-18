@@ -7,7 +7,8 @@ import {
   type BpAiPredictionRow,
   type BpAiPredictionResultRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
-import { getUserTier } from "@/lib/auth/userTier";
+import { getUserTierByIdentity } from "@/lib/auth/userTier";
+import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import { getSimResultByGameId, type BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
@@ -71,7 +72,7 @@ export default async function AiWinnerRevealPage({
 
   // 운영자(admin) 는 09시 공개 전이라도 예측을 미리 볼 수 있어야 함 (컨텐츠 영상 제작용).
   // RLS 가 published_at <= now() 만 노출하므로 admin 만 service_role 클라이언트로 우회.
-  const userTier = await getUserTier(supabase);
+  const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
   const isAdmin = userTier.tier === "admin";
   const locked = userTier.tier === "guest";
   const today = kstToday();
