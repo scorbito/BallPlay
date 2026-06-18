@@ -29,10 +29,9 @@ type GameRow = {
 type Props = {
   games: GameRow[];
   selectedDate: string;
-  onDateChange: (date: string) => void;
 };
 
-export function AiBattleListScreen({ games: initialGames, selectedDate, onDateChange }: Props) {
+export function AiBattleListScreen({ games: initialGames, selectedDate }: Props) {
   const router = useRouter();
   const [games, setGames] = useState(initialGames);
 
@@ -65,14 +64,14 @@ export function AiBattleListScreen({ games: initialGames, selectedDate, onDateCh
     }
   };
 
-  // 날짜 이동 헬퍼
+  // 날짜 이동 헬퍼 — 정적 캐시되는 경로(/date/[date])로 이동.
   const navigateDate = (offset: number) => {
     const d = new Date(selectedDate);
     d.setDate(d.getDate() + offset);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
-    onDateChange(`${yyyy}-${mm}-${dd}`);
+    router.push(`/predict/battle/date/${yyyy}-${mm}-${dd}`);
   };
 
   // 한국 시간(KST) 기준 오늘 날짜 구하기 (자정 이후 UTC 오프셋 대응)
