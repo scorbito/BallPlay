@@ -103,7 +103,7 @@ export async function answerAiChat(question: string, history: AiChatHistoryMessa
     intent: "unknown",
     answer: "지금은 AI 승리팀 예측, 경기 일정/결과, 일일 리포트, 선수 스탯 질문에 답변할 수 있습니다.",
     actions: [
-      { label: "오늘 AI 예측 보기", href: `/predict/ai-winner?date=${dateISO}` },
+      { label: "오늘 AI 예측 보기", href: `/predict/ai-winner/date/${dateISO}` },
       { label: "일일 리포트 보기", href: `/daily-report?date=${dateISO}` }
     ]
   };
@@ -120,7 +120,7 @@ async function answerAiPrediction(
     return {
       intent: "ai_prediction",
       answer: `${dateISO}에는 ${team ? `${team.shortName} 관련 ` : ""}경기 일정이 없습니다.`,
-      actions: [{ label: "AI 예측 목록 보기", href: `/predict/ai-winner?date=${dateISO}` }]
+      actions: [{ label: "AI 예측 목록 보기", href: `/predict/ai-winner/date/${dateISO}` }]
     };
   }
 
@@ -134,7 +134,7 @@ async function answerAiPrediction(
     return {
       intent: "ai_prediction",
       answer: `${dateISO} ${team ? `${team.shortName} 경기의 ` : ""}AI 예측 데이터가 아직 준비되지 않았습니다.`,
-      actions: [{ label: "AI 예측 목록 보기", href: `/predict/ai-winner?date=${dateISO}` }]
+      actions: [{ label: "AI 예측 목록 보기", href: `/predict/ai-winner/date/${dateISO}` }]
     };
   }
 
@@ -166,7 +166,7 @@ async function answerAiPrediction(
   const actions: AiChatAction[] = [
     {
       label: games.length === 1 ? `${teamName(firstGame.awayTeamId)} vs ${teamName(firstGame.homeTeamId)} 예측 자세히 보기` : "AI 예측 목록 보기",
-      href: games.length === 1 ? `/predict/ai-winner/${firstGame.id}?date=${dateISO}` : `/predict/ai-winner?date=${dateISO}`
+      href: games.length === 1 ? `/predict/ai-winner/${firstGame.id}` : `/predict/ai-winner/date/${dateISO}`
     }
   ];
 
@@ -265,7 +265,7 @@ async function answerGameSchedule(
     answer,
     actions: [
       { label: "일정 자세히 보기", href: `/schedule?date=${dateISO}` },
-      { label: "AI 예측 보기", href: `/predict/ai-winner?date=${dateISO}` }
+      { label: "AI 예측 보기", href: `/predict/ai-winner/date/${dateISO}` }
     ]
   };
 }

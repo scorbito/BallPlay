@@ -211,7 +211,7 @@ export function AiWinnerRevealScreen({
     <AppShell
       activeTab="home"
       title="AI 분석 결과"
-      backHref={selectedDate ? `/predict/ai-winner?date=${selectedDate}` : `/predict/ai-winner?date=${game.gameDate}`}
+      backHref={`/predict/ai-winner/date/${selectedDate ?? game.gameDate}`}
       theme="light"
       wide={activeTab === "sim"}
       headerAction={
@@ -267,7 +267,7 @@ export function AiWinnerRevealScreen({
         {/* ── 돌려보기 / 경기 리포트 버튼 ── */}
         {finished ? (
           <Link
-            href={`/daily-report?date=${game.gameDate}&focus=${gameId}&backHref=${encodeURIComponent(`/predict/ai-winner/${gameId}?date=${selectedDate ?? game.gameDate}`)}`}
+            href={`/daily-report?date=${game.gameDate}&focus=${gameId}&backHref=${encodeURIComponent(`/predict/ai-winner/${gameId}`)}`}
             className="ai-reveal-report-btn"
           >
             경기 분석 리포트 보기

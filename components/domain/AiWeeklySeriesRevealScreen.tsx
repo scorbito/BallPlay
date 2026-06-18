@@ -29,7 +29,7 @@ const REVEAL_DELAY_MS = 700;
 export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: Props) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [visibleStage, setVisibleStage] = useState(0);
-  const backHref = `/predict/ai-winner?date=${backDate}`;
+  const backHref = `/predict/ai-winner/date/${backDate}`;
 
   // 초기 reveal 트리거
   useEffect(() => {

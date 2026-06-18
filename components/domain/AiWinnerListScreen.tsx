@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -53,9 +54,7 @@ type Props = {
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
   overallStats: AiOverallStats;
   providerStats: AiProviderStats[];
-  /** 운영자는 09시 공개 전이라도 잠금 해제 (컨텐츠 영상 제작용). */
-  isAdmin?: boolean;
-  /** 소프트 게이트 — 비로그인/익명이면 true. 매치업만 보이고 AI 픽·분석은 로그인 유도. */
+  /** 소프트 게이트 — 현재는 항상 false(게이트 제거). 컴포넌트 호환 위해 prop 유지. */
   locked?: boolean;
 };
 
@@ -246,14 +245,24 @@ export function AiWinnerListScreen({
   nextGameDate,
   overallStats,
   providerStats,
-  isAdmin = false,
   locked = false
 }: Props) {
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.
-  const loginHref = `/login?next=${encodeURIComponent(`/predict/ai-winner?date=${selectedDate}`)}`;
+  const loginHref = `/login?next=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`;
   // 클라이언트 hydration 후 게이트 계산 (SSR 미스매치 회피)
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+
+  // 레거시 호환 — 옛 ?date= 쿼리로 들어오면 정적 캐시되는 경로(/date/[date])로 교체.
+  // (페이지는 정적이라 searchParams 를 서버에서 안 읽으므로 클라이언트에서 처리.)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const qsDate = searchParams.get("date");
+    if (qsDate && /^\d{4}-\d{2}-\d{2}$/.test(qsDate) && qsDate !== selectedDate) {
+      router.replace(`/predict/ai-winner/date/${qsDate}`);
+    }
+  }, [searchParams, selectedDate, router]);
 
   // 홈 펄스 뱃지용 — 오늘자 AI 예측 페이지 진입 시 viewed 마킹.
   // 공개 전이거나 예측이 0건이면 마킹 안 함 (그땐 어차피 뱃지 안 떠야 함).
@@ -388,7 +397,7 @@ export function AiWinnerListScreen({
         <nav className="ai-winner-date-nav" aria-label="날짜 선택">
           {prevDate ? (
             <Link
-              href={`/predict/ai-winner?date=${prevDate}`}
+              href={`/predict/ai-winner/date/${prevDate}`}
               className="ai-winner-date-nav-btn"
               aria-label="이전 경기일"
               prefetch={false}
@@ -408,7 +417,7 @@ export function AiWinnerListScreen({
           </div>
           {nextDate ? (
             <Link
-              href={`/predict/ai-winner?date=${nextDate}`}
+              href={`/predict/ai-winner/date/${nextDate}`}
               className="ai-winner-date-nav-btn"
               aria-label="다음 경기일"
               prefetch={false}
@@ -653,7 +662,7 @@ export function AiWinnerListScreen({
                     ) : hasPredictions ? (
                       <div className="ai-winner-card-actions">
                         <Link
-                          href={`/predict/ai-winner/${g.id}?date=${selectedDate}`}
+                          href={`/predict/ai-winner/${g.id}`}
                           className="ai-winner-card-cta ai-winner-card-cta-main"
                           prefetch={false}
                         >
@@ -662,7 +671,7 @@ export function AiWinnerListScreen({
                         </Link>
                         {finished ? (
                           <Link
-                            href={`/daily-report?date=${selectedDate}&focus=${g.id}&backHref=${encodeURIComponent(`/predict/ai-winner?date=${selectedDate}`)}`}
+                            href={`/daily-report?date=${selectedDate}&focus=${g.id}&backHref=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`}
                             className="ai-winner-card-cta ai-winner-card-cta-report"
                             prefetch={false}
                           >
