@@ -27,7 +27,6 @@ import type {
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import type { BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
 import type { Sim1000LineupBatter } from "./AiWinnerSimTab";
-import { PageViewCounter } from "@/components/domain/PageViewCounter";
 import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
 
 
@@ -478,7 +477,6 @@ export function AiWinnerRevealScreen({
       {predictions.length > 0 ? (
         <ContentPointClaimButton contentType="ai_prediction" contentId={gameId} />
       ) : null}
-      <PageViewCounter />
     </AppShell>
   );
 }

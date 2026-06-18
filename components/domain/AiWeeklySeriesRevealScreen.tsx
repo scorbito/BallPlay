@@ -8,7 +8,6 @@ import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButt
 import { getTeam } from "@/lib/constants/teams";
 import type { AiProvider } from "@/lib/supabase/query-parts/bpAiPredictions";
 import type { AiWeeklySeries } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
-import { PageViewCounter } from "@/components/domain/PageViewCounter";
 
 
 const AI_LABEL: Record<AiProvider, string> = {
@@ -58,7 +57,6 @@ export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: 
             <p>시리즈 예측을 찾을 수 없어요.</p>
           </div>
         </section>
-        <PageViewCounter />
       </AppShell>
     );
   }
@@ -153,7 +151,6 @@ export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: 
           })}
         </ul>
       </section>
-      <PageViewCounter />
     </AppShell>
   );
 }

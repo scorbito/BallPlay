@@ -95,6 +95,45 @@ for (const name of starterNames) {
   console.log(`  ${name.padEnd(6)} [${data[0].team_id}] ip=${latest.ip} era=${latest.era} whip=${latest.whip} k9=${latest.k9} bb9=${latest.bb9} hr9=${latest.hr9} | 주간Δ ip=${deltaIp} er=${deltaEr}`);
 }
 
+// --- 3-1) 선발 투수 상대팀 전적 ---
+console.log("\n## 선발 투수 상대팀 전적");
+if (starterNames.size === 0) {
+  console.log("  선발 투수 이름이 없어 조회하지 않음");
+} else {
+  const { data: vsRows, error: vsErr } = await sb
+    .from("bp_pitcher_vs_team_stats")
+    .select("pitcher_name,team_id,opponent_team_id,games,starts,wins,losses,innings,era,whip,k9,bb9,last_game_date")
+    .in("pitcher_name", [...starterNames]);
+
+  if (vsErr) {
+    console.log("  bp_pitcher_vs_team_stats 조회 실패:", vsErr.message);
+  } else {
+    const formatVs = (row) => {
+      if (!row) return "상대 전적 없음";
+      return `${row.games}경기/${row.starts}선발 ${row.innings}이닝 ERA ${row.era ?? "-"} WHIP ${row.whip ?? "-"} K9 ${row.k9 ?? "-"} BB9 ${row.bb9 ?? "-"} | 최근 ${row.last_game_date}`;
+    };
+
+    for (const g of games) {
+      const awayVs = (vsRows ?? []).find(
+        (row) =>
+          row.pitcher_name === g.away_starter &&
+          row.team_id === g.away_team_id &&
+          row.opponent_team_id === g.home_team_id
+      );
+      const homeVs = (vsRows ?? []).find(
+        (row) =>
+          row.pitcher_name === g.home_starter &&
+          row.team_id === g.home_team_id &&
+          row.opponent_team_id === g.away_team_id
+      );
+
+      console.log(`  ${g.away_team_id}@${g.home_team_id}`);
+      console.log(`    ${g.away_team_id} ${g.away_starter ?? "-"} vs ${g.home_team_id}: ${formatVs(awayVs)}`);
+      console.log(`    ${g.home_team_id} ${g.home_starter ?? "-"} vs ${g.away_team_id}: ${formatVs(homeVs)}`);
+    }
+  }
+}
+
 // --- 4) 팀별 최근 10경기 라인업 — 타선 종합 평가용 ---
 console.log("\n## 팀별 최근 라인업 (가장 최근 1건)");
 const teamLineups = new Map();

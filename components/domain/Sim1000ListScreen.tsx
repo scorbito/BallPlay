@@ -9,7 +9,6 @@ import { getTeam } from "@/lib/constants/teams";
 import { SIM_1000_VIEWED_KEY } from "@/components/domain/HomeCardPulse";
 import { trackEvent } from "@/lib/analytics/events";
 import type { Sim1000AccuracyStats } from "@/lib/supabase/query-parts/bpSimResults";
-import { PageViewCounter } from "@/components/domain/PageViewCounter";
 
 
 /** /predict/sim-1000 목록 카드 1개 데이터. page 에서 row → card 매핑. */
@@ -368,7 +367,6 @@ export function Sim1000ListScreen({
           )}
         </section>
       </section>
-      <PageViewCounter />
     </AppShell>
   );
 }

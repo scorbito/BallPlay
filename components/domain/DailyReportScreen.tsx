@@ -19,7 +19,6 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { teams } from "@/lib/constants/teams";
 import type { KboDailyReport } from "@/lib/utils/dailyReportHelper";
-import { PageViewCounter } from "@/components/domain/PageViewCounter";
 import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
 
 
@@ -438,7 +437,6 @@ export function DailyReportScreen({
         )}
 
       </div>
-      <PageViewCounter />
     </AppShell>
   );
 }

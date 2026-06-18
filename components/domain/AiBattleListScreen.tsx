@@ -8,7 +8,6 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import type { GameStatus } from "@/lib/types/api-contracts";
-import { PageViewCounter } from "@/components/domain/PageViewCounter";
 
 
 type GameRow = {
@@ -223,7 +222,6 @@ export function AiBattleListScreen({ games: initialGames, selectedDate }: Props)
           )}
         </section>
       </section>
-      <PageViewCounter />
     </AppShell>
   );
 }
