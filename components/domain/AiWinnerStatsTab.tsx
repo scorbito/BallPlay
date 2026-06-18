@@ -483,14 +483,14 @@ function StarterPitcherVsComparison({ home, away }: StarterPitcherVsComparisonPr
         right={formatVsRecord(awayStats)}
       />
       <VsMetricRow
-        left={formatVsRate(homeStats)}
-        label="ERA/WHIP"
-        right={formatVsRate(awayStats)}
+        left={formatVsInningsEra(homeStats)}
+        label="이닝/ERA"
+        right={formatVsInningsEra(awayStats)}
       />
       <VsMetricRow
-        left={formatVsInningsStrikeouts(homeStats)}
-        label="이닝/탈삼진"
-        right={formatVsInningsStrikeouts(awayStats)}
+        left={formatVsWhipStrikeouts(homeStats)}
+        label="WHIP/탈삼진"
+        right={formatVsWhipStrikeouts(awayStats)}
       />
     </div>
   );
@@ -517,14 +517,14 @@ function formatVsRecord(stats: PitcherVsOpponentStats | null | undefined) {
   return `${stats.starts}경기 (${stats.wins}승 ${stats.losses}패)`;
 }
 
-function formatVsRate(stats: PitcherVsOpponentStats | null | undefined) {
+function formatVsInningsEra(stats: PitcherVsOpponentStats | null | undefined) {
   if (!stats || stats.games <= 0) return "-";
-  return `${formatDecimal(stats.era)} / ${formatDecimal(stats.whip)}`;
+  return `${formatInnings(stats.innings)}이닝 / ${formatDecimal(stats.era)}`;
 }
 
-function formatVsInningsStrikeouts(stats: PitcherVsOpponentStats | null | undefined) {
+function formatVsWhipStrikeouts(stats: PitcherVsOpponentStats | null | undefined) {
   if (!stats || stats.games <= 0) return "-";
-  return `${formatInnings(stats.innings)}이닝 · ${stats.strikeouts}K`;
+  return `${formatDecimal(stats.whip)} / ${stats.strikeouts}K`;
 }
 
 type BattingSectionProps = {
