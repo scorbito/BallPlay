@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import {
   getSimResultByGameId,
   type BpSimResultRow
@@ -12,16 +12,27 @@ import {
 import type { GameStatus } from "@/lib/types/api-contracts";
 
 
-export const dynamic = "force-dynamic";
+// ISR — 시뮬 상세는 유저 무관 공개 데이터라 60초 캐시(전체 라우트 캐시 → 서버 CPU 절감).
+export const revalidate = 60;
+
+// 최근 시뮬 결과 게임들을 미리 생성(warm). 나머지 gameId 는 on-demand 로 렌더 후 ISR 캐시.
+export async function generateStaticParams() {
+  const supabase = createSupabaseCacheClient(60);
+  const { data } = await supabase
+    .from("bp_sim_results")
+    .select("game_id")
+    .order("game_date", { ascending: false })
+    .limit(40);
+  return (data ?? []).map((r: { game_id: string }) => ({ gameId: r.game_id }));
+}
 
 export default async function Sim1000DetailPage({
   params
 }: {
   params: { gameId: string };
 }) {
-  const supabase = createSupabaseServerClient();
-
-  // 로그인 게이트 제거(2026-06-18) — 시뮬 상세도 누구나 열람. 로그인 유도는 경품/참여로 전환.
+  // 로그인 게이트 제거(2026-06-18) — 누구나 열람. 쿠키리스 캐시 클라이언트로 ISR 가능.
+  const supabase = createSupabaseCacheClient(60);
 
   type GameRow = {
     id: string;

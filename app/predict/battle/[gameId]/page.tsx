@@ -1,16 +1,26 @@
 import { notFound } from "next/navigation";
-import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUserTierByIdentity } from "@/lib/auth/userTier";
-import { getRequestIdentity } from "@/lib/auth/requestUser";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { AiBattleRevealScreen } from "@/components/domain/AiBattleRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type { BattlePredictionRow } from "@/components/domain/AiWinnerBattleTab";
 
 
-export const dynamic = "force-dynamic";
+// ISR — 배틀 상세는 유저 무관 공개 데이터라 60초 캐시(전체 라우트 캐시 → 서버 CPU 절감).
+export const revalidate = 60;
+
+// 최근 경기들을 미리 생성(warm). 나머지 gameId 는 on-demand 로 렌더 후 ISR 캐시.
+export async function generateStaticParams() {
+  const supabase = createSupabaseCacheClient(60);
+  const { data } = await supabase
+    .from("games")
+    .select("id")
+    .order("game_date", { ascending: false })
+    .limit(40);
+  return (data ?? []).map((g: { id: string }) => ({ gameId: g.id }));
+}
 
 export default async function AiBattleRevealPage({ params }: { params: { gameId: string } }) {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseCacheClient(60);
 
   // 1. 경기 정보 단일 조회 (games)
   type GameRow = {
@@ -53,15 +63,8 @@ export default async function AiBattleRevealPage({ params }: { params: { gameId:
 
   if (gameError || !gameRow) notFound();
 
-  // 2. 권한 정보 — 로그인 게이트 제거(2026-06-18). 운영자만 발행 전 미리보기 유지.
-  const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
-  const isAdmin = userTier.tier === "admin";
-
-  // 3. 배틀 예측 데이터 조회 (adminClient 사용)
-  const adminClient = createSupabaseAdminClient();
-
-  // 배틀 데이터 조회 쿼리 구성
-  const { data: dbPredictions, error: predError } = await adminClient
+  // 배틀 데이터 조회 — 동일 캐시 클라이언트 사용(ISR 캐시 대상).
+  const { data: dbPredictions, error: predError } = await supabase
     .from("bp_ai_battle_predictions")
     .select("id, game_id, game_date, target_side, ai_provider, model_name, predicted_winner_team_id, key_factor, one_liner, detailed_analysis, counter_argument, published_at, is_correct")
     .eq("game_id", params.gameId);
@@ -71,8 +74,9 @@ export default async function AiBattleRevealPage({ params }: { params: { gameId:
   const hasAway = rawPredictions.some((p) => p.target_side === "away");
   const isReleased = hasHome && hasAway;
 
-  // admin이 아닌 일반 사용자는 양팀 예측이 모두 등록되었을 때만 데이터 노출
-  const filteredPredictions = (isAdmin || isReleased) ? rawPredictions : [];
+  // 양팀(home/away) 예측이 모두 등록(발행)됐을 때만 노출. 미완성은 가림.
+  // (운영자 발행 전 미리보기는 ISR 캐시를 위해 제거 — 사전 확인은 localhost 에서.)
+  const filteredPredictions = isReleased ? rawPredictions : [];
 
   // 타입 매핑
   const predictions: BattlePredictionRow[] = filteredPredictions.map((p) => ({

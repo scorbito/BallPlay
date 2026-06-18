@@ -1,4 +1,5 @@
-﻿import type { Team, TeamStanding } from "@/lib/types/domain";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Team, TeamStanding } from "@/lib/types/domain";
 import type { GameRecord } from "@/lib/types/api-contracts";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -92,8 +93,13 @@ export async function listTeamsFromDb(): Promise<Team[]> {
   return data.map(toTeam);
 }
 
-export async function listGamesFromDb(params: { from: string; to: string; teamId?: string }): Promise<GameRecord[]> {
-  const supabase = createSupabaseAdminClient();
+export async function listGamesFromDb(
+  params: { from: string; to: string; teamId?: string },
+  // 기본은 admin(no-store) 클라이언트. ISR 캐시가 필요한 페이지는 createSupabaseCacheClient 를 넘겨
+  // 이 쿼리의 fetch 가 라우트를 동적으로 강제하지 않도록 한다.
+  client?: SupabaseClient
+): Promise<GameRecord[]> {
+  const supabase = client ?? createSupabaseAdminClient();
 
   // 선발 컬럼 포함 select — add-games-starters.sql 적용 전이면 42703(undefined_column)으로 실패하므로
   // 그 경우 기본 컬럼만으로 fallback. SQL 적용 후엔 fallback 분기 안 탐.
