@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { RankingsScreen } from "@/components/domain/RankingsScreen";
 import { listStandingsFromDb } from "@/lib/supabase/queries";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 
 export const revalidate = 300;
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RankingsPage() {
-  const standings = await listStandingsFromDb(new Date().getFullYear()).catch(() => []);
+  const standings = await listStandingsFromDb(new Date().getFullYear(), createSupabaseCacheClient(300)).catch(() => []);
 
   return <RankingsScreen standings={standings} />;
 }

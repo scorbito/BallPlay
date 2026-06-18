@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ScheduleScreen } from "@/components/domain/ScheduleScreen";
 import { listGamesFromDb } from "@/lib/supabase/queries";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import type { Game } from "@/lib/types/domain";
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default async function SchedulePage() {
   const end = new Date(year, 11, 31);
   const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-  const games = await listGamesFromDb({ from: fmt(start), to: fmt(end) })
+  const games = await listGamesFromDb({ from: fmt(start), to: fmt(end) }, createSupabaseCacheClient(300))
     .then((items) => items.map(toDomainGame))
     .catch(() => []);
 

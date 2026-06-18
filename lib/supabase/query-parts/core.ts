@@ -142,8 +142,9 @@ export async function listGamesFromDb(
   return rows.map(toGame);
 }
 
-export async function listStandingsFromDb(season: number): Promise<TeamStanding[]> {
-  const supabase = createSupabaseAdminClient();
+export async function listStandingsFromDb(season: number, client?: SupabaseClient): Promise<TeamStanding[]> {
+  // 기본 admin(no-store). ISR 페이지는 createSupabaseCacheClient 주입해 동적 강제 방지.
+  const supabase = client ?? createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("team_standings")
     .select("team_id,rank,wins,losses,draws,games_behind,form")

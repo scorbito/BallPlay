@@ -5,7 +5,7 @@ import {
   type Recent10CategoryId,
   type Recent10TopPlayer
 } from "@/lib/recent10/categories";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 
 type SnapshotKind = "batter" | "pitcher";
 
@@ -449,7 +449,7 @@ function applyCompetitionRanks(
 }
 
 async function loadSnapshotDates(): Promise<string[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseCacheClient(3600);
   const { count, error: countError } = await supabase
     .from("bp_player_stats_snapshots")
     .select("*", { count: "exact", head: true });
@@ -475,7 +475,7 @@ async function loadSnapshotDates(): Promise<string[]> {
 }
 
 async function loadRowsForDates(dates: string[]): Promise<SnapshotRow[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseCacheClient(3600);
   const { count, error: countError } = await supabase
     .from("bp_player_stats_snapshots")
     .select("*", { count: "exact", head: true })
@@ -583,7 +583,7 @@ function isRecent10CategoryId(value: string): value is Recent10CategoryId {
 }
 
 const loadPrecomputedRecent10 = cache(async (): Promise<PrecomputedRecent10 | null> => {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseCacheClient(3600);
   const { data: latestRows, error: latestError } = await supabase
     .from("bp_recent10_top_players")
     .select("snapshot_date")
