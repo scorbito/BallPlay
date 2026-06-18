@@ -423,9 +423,9 @@ function formatInnings(value: unknown) {
 
   const whole = Math.trunc(numeric);
   const thirds = Math.round((numeric - whole) * 3);
-  if (thirds <= 0) return `${whole}`;
-  if (thirds >= 3) return `${whole + 1}`;
-  return whole > 0 ? `${whole} ${thirds}/3` : `${thirds}/3`;
+  if (thirds <= 0) return `${whole}.0`;
+  if (thirds >= 3) return `${whole + 1}.0`;
+  return `${whole}.${thirds}`;
 }
 
 function getVsOpponentLabel(stats: PitcherVsOpponentStats | null | undefined) {
