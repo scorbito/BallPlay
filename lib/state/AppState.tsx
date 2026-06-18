@@ -38,6 +38,7 @@ type AppState = {
   publicScope: string;
   profile: UserProfile;
   isAnonymous: boolean;
+  isAdmin: boolean;
   toast: Toast | null;
   updateProfile: (profile: Partial<ProfileSettings>) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
@@ -94,6 +95,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   // user 식별 정보(프로필/익명여부)는 서버가 아니라 클라이언트에서 로드(/api/profile/me).
   // 루트 레이아웃이 headers()/getUser() 를 안 하게 만들어 전 페이지가 정적/ISR 캐시 가능해지도록 한 것.
   const [isAnonymous, setIsAnonymous] = useState(initialIsAnonymous);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [profileId, setProfileId] = useState<string | undefined>(initialProfile?.id);
   const [identityLoaded, setIdentityLoaded] = useState(Boolean(initialProfile));
   const [toast, setToast] = useState<Toast | null>(null);
@@ -143,6 +145,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
           setProfileId(p.id);
         }
         setIsAnonymous(Boolean(data.isAnonymous));
+        setIsAdmin(Boolean(data.isAdmin));
         setIdentityLoaded(true);
       } catch {
         if (!cancelled) setIdentityLoaded(true);
@@ -212,6 +215,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
     publicScope,
     profile: { ...profileSettings, interestTeamIds: profileSettings.interestTeamIds },
     isAnonymous,
+    isAdmin,
     toast,
     updateProfile: (nextProfile) => {
       setProfileSettings((current) => ({ ...current, ...nextProfile }));
@@ -226,7 +230,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
       showToast(`${scope}로 변경했어요.`);
     },
     showToast
-  }), [isAnonymous, notificationsEnabled, profileSettings, publicScope, toast]);
+  }), [isAnonymous, isAdmin, notificationsEnabled, profileSettings, publicScope, toast]);
 
   return (
     <AppStateContext.Provider value={value}>

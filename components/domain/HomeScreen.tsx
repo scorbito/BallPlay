@@ -1,6 +1,9 @@
+"use client";
+
 import { type ElementType, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAppState } from "@/lib/state/AppState";
 import {
   BarChart3,
   Bot,
@@ -358,23 +361,10 @@ const sections: HomeSection[] = [
   }
 ];
 
-type HomeScreenProps = {
-  /** Supabase Auth User 객체 */
-  user?: any;
-  /** 익명 로그인 상태 여부 — 현재는 마크업 변화 없지만 추후 분기용. */
-  isAnonymous?: boolean;
-  /** 관리자 여부 — 향후 홈 분기용. */
-  isAdmin?: boolean;
-};
-
-export function HomeScreen({
-  user = null,
-  isAnonymous = false,
-  isAdmin = false
-}: HomeScreenProps = {}) {
-  // ESLint/TS 미사용 경고 회피용 — 현재는 마크업에 직접 반영하지 않지만 향후 분기 대비 prop 유지.
-  void isAnonymous;
-  void user;
+export function HomeScreen() {
+  // isAdmin 은 AppState(클라이언트)에서 읽는다 — 홈 페이지를 정적/캐시 가능하게 하기 위해
+  // 서버에서 auth 를 읽지 않음. 운영자 전용 카드는 클라이언트 로드 후 노출된다.
+  const { isAdmin } = useAppState();
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
       <header className="play-hub-header">
