@@ -170,6 +170,67 @@ export async function GET(
     return data ?? [];
   };
 
+  const getPitcherVsTeamStats = async (
+    pitcherName: string | null,
+    teamId: string,
+    opponentTeamId: string
+  ) => {
+    if (!pitcherName?.trim()) return null;
+
+    const { data } = await adminClient
+      .from("bp_pitcher_game_logs")
+      .select("game_date, wins, losses, outs, hits_allowed, walks_hbp, strikeouts, earned_runs")
+      .eq("pitcher_name", pitcherName.trim())
+      .eq("team_id", teamId)
+      .eq("opponent_team_id", opponentTeamId)
+      .eq("pitcher_order", "1")
+      .order("game_date", { ascending: false });
+
+    if (!data?.length) return null;
+
+    const totals = data.reduce(
+      (acc, row) => {
+        acc.wins += Number(row.wins ?? 0);
+        acc.losses += Number(row.losses ?? 0);
+        acc.outs += Number(row.outs ?? 0);
+        acc.hitsAllowed += Number(row.hits_allowed ?? 0);
+        acc.walksHbp += Number(row.walks_hbp ?? 0);
+        acc.strikeouts += Number(row.strikeouts ?? 0);
+        acc.earnedRuns += Number(row.earned_runs ?? 0);
+        return acc;
+      },
+      {
+        wins: 0,
+        losses: 0,
+        outs: 0,
+        hitsAllowed: 0,
+        walksHbp: 0,
+        strikeouts: 0,
+        earnedRuns: 0
+      }
+    );
+
+    const rate = (numerator: number, denominator: number) =>
+      denominator > 0 ? Math.round((numerator / denominator) * 100) / 100 : null;
+
+    return {
+      games: data.length,
+      starts: data.length,
+      wins: totals.wins,
+      losses: totals.losses,
+      saves: 0,
+      holds: 0,
+      outs: totals.outs,
+      innings: Math.round((totals.outs / 3) * 1000) / 1000,
+      era: rate(totals.earnedRuns * 27, totals.outs),
+      whip: rate((totals.hitsAllowed + totals.walksHbp) * 3, totals.outs),
+      k9: rate(totals.strikeouts * 27, totals.outs),
+      bb9: rate(totals.walksHbp * 27, totals.outs),
+      strikeouts: totals.strikeouts,
+      last_game_date: data[0]?.game_date ?? null
+    };
+  };
+
   // 병렬 데이터 조회 수행
   const [
     homeBatting,
@@ -177,14 +238,18 @@ export async function GET(
     homeRecent,
     awayRecent,
     standings,
-    h2hGames
+    h2hGames,
+    homeStarterVsOpponent,
+    awayStarterVsOpponent
   ] = await Promise.all([
     getTeamBattingAvg(homeTeamId),
     getTeamBattingAvg(awayTeamId),
     getRecentGames(homeTeamId),
     getRecentGames(awayTeamId),
     getTeamStandings(),
-    getH2HRecord()
+    getH2HRecord(),
+    getPitcherVsTeamStats(homeStarterName, homeTeamId, awayTeamId),
+    getPitcherVsTeamStats(awayStarterName, awayTeamId, homeTeamId)
   ]);
 
   // 상대전적 가공
@@ -252,7 +317,8 @@ export async function GET(
         era: homeStarterStats.era,
         whip: homeStarterStats.whip,
         k9: homeStarterStats.k9,
-        bb9: homeStarterStats.bb9
+        bb9: homeStarterStats.bb9,
+        vsOpponent: homeStarterVsOpponent
       },
       away: {
         name: awayStarterStats.name,
@@ -261,7 +327,8 @@ export async function GET(
         era: awayStarterStats.era,
         whip: awayStarterStats.whip,
         k9: awayStarterStats.k9,
-        bb9: awayStarterStats.bb9
+        bb9: awayStarterStats.bb9,
+        vsOpponent: awayStarterVsOpponent
       }
     },
     batting: {

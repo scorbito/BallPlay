@@ -22,6 +22,24 @@ type StarterStats = {
   whip: number;
   k9: number;
   bb9: number;
+  vsOpponent?: PitcherVsOpponentStats | null;
+};
+
+type PitcherVsOpponentStats = {
+  games: number;
+  starts: number;
+  wins: number;
+  losses: number;
+  saves: number;
+  holds: number;
+  outs: number;
+  innings: number;
+  era: number | null;
+  whip: number | null;
+  k9: number | null;
+  bb9: number | null;
+  strikeouts: number;
+  last_game_date: string | null;
 };
 
 type BattingStats = {
@@ -311,25 +329,25 @@ function AiStartersSection({
       </h3>
       <div className="ai-stats-starter-header">
         <div className="ai-stats-starter-profile text-left">
-          <span className="starter-label-team" style={{ color: homeColor }}>
-            {homeTeamName}
-          </span>
-          <strong className="starter-label-name">{starters.home.name}</strong>
-          <span className="starter-label-record">
-            {formatStarterRecord(starters.home)}
-          </span>
+          <StarterPitcherIdentity
+            align="left"
+            teamName={homeTeamName}
+            color={homeColor}
+            starter={starters.home}
+          />
         </div>
         <span className="starter-vs-badge">VS</span>
         <div className="ai-stats-starter-profile text-right">
-          <span className="starter-label-team" style={{ color: awayColor }}>
-            {awayTeamName}
-          </span>
-          <strong className="starter-label-name">{starters.away.name}</strong>
-          <span className="starter-label-record">
-            {formatStarterRecord(starters.away)}
-          </span>
+          <StarterPitcherIdentity
+            align="right"
+            teamName={awayTeamName}
+            color={awayColor}
+            starter={starters.away}
+          />
         </div>
       </div>
+
+      <StarterPitcherVsComparison home={starters.home} away={starters.away} />
 
       <div className="ai-stats-starter-metrics" ref={sectionRef}>
         {(["era", "whip", "k9", "bb9"] as const).map((metric, idx) => {
@@ -377,6 +395,7 @@ function AiStartersSection({
           );
         })}
       </div>
+
     </section>
   );
 }
@@ -386,6 +405,126 @@ function AiStartersSection({
 // ──────────────────────────────────────────────────────────
 function formatStarterRecord(starter: StarterStats) {
   return `${starter.wins ?? 0}승 ${starter.losses ?? 0}패`;
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  const numeric = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function formatDecimal(value: unknown, digits = 2) {
+  const numeric = toFiniteNumber(value);
+  return numeric === null ? "-" : numeric.toFixed(digits);
+}
+
+function formatInnings(value: unknown) {
+  const numeric = toFiniteNumber(value);
+  if (numeric === null) return "-";
+
+  const whole = Math.trunc(numeric);
+  const thirds = Math.round((numeric - whole) * 3);
+  if (thirds <= 0) return `${whole}`;
+  if (thirds >= 3) return `${whole + 1}`;
+  return whole > 0 ? `${whole} ${thirds}/3` : `${thirds}/3`;
+}
+
+function getVsOpponentLabel(stats: PitcherVsOpponentStats | null | undefined) {
+  if (!stats || stats.games <= 0) return "상대전 기록 없음";
+  if (stats.outs < 15) return "상대전 표본 부족";
+  return "상대전 기록";
+}
+
+type StarterPitcherIdentityProps = {
+  align: "left" | "right";
+  teamName: string;
+  color: string;
+  starter: StarterStats;
+};
+
+function StarterPitcherIdentity({
+  align,
+  teamName,
+  color,
+  starter
+}: StarterPitcherIdentityProps) {
+  const textAlign = align === "right" ? "text-right" : "text-left";
+  const itemAlign = align === "right" ? "items-end" : "items-start";
+
+  return (
+    <div className={`flex flex-col gap-1.5 ${itemAlign} ${textAlign}`}>
+      <span className="starter-label-team" style={{ color }}>
+        {teamName}
+      </span>
+      <strong className="starter-label-name">{starter.name}</strong>
+      <span className="starter-label-record">{formatStarterRecord(starter)}</span>
+    </div>
+  );
+}
+
+type StarterPitcherVsComparisonProps = {
+  home: StarterStats;
+  away: StarterStats;
+};
+
+function StarterPitcherVsComparison({ home, away }: StarterPitcherVsComparisonProps) {
+  const homeStats = home.vsOpponent;
+  const awayStats = away.vsOpponent;
+
+  return (
+    <div className="mb-5 border-b border-dashed border-slate-200 pb-4">
+      <VsMetricRow
+        left={getVsOpponentLabel(homeStats)}
+        label="상대전 표본"
+        right={getVsOpponentLabel(awayStats)}
+      />
+      <VsMetricRow
+        left={formatVsRecord(homeStats)}
+        label="상대전"
+        right={formatVsRecord(awayStats)}
+      />
+      <VsMetricRow
+        left={formatVsRate(homeStats)}
+        label="ERA/WHIP"
+        right={formatVsRate(awayStats)}
+      />
+      <VsMetricRow
+        left={formatVsInningsStrikeouts(homeStats)}
+        label="이닝/탈삼진"
+        right={formatVsInningsStrikeouts(awayStats)}
+      />
+    </div>
+  );
+}
+
+type VsMetricRowProps = {
+  left: string;
+  label: string;
+  right: string;
+};
+
+function VsMetricRow({ left, label, right }: VsMetricRowProps) {
+  return (
+    <div className="grid grid-cols-[1fr_96px_1fr] items-center gap-2 py-1 text-xs font-extrabold text-slate-500">
+      <span className="min-w-0 text-left leading-snug">{left}</span>
+      <span className="text-center text-slate-400">{label}</span>
+      <span className="min-w-0 text-right leading-snug">{right}</span>
+    </div>
+  );
+}
+
+function formatVsRecord(stats: PitcherVsOpponentStats | null | undefined) {
+  if (!stats || stats.games <= 0) return "-";
+  return `${stats.starts}경기 (${stats.wins}승 ${stats.losses}패)`;
+}
+
+function formatVsRate(stats: PitcherVsOpponentStats | null | undefined) {
+  if (!stats || stats.games <= 0) return "-";
+  return `${formatDecimal(stats.era)} / ${formatDecimal(stats.whip)}`;
+}
+
+function formatVsInningsStrikeouts(stats: PitcherVsOpponentStats | null | undefined) {
+  if (!stats || stats.games <= 0) return "-";
+  return `${formatInnings(stats.innings)}이닝 · ${stats.strikeouts}K`;
 }
 
 type BattingSectionProps = {
