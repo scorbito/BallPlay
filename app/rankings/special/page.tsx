@@ -348,7 +348,7 @@ export default function SpecialRankingsPage() {
   });
 
   return (
-    <AppShell activeTab="home" title="별별 팀 랭킹" theme="light" backHref="/" wide>
+    <AppShell activeTab="home" title="팀 별별랭킹" theme="light" backHref="/" wide>
       <div className="w-full max-w-2xl mx-auto px-4 py-5 bg-[#f8fafc] min-h-screen phone-frame-light">
         <header className="mb-4 text-center">
           <h1 className="text-2xl font-black text-slate-800 tracking-tight flex justify-center items-center gap-2">
@@ -382,7 +382,7 @@ export default function SpecialRankingsPage() {
         </div>
 
         <div className="mb-4">
-          <div className="flex flex-wrap gap-1.5 pb-2" role="tablist" aria-label="별별 팀 랭킹 세부 항목">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 pb-2" role="tablist" aria-label="별별 팀 랭킹 세부 항목">
             {visibleTabs.map((tab) => {
               const isActive = tab.id === activeTab;
               const label = tab.label.replace(" TOP", "");
@@ -393,10 +393,10 @@ export default function SpecialRankingsPage() {
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`h-8 shrink-0 rounded-lg border px-3 text-xs font-black transition ${
+                  className={`relative h-7 shrink-0 px-0.5 text-xs font-black transition ${
                     isActive
-                      ? "border-[#FF2A7A] bg-pink-50 text-[#FF2A7A] shadow-sm"
-                      : "border-slate-200 bg-white text-slate-500"
+                      ? "text-[#FF2A7A] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-[#FF2A7A]"
+                      : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
                   {label}
@@ -433,12 +433,12 @@ export default function SpecialRankingsPage() {
               let badgeNode = <span className="text-slate-400 font-extrabold text-sm">{rank}</span>;
               let rowClass = "border-b border-slate-100 hover:bg-slate-50/60 transition-colors";
               if (rank === 1) {
-                badgeNode = <span className="text-2xl">🥇</span>;
+                badgeNode = <span className="text-[30px] leading-none">🥇</span>;
                 rowClass += " bg-amber-50/30";
               } else if (rank === 2) {
-                badgeNode = <span className="text-2xl">🥈</span>;
+                badgeNode = <span className="text-[26px] leading-none">🥈</span>;
               } else if (rank === 3) {
-                badgeNode = <span className="text-2xl">🥉</span>;
+                badgeNode = <span className="text-[24px] leading-none">🥉</span>;
               }
 
               return (

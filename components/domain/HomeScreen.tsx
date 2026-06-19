@@ -230,7 +230,7 @@ const sections: HomeSection[] = [
         title: "팀 별별랭킹",
         description: "재미있고 독특한 10가지 구단 랭킹",
         icon: Trophy,
-        iconImage: "/icons/menu/predict-ranking.png",
+        iconImage: "/icons/menu/team-rank.png",
         available: true,
         badge: "NEW"
       },
