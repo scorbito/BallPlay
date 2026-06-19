@@ -57,6 +57,10 @@ type HitterSummary = {
   hits: number;
   rbi: number;
   runs: number;
+  doubles: number;
+  triples: number;
+  homers: number;
+  gidp: number;
   walks: number;
   hbp: number;
   strikeouts: number;
@@ -295,6 +299,10 @@ function parseHitterTotals(table: GridTable): HitterSummary {
       runs: 0,
       walks: 0,
       hbp: 0,
+      doubles: 0,
+      triples: 0,
+      homers: 0,
+      gidp: 0,
       strikeouts: 0,
       sacrificeHits: 0,
       sacrificeFlies: 0
@@ -303,15 +311,22 @@ function parseHitterTotals(table: GridTable): HitterSummary {
   return totals;
 }
 
-function countHitterEvents(table: GridTable): Pick<HitterSummary, "walks" | "hbp" | "strikeouts" | "sacrificeHits" | "sacrificeFlies"> {
+function countHitterEvents(table: GridTable): Pick<
+  HitterSummary,
+  "walks" | "hbp" | "strikeouts" | "sacrificeHits" | "sacrificeFlies" | "doubles" | "triples" | "homers"
+> {
   const text = (table.rows ?? []).flatMap(rowCells).join(" ");
+  const cells = (table.rows ?? []).flatMap(rowCells);
   const matchCount = (pattern: RegExp) => (text.match(pattern) ?? []).length;
   return {
     walks: matchCount(/(?:볼넷|4구)/g),
     hbp: matchCount(/(?:사구|死구|몸에맞는공)/g),
     strikeouts: matchCount(/삼진/g),
     sacrificeHits: matchCount(/(?:희번|희생번트)/g),
-    sacrificeFlies: matchCount(/(?:희비|희생플라이)/g)
+    sacrificeFlies: matchCount(/(?:희비|희생플라이)/g),
+    doubles: cells.filter((cell) => /(?:2루타|[좌중우]2)/.test(cell)).length,
+    triples: cells.filter((cell) => /(?:3루타|[좌중우]3)/.test(cell)).length,
+    homers: cells.filter((cell) => /홈/.test(cell)).length
   };
 }
 
@@ -433,10 +448,10 @@ function buildRecord(input: {
     hbp: input.hitters.hbp,
     strikeouts: input.hitters.strikeouts,
     rbi: input.hitters.rbi,
-    doubles: input.special.doubles,
-    triples: input.special.triples,
-    homers: input.special.homers,
-    total_bases: totalBases(input.score.hits, input.special.doubles, input.special.triples, input.special.homers),
+    doubles: input.hitters.doubles,
+    triples: input.hitters.triples,
+    homers: input.hitters.homers,
+    total_bases: totalBases(input.score.hits, input.hitters.doubles, input.hitters.triples, input.hitters.homers),
     gidp: input.special.gidp,
     stolen_bases: input.special.stolenBases,
     caught_stealing: input.special.caughtStealing,
