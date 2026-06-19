@@ -545,7 +545,7 @@ export function HomeScreen() {
         });
 
         // Keep the two highlighted ranking cards first in the visible flat menu.
-        const highlightedIds = ["special-rankings", "player-special-rankings", "recent10-top"];
+        const highlightedIds = ["recent10-top", "special-rankings", "player-special-rankings"];
         const highlightedCards: HomeCard[] = [];
         highlightedIds.forEach((id) => {
           const cardIdx = bottomCards.findIndex((c) => c.id === id);
