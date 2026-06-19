@@ -8,6 +8,8 @@ import { useAppState } from "@/lib/state/AppState";
 import { POINT_LABEL, POINT_REWARDS } from "@/lib/points/config";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 
 function hexToRgb(hex: string): [number, number, number] {
   const m = hex.replace("#", "");
@@ -99,24 +101,44 @@ export function AiWinnerBattleTab({
 
   const handleVote = async (side: "home" | "away") => {
     if (votedSide || !voteLoaded) return;
+    const previousVoteCount = voteCount;
     setVotedSide(side);
     setVoteCount((prev) => ({ ...prev, [side]: prev[side] + 1 }));
     try {
+      const client = createSupabaseBrowserClient();
+      await ensureAnonymousClient(client);
       const res = await fetch(`/api/predict/ai-winner/${gameId}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ side })
       });
-      if (res.ok) {
-        const d = await res.json();
-        setVoteCount({ home: d.home ?? 0, away: d.away ?? 0 });
-        if (d.pointAward?.awarded) {
-          emitPointBalanceUpdated(d.pointAward.balance);
-          showToast(`+${d.pointAward.amount}${POINT_LABEL} 획득!`);
-        }
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(d.error || "투표 처리에 실패했어요.");
       }
-    } catch {
-      // best-effort
+
+      setVoteCount({ home: d.home ?? 0, away: d.away ?? 0 });
+      const pointBalance = Number(d.pointAward?.balance);
+      if (Number.isFinite(pointBalance)) {
+        emitPointBalanceUpdated(pointBalance);
+      }
+      if (d.pointAward?.awarded) {
+        showToast(`+${d.pointAward.amount}${POINT_LABEL} 획득!\n승부맞대결 투표 보상`);
+      } else if (d.pointAward?.already_claimed) {
+        showToast("이 경기 투표 BP는 이미 받았어요.");
+      } else if (d.pointAward?.ineligibleReason) {
+        showToast(d.pointAward.ineligibleReason);
+      } else if (d.pointAward?.error) {
+        showToast("투표는 반영됐지만 BP 지급 확인에 실패했어요.");
+      } else if (d.pointAward) {
+        showToast("투표는 반영됐지만 BP 보상은 지급되지 않았어요.");
+      } else {
+        showToast("투표가 반영되었습니다.");
+      }
+    } catch (err) {
+      setVotedSide(null);
+      setVoteCount(previousVoteCount);
+      showToast(err instanceof Error ? err.message : "투표 처리 중 오류가 발생했어요.");
     }
   };
 

@@ -5,10 +5,29 @@
       "team_id": "lg",
       "season": 2026,
       "rank": 1,
-      "wins": 42,
+      "wins": 43,
       "losses": 26,
       "draws": 0,
       "games_behind": "-",
+      "form": [
+        "win",
+        "win",
+        "lose",
+        "lose",
+        "win"
+      ],
+      "source_payload": null,
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
+    },
+    {
+      "id": "395620e5-ae39-4b8b-91b6-b0c5cfdcbd17",
+      "team_id": "kt",
+      "season": 2026,
+      "rank": 2,
+      "wins": 40,
+      "losses": 27,
+      "draws": 1,
+      "games_behind": "2",
       "form": [
         "win",
         "win",
@@ -17,26 +36,7 @@
         "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
-    },
-    {
-      "id": "395620e5-ae39-4b8b-91b6-b0c5cfdcbd17",
-      "team_id": "kt",
-      "season": 2026,
-      "rank": 2,
-      "wins": 40,
-      "losses": 26,
-      "draws": 1,
-      "games_behind": "1",
-      "form": [
-        "win",
-        "win",
-        "win",
-        "win",
-        "lose"
-      ],
-      "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "9b13295a-2882-483d-b9d8-f2da7db8f43d",
@@ -45,36 +45,36 @@
       "rank": 3,
       "wins": 39,
       "losses": 27,
-      "draws": 1,
-      "games_behind": "2",
+      "draws": 2,
+      "games_behind": "2.5",
       "form": [
         "win",
         "win",
         "win",
         "win",
-        "win"
+        "draw"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "726b48e4-a238-43e5-925f-e025acc1dac9",
       "team_id": "kia",
       "season": 2026,
       "rank": 4,
-      "wins": 36,
+      "wins": 37,
       "losses": 32,
       "draws": 1,
       "games_behind": "6",
       "form": [
+        "lose",
+        "lose",
         "win",
-        "lose",
-        "lose",
         "win",
         "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "b3b63f28-14de-41d0-8336-c8141d472f92",
@@ -82,18 +82,18 @@
       "season": 2026,
       "rank": 5,
       "wins": 34,
-      "losses": 33,
+      "losses": 34,
       "draws": 2,
-      "games_behind": "7.5",
+      "games_behind": "8.5",
       "form": [
-        "lose",
         "win",
         "lose",
         "lose",
-        "win"
+        "win",
+        "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "8f1be603-49eb-445c-86d2-5244fefb3517",
@@ -102,74 +102,74 @@
       "rank": 6,
       "wins": 32,
       "losses": 34,
-      "draws": 1,
-      "games_behind": "9",
+      "draws": 2,
+      "games_behind": "9.5",
       "form": [
         "lose",
         "lose",
         "lose",
         "lose",
-        "lose"
+        "draw"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "c51f14a3-5e3b-48b1-b4e7-fc9a789f6415",
       "team_id": "nc",
       "season": 2026,
-      "rank": 7,
-      "wins": 31,
+      "rank": 6,
+      "wins": 32,
       "losses": 34,
       "draws": 1,
       "games_behind": "9.5",
       "form": [
         "lose",
-        "lose",
+        "win",
         "win",
         "win",
         "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
-    },
-    {
-      "id": "b8461109-d296-4b4a-a73b-256534f1591b",
-      "team_id": "ssg",
-      "season": 2026,
-      "rank": 8,
-      "wins": 27,
-      "losses": 39,
-      "draws": 2,
-      "games_behind": "14",
-      "form": [
-        "lose",
-        "lose",
-        "lose",
-        "lose",
-        "draw"
-      ],
-      "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "c673e432-d8e3-4c9b-8fe7-eb4ee6ffa003",
       "team_id": "lotte",
       "season": 2026,
-      "rank": 9,
-      "wins": 26,
+      "rank": 8,
+      "wins": 27,
       "losses": 39,
       "draws": 2,
       "games_behind": "14.5",
       "form": [
         "lose",
-        "lose",
         "win",
         "win",
-        "draw"
+        "draw",
+        "win"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
+    },
+    {
+      "id": "b8461109-d296-4b4a-a73b-256534f1591b",
+      "team_id": "ssg",
+      "season": 2026,
+      "rank": 9,
+      "wins": 27,
+      "losses": 40,
+      "draws": 2,
+      "games_behind": "15",
+      "form": [
+        "lose",
+        "lose",
+        "lose",
+        "draw",
+        "lose"
+      ],
+      "source_payload": null,
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     },
     {
       "id": "0d39e8d0-fad6-4004-b78b-506eacdce13d",
@@ -177,25 +177,25 @@
       "season": 2026,
       "rank": 10,
       "wins": 26,
-      "losses": 43,
+      "losses": 44,
       "draws": 1,
-      "games_behind": "16.5",
+      "games_behind": "17.5",
       "form": [
         "win",
-        "win",
+        "lose",
         "lose",
         "lose",
         "lose"
       ],
       "source_payload": null,
-      "synced_at": "2026-06-18T13:14:43.776+00:00"
+      "synced_at": "2026-06-19T15:12:19.408+00:00"
     }
   ],
   "statsSummary": {
     "lg": {
       "team_id": "lg",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.745",
       "avgAvg": "0.265",
       "avgEra": "12.78",
@@ -307,8 +307,8 @@
     },
     "kt": {
       "team_id": "kt",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.804",
       "avgAvg": "0.285",
       "avgEra": "10.19",
@@ -420,8 +420,8 @@
     },
     "samsung": {
       "team_id": "samsung",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.808",
       "avgAvg": "0.298",
       "avgEra": "3.31",
@@ -533,8 +533,8 @@
     },
     "kia": {
       "team_id": "kia",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.752",
       "avgAvg": "0.268",
       "avgEra": "4.17",
@@ -646,8 +646,8 @@
     },
     "hanwha": {
       "team_id": "hanwha",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.764",
       "avgAvg": "0.281",
       "avgEra": "6.21",
@@ -759,8 +759,8 @@
     },
     "doosan": {
       "team_id": "doosan",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.732",
       "avgAvg": "0.265",
       "avgEra": "4.62",
@@ -872,8 +872,8 @@
     },
     "nc": {
       "team_id": "nc",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.740",
       "avgAvg": "0.265",
       "avgEra": "4.76",
@@ -985,8 +985,8 @@
     },
     "ssg": {
       "team_id": "ssg",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.770",
       "avgAvg": "0.272",
       "avgEra": "8.05",
@@ -1098,8 +1098,8 @@
     },
     "lotte": {
       "team_id": "lotte",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.740",
       "avgAvg": "0.273",
       "avgEra": "3.95",
@@ -1211,8 +1211,8 @@
     },
     "kiwoom": {
       "team_id": "kiwoom",
-      "batterDate": "2026-06-18",
-      "pitcherDate": "2026-06-18",
+      "batterDate": "2026-06-19",
+      "pitcherDate": "2026-06-19",
       "avgOps": "0.664",
       "avgAvg": "0.234",
       "avgEra": "6.09",

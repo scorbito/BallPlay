@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { isKnownStadium, resolveDisplayStadium } from "@/lib/constants/stadiums";
 import { fetchGamesForDate, type RawGame } from "./fetchGames";
 
 type KboDateInput = Date | string;
@@ -16,7 +17,7 @@ function toRow(game: RawGame) {
     external_id: game.externalId,
     game_date: game.gameDate,
     game_time: game.gameTime,
-    stadium: game.stadium,
+    stadium: resolveDisplayStadium(game.stadium, game.homeTeamId),
     home_team_id: game.homeTeamId,
     away_team_id: game.awayTeamId,
     home_score: game.homeScore,
@@ -88,7 +89,7 @@ export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> 
       innings: row.innings,
       starter_fetched_at: new Date().toISOString()
     };
-    if (hasKnownStadium(row.stadium)) payload.stadium = row.stadium;
+    if (isKnownStadium(row.stadium)) payload.stadium = row.stadium;
     if (row.home_starter !== null) payload.home_starter = row.home_starter;
     if (row.away_starter !== null) payload.away_starter = row.away_starter;
 

@@ -272,18 +272,27 @@ const TEAM_NAMES: Record<string, string> = {
   hanwha: "한화 이글스"
 };
 
-const SPECIAL_RANKINGS_CACHE_KEY = "special-rankings:v3";
+const SPECIAL_RANKINGS_CACHE_KEY = "special-rankings:v4";
 const SPECIAL_RANKINGS_CACHE_TTL_MS = 10 * 60 * 1000;
 
 type SpecialRankingsCache = {
   savedAt: number;
   rows: RankingRow[];
+  asOfDate?: string;
 };
+
+function formatAsOfDate(value: string) {
+  if (!value) return "";
+  const date = new Date(`${value}T00:00:00+09:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return `${date.getMonth() + 1}.${date.getDate()} 기준`;
+}
 
 export default function SpecialRankingsPage() {
   const [activeCategory, setActiveCategory] = useState<CategoryId>("offense");
   const [activeTab, setActiveTab] = useState<keyof RankingRow>("total_bases");
   const [data, setData] = useState<RankingRow[]>([]);
+  const [asOfDate, setAsOfDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -302,6 +311,7 @@ export default function SpecialRankingsPage() {
 
           if (isFresh) {
             setData(cached.rows);
+            setAsOfDate(cached.asOfDate || "");
             return;
           }
         }
@@ -310,9 +320,10 @@ export default function SpecialRankingsPage() {
         const json = await res.json();
         if (json.ok && Array.isArray(json.rows)) {
           setData(json.rows);
+          setAsOfDate(json.asOfDate || "");
           window.sessionStorage.setItem(
             SPECIAL_RANKINGS_CACHE_KEY,
-            JSON.stringify({ savedAt: Date.now(), rows: json.rows })
+            JSON.stringify({ savedAt: Date.now(), rows: json.rows, asOfDate: json.asOfDate || "" })
           );
         } else {
           throw new Error(json.error || "데이터를 로드하지 못했습니다.");
@@ -356,6 +367,7 @@ export default function SpecialRankingsPage() {
           </h1>
           <p className="text-xs font-semibold text-slate-500 mt-1">
             팀별로 강한 부분과 약한 부분을 한눈에 확인하세요
+            {asOfDate ? `(${formatAsOfDate(asOfDate)})` : ""}
           </p>
         </header>
 

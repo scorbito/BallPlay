@@ -71,8 +71,19 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  let persistedSide = side;
+  if (error?.code === "23505") {
+    const { data: existingVote } = await supabase
+      .from("bp_ai_battle_votes")
+      .select("voted_side")
+      .eq("game_id", gameId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    persistedSide = (existingVote?.voted_side as "home" | "away" | undefined) ?? side;
+  }
+
   let pointAward = null;
-  if (!error) {
+  if (!error || error.code === "23505") {
     const { data: published } = await supabase
       .from("bp_ai_battle_predictions")
       .select("published_at")
@@ -94,12 +105,20 @@ export async function POST(req: NextRequest, { params }: Params) {
         referenceId: gameId,
         rewardKey: `ai_battle_vote:${gameId}`,
         rewardDate
-      }).catch(() => null);
+      }).catch((awardError) => ({
+        awarded: false,
+        amount: 0,
+        capped: false,
+        error: awardError instanceof Error ? awardError.message : "BP reward failed"
+      }));
     } else {
       pointAward = {
         awarded: false,
         amount: 0,
-        capped: false
+        capped: false,
+        ineligibleReason: publishedAt
+          ? "이 경기 투표는 BP 보상 대상이 아니에요."
+          : "AI 승부 맞대결 공개 시간을 확인하지 못했어요."
       };
     }
   }
@@ -113,5 +132,5 @@ export async function POST(req: NextRequest, { params }: Params) {
   const home = (data ?? []).filter((r) => r.voted_side === "home").length;
   const away = (data ?? []).filter((r) => r.voted_side === "away").length;
 
-  return NextResponse.json({ home, away, myVote: side, pointAward });
+  return NextResponse.json({ home, away, myVote: persistedSide, pointAward });
 }

@@ -3,6 +3,7 @@ import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { AiBattleRevealScreen } from "@/components/domain/AiBattleRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import type { BattlePredictionRow } from "@/components/domain/AiWinnerBattleTab";
+import { resolveDisplayStadium } from "@/lib/constants/stadiums";
 
 
 // ISR — 배틀 상세는 유저 무관 공개 데이터라 60초 캐시(전체 라우트 캐시 → 서버 CPU 절감).
@@ -101,7 +102,7 @@ export default async function AiBattleRevealPage({ params }: { params: { gameId:
       game={{
         gameDate: gameRow.game_date,
         gameTime: gameRow.game_time,
-        stadium: gameRow.stadium,
+        stadium: resolveDisplayStadium(gameRow.stadium, gameRow.home_team_id),
         homeTeamId: gameRow.home_team_id,
         awayTeamId: gameRow.away_team_id,
         homeScore: gameRow.home_score,

@@ -134,6 +134,7 @@ const scheduleFrom = addDays(targetDate, -1);
 const scheduleTo = addDays(targetDate, 30);
 const sim1000Date = addDays(targetDate, 1);
 const completionMarkerPath = markerPathFor(targetDate, sim1000Date);
+const blockingIssues: string[] = [];
 
 if (!force && existsSync(completionMarkerPath)) {
   console.log(`[sync:kbo-day] already completed for date=${targetDate}, sim1000Date=${sim1000Date}`);
@@ -211,6 +212,9 @@ if (!skipLineups) {
   console.log("[sync:kbo-day] 3/9 lineups");
   const lineups = await syncLineupsForDate(targetDate);
   console.log("[sync:kbo-day] lineups", JSON.stringify(lineups, null, 2));
+  if (lineups.errors.length > 0) {
+    blockingIssues.push(`lineups errors: ${lineups.errors.length}`);
+  }
 } else {
   console.log("[sync:kbo-day] 3/9 lineups skipped");
 }
@@ -219,6 +223,9 @@ if (!skipTeamStats) {
   console.log("[sync:kbo-day] 4/9 team game stats");
   const teamStats = await syncTeamGameStatsForDate(targetDate, { gameDelayMs: 2500 });
   console.log("[sync:kbo-day] team game stats", JSON.stringify(teamStats, null, 2));
+  if (teamStats.errors.length > 0) {
+    blockingIssues.push(`team game stats errors: ${teamStats.errors.length}`);
+  }
 } else {
   console.log("[sync:kbo-day] 4/9 team game stats skipped");
 }
@@ -227,6 +234,9 @@ if (!skipPitcherLogs && !skipTeamStats) {
   console.log("[sync:kbo-day] 5/9 pitcher game logs");
   const pitcherLogs = await backfillPitcherGameLogsFromTeamStats(targetDate, targetDate);
   console.log("[sync:kbo-day] pitcher game logs", JSON.stringify(pitcherLogs, null, 2));
+  if (pitcherLogs.sourceRows === 0) {
+    blockingIssues.push("pitcher game logs source rows: 0");
+  }
 } else {
   console.log("[sync:kbo-day] 5/9 pitcher game logs skipped");
 }
@@ -327,6 +337,9 @@ if (!skipSim1000) {
     if (!outcome.ok) {
       throw new Error(`sim-1000 failed: ${outcome.error}`);
     }
+    if (outcome.failed > 0 || outcome.ran < outcome.total) {
+      blockingIssues.push(`sim-1000 incomplete: ran ${outcome.ran}/${outcome.total}, failed ${outcome.failed}`);
+    }
 
     console.log(
       "[sync:kbo-day] sim-1000",
@@ -345,6 +358,10 @@ if (!skipSim1000) {
   }
 } else {
   console.log("[sync:kbo-day] 9/9 sim-1000 skipped");
+}
+
+if (blockingIssues.length > 0) {
+  throw new Error(`sync incomplete; completion marker not written: ${blockingIssues.join("; ")}`);
 }
 
 writeCompletionMarker(completionMarkerPath, {

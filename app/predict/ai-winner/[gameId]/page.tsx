@@ -10,6 +10,7 @@ import {
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import { getSimResultByGameId, type BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
+import { resolveDisplayStadium } from "@/lib/constants/stadiums";
 
 
 // ISR — AI 예측 상세는 유저 무관 공개 데이터라 60초 캐시(전체 라우트 캐시 → 서버 CPU 절감).
@@ -168,7 +169,7 @@ export default async function AiWinnerRevealPage({
       game={{
         gameDate: gameRow.game_date,
         gameTime: gameRow.game_time,
-        stadium: gameRow.stadium,
+        stadium: resolveDisplayStadium(gameRow.stadium, gameRow.home_team_id),
         homeTeamId: gameRow.home_team_id,
         awayTeamId: gameRow.away_team_id,
         homeScore: gameRow.home_score,

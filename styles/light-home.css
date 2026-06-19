@@ -596,13 +596,8 @@
   border: 1px solid #e2e8f0;
 }
 
-.phone-frame-light .play-hub-card-special-rankings .play-hub-card-icon.play-hub-card-icon-image {
-  width: 88px !important;
-  height: 88px !important;
-}
-
 .phone-frame-light .play-hub-card-special-rankings .play-hub-card-icon-image img {
-  transform: scale(1.12) !important;
+  transform: scale(1.04) !important;
   transform-origin: center !important;
 }
 

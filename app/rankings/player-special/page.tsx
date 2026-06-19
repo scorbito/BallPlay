@@ -436,10 +436,10 @@ export default function PlayerSpecialRankingsPage() {
     <AppShell activeTab="home" title="선수 별별랭킹" theme="light" backHref="/" wide>
       <div className="w-full max-w-2xl mx-auto px-4 py-5 bg-[#f8fafc] min-h-screen phone-frame-light">
         <header className="mb-4 text-center">
-          <p className="mb-1 text-[11px] font-black text-[#FF2A7A]">{formatSnapshotDate(snapshotDate)}</p>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">기록으로 보는 선수 성향</h1>
           <p className="text-xs font-semibold text-slate-500 mt-1">
             시즌 누적 스냅샷 기준으로 선수별 특징을 확인하세요
+            {snapshotDate ? `(${formatSnapshotDate(snapshotDate)})` : ""}
           </p>
         </header>
 

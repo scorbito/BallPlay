@@ -2,6 +2,7 @@
 import type { Team, TeamStanding } from "@/lib/types/domain";
 import type { GameRecord } from "@/lib/types/api-contracts";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { resolveDisplayStadium } from "@/lib/constants/stadiums";
 
 function toTeam(row: {
   id: string;
@@ -39,7 +40,7 @@ function toGame(row: {
     id: row.id,
     date: row.game_date,
     time: row.game_time,
-    stadium: row.stadium,
+    stadium: resolveDisplayStadium(row.stadium, row.home_team_id),
     homeTeamId: row.home_team_id,
     awayTeamId: row.away_team_id,
     homeScore: row.home_score ?? undefined,

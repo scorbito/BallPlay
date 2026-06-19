@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 type TeamGameStatRow = {
   game_id: string | null;
+  game_date: string | null;
   team_id: string;
   opponent_team_id: string | null;
   is_home: boolean | null;
@@ -188,7 +189,7 @@ export async function GET() {
     const { data: rows, error: rawError } = await supabase
       .from("bp_team_game_stats")
       .select(
-        "game_id, team_id, opponent_team_id, is_home, inning_scores, runs, hits, walks, hbp, rbi, doubles, triples, homers, total_bases, gidp, late_runs, sacrifice_hits, sacrifice_flies, stolen_bases, caught_stealing, pitcher_hits_allowed, pitcher_homers_allowed, pitcher_strikeouts, pitcher_runs_allowed, pitcher_earned_runs, pitcher_walks_hbp, errors"
+        "game_id, game_date, team_id, opponent_team_id, is_home, inning_scores, runs, hits, walks, hbp, rbi, doubles, triples, homers, total_bases, gidp, late_runs, sacrifice_hits, sacrifice_flies, stolen_bases, caught_stealing, pitcher_hits_allowed, pitcher_homers_allowed, pitcher_strikeouts, pitcher_runs_allowed, pitcher_earned_runs, pitcher_walks_hbp, errors"
       )
       .gte("game_date", "2026-01-01");
 
@@ -201,6 +202,10 @@ export async function GET() {
     }
 
     const typedRows = (rows || []) as TeamGameStatRow[];
+    const asOfDate = typedRows.reduce((latest, row) => {
+      if (!row.game_date) return latest;
+      return !latest || row.game_date > latest ? row.game_date : latest;
+    }, "");
     const statsMap: Record<string, TeamAggregate> = {};
     const rowsByGame = new Map<string, TeamGameStatRow[]>();
 
@@ -288,7 +293,7 @@ export async function GET() {
       late_comeback_wins: t.late_comeback_wins
     }));
 
-    return NextResponse.json({ ok: true, source: "team_game_stats", rows: rankingRows });
+    return NextResponse.json({ ok: true, source: "team_game_stats", asOfDate, rows: rankingRows });
   } catch (err) {
     console.error("[rankings/special] Internal Server Error:", err);
     return NextResponse.json(
