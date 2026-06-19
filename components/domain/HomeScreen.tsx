@@ -235,6 +235,16 @@ const sections: HomeSection[] = [
         badge: "NEW"
       },
       {
+        id: "player-special-rankings",
+        href: "/rankings/player-special",
+        title: "선수 별별랭킹",
+        description: "선수별 시즌 누적 이색 랭킹",
+        icon: Trophy,
+        iconImage: "/icons/menu/player-rank.png",
+        available: true,
+        badge: "NEW"
+      },
+      {
         id: "recent10-top",
         href: "/recent10-top",
         title: "최근 10경기 TOP",
@@ -535,7 +545,7 @@ export function HomeScreen() {
         });
 
         // Keep the two highlighted ranking cards first in the visible flat menu.
-        const highlightedIds = ["special-rankings", "recent10-top"];
+        const highlightedIds = ["special-rankings", "player-special-rankings", "recent10-top"];
         const highlightedCards: HomeCard[] = [];
         highlightedIds.forEach((id) => {
           const cardIdx = bottomCards.findIndex((c) => c.id === id);
