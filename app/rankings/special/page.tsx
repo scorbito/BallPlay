@@ -1,26 +1,49 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { TeamBadge } from "@/components/common/TeamBadge";
 import { AppShell } from "@/components/layout/AppShell";
 
 type RankingRow = {
   team_id: string;
   games_played: number;
+  total_runs: number;
+  avg_runs: number;
+  total_hits: number;
+  avg_hits: number;
+  total_walks_hbp: number;
+  total_rbi: number;
+  total_doubles: number;
+  total_triples: number;
+  total_homers: number;
   total_bases: number;
+  total_gidp: number;
   total_late_runs: number;
   total_sacrifice_hits_flies: number;
   avg_left_on_base: number;
   total_stolen_bases: number;
   total_caught_stealing: number;
+  total_pitcher_hits_allowed: number;
+  total_pitcher_homers_allowed: number;
   total_pitcher_strikeouts: number;
+  total_pitcher_runs_allowed: number;
+  avg_runs_allowed: number;
   avg_earned_runs: number;
   total_pitcher_walks_hbp: number;
   total_errors: number;
+  comeback_wins: number;
+  comeback_losses: number;
+  first_score_games: number;
+  first_score_wins: number;
+  first_score_win_rate: number;
+  late_comeback_wins: number;
 };
+
+type CategoryId = "offense" | "pitching" | "operation" | "fun";
 
 type TabDef = {
   id: keyof RankingRow;
+  category: CategoryId;
   label: string;
   unit: string;
   desc: string;
@@ -28,86 +51,211 @@ type TabDef = {
   icon: string;
 };
 
+const CATEGORIES: Array<{ id: CategoryId; label: string; desc: string }> = [
+  { id: "offense", label: "공격", desc: "점수와 장타를 만드는 팀" },
+  { id: "pitching", label: "투수", desc: "실점을 막고 타자를 돌려세우는 팀" },
+  { id: "operation", label: "수비·운영", desc: "주루와 작전, 수비 안정감" },
+  { id: "fun", label: "재미지표", desc: "기록으로 보는 숨은 팀 색깔" }
+];
+
 const TABS: TabDef[] = [
   {
+    id: "avg_runs",
+    category: "offense",
+    label: "득점력 TOP",
+    unit: "점",
+    desc: "경기마다 가장 꾸준히 점수를 만든 팀",
+    order: "desc",
+    icon: "🔥"
+  },
+  {
+    id: "total_hits",
+    category: "offense",
+    label: "안타 생산 TOP",
+    unit: "안타",
+    desc: "가장 많은 안타로 공격 흐름을 만든 팀",
+    order: "desc",
+    icon: "⚾"
+  },
+  {
+    id: "total_homers",
+    category: "offense",
+    label: "홈런 생산 TOP",
+    unit: "홈런",
+    desc: "담장을 넘기는 한 방이 가장 많았던 팀",
+    order: "desc",
+    icon: "🚀"
+  },
+  {
     id: "total_bases",
-    label: "화력 발전소",
+    category: "offense",
+    label: "장타 폭발 TOP",
     unit: "루타",
-    desc: "안타와 홈런으로 베이스를 가장 많이 전진한 팀 (누적 루타수)",
+    desc: "안타와 장타로 가장 많은 베이스를 만든 팀",
     order: "desc",
     icon: "💥"
   },
   {
     id: "total_late_runs",
-    label: "약속의 8회왕",
+    category: "offense",
+    label: "후반 집중력 TOP",
     unit: "점",
-    desc: "7회 이후 경기 후반 집중력이 폭발하는 구단 (7회~연장 득점 합산)",
+    desc: "7회 이후 가장 많은 득점을 만든 팀",
     order: "desc",
     icon: "🔥"
   },
   {
-    id: "total_stolen_bases",
-    label: "그라운드 육상부",
-    unit: "도루",
-    desc: "기습적인 타이밍에 베이스를 가장 많이 훔쳐낸 기동력 구단 (도루 성공)",
-    order: "desc",
-    icon: "🏃‍♂️"
-  },
-  {
-    id: "total_sacrifice_hits_flies",
-    label: "작전의 정석",
+    id: "total_walks_hbp",
+    category: "offense",
+    label: "출루 집중 TOP",
     unit: "개",
-    desc: "희생번트와 희생플라이로 팀을 위해 주자를 진루시킨 헌신 구단 (희생타)",
+    desc: "볼넷과 사구로 가장 많이 출루한 팀",
     order: "desc",
-    icon: "🧘‍♂️"
+    icon: "👀"
   },
   {
     id: "avg_earned_runs",
-    label: "짠물 마운드",
-    unit: "ERA",
-    desc: "경기당 상대에게 자책점을 최소한으로 내준 철벽 수비 마운드 (평균 자책점)",
+    category: "pitching",
+    label: "자책 억제 TOP",
+    unit: "점",
+    desc: "경기당 자책점을 가장 적게 내준 팀",
     order: "asc",
     icon: "🧱"
   },
   {
+    id: "avg_runs_allowed",
+    category: "pitching",
+    label: "실점 억제 TOP",
+    unit: "점",
+    desc: "경기당 실점을 가장 적게 허용한 팀",
+    order: "asc",
+    icon: "🛡️"
+  },
+  {
     id: "total_pitcher_strikeouts",
-    label: "삼진 폭격기",
+    category: "pitching",
+    label: "탈삼진 TOP",
     unit: "개",
-    desc: "상대 타자들의 배트를 허공에 돌려세운 막강 피칭 구단 (탈삼진)",
+    desc: "상대 타자를 가장 많이 삼진으로 돌려세운 팀",
     order: "desc",
     icon: "☄️"
   },
   {
-    id: "avg_left_on_base",
-    label: "잔루 감옥",
-    unit: "개",
-    desc: "출루는 잔뜩 해두고 득점으로 잇지 못해 팬들 혈압 올리는 구단 (경기당 평균 잔루)",
-    order: "desc",
-    icon: "🔒"
-  },
-  {
-    id: "total_caught_stealing",
-    label: "그린라이트 폭주",
-    unit: "개",
-    desc: "무모한 도루 시도로 주루사하여 소중한 찬스를 날려버린 구단 (도루 실패)",
-    order: "desc",
-    icon: "🚨"
-  },
-  {
     id: "total_pitcher_walks_hbp",
-    label: "볼넷 공장",
+    category: "pitching",
+    label: "제구 불안 TOP",
     unit: "개",
-    desc: "사사구 허용으로 주자를 공짜로 1루에 많이 걸어보낸 구단 (볼넷+사구 허용)",
+    desc: "사사구 허용이 가장 많았던 팀",
     order: "desc",
     icon: "🏭"
   },
   {
-    id: "total_errors",
-    label: "행복수비왕",
-    unit: "개",
-    desc: "어처구니없는 실책으로 상대방의 흥을 돋우어준 개그 야구단 (누적 실책)",
+    id: "total_pitcher_homers_allowed",
+    category: "pitching",
+    label: "피홈런 억제 TOP",
+    unit: "홈런",
+    desc: "상대에게 홈런을 가장 적게 허용한 팀",
+    order: "asc",
+    icon: "🚫"
+  },
+  {
+    id: "total_stolen_bases",
+    category: "operation",
+    label: "뛰는 야구 TOP",
+    unit: "도루",
+    desc: "도루 성공으로 가장 많이 베이스를 훔친 팀",
     order: "desc",
-    icon: "🤡"
+    icon: "🏃"
+  },
+  {
+    id: "total_sacrifice_hits_flies",
+    category: "operation",
+    label: "작전 수행 TOP",
+    unit: "개",
+    desc: "희생번트와 희생플라이를 가장 많이 성공한 팀",
+    order: "desc",
+    icon: "📝"
+  },
+  {
+    id: "total_errors",
+    category: "operation",
+    label: "실책 주의 TOP",
+    unit: "개",
+    desc: "실책이 가장 많았던 팀",
+    order: "desc",
+    icon: "🧤"
+  },
+  {
+    id: "total_caught_stealing",
+    category: "operation",
+    label: "도루 실패 TOP",
+    unit: "개",
+    desc: "도루를 시도하다 가장 많이 잡힌 팀",
+    order: "desc",
+    icon: "🚨"
+  },
+  {
+    id: "avg_left_on_base",
+    category: "fun",
+    label: "잔루 많은 팀",
+    unit: "개",
+    desc: "안타+사사구-득점으로 추정한 출루 대비 득점을 못한 팀",
+    order: "desc",
+    icon: "🔒"
+  },
+  {
+    id: "total_gidp",
+    category: "fun",
+    label: "병살 주의보",
+    unit: "개",
+    desc: "병살타로 공격 흐름이 가장 자주 끊긴 팀",
+    order: "desc",
+    icon: "😵"
+  },
+  {
+    id: "total_pitcher_hits_allowed",
+    category: "fun",
+    label: "많이 맞은 팀",
+    unit: "안타",
+    desc: "상대에게 가장 많은 안타를 허용한 팀",
+    order: "desc",
+    icon: "🥊"
+  },
+  {
+    id: "comeback_wins",
+    category: "fun",
+    label: "역전승 많은 팀",
+    unit: "승",
+    desc: "경기 중 뒤진 적이 있지만 최종 승리한 팀",
+    order: "desc",
+    icon: ""
+  },
+  {
+    id: "comeback_losses",
+    category: "fun",
+    label: "역전패 많은 팀",
+    unit: "패",
+    desc: "경기 중 앞선 적이 있지만 최종 패배한 팀",
+    order: "desc",
+    icon: ""
+  },
+  {
+    id: "first_score_win_rate",
+    category: "fun",
+    label: "선취점 승률",
+    unit: "%",
+    desc: "먼저 점수를 냈을 때 승리한 비율",
+    order: "desc",
+    icon: ""
+  },
+  {
+    id: "late_comeback_wins",
+    category: "fun",
+    label: "7회 이후 역전승",
+    unit: "승",
+    desc: "7회 이후 뒤진 흐름을 뒤집고 승리한 팀",
+    order: "desc",
+    icon: ""
   }
 ];
 
@@ -124,7 +272,16 @@ const TEAM_NAMES: Record<string, string> = {
   hanwha: "한화 이글스"
 };
 
+const SPECIAL_RANKINGS_CACHE_KEY = "special-rankings:v3";
+const SPECIAL_RANKINGS_CACHE_TTL_MS = 10 * 60 * 1000;
+
+type SpecialRankingsCache = {
+  savedAt: number;
+  rows: RankingRow[];
+};
+
 export default function SpecialRankingsPage() {
+  const [activeCategory, setActiveCategory] = useState<CategoryId>("offense");
   const [activeTab, setActiveTab] = useState<keyof RankingRow>("total_bases");
   const [data, setData] = useState<RankingRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -134,10 +291,29 @@ export default function SpecialRankingsPage() {
     async function fetchData() {
       try {
         setLoading(true);
+        setError(null);
+
+        const cachedText = window.sessionStorage.getItem(SPECIAL_RANKINGS_CACHE_KEY);
+        if (cachedText) {
+          const cached = JSON.parse(cachedText) as SpecialRankingsCache;
+          const isFresh =
+            Array.isArray(cached.rows) &&
+            Date.now() - Number(cached.savedAt ?? 0) < SPECIAL_RANKINGS_CACHE_TTL_MS;
+
+          if (isFresh) {
+            setData(cached.rows);
+            return;
+          }
+        }
+
         const res = await fetch("/api/rankings/special");
         const json = await res.json();
         if (json.ok && Array.isArray(json.rows)) {
           setData(json.rows);
+          window.sessionStorage.setItem(
+            SPECIAL_RANKINGS_CACHE_KEY,
+            JSON.stringify({ savedAt: Date.now(), rows: json.rows })
+          );
         } else {
           throw new Error(json.error || "데이터를 로드하지 못했습니다.");
         }
@@ -151,75 +327,92 @@ export default function SpecialRankingsPage() {
     fetchData();
   }, []);
 
-  const currentTabDef = TABS.find((t) => t.id === activeTab)!;
+  const visibleTabs = TABS.filter((tab) => tab.category === activeCategory);
+  const currentTabDef = TABS.find((t) => t.id === activeTab) ?? visibleTabs[0] ?? TABS[0];
+  const activeCategoryDef = CATEGORIES.find((category) => category.id === activeCategory) ?? CATEGORIES[0];
 
-  // 정렬 처리
+  function selectCategory(categoryId: CategoryId) {
+    setActiveCategory(categoryId);
+    const firstTab = TABS.find((tab) => tab.category === categoryId);
+    if (firstTab) setActiveTab(firstTab.id);
+  }
+
   const sortedData = [...data].sort((a, b) => {
     const valA = Number(a[activeTab]) || 0;
     const valB = Number(b[activeTab]) || 0;
     if (currentTabDef.order === "asc") {
-      return valA - valB; // 오름차순 (예: ERA는 낮을수록 1위)
+      return valA - valB;
     } else {
-      return valB - valA; // 내림차순
+      return valB - valA;
     }
   });
 
   return (
-    <AppShell activeTab="home" title="별별팀랭킹" theme="light" backHref="/" wide>
-      <div className="max-w-md mx-auto px-4 py-5 bg-[#f8fafc] min-h-screen phone-frame-light">
-        {/* 상단 소개 배너 */}
-        <header className="mb-6 text-center">
+    <AppShell activeTab="home" title="별별 팀 랭킹" theme="light" backHref="/" wide>
+      <div className="w-full max-w-2xl mx-auto px-4 py-5 bg-[#f8fafc] min-h-screen phone-frame-light">
+        <header className="mb-4 text-center">
           <h1 className="text-2xl font-black text-slate-800 tracking-tight flex justify-center items-center gap-2">
-            🏆 별별팀랭킹
+            기록으로 보는 팀 성향
           </h1>
           <p className="text-xs font-semibold text-slate-500 mt-1">
-            KBO 수집 통계 기반 이색 팩폭·성공 랭킹
+            팀별로 강한 부분과 약한 부분을 한눈에 확인하세요
           </p>
         </header>
 
-        {/* 탭 카테고리 (요즘폼 TOP10 스타일의 여러 줄 바둑판식 레이아웃) */}
-        <div className="recent10-tabs mb-6" role="tablist" aria-label="별별팀랭킹 분류">
-          {TABS.map((tab) => {
-            const isActive = tab.id === activeTab;
+        <div className="mb-3 grid grid-cols-4 gap-1.5" role="tablist" aria-label="별별 팀 랭킹 카테고리">
+          {CATEGORIES.map((category) => {
+            const isActive = category.id === activeCategory;
             return (
               <button
-                key={tab.id}
+                key={category.id}
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                onClick={() => setActiveTab(tab.id)}
-                className={`recent10-tab ${isActive ? "is-active" : ""}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: "0 10px",
-                  fontSize: "12px",
-                  height: "32px"
-                }}
+                onClick={() => selectCategory(category.id)}
+                className={`h-10 rounded-2xl border text-xs font-black transition ${
+                  isActive
+                    ? "border-[#FF2A7A] bg-[#FF2A7A] text-white shadow-lg shadow-pink-200/70"
+                    : "border-slate-200 bg-white text-slate-500"
+                }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                {category.label}
               </button>
             );
           })}
         </div>
 
-        {/* 랭킹 설명 말풍선 */}
-        <div className="bg-pink-50/50 border border-pink-100/60 rounded-2xl p-4 mb-6 relative">
-          <p className="text-sm font-extrabold text-[#FF2A7A] mb-1 flex items-center gap-1">
-            {currentTabDef.icon} {currentTabDef.label} 랭킹이란?
-          </p>
-          <p className="text-xs font-semibold text-slate-600 leading-relaxed">
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-1.5 pb-2" role="tablist" aria-label="별별 팀 랭킹 세부 항목">
+            {visibleTabs.map((tab) => {
+              const isActive = tab.id === activeTab;
+              const label = tab.label.replace(" TOP", "");
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`h-8 shrink-0 rounded-lg border px-3 text-xs font-black transition ${
+                    isActive
+                      ? "border-[#FF2A7A] bg-pink-50 text-[#FF2A7A] shadow-sm"
+                      : "border-slate-200 bg-white text-slate-500"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1 rounded-2xl border border-pink-100 bg-white px-3 py-2 text-xs font-semibold leading-relaxed text-slate-500">
             {currentTabDef.desc}
           </p>
         </div>
 
-        {/* 랭킹 리스트 영역 */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <span className="w-8 h-8 border-4 border-[#FF2A7A] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-bold text-slate-500 mt-3">실시간 기록 집계 중...</p>
+            <p className="text-xs font-bold text-slate-500 mt-3">기록 집계 중...</p>
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center text-red-600 text-xs font-bold">
@@ -237,7 +430,6 @@ export default function SpecialRankingsPage() {
               const teamName = TEAM_NAMES[teamId] || teamId;
               const value = row[activeTab];
 
-              // 메달 및 랭킹 스타일링
               let badgeNode = <span className="text-slate-400 font-extrabold text-sm">{rank}</span>;
               let rowClass = "border-b border-slate-100 hover:bg-slate-50/60 transition-colors";
               if (rank === 1) {
@@ -250,31 +442,27 @@ export default function SpecialRankingsPage() {
               }
 
               return (
-                <div key={teamId} className={`flex items-center justify-between px-4 py-3.5 ${rowClass}`}>
-                  {/* 순위와 로고 및 구단명 */}
+                <div
+                  key={`${String(activeTab)}-${teamId}`}
+                  className={`special-rank-item flex items-center justify-between px-4 py-3.5 ${rowClass}`}
+                  style={{ animationDelay: `${index * 55}ms` }}
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 flex items-center justify-center flex-shrink-0">
                       {badgeNode}
                     </div>
-                    <div className="relative w-8 h-8 rounded-full border border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      <Image
-                        src={`/team-logos/${teamId}.png`}
-                        alt=""
-                        width={24}
-                        height={24}
-                        className="object-contain"
-                      />
+                    <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                      <TeamBadge teamId={teamId} size="sm" showName={false} fallbackName={teamName} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-black text-slate-800 truncate">{teamName}</p>
                       <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                        {row.games_played}경기 출장
+                        {row.games_played}경기 집계
                       </p>
                     </div>
                   </div>
 
-                  {/* 지표 수치 표시 */}
-                  <div className="text-right flex-shrink-0">
+                  <div className="w-20 text-right flex-shrink-0 tabular-nums">
                     <strong className="text-sm font-black text-slate-900">
                       {value}
                     </strong>
@@ -287,6 +475,24 @@ export default function SpecialRankingsPage() {
             })}
           </div>
         )}
+        <style jsx>{`
+          .special-rank-item {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: specialRankItemIn 360ms ease-out forwards;
+          }
+
+          @keyframes specialRankItemIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
       </div>
     </AppShell>
   );

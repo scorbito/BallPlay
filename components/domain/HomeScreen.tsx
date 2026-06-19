@@ -222,6 +222,16 @@ const sections: HomeSection[] = [
         available: true
       },
       {
+        id: "special-rankings",
+        href: "/rankings/special",
+        title: "팀 별별랭킹",
+        description: "재미있고 독특한 10가지 구단 랭킹",
+        icon: Trophy,
+        iconImage: "/icons/menu/predict-ranking.png",
+        available: true,
+        badge: "NEW"
+      },
+      {
         id: "recent10-top",
         href: "/recent10-top",
         title: "최근 10경기 TOP",
@@ -248,16 +258,6 @@ const sections: HomeSection[] = [
         icon: FileText,
         iconImage: "/icons/menu/baseball-news.png",
         available: true
-      },
-      {
-        id: "special-rankings",
-        href: "/rankings/special",
-        title: "별별팀랭킹",
-        description: "재미있고 독특한 10가지 구단 랭킹",
-        icon: Trophy,
-        iconImage: "/icons/menu/predict-ranking.png",
-        available: true,
-        badge: "NEW"
       }
     ]
   },
@@ -544,11 +544,18 @@ export function HomeScreen({
           });
         });
 
-        // 요즘 폼 TOP10 (recent10-top) 카드를 신규 메뉴 강조를 위해 첫 번째로 배치
-        const recentTopIdx = bottomCards.findIndex((c) => c.id === "recent10-top");
-        if (recentTopIdx > -1) {
-          const [recentTopCard] = bottomCards.splice(recentTopIdx, 1);
-          bottomCards.unshift(recentTopCard);
+        // Keep the two highlighted ranking cards first in the visible flat menu.
+        const highlightedIds = ["special-rankings", "recent10-top"];
+        const highlightedCards: HomeCard[] = [];
+        highlightedIds.forEach((id) => {
+          const cardIdx = bottomCards.findIndex((c) => c.id === id);
+          if (cardIdx > -1) {
+            const [card] = bottomCards.splice(cardIdx, 1);
+            highlightedCards.push(card);
+          }
+        });
+        if (highlightedCards.length > 0) {
+          bottomCards.unshift(...highlightedCards);
         }
 
         const bottomSectionNode = (
