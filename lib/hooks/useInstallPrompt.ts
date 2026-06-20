@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
+import { safeMaxTouchPoints, safeNavigatorPlatform, safeUserAgent } from "@/lib/utils/navigator";
 
-/** PWA 설치 관련 디바이스 감지 + 네이티브 prompt 캡처.
- *  - isStandalone: 이미 홈 화면 설치 / 풀스크린 모드면 true
+/** PWA ?ㅼ튂 愿???붾컮?댁뒪 媛먯? + ?ㅼ씠?곕툕 prompt 罹≪쿂.
+ *  - isStandalone: ?대? ???붾㈃ ?ㅼ튂 / ??ㅽ겕由?紐⑤뱶硫?true
  *  - isIOS: iPhone/iPad/iPod
- *  - isAndroid: Android 디바이스
- *  - canNativeInstall: Android Chrome 등에서 beforeinstallprompt 이벤트가 잡혀 즉시 설치 가능
- *  - promptInstall: 네이티브 다이얼로그 트리거 (Android only) */
+ *  - isAndroid: Android ?붾컮?댁뒪
+ *  - canNativeInstall: Android Chrome ?깆뿉??beforeinstallprompt ?대깽?멸? ?≫? 利됱떆 ?ㅼ튂 媛?? *  - promptInstall: ?ㅼ씠?곕툕 ?ㅼ씠?쇰줈洹??몃━嫄?(Android only) */
 export type InstallPromptState = {
   isStandalone: boolean;
   isIOS: boolean;
@@ -30,19 +30,18 @@ export function useInstallPrompt(): InstallPromptState {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const ua = window.navigator.userAgent;
-    // iPad는 iPadOS 13+부터 사파리가 desktop UA로 위장 (iPad 문자열 없음).
-    // navigator.platform === "MacIntel" + maxTouchPoints > 1로 별도 감지.
+    const ua = safeUserAgent();
+    // iPad??iPadOS 13+遺???ы뙆由ш? desktop UA濡??꾩옣 (iPad 臾몄옄???놁쓬).
+    // navigator.platform === "MacIntel" + maxTouchPoints > 1濡?蹂꾨룄 媛먯?.
     const isIPadOS =
-      window.navigator.platform === "MacIntel" &&
-      typeof window.navigator.maxTouchPoints === "number" &&
-      window.navigator.maxTouchPoints > 1;
+      safeNavigatorPlatform() === "MacIntel" &&
+      safeMaxTouchPoints() > 1;
     setIsIOS(/iPhone|iPad|iPod/.test(ua) || isIPadOS);
     setIsAndroid(/Android/.test(ua));
 
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      // iOS Safari 비표준 속성
+      // iOS Safari 鍮꾪몴以 ?띿꽦
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
     setIsStandalone(standalone);
 
@@ -52,7 +51,7 @@ export function useInstallPrompt(): InstallPromptState {
     };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // 설치 완료되면 deferredPrompt 비움 + standalone 상태 갱신
+    // ?ㅼ튂 ?꾨즺?섎㈃ deferredPrompt 鍮꾩? + standalone ?곹깭 媛깆떊
     const installedHandler = () => {
       setDeferredPrompt(null);
       setIsStandalone(true);
@@ -81,3 +80,5 @@ export function useInstallPrompt(): InstallPromptState {
     promptInstall
   };
 }
+
+

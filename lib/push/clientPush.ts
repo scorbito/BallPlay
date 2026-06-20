@@ -1,9 +1,11 @@
-// 웹 푸시 클라이언트 유틸 — 서비스 워커 등록 / 구독 / 해제.
+﻿import { safeUserAgent } from "@/lib/utils/navigator";
+
+// ???몄떆 ?대씪?댁뼵???좏떥 ???쒕퉬???뚯빱 ?깅줉 / 援щ룆 / ?댁젣.
 //
-// 서버 전용(web-push, VAPID_PRIVATE_KEY)은 절대 import 하지 않음.
-// VAPID public key 는 NEXT_PUBLIC_ 이라 클라이언트 번들 포함 OK.
+// ?쒕쾭 ?꾩슜(web-push, VAPID_PRIVATE_KEY)? ?덈? import ?섏? ?딆쓬.
+// VAPID public key ??NEXT_PUBLIC_ ?대씪 ?대씪?댁뼵??踰덈뱾 ?ы븿 OK.
 //
-// 결과 타입으로 호출부(설정 토글)가 권한 거부·미지원을 graceful 하게 처리한다.
+// 寃곌낵 ??낆쑝濡??몄텧遺(?ㅼ젙 ?좉?)媛 沅뚰븳 嫄곕?쨌誘몄??먯쓣 graceful ?섍쾶 泥섎━?쒕떎.
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
@@ -13,7 +15,7 @@ export type SubscribeResult =
 
 export type UnsubscribeResult = { ok: boolean };
 
-/** 이 브라우저가 푸시를 지원하는지. (SW + PushManager) */
+/** ??釉뚮씪?곗?媛 ?몄떆瑜?吏?먰븯?붿?. (SW + PushManager) */
 export function isPushSupported(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -23,19 +25,19 @@ export function isPushSupported(): boolean {
   );
 }
 
-/** iOS Safari 는 홈 화면 추가(standalone) 상태에서만 푸시 지원.
- *  설치 전이면 isPushSupported 가 false 라 안내가 필요하므로 별도 판별. */
+/** iOS Safari ?????붾㈃ 異붽?(standalone) ?곹깭?먯꽌留??몄떆 吏??
+ *  ?ㅼ튂 ?꾩씠硫?isPushSupported 媛 false ???덈궡媛 ?꾩슂?섎?濡?蹂꾨룄 ?먮퀎. */
 export function isIos(): boolean {
   if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent || "";
+  const ua = safeUserAgent();
   const isIosUa = /iPad|iPhone|iPod/.test(ua);
-  // iPadOS 13+ 는 데스크탑 UA 로 위장 → touch 지원 + Mac 으로 보조 판별.
+  // iPadOS 13+ ???곗뒪?ы깙 UA 濡??꾩옣 ??touch 吏??+ Mac ?쇰줈 蹂댁“ ?먮퀎.
   const isIpadOs = ua.includes("Macintosh") && typeof document !== "undefined" && "ontouchend" in document;
   return isIosUa || isIpadOs;
 }
 
-/** VAPID public key(base64url) → Uint8Array (applicationServerKey 용).
- *  ArrayBuffer 백킹으로 만들어 BufferSource 타입(lib.dom)에 정확히 부합시킨다. */
+/** VAPID public key(base64url) ??Uint8Array (applicationServerKey ??.
+ *  ArrayBuffer 諛깊궧?쇰줈 留뚮뱾??BufferSource ???lib.dom)???뺥솗??遺?⑹떆?⑤떎. */
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -59,7 +61,7 @@ async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
   return reg;
 }
 
-/** 현재 활성 푸시 구독이 있는지 (UI 초기 상태 동기화용). */
+/** ?꾩옱 ?쒖꽦 ?몄떆 援щ룆???덈뒗吏 (UI 珥덇린 ?곹깭 ?숆린?붿슜). */
 export async function getCurrentSubscription(): Promise<PushSubscription | null> {
   if (!isPushSupported()) return null;
   try {
@@ -71,10 +73,10 @@ export async function getCurrentSubscription(): Promise<PushSubscription | null>
   }
 }
 
-/** SW 등록 → 권한 요청 → 구독 → 서버 저장. */
+/** SW ?깅줉 ??沅뚰븳 ?붿껌 ??援щ룆 ???쒕쾭 ??? */
 export async function subscribeToPush(): Promise<SubscribeResult> {
   if (!isPushSupported()) return { ok: false, reason: "unsupported" };
-  if (!VAPID_PUBLIC_KEY) return { ok: false, reason: "error", message: "VAPID 공개키가 설정되지 않았어요." };
+  if (!VAPID_PUBLIC_KEY) return { ok: false, reason: "error", message: "VAPID 怨듦컻?ㅺ? ?ㅼ젙?섏? ?딆븯?댁슂." };
 
   try {
     const reg = await registerServiceWorker();
@@ -106,16 +108,16 @@ export async function subscribeToPush(): Promise<SubscribeResult> {
     });
 
     if (!res.ok) {
-      return { ok: false, reason: "error", message: `서버 저장 실패 (${res.status})` };
+      return { ok: false, reason: "error", message: `?쒕쾭 ????ㅽ뙣 (${res.status})` };
     }
     return { ok: true };
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "알 수 없는 오류";
+    const message = e instanceof Error ? e.message : "?????녿뒗 ?ㅻ쪟";
     return { ok: false, reason: "error", message };
   }
 }
 
-/** 구독 해제 → 서버에서 삭제. */
+/** 援щ룆 ?댁젣 ???쒕쾭?먯꽌 ??젣. */
 export async function unsubscribeFromPush(): Promise<UnsubscribeResult> {
   if (!isPushSupported()) return { ok: true };
   try {
@@ -124,7 +126,7 @@ export async function unsubscribeFromPush(): Promise<UnsubscribeResult> {
 
     const endpoint = subscription.endpoint;
     await subscription.unsubscribe().catch(() => {
-      /* 로컬 해제 실패해도 서버 삭제는 시도 */
+      /* 濡쒖뺄 ?댁젣 ?ㅽ뙣?대룄 ?쒕쾭 ??젣???쒕룄 */
     });
 
     await fetch("/api/push/unsubscribe", {
@@ -132,7 +134,7 @@ export async function unsubscribeFromPush(): Promise<UnsubscribeResult> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ endpoint })
     }).catch(() => {
-      /* 네트워크 실패는 무시 — 다음 발송 시 410 으로 cron 이 정리 */
+      /* ?ㅽ듃?뚰겕 ?ㅽ뙣??臾댁떆 ???ㅼ쓬 諛쒖넚 ??410 ?쇰줈 cron ???뺣━ */
     });
 
     return { ok: true };
@@ -140,3 +142,5 @@ export async function unsubscribeFromPush(): Promise<UnsubscribeResult> {
     return { ok: false };
   }
 }
+
+

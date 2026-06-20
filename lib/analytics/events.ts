@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { safeUserAgent } from "@/lib/utils/navigator";
 
 export type AnalyticsEventName =
   | "lineup_created"
@@ -51,9 +52,11 @@ export async function trackEvent(
       anonymous_id: getAnonymousId(),
       properties,
       pathname: window.location.pathname,
-      user_agent: window.navigator.userAgent
+      user_agent: safeUserAgent()
     });
   } catch {
     // Analytics must never block the user flow.
   }
 }
+
+
