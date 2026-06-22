@@ -36,6 +36,7 @@ type BpAiWeeklySeriesPredictionRow = {
 
 export type AiWeeklySeriesPick = {
   provider: AiProvider;
+  modelName: string | null;
   teamId: string;
   result: string;
   note: string;
@@ -96,6 +97,7 @@ function buildSeries(
     headline: row.headline,
     picks: predictions.map((prediction) => ({
       provider: prediction.ai_provider,
+      modelName: prediction.model_name,
       teamId: prediction.predicted_winner_team_id,
       result: formatPredictionResult(prediction),
       note: prediction.key_factor,

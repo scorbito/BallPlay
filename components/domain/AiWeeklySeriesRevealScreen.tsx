@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image, { type StaticImageData } from "next/image";
 import { ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { ConfidenceDonut } from "@/components/domain/ConfidenceDonut";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
+import aiClaudeSrc from "@/data/Images/ai_claude.png";
+import aiGptRightSrc from "@/data/Images/ai_gpt_right.png";
 import type { AiProvider } from "@/lib/supabase/query-parts/bpAiPredictions";
 import type { AiWeeklySeries } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
 
@@ -14,6 +18,12 @@ const AI_LABEL: Record<AiProvider, string> = {
   gemini: "Gemini",
   claude: "Claude",
   gpt: "GPT"
+};
+
+const AI_AVATAR_SRC: Record<AiProvider, StaticImageData | string> = {
+  gemini: "/images/ai승부대결_gemini.png",
+  claude: aiClaudeSrc,
+  gpt: aiGptRightSrc
 };
 
 const AI_ORDER_RANK: Record<AiProvider, number> = { gpt: 0, gemini: 1, claude: 2 };
@@ -108,34 +118,52 @@ export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: 
           busyLabel="준비 중"
         />
 
-        <ul className="ai-weekly-detail-cards">
+        {/* 일일 예측 카드와 동일한 레이아웃(아바타 + 신뢰도 도넛)을 사용해 톤을 맞춘다. */}
+        <ul className="ai-reveal-cards">
           {orderedPicks.map((pick, idx) => {
             const expanded = expandedIdx === idx;
             const visible = visibleStage > idx;
+            const winnerTeam = getTeam(pick.teamId);
+            // confidence 는 0~1 또는 0~100 둘 다 들어올 수 있어 0~1 로 정규화.
+            const confidenceValue = pick.confidence <= 1 ? pick.confidence : pick.confidence / 100;
             return (
-              <li 
-                key={pick.provider} 
-                className={`ai-weekly-detail-card ai-weekly-detail-card-${pick.provider} ${visible ? "is-visible" : ""}`}
+              <li
+                key={pick.provider}
+                className={`ai-reveal-card ai-reveal-card-${pick.provider} ${visible ? "is-visible" : ""}`}
                 aria-hidden={!visible}
               >
-                <header className="ai-weekly-detail-card-head">
-                  <span>{AI_LABEL[pick.provider]}</span>
-                </header>
-                <div className="ai-weekly-detail-pick-result">
-                  <div className="ai-weekly-detail-pick-team-wrap">
-                    <TeamBadge teamId={pick.teamId} size="sm" />
-                    <strong>{pick.result}</strong>
+                <div className="ai-reveal-card-prediction-head">
+                  <div className="ai-reveal-card-prediction-main">
+                    <span className="ai-reveal-card-ai">
+                      {AI_LABEL[pick.provider]}
+                      {pick.modelName ? <span className="ai-reveal-card-model"> · {pick.modelName}</span> : null}
+                    </span>
+                    <div className="ai-reveal-card-pick">
+                      <TeamBadge teamId={pick.teamId} size="sm" />
+                      <span className="ai-reveal-card-team">{pick.result}</span>
+                    </div>
                   </div>
-                  <span className="ai-weekly-detail-pick-percent">
-                    {pick.confidence !== undefined && pick.confidence !== null
-                      ? `${Math.round(pick.confidence <= 1 ? pick.confidence * 100 : pick.confidence)}%`
-                      : ""}
-                  </span>
+                  {Number.isFinite(pick.confidence) ? (
+                    <div className="ai-reveal-card-prediction-side">
+                      <ConfidenceDonut value={confidenceValue} color={winnerTeam.color} />
+                    </div>
+                  ) : null}
                 </div>
-                <div className="ai-weekly-detail-pick-note">
-                  <span>{pick.note}</span>
+                <div className="ai-reveal-card-key">
+                  <span className="ai-reveal-card-key-label">핵심</span>
+                  <span className="ai-reveal-card-key-value">{pick.note}</span>
                 </div>
-                <p className="ai-weekly-detail-oneliner">{pick.oneLiner}</p>
+                <div className="ai-reveal-card-oneliner-row">
+                  <Image
+                    src={AI_AVATAR_SRC[pick.provider]}
+                    alt={`${AI_LABEL[pick.provider]} AI 캐릭터`}
+                    width={64}
+                    height={64}
+                    sizes="64px"
+                    className={`ai-reveal-card-avatar ai-reveal-card-avatar-${pick.provider}`}
+                  />
+                  <p className="ai-reveal-card-oneliner">{pick.oneLiner}</p>
+                </div>
                 <button
                   type="button"
                   className="ai-reveal-card-toggle"
@@ -145,7 +173,7 @@ export function AiWeeklySeriesRevealScreen({ series, backDate = "2026-06-08" }: 
                   {expanded ? "상세 닫기" : "상세 설명"}
                   {expanded ? <ChevronUp size={12} strokeWidth={2.5} /> : <ChevronDown size={12} strokeWidth={2.5} />}
                 </button>
-                {expanded ? <p className="ai-weekly-detail-analysis">{pick.detailedAnalysis}</p> : null}
+                {expanded ? <p className="ai-reveal-card-detail">{pick.detailedAnalysis}</p> : null}
               </li>
             );
           })}

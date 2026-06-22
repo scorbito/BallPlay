@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, RotateCcw, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { ConfidenceDonut } from "@/components/domain/ConfidenceDonut";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import { getTeam } from "@/lib/constants/teams";
 import type { GameStatus } from "@/lib/types/api-contracts";
@@ -80,66 +81,6 @@ function markSeen(gameId: string): void {
   } catch {
     // ignore quota errors
   }
-}
-
-function ConfidenceDonut({ value, color }: { value: number; color: string }) {
-  const animateRef = useRef<SVGAnimateElement | null>(null);
-  const pct = Math.max(0, Math.min(100, Math.round(value * 100)));
-  const radius = 24;
-  const circumference = 2 * Math.PI * radius;
-  const filled = (pct / 100) * circumference;
-  const emptyDash = `0 ${circumference}`;
-  const filledDash = `${filled} ${circumference - filled}`;
-
-  const replay = () => {
-    animateRef.current?.beginElement();
-  };
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      animateRef.current?.beginElement();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [filledDash]);
-
-  return (
-    <button
-      type="button"
-      className="ai-reveal-confidence-donut"
-      aria-label={`승률 ${pct}% 애니메이션 다시 보기`}
-      onClick={replay}
-    >
-      <svg viewBox="0 0 58 58" width="58" height="58" aria-hidden="true">
-        <circle
-          className="ai-reveal-confidence-donut-track"
-          cx="29"
-          cy="29"
-          r={radius}
-        />
-        <circle
-          className="ai-reveal-confidence-donut-value"
-          cx="29"
-          cy="29"
-          r={radius}
-          stroke={color}
-          strokeDasharray={filledDash}
-        >
-          <animate
-            ref={animateRef}
-            attributeName="stroke-dasharray"
-            from={emptyDash}
-            to={filledDash}
-            dur="0.9s"
-            begin="indefinite"
-            fill="freeze"
-            calcMode="spline"
-            keySplines="0.16 1 0.3 1"
-          />
-        </circle>
-      </svg>
-      <span className="ai-reveal-confidence-donut-text">{pct}%</span>
-    </button>
-  );
 }
 
 /** 다수결·가중평균 계산. */
