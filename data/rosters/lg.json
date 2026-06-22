@@ -1,7 +1,7 @@
 {
   "teamId": "lg",
   "teamName": "LG 트윈스",
-  "_scrapedAt": "2026-06-15T04:00:19.268Z",
+  "_scrapedAt": "2026-06-22T03:58:02.570Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -30,7 +30,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lg-2",
@@ -39,7 +39,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 39
+      "seasonGames": 45
     },
     {
       "id": "lg-3",
@@ -57,7 +57,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 64
+      "seasonGames": 70
     },
     {
       "id": "lg-5",
@@ -75,7 +75,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 64
+      "seasonGames": 69
     },
     {
       "id": "lg-7",
@@ -84,7 +84,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 35
+      "seasonGames": 39
     },
     {
       "id": "lg-8",
@@ -93,7 +93,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 35
+      "seasonGames": 41
     },
     {
       "id": "lg-10",
@@ -102,7 +102,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 61
+      "seasonGames": 67
     },
     {
       "id": "lg-11",
@@ -111,7 +111,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 26
+      "seasonGames": 28
     },
     {
       "id": "lg-12",
@@ -165,7 +165,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 65
+      "seasonGames": 71
     },
     {
       "id": "lg-18",
@@ -181,7 +181,7 @@
       "jerseyNumber": 20,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 30
+      "seasonGames": 34
     },
     {
       "id": "lg-21",
@@ -199,7 +199,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 65
+      "seasonGames": 71
     },
     {
       "id": "lg-24",
@@ -217,7 +217,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 18
     },
     {
       "id": "lg-26",
@@ -235,7 +235,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 58
+      "seasonGames": 64
     },
     {
       "id": "lg-28",
@@ -253,7 +253,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 15
+      "seasonGames": 17
     },
     {
       "id": "lg-30",
@@ -262,7 +262,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lg-31",
@@ -271,7 +271,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 15
+      "seasonGames": 16
     },
     {
       "id": "lg-32",
@@ -352,7 +352,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 33
+      "seasonGames": 35
     },
     {
       "id": "lg-43",
@@ -379,7 +379,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 21
+      "seasonGames": 23
     },
     {
       "id": "lg-46",
@@ -388,7 +388,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 2
+      "seasonGames": 4
     },
     {
       "id": "lg-47",
@@ -397,7 +397,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "lg-48",
@@ -424,7 +424,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 24
+      "seasonGames": 25
     },
     {
       "id": "lg-51",
@@ -433,7 +433,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 59
+      "seasonGames": 64
     },
     {
       "id": "lg-52",
@@ -451,7 +451,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 58
+      "seasonGames": 63
     },
     {
       "id": "lg-54",
@@ -469,7 +469,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 43
+      "seasonGames": 49
     },
     {
       "id": "lg-56",
@@ -478,7 +478,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 19
+      "seasonGames": 22
     },
     {
       "id": "lg-57",
@@ -541,7 +541,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 36
     },
     {
       "id": "lg-64",
@@ -577,7 +577,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 25
+      "seasonGames": 27
     },
     {
       "id": "lg-68",
@@ -586,7 +586,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 10
+      "seasonGames": 12
     },
     {
       "id": "lg-69",
@@ -730,15 +730,6 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 0
-    },
-    {
-      "id": "lg-118",
-      "name": "성준서",
-      "jerseyNumber": 118,
-      "primaryPosition": "P",
-      "throwingHand": "R",
-      "battingHand": "R",
       "seasonGames": 0
     },
     {
