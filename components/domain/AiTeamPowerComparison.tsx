@@ -257,18 +257,15 @@ export function AiTeamPowerComparison({
           <div className="power-card-h2h-v2">
             <div className="metric-row-info">
               <div className="h2h-team-score text-left" style={{ color: homeColor }}>
-                {homeTeamName} <strong>{h2hRecord.wins}승</strong>
+                <strong>{h2hRecord.wins}승</strong>
               </div>
               
               <div className="metric-label" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
-                <span>이번 시즌 맞대결 승률</span>
-                {h2hRecord.draws > 0 && (
-                  <span className="h2h-draw-badge">{h2hRecord.draws}무승부</span>
-                )}
+                <span>시즌 맞대결{h2hRecord.draws > 0 ? `(${h2hRecord.draws}무)` : ""}</span>
               </div>
               
               <div className="h2h-team-score text-right" style={{ color: awayColor }}>
-                {awayTeamName} <strong>{h2hRecord.losses}승</strong>
+                <strong>{h2hRecord.losses}승</strong>
               </div>
             </div>
 
