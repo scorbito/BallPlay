@@ -14,6 +14,7 @@
     "scrape:stats:one": "node scripts/scrape-kbo-stats.mjs --team=doosan",
     "scrape:stats": "node scripts/scrape-kbo-stats.mjs",
     "sync:kbo-day": "tsx scripts/sync-kbo-day-local.mts",
+    "fetch:starters": "tsx scripts/fetch-tomorrow-starters.mts",
     "sync:kbo-stats": "tsx scripts/sync-kbo-stats-local.mts",
     "sync:team-game-stats": "tsx scripts/sync-team-game-stats-local.mts",
     "scrape:recent10:probe": "node scripts/scrape-kbo-recent10.mjs --probe",

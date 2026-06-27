@@ -16,12 +16,14 @@ import { AiTeamPowerComparison } from "./AiTeamPowerComparison";
 
 type StarterStats = {
   name: string;
+  games?: number;
   wins?: number;
   losses?: number;
-  era: number;
-  whip: number;
-  k9: number;
-  bb9: number;
+  qualityStarts?: number;
+  era: number | null;
+  whip: number | null;
+  k9: number | null;
+  bb9: number | null;
   vsOpponent?: PitcherVsOpponentStats | null;
 };
 
@@ -297,8 +299,10 @@ function AiStartersSection({
   }, [remountKey]);
 
   const getPitcherGauge = (metric: "era" | "whip" | "k9" | "bb9") => {
-    const homeVal = starters.home[metric];
-    const awayVal = starters.away[metric];
+    const homeVal = toFiniteNumber(starters.home[metric]);
+    const awayVal = toFiniteNumber(starters.away[metric]);
+    if (homeVal === null || awayVal === null) return { homePct: 50, awayPct: 50 };
+
     const sum = homeVal + awayVal;
     if (sum === 0) return { homePct: 50, awayPct: 50 };
 
@@ -364,9 +368,9 @@ function AiStartersSection({
           return (
             <div className="starter-metric-row" key={metric}>
               <div className="metric-row-info">
-                <span className="metric-value home-val">{homeVal.toFixed(2)}</span>
+                <span className="metric-value home-val">{formatDecimal(homeVal)}</span>
                 <span className="metric-label">{label}</span>
-                <span className="metric-value away-val">{awayVal.toFixed(2)}</span>
+                <span className="metric-value away-val">{formatDecimal(awayVal)}</span>
               </div>
               <div className="metric-bar-container">
                 <div
@@ -404,7 +408,11 @@ function AiStartersSection({
 // ── 하위 컴포넌트: 팀 타선 지표 대조 ───────────────────────────
 // ──────────────────────────────────────────────────────────
 function formatStarterRecord(starter: StarterStats) {
-  return `${starter.wins ?? 0}승 ${starter.losses ?? 0}패`;
+  const games = starter.games ?? 0;
+  const wins = starter.wins ?? 0;
+  const losses = starter.losses ?? 0;
+  const qualityStarts = starter.qualityStarts ?? 0;
+  return `${games}등판 · ${wins}승 ${losses}패 · QS ${qualityStarts}`;
 }
 
 function toFiniteNumber(value: unknown): number | null {

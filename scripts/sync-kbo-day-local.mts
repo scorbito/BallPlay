@@ -8,6 +8,7 @@
 //   7. sync player stat snapshots and recent-10 rankings
 //   8. generate and cache the daily AI report
 //   9. generate and cache tomorrow's 1000-game simulations
+//  10. on Sundays, generate and cache the just-finished week's weekly AI report
 //
 // Usage:
 //   npm run sync:kbo-day
@@ -21,6 +22,8 @@
 //   npm run sync:kbo-day -- 2026-06-16 --skip-team-stats
 //   npm run sync:kbo-day -- 2026-06-16 --skip-pitcher-logs
 //   npm run sync:kbo-day -- 2026-06-16 --skip-sim1000
+//   npm run sync:kbo-day -- 2026-06-16 --skip-weekly
+//   npm run sync:kbo-day -- 2026-06-21 --force-weekly   (run weekly report for that date's week regardless of weekday)
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -130,6 +133,8 @@ const skipPitcherLogs = args.includes("--skip-pitcher-logs");
 const skipStandings = args.includes("--skip-standings");
 const skipSchedule = args.includes("--skip-schedule");
 const skipSim1000 = args.includes("--skip-sim1000");
+const skipWeekly = args.includes("--skip-weekly");
+const forceWeekly = args.includes("--force-weekly");
 const scheduleFrom = addDays(targetDate, -1);
 const scheduleTo = addDays(targetDate, 30);
 const sim1000Date = addDays(targetDate, 1);
@@ -157,7 +162,8 @@ const [
   { listGamesFromDb, listStandingsFromDb },
   { buildDailyReportSkeleton },
   { generateDailyReportWithGemini },
-  { runDailySimAndUpsert }
+  { runDailySimAndUpsert },
+  { generateAndCacheWeeklyReport, getMondayOfDate, formatWeekName }
 ] = await Promise.all([
   import("@/lib/supabase/server"),
   import("@/lib/server/kbo/syncGames"),
@@ -170,7 +176,8 @@ const [
   import("@/lib/supabase/query-parts/core"),
   import("@/lib/utils/dailyReportHelper"),
   import("@/lib/server/kbo/geminiDailyReport"),
-  import("@/lib/server/sim/runDailySimAndUpsert")
+  import("@/lib/server/sim/runDailySimAndUpsert"),
+  import("@/lib/server/kbo/weeklyReport")
 ]);
 
 const admin = createSupabaseAdminClient();
@@ -358,6 +365,42 @@ if (!skipSim1000) {
   }
 } else {
   console.log("[sync:kbo-day] 9/9 sim-1000 skipped");
+}
+
+if (!skipWeekly) {
+  // 주간 리포트는 한 주(월~일)가 끝난 일요일에만 생성한다. (--force-weekly 로 우회)
+  const targetDow = parseLocalDate(targetDate).getDay(); // 0 = 일요일
+  const weekMon = getMondayOfDate(parseLocalDate(targetDate));
+
+  if (targetDow !== 0 && !forceWeekly) {
+    console.log(
+      `[sync:kbo-day] 10/10 weekly report skipped: ${targetDate} is not Sunday (week completes Sun). Use --force-weekly to override.`
+    );
+  } else {
+    const { data: existingWeekly } = await admin
+      .from("weekly_ai_reports")
+      .select("week_id")
+      .eq("week_id", weekMon)
+      .maybeSingle();
+
+    if (existingWeekly && !force && !forceWeekly) {
+      console.log(
+        `[sync:kbo-day] 10/10 weekly report skipped: already cached for week ${weekMon}. Use --force-weekly to regenerate.`
+      );
+    } else {
+      console.log(`[sync:kbo-day] 10/10 weekly report week=${weekMon} (${formatWeekName(weekMon)})`);
+      const weekly = await generateAndCacheWeeklyReport(admin, weekMon);
+      console.log(
+        "[sync:kbo-day] weekly report",
+        JSON.stringify({ weekId: weekMon, teamCount: weekly.rankings.length, cached: weekly.cached }, null, 2)
+      );
+      if (!weekly.cached) {
+        blockingIssues.push(`weekly report cache failed: ${weekly.error ?? "unknown"}`);
+      }
+    }
+  }
+} else {
+  console.log("[sync:kbo-day] 10/10 weekly report skipped");
 }
 
 if (blockingIssues.length > 0) {

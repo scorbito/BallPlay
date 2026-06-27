@@ -76,6 +76,17 @@ async function getLatestAiWinnerContentDate(client: SupabaseClient): Promise<str
   return typeof data?.[0]?.game_date === "string" ? data[0].game_date : null;
 }
 
+// 가장 최근 주간 시리즈 예측의 week_start_date(월요일). 새 주간 콘텐츠 우선 노출 판단용.
+async function getLatestAiWeeklyContentDate(client: SupabaseClient): Promise<string | null> {
+  const { data, error } = await client
+    .from("bp_ai_weekly_series")
+    .select("week_start_date")
+    .order("week_start_date", { ascending: false })
+    .limit(1);
+  if (error) return null;
+  return typeof data?.[0]?.week_start_date === "string" ? data[0].week_start_date : null;
+}
+
 // 적중률 통계는 RPC(POST)라 정적 생성에서 동적을 유발할 수 있어 unstable_cache 로 결과를 캐시한다.
 const getCachedAiStats = unstable_cache(
   async () => {
@@ -100,13 +111,36 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
 
   const supabase = createSupabaseCacheClient(AI_WINNER_REVALIDATE);
 
-  const latestContentDate = explicitDate ? null : await getLatestAiWinnerContentDate(supabase);
+  // 최신 일일 예측 / 최신 주간 시리즈 콘텐츠 날짜를 함께 조회.
+  // 새 주간 콘텐츠(월요일)가 최신 일일 콘텐츠보다 같거나 미래면 주간을 먼저 노출한다.
+  const [latestContentDate, latestWeeklyDate] = explicitDate
+    ? [null, null]
+    : await Promise.all([
+        getLatestAiWinnerContentDate(supabase),
+        getLatestAiWeeklyContentDate(supabase)
+      ]);
 
-  let selectedDate = explicitDate ?? latestContentDate ?? today;
+  let selectedDate: string;
+  if (explicitDate) {
+    selectedDate = explicitDate;
+  } else if (latestWeeklyDate && (!latestContentDate || latestWeeklyDate >= latestContentDate)) {
+    selectedDate = latestWeeklyDate;
+  } else {
+    selectedDate = latestContentDate ?? today;
+  }
+
   let gamesForDate = await listGamesFromDb({ from: selectedDate, to: selectedDate }, supabase).catch(() => []);
-  const shouldShowWeeklyPreview = isMonday(selectedDate) && gamesForDate.length === 0;
 
-  // 기본 진입(날짜 미지정)인데 경기 없음 → 14일 lookahead 중 가장 이른 경기일로 자동 이동.
+  // 주간 시리즈 프리뷰 판단 — 요일로 막지 않고 "주간 데이터가 실제 존재하는지"로 결정.
+  // 경기가 없는 날 + (월요일이거나 최신 주간 콘텐츠 날짜) 일 때 주간 시리즈를 조회한다.
+  const mayShowWeekly =
+    gamesForDate.length === 0 && (isMonday(selectedDate) || selectedDate === latestWeeklyDate);
+  const weeklySeriesResult = mayShowWeekly
+    ? await listAiWeeklySeriesForWeek(supabase, selectedDate)
+    : { ok: true as const, rows: [] };
+  const shouldShowWeeklyPreview = weeklySeriesResult.ok && weeklySeriesResult.rows.length > 0;
+
+  // 기본 진입(날짜 미지정)인데 경기도 주간도 없음 → 14일 lookahead 중 가장 이른 경기일로 자동 이동.
   if (!explicitDate && gamesForDate.length === 0 && !shouldShowWeeklyPreview) {
     const lookahead = await listGamesFromDb({ from: addDays(today, 1), to: addDays(today, 14) }, supabase).catch(() => []);
     if (lookahead.length > 0) {
@@ -124,10 +158,6 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
   ]);
   const prevDate = pickPrevDate(selectedDate, prevLookback.map((g) => g.date));
   const nextDate = pickNextDate(selectedDate, nextLookahead.map((g) => g.date));
-
-  const weeklySeriesResult = shouldShowWeeklyPreview
-    ? await listAiWeeklySeriesForWeek(supabase, selectedDate)
-    : { ok: true as const, rows: [] };
 
   const [predictionsResult, stats] = await Promise.all([
     listAiPredictionResultsForDate(supabase, selectedDate),

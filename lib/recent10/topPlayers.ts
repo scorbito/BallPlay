@@ -153,6 +153,9 @@ function n(value: unknown): number {
 }
 
 function diffNumber(latest: Record<string, unknown>, previous: Record<string, unknown>, key: string): number {
+  if (latest[key] === undefined || previous[key] === undefined) {
+    return 0;
+  }
   return Math.max(0, n(latest[key]) - n(previous[key]));
 }
 

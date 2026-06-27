@@ -3,7 +3,9 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { getRoster } from "@/lib/rosters";
 import { makeFallbackBatter, makeFallbackPitcher } from "@/lib/sim/leagueAverage";
 import { buildStatsDirectoryWithRecentForm } from "@/lib/sim/statsLoaderWithRecent";
+import { buildStatsDirectory } from "@/lib/sim/statsLoader";
 import type { SimBatter, SimPitcher } from "@/lib/sim/types";
+import { getPlayerSnapshotsForIds } from "@/lib/supabase/query-parts/bpPlayerStatsSnapshots";
 
 const PUBLIC_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900"
@@ -59,15 +61,20 @@ export async function GET(
   // 3. 선발 투수 스탯 획득
   const homeStarterId = findRosterPlayerIdByName(homeTeamId, homeStarterName, true);
   const awayStarterId = findRosterPlayerIdByName(awayTeamId, awayStarterName, true);
+  const starterIds = [homeStarterId, awayStarterId].filter((id): id is string => Boolean(id));
+  const starterSnapshotsRes = await getPlayerSnapshotsForIds(adminClient, starterIds, { asOfDate: gameDate });
+  const starterSnapshots = starterSnapshotsRes.ok ? starterSnapshotsRes.byPlayer : new Map();
+  const seasonStats = buildStatsDirectory([homeTeamId, awayTeamId]);
 
   const getStarterPayload = (teamId: string, id: string | null, name: string | null): SimPitcher => {
-    // DB 스냅샷 디렉터리에서 경기일 기준 최신 스탯 조회.
     if (id) {
-      const dbSnapshot = stats.pitchers.get(id);
-      if (dbSnapshot) return dbSnapshot;
+      const snapshot = starterSnapshots.get(`${id}|pitcher`)?.latest as SimPitcher | undefined;
+      if (snapshot) return snapshot;
+
+      const baseline = seasonStats.pitchers.get(id);
+      if (baseline) return baseline;
     }
 
-    // 최종 fallback
     return makeFallbackPitcher(id || `${teamId}-fallback-starter`, name || "선발", "R");
   };
 
@@ -169,6 +176,70 @@ export async function GET(
       .or(`and(home_team_id.eq.${homeTeamId},away_team_id.eq.${awayTeamId}),and(home_team_id.eq.${awayTeamId},away_team_id.eq.${homeTeamId})`);
     return data ?? [];
   };
+  const getPitcherSeasonStartStats = async (pitcherName: string | null, teamId: string) => {
+    if (!pitcherName?.trim()) {
+      return {
+        games: 0,
+        wins: 0,
+        losses: 0,
+        qualityStarts: 0,
+        era: null,
+        whip: null,
+        k9: null,
+        bb9: null
+      };
+    }
+
+    const { data } = await adminClient
+      .from("bp_pitcher_game_logs")
+      .select("wins, losses, outs, hits_allowed, walks_hbp, strikeouts, earned_runs")
+      .eq("pitcher_name", pitcherName.trim())
+      .eq("team_id", teamId)
+      .eq("pitcher_order", "1")
+      .gte("game_date", `${season}-01-01`)
+      .lt("game_date", gameDate);
+
+    const rows = data ?? [];
+    const totals = rows.reduce(
+      (acc, row) => {
+        const outs = Number(row.outs ?? 0);
+        const earnedRuns = Number(row.earned_runs ?? 0);
+        acc.wins += Number(row.wins ?? 0);
+        acc.losses += Number(row.losses ?? 0);
+        acc.outs += outs;
+        acc.hitsAllowed += Number(row.hits_allowed ?? 0);
+        acc.walksHbp += Number(row.walks_hbp ?? 0);
+        acc.strikeouts += Number(row.strikeouts ?? 0);
+        acc.earnedRuns += earnedRuns;
+        if (outs >= 18 && earnedRuns <= 3) acc.qualityStarts += 1;
+        return acc;
+      },
+      {
+        wins: 0,
+        losses: 0,
+        qualityStarts: 0,
+        outs: 0,
+        hitsAllowed: 0,
+        walksHbp: 0,
+        strikeouts: 0,
+        earnedRuns: 0
+      }
+    );
+
+    const rate = (numerator: number, denominator: number) =>
+      denominator > 0 ? Math.round((numerator / denominator) * 100) / 100 : null;
+
+    return {
+      games: rows.length,
+      wins: totals.wins,
+      losses: totals.losses,
+      qualityStarts: totals.qualityStarts,
+      era: rate(totals.earnedRuns * 27, totals.outs),
+      whip: rate((totals.hitsAllowed + totals.walksHbp) * 3, totals.outs),
+      k9: rate(totals.strikeouts * 27, totals.outs),
+      bb9: rate(totals.walksHbp * 27, totals.outs)
+    };
+  };
 
   const getPitcherVsTeamStats = async (
     pitcherName: string | null,
@@ -240,7 +311,9 @@ export async function GET(
     standings,
     h2hGames,
     homeStarterVsOpponent,
-    awayStarterVsOpponent
+    awayStarterVsOpponent,
+    homeStarterSeasonStartStats,
+    awayStarterSeasonStartStats
   ] = await Promise.all([
     getTeamBattingAvg(homeTeamId),
     getTeamBattingAvg(awayTeamId),
@@ -249,7 +322,9 @@ export async function GET(
     getTeamStandings(),
     getH2HRecord(),
     getPitcherVsTeamStats(homeStarterName, homeTeamId, awayTeamId),
-    getPitcherVsTeamStats(awayStarterName, awayTeamId, homeTeamId)
+    getPitcherVsTeamStats(awayStarterName, awayTeamId, homeTeamId),
+    getPitcherSeasonStartStats(homeStarterName, homeTeamId),
+    getPitcherSeasonStartStats(awayStarterName, awayTeamId)
   ]);
 
   // 상대전적 가공
@@ -312,8 +387,10 @@ export async function GET(
     starters: {
       home: {
         name: homeStarterStats.name,
-        wins: homeStarterStats.wins ?? 0,
-        losses: homeStarterStats.losses ?? 0,
+        games: homeStarterSeasonStartStats.games,
+        wins: homeStarterSeasonStartStats.wins,
+        losses: homeStarterSeasonStartStats.losses,
+        qualityStarts: homeStarterSeasonStartStats.qualityStarts,
         era: homeStarterStats.era,
         whip: homeStarterStats.whip,
         k9: homeStarterStats.k9,
@@ -322,8 +399,10 @@ export async function GET(
       },
       away: {
         name: awayStarterStats.name,
-        wins: awayStarterStats.wins ?? 0,
-        losses: awayStarterStats.losses ?? 0,
+        games: awayStarterSeasonStartStats.games,
+        wins: awayStarterSeasonStartStats.wins,
+        losses: awayStarterSeasonStartStats.losses,
+        qualityStarts: awayStarterSeasonStartStats.qualityStarts,
         era: awayStarterStats.era,
         whip: awayStarterStats.whip,
         k9: awayStarterStats.k9,
