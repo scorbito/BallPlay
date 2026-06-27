@@ -176,23 +176,16 @@ export async function GET(
       .or(`and(home_team_id.eq.${homeTeamId},away_team_id.eq.${awayTeamId}),and(home_team_id.eq.${awayTeamId},away_team_id.eq.${homeTeamId})`);
     return data ?? [];
   };
+  // 상단 표시용 — 선발 등판 경기만 집계(등판 수/승/패/QS). ERA·WHIP 등 비율 지표는
+  // 하단에서 시즌 누적 스냅샷 값을 그대로 쓰므로 여기서는 계산하지 않는다.
   const getPitcherSeasonStartStats = async (pitcherName: string | null, teamId: string) => {
     if (!pitcherName?.trim()) {
-      return {
-        games: 0,
-        wins: 0,
-        losses: 0,
-        qualityStarts: 0,
-        era: null,
-        whip: null,
-        k9: null,
-        bb9: null
-      };
+      return { games: 0, wins: 0, losses: 0, qualityStarts: 0 };
     }
 
     const { data } = await adminClient
       .from("bp_pitcher_game_logs")
-      .select("wins, losses, outs, hits_allowed, walks_hbp, strikeouts, earned_runs")
+      .select("wins, losses, outs, earned_runs")
       .eq("pitcher_name", pitcherName.trim())
       .eq("team_id", teamId)
       .eq("pitcher_order", "1")
@@ -206,38 +199,17 @@ export async function GET(
         const earnedRuns = Number(row.earned_runs ?? 0);
         acc.wins += Number(row.wins ?? 0);
         acc.losses += Number(row.losses ?? 0);
-        acc.outs += outs;
-        acc.hitsAllowed += Number(row.hits_allowed ?? 0);
-        acc.walksHbp += Number(row.walks_hbp ?? 0);
-        acc.strikeouts += Number(row.strikeouts ?? 0);
-        acc.earnedRuns += earnedRuns;
         if (outs >= 18 && earnedRuns <= 3) acc.qualityStarts += 1;
         return acc;
       },
-      {
-        wins: 0,
-        losses: 0,
-        qualityStarts: 0,
-        outs: 0,
-        hitsAllowed: 0,
-        walksHbp: 0,
-        strikeouts: 0,
-        earnedRuns: 0
-      }
+      { wins: 0, losses: 0, qualityStarts: 0 }
     );
-
-    const rate = (numerator: number, denominator: number) =>
-      denominator > 0 ? Math.round((numerator / denominator) * 100) / 100 : null;
 
     return {
       games: rows.length,
       wins: totals.wins,
       losses: totals.losses,
-      qualityStarts: totals.qualityStarts,
-      era: rate(totals.earnedRuns * 27, totals.outs),
-      whip: rate((totals.hitsAllowed + totals.walksHbp) * 3, totals.outs),
-      k9: rate(totals.strikeouts * 27, totals.outs),
-      bb9: rate(totals.walksHbp * 27, totals.outs)
+      qualityStarts: totals.qualityStarts
     };
   };
 
