@@ -1,7 +1,7 @@
 {
   "teamId": "lotte",
   "teamName": "롯데 자이언츠",
-  "_scrapedAt": "2026-06-22T04:03:07.741Z",
+  "_scrapedAt": "2026-06-29T03:44:20.958Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -12,7 +12,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 51,
+      "seasonGames": 57,
       "_note": "수동 추가 — KBO Player Search 누락 (2026-05-30 확인)",
       "_manual": true,
       "_playerId": "50500",
@@ -25,7 +25,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 40
+      "seasonGames": 46
     },
     {
       "id": "lotte-3",
@@ -52,7 +52,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 27
+      "seasonGames": 30
     },
     {
       "id": "lotte-7",
@@ -88,7 +88,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 67
+      "seasonGames": 73
     },
     {
       "id": "lotte-14",
@@ -106,7 +106,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lotte-16",
@@ -133,7 +133,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 10
+      "seasonGames": 13
     },
     {
       "id": "lotte-21",
@@ -142,7 +142,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lotte-22",
@@ -160,7 +160,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 14
+      "seasonGames": 15
     },
     {
       "id": "lotte-24",
@@ -170,15 +170,6 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
-    },
-    {
-      "id": "lotte-25",
-      "name": "한동희",
-      "jerseyNumber": 25,
-      "primaryPosition": "3B",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 35
     },
     {
       "id": "lotte-26",
@@ -205,7 +196,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 66
+      "seasonGames": 72
     },
     {
       "id": "lotte-29",
@@ -214,7 +205,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "S",
-      "seasonGames": 70
+      "seasonGames": 76
     },
     {
       "id": "lotte-30",
@@ -232,7 +223,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lotte-32",
@@ -250,7 +241,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 47
+      "seasonGames": 52
     },
     {
       "id": "lotte-34",
@@ -259,7 +250,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 31
+      "seasonGames": 35
     },
     {
       "id": "lotte-35",
@@ -277,7 +268,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 35
+      "seasonGames": 39
     },
     {
       "id": "lotte-37",
@@ -286,7 +277,16 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 9
+      "seasonGames": 10
+    },
+    {
+      "id": "lotte-39",
+      "name": "이이무라",
+      "jerseyNumber": 39,
+      "primaryPosition": "P",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 2
     },
     {
       "id": "lotte-40",
@@ -322,7 +322,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lotte-44",
@@ -340,7 +340,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 3
+      "seasonGames": 4
     },
     {
       "id": "lotte-46",
@@ -358,7 +358,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 1
+      "seasonGames": 2
     },
     {
       "id": "lotte-49",
@@ -376,7 +376,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 11
+      "seasonGames": 17
     },
     {
       "id": "lotte-51",
@@ -385,7 +385,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 38
+      "seasonGames": 43
     },
     {
       "id": "lotte-52",
@@ -394,7 +394,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 45
+      "seasonGames": 51
     },
     {
       "id": "lotte-53",
@@ -403,7 +403,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 53
+      "seasonGames": 59
     },
     {
       "id": "lotte-54",
@@ -430,7 +430,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 29
+      "seasonGames": 33
     },
     {
       "id": "lotte-57",
@@ -466,7 +466,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 0
+      "seasonGames": 2
     },
     {
       "id": "lotte-61",
@@ -502,7 +502,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 11
+      "seasonGames": 13
     },
     {
       "id": "lotte-65",
@@ -511,7 +511,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 29
+      "seasonGames": 30
     },
     {
       "id": "lotte-66",
@@ -538,7 +538,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 3
+      "seasonGames": 8
     },
     {
       "id": "lotte-91",
@@ -547,7 +547,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 41
     },
     {
       "id": "lotte-95",
@@ -685,24 +685,6 @@
       "seasonGames": 0
     },
     {
-      "id": "lotte-118",
-      "name": "하혜성",
-      "jerseyNumber": 118,
-      "primaryPosition": "P",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 0
-    },
-    {
-      "id": "lotte-120",
-      "name": "이건희",
-      "jerseyNumber": 120,
-      "primaryPosition": "C",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 0
-    },
-    {
       "id": "lotte-121",
       "name": "이태연",
       "jerseyNumber": 121,
@@ -801,15 +783,6 @@
       "seasonGames": 0
     },
     {
-      "id": "lotte-136",
-      "name": "한승현",
-      "jerseyNumber": 136,
-      "primaryPosition": "CF",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 0
-    },
-    {
       "id": "lotte-137",
       "name": "김화중",
       "jerseyNumber": 137,
@@ -888,6 +861,24 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
+      "seasonGames": 0
+    },
+    {
+      "id": "lotte-147",
+      "name": "소한빈",
+      "jerseyNumber": 147,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 0
+    },
+    {
+      "id": "lotte-148",
+      "name": "안우진",
+      "jerseyNumber": 148,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
       "seasonGames": 0
     }
   ]
