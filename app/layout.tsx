@@ -7,6 +7,7 @@ import { CustomCursor } from "@/components/common/CustomCursor";
 import { AppStateProvider } from "@/lib/state/AppState";
 import "./globals.css";
 import "@/styles/light-home.css";
+import "@/styles/event.css";
 import "@/styles/light-auth-onboarding.css";
 import "@/styles/light-components-schedule.css";
 import "@/styles/light-rank-detail.css";

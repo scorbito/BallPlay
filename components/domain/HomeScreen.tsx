@@ -539,7 +539,7 @@ export function HomeScreen() {
         const predictBannerNode = (
           <Link
             className="play-hub-predict-banner"
-            href="/predict/winner"
+            href="/event/predict-ai"
             prefetch={false}
             key="predict-banner"
           >

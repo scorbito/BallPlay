@@ -1,0 +1,178 @@
+/* 이벤트 페이지 — 승부예측 AI 대결 (라이트 테마) */
+.phone-frame-light .event-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+
+.phone-frame-light .event-banner {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+}
+
+.phone-frame-light .event-intro {
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+}
+
+.phone-frame-light .event-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fce7f3;
+  color: #db2777;
+  border: 1px solid #f9a8d4;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.phone-frame-light .event-intro h1 {
+  margin: 0 0 6px;
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .event-intro p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.5;
+}
+
+.phone-frame-light .event-ai-now {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--bp-line-soft);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .event-ai-now strong {
+  color: var(--bp-accent);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.phone-frame-light .event-section-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+  margin: 4px 0 -4px 4px;
+}
+
+.phone-frame-light .event-prizes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-frame-light .event-prize {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.phone-frame-light .event-prize-main {
+  border-color: #f9a8d4;
+  box-shadow: 0 0 0 1px #fbcfe8, 0 4px 14px rgba(219, 39, 119, 0.1);
+}
+
+.phone-frame-light .event-prize-img {
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fffaf0;
+}
+
+.phone-frame-light .event-prize-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.phone-frame-light .event-prize-tag {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 800;
+  color: #db2777;
+}
+.phone-frame-light .event-prize-main .event-prize-tag {
+  color: #d97706;
+}
+
+.phone-frame-light .event-prize-body strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .event-prize-body p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  line-height: 1.45;
+}
+
+.phone-frame-light .event-info {
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+.phone-frame-light .event-info h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+.phone-frame-light .event-info h2:not(:first-child) {
+  margin-top: 14px;
+}
+.phone-frame-light .event-info ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.phone-frame-light .event-info li {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+  line-height: 1.5;
+}
+
+.phone-frame-light .event-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 15px;
+  border-radius: 14px;
+  background: var(--bp-accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(219, 39, 119, 0.25);
+}
