@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -53,6 +53,9 @@ type Props = {
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
   overallStats: AiOverallStats;
   providerStats: AiProviderStats[];
+  /** 이번 주(화~일) 누적 적중률 — 전체 통계 카드 하단에 따로 표시. */
+  weeklyOverallStats: AiOverallStats;
+  weeklyProviderStats: AiProviderStats[];
   /** 소프트 게이트 — 현재는 항상 false(게이트 제거). 컴포넌트 호환 위해 prop 유지. */
   locked?: boolean;
 };
@@ -228,6 +231,65 @@ function WeeklySeriesPreview({ seriesRows }: { seriesRows: AiWeeklySeries[] }) {
   );
 }
 
+/** 적중률 통계 카드 — 전체/주간 동일 형식으로 재사용. showAvatar=false 면 아바타 대신 AI 이름 텍스트. */
+function AiStatsCard({
+  label,
+  overall,
+  providerStats,
+  showAvatar = true
+}: {
+  label: string;
+  overall: AiOverallStats;
+  providerStats: AiProviderStats[];
+  showAvatar?: boolean;
+}) {
+  const providerByName = new Map<AiProvider, AiProviderStats>();
+  for (const p of providerStats) providerByName.set(p.ai_provider, p);
+
+  return (
+    <header className="ai-winner-stats-card">
+      <div className="ai-winner-stats-overall">
+        <span className="ai-winner-stats-label">
+          <Trophy size={12} strokeWidth={2.5} />
+          {label}
+        </span>
+        <span className="ai-winner-stats-accuracy">
+          {overall.accuracy !== null ? `${overall.accuracy}%` : "—"}
+        </span>
+        <span className="ai-winner-stats-detail">
+          {overall.correct_count} / {overall.total_count} 적중
+        </span>
+      </div>
+      <div className="ai-winner-stats-providers">
+        {AI_ORDER.map((name) => {
+          const stat = providerByName.get(name);
+          const acc = stat?.accuracy;
+          const total = stat?.total_count ?? 0;
+          const correct = stat?.correct_count ?? 0;
+          return (
+            <div key={name} className={`ai-winner-provider-mini ai-winner-provider-${name}`}>
+              {showAvatar ? (
+                <Image
+                  src={AI_AVATAR_SRC[name]}
+                  alt={`${AI_LABEL[name]} AI 캐릭터`}
+                  width={28}
+                  height={28}
+                  sizes="28px"
+                  className="ai-winner-provider-avatar"
+                />
+              ) : (
+                <span className="ai-winner-provider-name">{AI_LABEL[name]}</span>
+              )}
+              <span className="ai-winner-provider-acc">{acc !== null && acc !== undefined ? `${acc}%` : "—"}</span>
+              <span className="ai-winner-provider-count">{correct}/{total}</span>
+            </div>
+          );
+        })}
+      </div>
+    </header>
+  );
+}
+
 const SEEN_STORAGE_PREFIX = "ballplay:ai-predict-seen:";
 
 export function AiWinnerListScreen({
@@ -244,6 +306,8 @@ export function AiWinnerListScreen({
   nextGameDate,
   overallStats,
   providerStats,
+  weeklyOverallStats,
+  weeklyProviderStats,
   locked = false
 }: Props) {
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.
@@ -329,52 +393,12 @@ export function AiWinnerListScreen({
   // 단 예측이 이미 존재하면 showLocked가 hasPredictions로 자연히 false가 돼서 admin은 미리 reveal됨.
   const isBeforePublish = hydrated && !published;
 
-  const providerByName = useMemo(() => {
-    const map = new Map<AiProvider, AiProviderStats>();
-    for (const p of providerStats) map.set(p.ai_provider, p);
-    return map;
-  }, [providerStats]);
-
   return (
     <AppShell activeTab="home" title="AI 승리팀 예측" theme="light" backHref="/" wide>
       <section className="ai-winner-screen">
-        {/* ── 시즌 적중률 헤더 카드 ── */}
-        <header className="ai-winner-stats-card">
-          <div className="ai-winner-stats-overall">
-            <span className="ai-winner-stats-label">
-              <Trophy size={12} strokeWidth={2.5} />
-              AI 종합
-            </span>
-            <span className="ai-winner-stats-accuracy">
-              {overallStats.accuracy !== null ? `${overallStats.accuracy}%` : "—"}
-            </span>
-            <span className="ai-winner-stats-detail">
-              {overallStats.correct_count} / {overallStats.total_count} 적중
-            </span>
-          </div>
-          <div className="ai-winner-stats-providers">
-            {AI_ORDER.map((name) => {
-              const stat = providerByName.get(name);
-              const acc = stat?.accuracy;
-              const total = stat?.total_count ?? 0;
-              const correct = stat?.correct_count ?? 0;
-              return (
-                <div key={name} className={`ai-winner-provider-mini ai-winner-provider-${name}`}>
-                  <Image
-                    src={AI_AVATAR_SRC[name]}
-                    alt={`${AI_LABEL[name]} AI 캐릭터`}
-                    width={28}
-                    height={28}
-                    sizes="28px"
-                    className="ai-winner-provider-avatar"
-                  />
-                  <span className="ai-winner-provider-acc">{acc !== null && acc !== undefined ? `${acc}%` : "—"}</span>
-                  <span className="ai-winner-provider-count">{correct}/{total}</span>
-                </div>
-              );
-            })}
-          </div>
-        </header>
+        {/* ── 적중률 헤더 카드 — 전체(종합) + 이번 주(화~일 누적) ── */}
+        <AiStatsCard label="AI 종합" overall={overallStats} providerStats={providerStats} />
+        <AiStatsCard label="이번 주" overall={weeklyOverallStats} providerStats={weeklyProviderStats} showAvatar={false} />
 
         {/* ── 로그인 유도 배너 (비로그인/익명 한정). 위 종합 적중률은 미끼로 그대로 노출. ── */}
         {locked ? (

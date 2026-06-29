@@ -141,7 +141,7 @@ export async function lockPredictionsForDate(
 export async function getMyPredictionStats(
   client: SupabaseClient,
   userId: string,
-  opts?: { dateISO?: string }
+  opts?: { dateISO?: string; sinceISO?: string }
 ): Promise<{ ok: true; stats: PredictionStats } | { ok: false; error: string }> {
   // 잠금된(lockedAt is not null) 예측만 통계 대상 — draft는 가짜 적중률 방지를 위해 제외.
   let query = client
@@ -150,6 +150,7 @@ export async function getMyPredictionStats(
     .eq("user_id", userId)
     .not("locked_at", "is", null);
   if (opts?.dateISO) query = query.eq("game_date", opts.dateISO);
+  if (opts?.sinceISO) query = query.gte("game_date", opts.sinceISO);
   const { data, error } = await query;
   if (error) return { ok: false, error: error.message };
 
@@ -221,4 +222,76 @@ export async function getPredictionRanking(
   });
   if (error) return { ok: false, error: error.message };
   return { ok: true, rows: (data ?? []) as PredictionRankingRow[] };
+}
+
+/**
+ * 화~일 고정 주간 적중률 랭킹. 기존 RPC('week')는 롤링 7일이라 이벤트 주간과 어긋나
+ * 앱단에서 weekStartISO(화) 이후를 직접 집계한다. (운영 공유 DB 함수 변경 회피)
+ */
+export async function getWeeklyPredictionRanking(
+  client: SupabaseClient,
+  opts: { weekStartISO: string; minGames?: number; limit?: number }
+): Promise<{ ok: true; rows: PredictionRankingRow[] } | { ok: false; error: string }> {
+  const minGames = opts.minGames ?? PREDICTION_RANKING_MIN_GAMES;
+  const limit = opts.limit ?? 20;
+
+  // 잠금·채점된 예측만, 그 주(화~) 범위. 행이 많을 수 있어 1000행씩 페이지네이션.
+  const byUser = new Map<string, { total: number; correct: number }>();
+  const PAGE = 1000;
+  const MAX_ROWS = 50000;
+  for (let from = 0; from < MAX_ROWS; from += PAGE) {
+    const { data, error } = await client
+      .from(RESULTS_VIEW)
+      .select("user_id,is_correct")
+      .gte("game_date", opts.weekStartISO)
+      .not("locked_at", "is", null)
+      .eq("is_judged", true)
+      .range(from, from + PAGE - 1);
+    if (error) return { ok: false, error: error.message };
+    const rows = (data ?? []) as Array<{ user_id: string; is_correct: boolean | null }>;
+    for (const row of rows) {
+      const agg = byUser.get(row.user_id) ?? { total: 0, correct: 0 };
+      agg.total += 1;
+      if (row.is_correct === true) agg.correct += 1;
+      byUser.set(row.user_id, agg);
+    }
+    if (rows.length < PAGE) break;
+  }
+
+  const ranked = Array.from(byUser.entries())
+    .map(([user_id, agg]) => ({
+      user_id,
+      total: agg.total,
+      correct: agg.correct,
+      rate: agg.total > 0 ? agg.correct / agg.total : 0
+    }))
+    .filter((r) => r.total >= minGames)
+    .sort((a, b) => b.rate - a.rate || b.total - a.total)
+    .slice(0, limit);
+
+  if (ranked.length === 0) return { ok: true, rows: [] };
+
+  const { data: profiles, error: profileError } = await client
+    .from("profiles")
+    .select("id,nickname,main_team_id,avatar_image_url")
+    .in("id", ranked.map((r) => r.user_id));
+  if (profileError) return { ok: false, error: profileError.message };
+  const profileById = new Map(
+    (profiles ?? []).map((p: { id: string; nickname: string | null; main_team_id: string | null; avatar_image_url: string | null }) => [p.id, p])
+  );
+
+  const rows: PredictionRankingRow[] = ranked.map((r, idx) => {
+    const p = profileById.get(r.user_id);
+    return {
+      rank: idx + 1,
+      user_id: r.user_id,
+      nickname: p?.nickname ?? null,
+      main_team_id: p?.main_team_id ?? null,
+      avatar_image_url: p?.avatar_image_url ?? null,
+      total: r.total,
+      correct: r.correct,
+      rate: r.rate
+    };
+  });
+  return { ok: true, rows };
 }

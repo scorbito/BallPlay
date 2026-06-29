@@ -11,14 +11,16 @@ import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredicti
 type Props = {
   // 비로그인이면 null — 랭킹은 누구나 열람, 본인 행 하이라이트만 생략.
   currentUserId: string | null;
-  initialRanking: PredictionRankingRow[];
+  weeklyRanking: PredictionRankingRow[];
+  seasonRanking: PredictionRankingRow[];
 };
 
-export function RankingScreen({ currentUserId, initialRanking }: Props) {
+export function RankingScreen({ currentUserId, weeklyRanking, seasonRanking }: Props) {
   return (
     <AppShell activeTab="home" title="적중률 랭킹" theme="light" backHref="/predict/winner" wide>
       <PredictionRanking
-        initialRows={initialRanking}
+        weeklyRows={weeklyRanking}
+        seasonRows={seasonRanking}
         currentUserId={currentUserId}
       />
     </AppShell>

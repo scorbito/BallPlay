@@ -22,6 +22,15 @@ function addDays(dateISO: string, days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// KBO 주간(화요일 시작) — 오늘이 속한 주의 화요일 ISO. 월요일이면 직전 주 화요일.
+function kstWeekStartTuesday(): string {
+  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const dow = kst.getDay(); // 0=일 .. 6=토
+  const daysSinceTue = (dow - 2 + 7) % 7;
+  kst.setDate(kst.getDate() - daysSinceTue);
+  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+}
+
 export default async function WinnerPredictPage({
   searchParams
 }: {
@@ -85,12 +94,14 @@ export default async function WinnerPredictPage({
   const emptyStats = { total: 0, correct: 0, pending: 0 };
   const predictionByGameId = new Map<string, BpPredictionResultRow>();
   let dateStats = emptyStats;
+  let weekStats = emptyStats;
   let allTimeStats = emptyStats;
 
   if (user) {
-    const [predictionsResult, dateStatsResult, allTimeStatsResult] = await Promise.all([
+    const [predictionsResult, dateStatsResult, weekStatsResult, allTimeStatsResult] = await Promise.all([
       listMyPredictionResultsForDate(supabase, user.id, selectedDate),
       getMyPredictionStats(supabase, user.id, { dateISO: selectedDate }),
+      getMyPredictionStats(supabase, user.id, { sinceISO: kstWeekStartTuesday() }),
       getMyPredictionStats(supabase, user.id)
     ]);
     if (predictionsResult.ok) {
@@ -99,6 +110,7 @@ export default async function WinnerPredictPage({
       }
     }
     if (dateStatsResult.ok) dateStats = dateStatsResult.stats;
+    if (weekStatsResult.ok) weekStats = weekStatsResult.stats;
     if (allTimeStatsResult.ok) allTimeStats = allTimeStatsResult.stats;
   }
 
@@ -136,6 +148,7 @@ export default async function WinnerPredictPage({
       nextDateISO={nextDate}
       games={games}
       dateStats={dateStats}
+      weekStats={weekStats}
       allTimeStats={allTimeStats}
     />
   );

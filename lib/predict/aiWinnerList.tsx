@@ -38,6 +38,15 @@ function isMonday(dateISO: string): boolean {
   return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 1;
 }
 
+// KBO 주간(화요일 시작) — 오늘이 속한 주의 화요일 ISO. 월요일이면 직전 주 화요일.
+function kstWeekStartTuesday(): string {
+  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const dow = kst.getDay(); // 0=일 .. 6=토
+  const daysSinceTue = (dow - 2 + 7) % 7;
+  kst.setDate(kst.getDate() - daysSinceTue);
+  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+}
+
 function listMondaysBetween(fromISO: string, toISO: string): string[] {
   const dates: string[] = [];
   let cursor = fromISO;
@@ -89,15 +98,20 @@ async function getLatestAiWeeklyContentDate(client: SupabaseClient): Promise<str
 
 // 적중률 통계는 RPC(POST)라 정적 생성에서 동적을 유발할 수 있어 unstable_cache 로 결과를 캐시한다.
 const getCachedAiStats = unstable_cache(
-  async () => {
+  async (weekStartISO: string) => {
     const client = createSupabaseCacheClient(AI_WINNER_REVALIDATE);
-    const [overall, provider] = await Promise.all([
+    const emptyOverall = { total_count: 0, correct_count: 0, accuracy: null };
+    const [overall, provider, weeklyOverall, weeklyProvider] = await Promise.all([
       getAiOverallStats(client),
-      getAiByProviderStats(client)
+      getAiByProviderStats(client),
+      getAiOverallStats(client, weekStartISO),
+      getAiByProviderStats(client, weekStartISO)
     ]);
     return {
-      overallStats: overall.ok ? overall.stats : { total_count: 0, correct_count: 0, accuracy: null },
-      providerStats: provider.ok ? provider.rows : []
+      overallStats: overall.ok ? overall.stats : emptyOverall,
+      providerStats: provider.ok ? provider.rows : [],
+      weeklyOverallStats: weeklyOverall.ok ? weeklyOverall.stats : emptyOverall,
+      weeklyProviderStats: weeklyProvider.ok ? weeklyProvider.rows : []
     };
   },
   ["ai-winner-overall-stats"],
@@ -161,7 +175,7 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
 
   const [predictionsResult, stats] = await Promise.all([
     listAiPredictionResultsForDate(supabase, selectedDate),
-    getCachedAiStats()
+    getCachedAiStats(kstWeekStartTuesday())
   ]);
 
   const predictionsByGameId = new Map<string, BpAiPredictionResultRow[]>();
@@ -231,6 +245,8 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
       nextGameDate={nextDate}
       overallStats={stats.overallStats}
       providerStats={stats.providerStats}
+      weeklyOverallStats={stats.weeklyOverallStats}
+      weeklyProviderStats={stats.weeklyProviderStats}
       locked={false}
     />
   );

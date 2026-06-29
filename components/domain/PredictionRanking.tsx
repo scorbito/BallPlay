@@ -1,16 +1,23 @@
 "use client";
 
-// 적중률 랭킹은 초기 운영 단계에서 시즌 랭킹만 노출합니다.
+// 적중률 랭킹 — 주간(화~일, 기본) / 전체(시즌) 탭. 둘 다 서버에서 prefetch 받아 전환만.
 
+import { useState } from "react";
 import { Trophy } from "lucide-react";
 import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredictions";
 
+type Tab = "week" | "season";
+
 type Props = {
-  initialRows: PredictionRankingRow[];
+  weeklyRows: PredictionRankingRow[];
+  seasonRows: PredictionRankingRow[];
   currentUserId: string | null;
 };
 
-export function PredictionRanking({ initialRows, currentUserId }: Props) {
+export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Props) {
+  const [tab, setTab] = useState<Tab>("week");
+  const rows = tab === "week" ? weeklyRows : seasonRows;
+
   return (
     <section className="predict-rank" aria-label="적중률 랭킹">
       <header className="predict-rank-head">
@@ -21,13 +28,36 @@ export function PredictionRanking({ initialRows, currentUserId }: Props) {
         <p className="predict-rank-sub">최소 5경기 예측 · 채점된 경기만 집계</p>
       </header>
 
-      {initialRows.length === 0 ? (
+      <div className="predict-rank-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "week"}
+          className={`predict-rank-tab ${tab === "week" ? "is-active" : ""}`}
+          onClick={() => setTab("week")}
+        >
+          주간
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "season"}
+          className={`predict-rank-tab ${tab === "season" ? "is-active" : ""}`}
+          onClick={() => setTab("season")}
+        >
+          전체
+        </button>
+      </div>
+
+      {rows.length === 0 ? (
         <p className="predict-rank-empty">
-          아직 5경기 이상 예측한 사용자가 없어요. 첫 도전자가 되어보세요.
+          {tab === "week"
+            ? "이번 주 아직 5경기 이상 예측한 사용자가 없어요. 첫 도전자가 되어보세요."
+            : "아직 5경기 이상 예측한 사용자가 없어요. 첫 도전자가 되어보세요."}
         </p>
       ) : (
         <ol className="predict-rank-list">
-          {initialRows.map((row) => {
+          {rows.map((row) => {
             const isMe = currentUserId !== null && row.user_id === currentUserId;
             const ratePct = Math.round(row.rate * 100);
             const rankBadgeClass =

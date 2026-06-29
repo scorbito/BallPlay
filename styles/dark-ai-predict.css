@@ -87,6 +87,15 @@
   filter: drop-shadow(0 4px 6px rgba(15, 23, 42, 0.12));
 }
 
+/* 주간 카드 — 아바타 대신 AI 이름 텍스트 */
+.phone-frame-light .ai-winner-provider-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
 .phone-frame-light .ai-winner-provider-acc {
   font-size: 14px;
   font-weight: 900;

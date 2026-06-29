@@ -1,12 +1,12 @@
 /* ============================================================
- * ?�리?� ?�측 (predict/winner) ???�이???�마, ?�정 ?�이지 ???��??? * ============================================================ */
+ * ?�리?� ?�측 (predict/winner) ???�이???�마, ?�정 ?�이지 ???��??? * ============================================================ */
 
-/* ?�?� ?�단 ?�중�?????�?컴팩??(?�늘 | ?�체) ?�?� */
+/* ?�?� ?�단 ?�중�?????�?컴팩??(?�늘 | ?�체) ?�?� */
 .phone-frame-light .predict-stats {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   padding: 14px 16px;
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
@@ -58,7 +58,7 @@
   background: var(--bp-line);
 }
 
-/* ?�?� ?�짜 ?�더 ??[<] ?�짜+?�내 [>] ?�?� */
+/* ?�?� ?�짜 ?�더 ??[<] ?�짜+?�내 [>] ?�?� */
 .phone-frame-light .predict-day-header {
   display: grid;
   grid-template-columns: 36px 1fr 36px;
@@ -75,7 +75,7 @@
   min-width: 0;
 }
 
-/* ?�늘???�닐 ?????�짜 ?�역 ?�체가 "?�늘�? Link */
+/* ?�늘???�닐 ?????�짜 ?�역 ?�체가 "?�늘�? Link */
 .phone-frame-light .predict-day-center-link {
   text-decoration: none;
   padding: 4px 12px;
@@ -133,7 +133,7 @@
   cursor: default;
 }
 
-/* ?�?� 경기 ??리스???�?� */
+/* ?�?� 경기 ??리스???�?� */
 .phone-frame-light .predict-row-list {
   display: flex;
   flex-direction: column;
@@ -144,7 +144,7 @@
   border-radius: 14px;
 }
 
-/* ?�일 ?? [time] [away btn] [vs] [home btn] [status/결과 ?�벨] */
+/* ?�일 ?? [time] [away btn] [vs] [home btn] [status/결과 ?�벨] */
 .phone-frame-light .predict-row {
   position: relative;
   display: grid;
@@ -156,15 +156,15 @@
   transition: background 0.2s ease;
 }
 
-/* ?��?+ ?�발 ?�수 묶음 ???� 버튼 ??중앙??배치 (가�?flex: 1�??��? 공간 차�?).
-   ?�명�? 가?�데 ?�렬, ?�발 ?�수??�??�래 ??�? away/home ?�일 처리. */
+/* ?��?+ ?�발 ?�수 묶음 ???� 버튼 ??중앙??배치 (가�?flex: 1�??��? 공간 차�?).
+   ?�명�? 가?�데 ?�렬, ?�발 ?�수??�??�래 ??�? away/home ?�일 처리. */
 .phone-frame-light .predict-row-team-block {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  min-width: 0; /* text-overflow ?�작??*/
+  min-width: 0; /* text-overflow ?�작??*/
   line-height: 1.15;
 }
 
@@ -183,13 +183,13 @@
   background: transparent;
 }
 
-/* 카드 stagger ?�장 ???�이지??????경기가 ?�을 ?�만(JS?�서 ?�래??부??.
-   stagger delay??inline style(animationDelay)�?카드�??�르�??�용. */
+/* 카드 stagger ?�장 ???�이지??????경기가 ?�을 ?�만(JS?�서 ?�래??부??.
+   stagger delay??inline style(animationDelay)�?카드�??�르�??�용. */
 .phone-frame-light .predict-row.is-staggered {
   animation: predict-row-judged-in 0.45s ease-out backwards;
 }
 
-/* ?�중�?카드 ?�이?�인 ??마�?�?카드 ?�장 ???�이??+ ?�자 카운?�업 ?�작 */
+/* ?�중�?카드 ?�이?�인 ??마�?�?카드 ?�장 ???�이??+ ?�자 카운?�업 ?�작 */
 @keyframes predict-stat-fade-in {
   0% {
     opacity: 0;
@@ -233,8 +233,8 @@
   min-width: 0;
 }
 
-/* ?�?� ?� ?�이??(?�택 가??버튼) ?�?�
-   grid 1fr auto 1fr ?????�이??콘텐�?badge / trail) ?�무 관계없??team-block???�중??고정.
+/* ?�?� ?� ?�이??(?�택 가??버튼) ?�?�
+   grid 1fr auto 1fr ?????�이??콘텐�?badge / trail) ?�무 관계없??team-block???�중??고정.
    AWAY: [badge] [team-block] [trail(score+check)]
    HOME: [trail(check+score)] [team-block] [badge] (DOM order 미러) */
 .phone-frame-light .predict-row-side {
@@ -252,7 +252,7 @@
   min-width: 0;
 }
 
-/* col 1?� ?�작쪽으�? col 3?� ?�쪽?�로 ?�렬 */
+/* col 1?� ?�작쪽으�? col 3?� ?�쪽?�로 ?�렬 */
 .phone-frame-light .predict-row-side > :first-child {
   justify-self: start;
 }
@@ -268,9 +268,9 @@
   gap: 3px;
 }
 
-/* HOME side??미러�?grid ?�동 배치?��?�?별도 ?�렬 ?�요 X. 기존 class???��?(?�른 곳서 참조 가??. */
+/* HOME side??미러�?grid ?�동 배치?��?�?별도 ?�렬 ?�요 X. 기존 class???��?(?�른 곳서 참조 가??. */
 .phone-frame-light .predict-row-side-right {
-  /* ?�환???��? ??grid layout?�로 충분 */
+  /* ?�환???��? ??grid layout?�로 충분 */
 }
 
 .phone-frame-light .predict-row-side:not(:disabled):hover {
@@ -286,13 +286,13 @@
   cursor: default;
 }
 
-/* 카드 ?�체??모든 ?�태?�서 ?�일 ???��? ???�시??체크/X 마크 + ?�측 결과 ?�벨로만.
-   기존 ?�크/초록/빨강 ?�두�?�배경�? ?�각?�으�??�신?�다???�드�?반영???�거. */
+/* 카드 ?�체??모든 ?�태?�서 ?�일 ???��? ???�시??체크/X 마크 + ?�측 결과 ?�벨로만.
+   기존 ?�크/초록/빨강 ?�두�?�배경�? ?�각?�으�??�신?�다???�드�?반영???�거. */
 .phone-frame-light .predict-row-side.is-picked,
 .phone-frame-light .predict-row-side.is-winner,
 .phone-frame-light .predict-row-side.is-picked.is-correct,
 .phone-frame-light .predict-row-side.is-picked.is-wrong {
-  /* no color override ??기본 .predict-row-side ?��???그�?�?*/
+  /* no color override ??기본 .predict-row-side ?��???그�?�?*/
 }
 
 .phone-frame-light .predict-row-team {
@@ -304,7 +304,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  /* ?�쪽 카드 모두 ?��?중앙 ?�렬 ??좌우 ?�각 ?��?*/
+  /* ?�쪽 카드 모두 ?��?중앙 ?�렬 ??좌우 ?�각 ?��?*/
   text-align: center;
 }
 
@@ -329,8 +329,8 @@
   color: var(--bp-danger);
 }
 
-/* 채점 ????마크 ??진한 ?�크 + ?�꺼??stroke�??��? ?�크 배경?�서???�렷?�게 보임.
-   배경??rgba(232,74,138,0.15)?�라 같�? ?�상 변?�으로는 ?��?부�???strong ??+ stroke 2.5 */
+/* 채점 ????마크 ??진한 ?�크 + ?�꺼??stroke�??��? ?�크 배경?�서???�렷?�게 보임.
+   배경??rgba(232,74,138,0.15)?�라 같�? ?�상 변?�으로는 ?��?부�???strong ??+ stroke 2.5 */
 .phone-frame-light .predict-row-mark-pick {
   color: var(--bp-accent-strong, #d63b7a);
   stroke-width: 2.8;
@@ -345,7 +345,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ?�?� ?�측 ?�태 배�? ?�?� */
+/* ?�?� ?�측 ?�태 배�? ?�?� */
 .phone-frame-light .predict-row-status {
   display: inline-flex;
   align-items: center;
@@ -416,7 +416,7 @@
   min-height: 32px;
 }
 
-/* ?�?� 채점??본인 ?�측 ????결과 배�? (?�중!/?�쉬?�요) ?�?� */
+/* ?�?� 채점??본인 ?�측 ????결과 배�? (?�중!/?�쉬?�요) ?�?� */
 .phone-frame-light .predict-row-result {
   display: inline-flex;
   align-items: center;
@@ -428,8 +428,8 @@
   letter-spacing: 0.2px;
   white-space: nowrap;
   color: #ffffff;
-  /* 배�? ?�스 ??카드 ?�장 직후 3???�근거림.
-     animationDelay??inline style�?카드�??�르�?(`idx * 1000 + 450`ms). */
+  /* 배�? ?�스 ??카드 ?�장 직후 3???�근거림.
+     animationDelay??inline style�?카드�??�르�?(`idx * 1000 + 450`ms). */
   transform-origin: center;
   animation: predict-row-result-pulse 0.5s ease-in-out 0s 3 backwards;
 }
@@ -453,7 +453,7 @@
   }
 }
 
-/* ?�?� ?�측 ?�료 버튼 ?�?� */
+/* ?�?� ?�측 ?�료 버튼 ?�?� */
 .phone-frame-light .predict-submit-bar {
   display: flex;
   flex-direction: column;
@@ -493,7 +493,7 @@
   color: var(--bp-text-muted);
 }
 
-/* ?�?� �??�태 ?�?� */
+/* ?�?� �??�태 ?�?� */
 .phone-frame-light .predict-empty {
   display: flex;
   flex-direction: column;
@@ -518,7 +518,7 @@
   color: var(--bp-text-secondary);
 }
 
-/* ?�?� ?�중�???�� ?�이지 진입 버튼 (?�측 ?�이지 ?�단) ?�?� */
+/* ?�?� ?�중�???�� ?�이지 진입 버튼 (?�측 ?�이지 ?�단) ?�?� */
 .phone-frame-light .predict-rank-link {
   display: inline-flex;
   align-items: center;
@@ -552,7 +552,7 @@
 }
 
 /* ============================================================
- * ?�중�???��
+ * ?�중�???��
  * ============================================================ */
 
 .phone-frame-light .predict-rank {
@@ -595,7 +595,7 @@
   color: var(--bp-text-muted);
 }
 
-/* ?�?� 기간 ???�?� */
+/* ?�?� 기간 ???�?� */
 .phone-frame-light .predict-rank-tabs {
   display: inline-flex;
   gap: 2px;
@@ -629,7 +629,7 @@
   color: #fff;
 }
 
-/* ?�?� ??�� 리스???�?� */
+/* ?�?� ??�� 리스???�?� */
 .phone-frame-light .predict-rank-list {
   list-style: none;
   margin: 0;
@@ -733,7 +733,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 로딩 / �??�태 */
+/* 로딩 / �??�태 */
 .phone-frame-light .predict-rank-loading {
   display: inline-flex;
   align-items: center;
@@ -764,7 +764,7 @@
   border-radius: 10px;
 }
 
-/* ?�?� PC ?�?�드 ???�계 카드 좀 ???�우�? ??컬럼 ???�유 ?�?� */
+/* ?�?� PC ?�?�드 ???�계 카드 좀 ???�우�? ??컬럼 ???�유 ?�?� */
 @media (min-width: 9999px) {
   .phone-frame-wide .predict-stat-value {
     font-size: 28px;

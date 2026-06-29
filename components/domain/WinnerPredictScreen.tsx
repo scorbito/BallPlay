@@ -63,6 +63,8 @@ type Props = {
   games: WinnerPredictGame[];
   /** 선택된 날짜 기준 적중률 (어제로 가면 어제 통계) */
   dateStats: Stats;
+  /** 이번 주(화~일) 누적 적중률 */
+  weekStats: Stats;
   allTimeStats: Stats;
 };
 
@@ -91,6 +93,7 @@ export function WinnerPredictScreen({
   nextDateISO,
   games,
   dateStats,
+  weekStats,
   allTimeStats
 }: Props) {
   const router = useRouter();
@@ -294,6 +297,12 @@ export function WinnerPredictScreen({
             {shouldAnimateDateRate ? `${displayDateRate}%` : rateLabel(dateStats)}
           </strong>
           <span className="predict-stat-detail">{rateDetail(dateStats)}</span>
+        </div>
+        <div className="predict-stat-divider" aria-hidden="true" />
+        <div className="predict-stat">
+          <span className="predict-stat-label">이번 주</span>
+          <strong className="predict-stat-value">{rateLabel(weekStats)}</strong>
+          <span className="predict-stat-detail">{rateDetail(weekStats)}</span>
         </div>
         <div className="predict-stat-divider" aria-hidden="true" />
         <div className="predict-stat">
