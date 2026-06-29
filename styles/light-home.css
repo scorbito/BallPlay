@@ -546,6 +546,15 @@
 }
 
 /* ── 외부 서비스 추천 배너 ── */
+/* 히어로 ~ 일반 메뉴 사이 승부예측 배너 광고 — 히어로 하단에 딱 붙이도록 위 gap 상쇄 */
+.phone-frame-light .play-hub-predict-banner {
+  display: block;
+  border-radius: 14px;
+  overflow: hidden;
+  line-height: 0;
+  margin-top: -18px;
+}
+
 .phone-frame-light .play-hub-external-banner-wrap {
   margin-top: 24px;
   display: flex;

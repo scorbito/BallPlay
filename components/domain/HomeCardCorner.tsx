@@ -30,7 +30,9 @@ export function HomeCardCorner({ available, external, badge }: Props) {
     if (!available) {
       return <span className="play-hub-card-badge is-disabled">{badge}</span>;
     }
-    const badgeType = badge.toUpperCase() === "HOT" ? "is-hot" : badge.toUpperCase() === "NEW" ? "is-new" : "";
+    const upper = badge.toUpperCase();
+    const badgeType =
+      upper === "HOT" ? "is-hot" : upper === "NEW" ? "is-new" : upper === "EVENT" ? "is-event" : "";
     return <span className={`play-hub-card-badge ${badgeType}`}>{badge}</span>;
   }
   return null;
