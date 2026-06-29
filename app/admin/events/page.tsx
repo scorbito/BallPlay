@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Activity, BarChart3, Clock, ListChecks, Percent, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { AdminBpAdjustPanel } from "@/components/domain/admin/AdminBpAdjustPanel";
@@ -318,6 +319,27 @@ export default async function AdminEventsPage() {
         </div>
         <Activity size={34} aria-hidden />
       </section>
+
+      <Link
+        href="/admin/predict-event"
+        prefetch={false}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 18px",
+          margin: "0 0 4px",
+          borderRadius: 14,
+          background: "#fce7f3",
+          border: "1px solid #f9a8d4",
+          color: "#db2777",
+          fontWeight: 900,
+          fontSize: 15
+        }}
+      >
+        🎯 승부예측 이벤트 추첨
+        <span aria-hidden>→</span>
+      </Link>
 
       <AdminBpAdjustPanel initialBalance={myBpBalance} />
 
