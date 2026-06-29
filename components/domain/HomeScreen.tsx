@@ -170,12 +170,12 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "predict-ranking",
-        href: "/predict/ranking",
-        title: "예측 순위",
-        description: "참여 기록과 적중 흐름",
-        icon: Trophy,
-        iconImage: "/icons/menu/prediction-rank.png",
+        id: "weekly-report",
+        href: "/weekly-report",
+        title: "주간 리포트",
+        description: "한 주간의 프로야구 성적 분석 리포트",
+        icon: FileText,
+        iconImage: "/icons/menu/weekly-report.png",
         available: true
       },
       {
@@ -255,12 +255,12 @@ const sections: HomeSection[] = [
         badge: "NEW"
       },
       {
-        id: "weekly-report",
-        href: "/weekly-report",
-        title: "주간 리포트",
-        description: "한 주간의 프로야구 성적 분석 리포트",
-        icon: FileText,
-        iconImage: "/icons/menu/weekly-report.png",
+        id: "predict-ranking",
+        href: "/predict/ranking",
+        title: "승리팀 예측 순위",
+        description: "참여 기록과 적중 흐름",
+        icon: Trophy,
+        iconImage: "/icons/menu/prediction-rank.png",
         available: true
       },
       {
