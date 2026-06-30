@@ -1,5 +1,6 @@
 import { WinnerPredictScreen, type WinnerPredictGame } from "@/components/domain/WinnerPredictScreen";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
+import { getAiOverallStats } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   getMyPredictionStats,
@@ -114,6 +115,10 @@ export default async function WinnerPredictPage({
     if (allTimeStatsResult.ok) allTimeStats = allTimeStatsResult.stats;
   }
 
+  // 이번 주 AI 3개 평균 적중률 — 나 vs AI 대결 표시용. (공개 집계라 admin 클라이언트로 조회)
+  const aiWeeklyResult = await getAiOverallStats(createSupabaseAdminClient(), kstWeekStartTuesday()).catch(() => null);
+  const aiWeeklyAccuracy = aiWeeklyResult && aiWeeklyResult.ok ? aiWeeklyResult.stats.accuracy : null;
+
   const games: WinnerPredictGame[] = gamesResult.map((g) => {
     const pred = predictionByGameId.get(g.id) ?? null;
     return {
@@ -150,6 +155,7 @@ export default async function WinnerPredictPage({
       dateStats={dateStats}
       weekStats={weekStats}
       allTimeStats={allTimeStats}
+      aiWeeklyAccuracy={aiWeeklyAccuracy}
     />
   );
 }

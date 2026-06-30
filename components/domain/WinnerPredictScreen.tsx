@@ -66,6 +66,8 @@ type Props = {
   /** 이번 주(화~일) 누적 적중률 */
   weekStats: Stats;
   allTimeStats: Stats;
+  /** 이번 주 AI 3개 평균 적중률(0~100). 집계 전이면 null. — 나 vs AI 대결 표시용 */
+  aiWeeklyAccuracy: number | null;
 };
 
 function rateLabel(stats: Stats): string {
@@ -94,7 +96,8 @@ export function WinnerPredictScreen({
   games,
   dateStats,
   weekStats,
-  allTimeStats
+  allTimeStats,
+  aiWeeklyAccuracy
 }: Props) {
   const router = useRouter();
   const { showToast } = useAppState();
@@ -278,6 +281,52 @@ export function WinnerPredictScreen({
 
   return (
     <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/" wide>
+      {/* ── 이번 주 나 vs AI 대결 (이벤트 동기 부여) ── */}
+      {(() => {
+        const myTotal = weekStats.total;
+        const myRate = myTotal > 0 ? (weekStats.correct / myTotal) * 100 : null;
+        const aiRate = aiWeeklyAccuracy;
+        let tone: "neutral" | "win" | "lose" | "draw" = "neutral";
+        let msg = "";
+        if (aiRate === null) {
+          msg = "";
+        } else if (myRate === null) {
+          msg = "아직 채점된 예측이 없어요. 예측에 참여해 AI에 도전하세요!";
+        } else if (myRate > aiRate) {
+          tone = "win";
+          msg = "🔥 AI를 이기고 있어요! 이대로 가면 당첨 도전 가능!";
+        } else if (myRate < aiRate) {
+          tone = "lose";
+          msg = `AI에 ${Math.round(aiRate - myRate)}%p 뒤지는 중 — 더 맞혀보세요!`;
+        } else {
+          tone = "draw";
+          msg = "AI와 동률! 한 끗 차이예요.";
+        }
+        // 마주보는 분할 막대 — 두 적중률의 비율로 좌/우 점유.
+        const totalRate = (myRate ?? 0) + (aiRate ?? 0);
+        const myPct = totalRate > 0 ? ((myRate ?? 0) / totalRate) * 100 : 50;
+        const aiPct = 100 - myPct;
+        return (
+          <section className={`predict-duel predict-duel-${tone}`} aria-label="이번 주 AI 대결">
+            <div className="predict-duel-head">
+              <span className="predict-duel-head-me">
+                나{myTotal > 0 ? ` (${myTotal})` : ""} <strong>{myRate !== null ? `${Math.round(myRate)}%` : "—"}</strong>
+              </span>
+              <span className="predict-duel-head-title">⚔ 이번 주 AI 대결</span>
+              <span className="predict-duel-head-ai">
+                <strong>{aiRate !== null ? `${aiRate}%` : "—"}</strong> AI 평균
+              </span>
+            </div>
+            <div className="h2h-bar-container predict-duel-bar">
+              <div className="h2h-bar predict-duel-bar-me" style={{ width: `${myPct}%` }} />
+              <div className="h2h-bar-gap" style={{ marginLeft: "auto" }} />
+              <div className="h2h-bar predict-duel-bar-ai" style={{ width: `${aiPct}%` }} />
+            </div>
+            {msg ? <p className="predict-duel-msg">{msg}</p> : null}
+          </section>
+        );
+      })()}
+
       {/* 상단 적중률 — 한 줄 컴팩트. 좌측은 선택 날짜 기준이라 어제로 가면 어제 통계.
           애니메이션 트리거(hasAnyJudgedPick) 시 카드 등장 끝난 후 페이드인 + 숫자 카운트업. */}
       <section className="predict-stats" aria-label="적중률">

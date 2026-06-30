@@ -2,6 +2,58 @@
  * ?�리?� ?�측 (predict/winner) ???�이???�마, ?�정 ?�이지 ???��??? * ============================================================ */
 
 /* ?�?� ?�단 ?�중�?????�?컴팩??(?�늘 | ?�체) ?�?� */
+/* ── 이번 주 나 vs AI 대결 (막대그래프) ── */
+.phone-frame-light .predict-duel {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(232, 74, 138, 0.04));
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 16px;
+}
+.phone-frame-light .predict-duel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .predict-duel-head-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-accent);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.phone-frame-light .predict-duel-head strong {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+.phone-frame-light .predict-duel-head-me strong { color: var(--bp-accent); }
+.phone-frame-light .predict-duel-head-ai strong { color: #475569; }
+/* 마주보는 분할 막대 (h2h-bar-* 재사용) */
+.phone-frame-light .predict-duel-bar {
+  height: 11px;
+}
+.phone-frame-light .predict-duel-bar-me { background: var(--bp-accent); }
+.phone-frame-light .predict-duel-bar-ai { background: #475569; }
+.phone-frame-light .predict-duel-msg {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  text-align: center;
+}
+/* 우열 강조 — 이기면 내 점수·막대 초록 */
+.phone-frame-light .predict-duel-win .predict-duel-head-me strong { color: #16a34a; }
+.phone-frame-light .predict-duel-win .predict-duel-bar-me { background: #16a34a; }
+.phone-frame-light .predict-duel-win .predict-duel-msg { color: #16a34a; }
+
 .phone-frame-light .predict-stats {
   display: grid;
   grid-template-columns: 1fr auto 1fr auto 1fr;
