@@ -8,6 +8,10 @@ import { getUserTierByIdentity } from "@/lib/auth/userTier";
 import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { getPointBalance } from "@/lib/server/points";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { addDays, kstWeekStartTuesday } from "@/lib/server/predict/weeklyContest";
+
+// 가을야구 통계는 현재 미사용 — 숨김(true 로 바꾸면 다시 노출).
+const SHOW_PLAYOFF = false;
 
 export const dynamic = "force-dynamic";
 
@@ -256,6 +260,64 @@ async function fetchPlayoffRowsSince(
   return { rows, error: null, truncated: true };
 }
 
+type PredictionRow = { user_id: string; game_date: string; locked_at: string | null };
+
+async function fetchPredictionRowsSince(client: AdminClient, sinceDate: string): Promise<PredictionRow[]> {
+  const rows: PredictionRow[] = [];
+  for (let from = 0; from < ADMIN_EVENTS_MAX_ROWS; from += ADMIN_EVENTS_PAGE_SIZE) {
+    const { data, error } = await client
+      .from("bp_predictions")
+      .select("user_id, game_date, locked_at")
+      .gte("game_date", sinceDate)
+      .range(from, from + ADMIN_EVENTS_PAGE_SIZE - 1);
+    if (error) return rows;
+    const batch = (data ?? []) as PredictionRow[];
+    rows.push(...batch);
+    if (batch.length < ADMIN_EVENTS_PAGE_SIZE) break;
+  }
+  return rows;
+}
+
+/** 승리팀 예측 참여 통계 — 경기일별 참여자·예측수 + 이번주/지난주 비교. */
+function summarizePredictions(rows: PredictionRow[], weekStart: string, lastWeekStart: string) {
+  const weekEnd = addDays(weekStart, 5);
+  const lastWeekEnd = addDays(lastWeekStart, 5);
+
+  const byDate = new Map<string, { users: Set<string>; total: number; locked: number }>();
+  const thisWeekUsers = new Set<string>();
+  const lastWeekUsers = new Set<string>();
+  let thisWeekTotal = 0;
+  let lastWeekTotal = 0;
+
+  for (const r of rows) {
+    const d = r.game_date;
+    const e = byDate.get(d) ?? { users: new Set<string>(), total: 0, locked: 0 };
+    e.users.add(r.user_id);
+    e.total += 1;
+    if (r.locked_at) e.locked += 1;
+    byDate.set(d, e);
+
+    if (d >= weekStart && d <= weekEnd) {
+      thisWeekUsers.add(r.user_id);
+      thisWeekTotal += 1;
+    } else if (d >= lastWeekStart && d <= lastWeekEnd) {
+      lastWeekUsers.add(r.user_id);
+      lastWeekTotal += 1;
+    }
+  }
+
+  const daily = Array.from(byDate.entries())
+    .map(([date, e]) => ({ date, users: e.users.size, total: e.total, locked: e.locked }))
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 12);
+
+  return {
+    daily,
+    thisWeek: { users: thisWeekUsers.size, total: thisWeekTotal },
+    lastWeek: { users: lastWeekUsers.size, total: lastWeekTotal }
+  };
+}
+
 export default async function AdminEventsPage() {
   noStore();
 
@@ -272,10 +334,14 @@ export default async function AdminEventsPage() {
   const since7d = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
   const since24hMs = now - 24 * 60 * 60 * 1000;
 
-  const [eventResult, playoffResult] = await Promise.all([
+  const predWeekStart = kstWeekStartTuesday();
+  const predLastWeekStart = addDays(predWeekStart, -7);
+  const [eventResult, playoffResult, predictionRows] = await Promise.all([
     fetchEventRowsSince(adminClient, since7d),
-    fetchPlayoffRowsSince(adminClient, since7d)
+    fetchPlayoffRowsSince(adminClient, since7d),
+    fetchPredictionRowsSince(adminClient, predLastWeekStart)
   ]);
+  const predictionStats = summarizePredictions(predictionRows, predWeekStart, predLastWeekStart);
 
   const rows = eventResult.rows.filter((row) => row.event_name && row.created_at);
   const metricRows = dedupeMetricRows(rows);
@@ -343,6 +409,32 @@ export default async function AdminEventsPage() {
 
       <AdminBpAdjustPanel initialBalance={myBpBalance} />
 
+      {/* 승리팀 예측 참여 통계 — 이벤트 모니터링 */}
+      <section className="admin-events-panel">
+        <header>
+          <h2>🎯 승리팀 예측 참여</h2>
+          <span>화~일 주간 기준</span>
+        </header>
+        <div className="admin-events-conversion-list">
+          <div>
+            <span>이번 주 참여자</span>
+            <strong>{predictionStats.thisWeek.users}명 (지난주 {predictionStats.lastWeek.users}명)</strong>
+          </div>
+          <div>
+            <span>이번 주 예측 수</span>
+            <strong>{predictionStats.thisWeek.total}건 (지난주 {predictionStats.lastWeek.total}건)</strong>
+          </div>
+        </div>
+        <div className="admin-events-count-list">
+          {predictionStats.daily.length > 0 ? predictionStats.daily.map((d) => (
+            <div key={d.date}>
+              <span>{d.date}</span>
+              <strong>참여 {d.users} · 예측 {d.total} · 잠금 {d.locked}</strong>
+            </div>
+          )) : <p className="admin-events-empty">최근 예측 참여가 없습니다.</p>}
+        </div>
+      </section>
+
       {eventResult.error ? (
         <section className="admin-events-error">
           이벤트를 불러오지 못했습니다: {eventResult.error.message}
@@ -355,13 +447,13 @@ export default async function AdminEventsPage() {
         </section>
       ) : null}
 
-      {playoffResult.error ? (
+      {SHOW_PLAYOFF && playoffResult.error ? (
         <section className="admin-events-error">
           가을야구 통계를 불러오지 못했습니다: {playoffResult.error.message}
         </section>
       ) : null}
 
-      {playoffResult.truncated ? (
+      {SHOW_PLAYOFF && playoffResult.truncated ? (
         <section className="admin-events-error">
           가을야구 도전이 많아 최근 {ADMIN_EVENTS_MAX_ROWS.toLocaleString()}건까지만 집계했습니다.
         </section>
@@ -392,12 +484,14 @@ export default async function AdminEventsPage() {
           <strong>{lineupPublished24h.toLocaleString()}건</strong>
           <small>팀 생성 {lineupCreated24h.toLocaleString()}건</small>
         </article>
-        <article>
-          <Trophy size={16} aria-hidden />
-          <span>가을야구 7일</span>
-          <strong>{playoffRows.length.toLocaleString()}회</strong>
-          <small>{playoffUsers7d.toLocaleString()}명 도전</small>
-        </article>
+        {SHOW_PLAYOFF ? (
+          <article>
+            <Trophy size={16} aria-hidden />
+            <span>가을야구 7일</span>
+            <strong>{playoffRows.length.toLocaleString()}회</strong>
+            <small>{playoffUsers7d.toLocaleString()}명 도전</small>
+          </article>
+        ) : null}
       </section>
 
       <section className="admin-events-grid">
@@ -491,6 +585,7 @@ export default async function AdminEventsPage() {
           </div>
         </div>
 
+        {SHOW_PLAYOFF ? (
         <div className="admin-events-panel">
           <header>
             <h2>가을야구</h2>
@@ -531,8 +626,10 @@ export default async function AdminEventsPage() {
             ))}
           </div>
         </div>
+        ) : null}
       </section>
 
+      {SHOW_PLAYOFF ? (
       <section className="admin-events-panel">
         <header>
           <h2>최근 가을야구 도전</h2>
@@ -553,6 +650,7 @@ export default async function AdminEventsPage() {
           )) : <p className="admin-events-empty">최근 가을야구 도전이 없습니다.</p>}
         </div>
       </section>
+      ) : null}
 
       <section className="admin-events-panel">
         <header>
