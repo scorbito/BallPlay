@@ -203,6 +203,10 @@ export type PredictionRankingRow = {
   total: number;
   correct: number;
   rate: number;  // 0.0 ~ 1.0
+  /** AI 행(유저 아님). 주간 랭킹에 3개 AI를 각각 끼워 넣을 때 표시용. */
+  isAi?: boolean;
+  /** AI 행일 때 provider id (gpt/gemini/claude) — 색·아이콘용. */
+  aiProvider?: string;
 };
 
 export async function getPredictionRanking(

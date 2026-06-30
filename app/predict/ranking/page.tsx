@@ -1,11 +1,15 @@
 import { RankingScreen } from "@/components/domain/RankingScreen";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import {
   PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
   PREDICTION_RANKING_MIN_GAMES,
   getPredictionRanking,
-  getWeeklyPredictionRanking
+  getWeeklyPredictionRanking,
+  type PredictionRankingRow
 } from "@/lib/supabase/query-parts/bpPredictions";
+import { getAiByProviderStats } from "@/lib/supabase/query-parts/bpAiPredictions";
+
+const AI_LABEL: Record<string, string> = { gpt: "GPT", gemini: "Gemini", claude: "Claude" };
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +27,12 @@ export default async function PredictionRankingPage() {
   const { data: { user } } = await supabase.auth.getUser();
   // 적중률 랭킹은 누구나 열람 가능(보기 무료). 비로그인은 본인 행 하이라이트만 없음.
 
-  // 주간(화~일, 우선 노출) + 전체(시즌) 둘 다 prefetch — 탭 전환은 클라이언트에서.
-  const [weeklyResult, seasonResult] = await Promise.all([
+  const weekStart = kstWeekStartTuesday();
+
+  // 주간(화~일, 우선 노출) + 전체(시즌) + 이번 주 AI별 적중률.
+  const [weeklyResult, seasonResult, aiResult] = await Promise.all([
     getWeeklyPredictionRanking(supabase, {
-      weekStartISO: kstWeekStartTuesday(),
+      weekStartISO: weekStart,
       minGames: PREDICTION_RANKING_MIN_GAMES,
       limit: 20
     }),
@@ -35,13 +41,37 @@ export default async function PredictionRankingPage() {
       minGames: PREDICTION_RANKING_MIN_GAMES,
       activeWithinDays: PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
       limit: 20
-    })
+    }),
+    getAiByProviderStats(createSupabaseAdminClient(), weekStart)
   ]);
+
+  // 주간 랭킹에 3개 AI를 각각 기준 행으로 끼워 넣어 적중률순으로 정렬.
+  const weeklyUsers = weeklyResult.ok ? weeklyResult.rows : [];
+  const aiRows: PredictionRankingRow[] = aiResult.ok
+    ? aiResult.rows
+        .filter((r) => r.accuracy !== null && r.total_count > 0)
+        .map((r) => ({
+          rank: 0,
+          user_id: `__ai_${r.ai_provider}__`,
+          nickname: AI_LABEL[r.ai_provider] ?? r.ai_provider,
+          main_team_id: null,
+          avatar_image_url: null,
+          total: r.total_count,
+          correct: r.correct_count,
+          rate: (r.accuracy ?? 0) / 100,
+          isAi: true,
+          aiProvider: r.ai_provider
+        }))
+    : [];
+
+  const weeklyRanking = [...weeklyUsers, ...aiRows]
+    .sort((a, b) => b.rate - a.rate || b.total - a.total)
+    .map((row, index) => ({ ...row, rank: index + 1 }));
 
   return (
     <RankingScreen
       currentUserId={user?.id ?? null}
-      weeklyRanking={weeklyResult.ok ? weeklyResult.rows : []}
+      weeklyRanking={weeklyRanking}
       seasonRanking={seasonResult.ok ? seasonResult.rows : []}
     />
   );

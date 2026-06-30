@@ -58,7 +58,8 @@ export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Pro
       ) : (
         <ol className="predict-rank-list">
           {rows.map((row) => {
-            const isMe = currentUserId !== null && row.user_id === currentUserId;
+            const isAi = row.isAi === true;
+            const isMe = !isAi && currentUserId !== null && row.user_id === currentUserId;
             const ratePct = Math.round(row.rate * 100);
             const rankBadgeClass =
               row.rank === 1 ? "predict-rank-num-gold"
@@ -68,10 +69,11 @@ export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Pro
             return (
               <li
                 key={row.user_id}
-                className={`predict-rank-row ${isMe ? "is-me" : ""}`}
+                className={`predict-rank-row ${isMe ? "is-me" : ""} ${isAi ? `is-ai is-ai-${row.aiProvider ?? ""}` : ""}`}
               >
                 <span className={`predict-rank-num ${rankBadgeClass}`}>{row.rank}</span>
                 <span className="predict-rank-nick">
+                  {isAi ? <span className="predict-rank-ai-tag" aria-hidden>AI</span> : null}
                   {row.nickname ?? "익명"}
                   {isMe ? <span className="predict-rank-me-tag">나</span> : null}
                 </span>

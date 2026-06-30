@@ -707,6 +707,25 @@
   border-color: var(--bp-accent);
 }
 
+/* AI 기준 행 — 주간 랭킹에 끼워 넣은 3개 AI */
+.phone-frame-light .predict-rank-row.is-ai {
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.10), rgba(71, 85, 105, 0.03));
+  border-style: dashed;
+  border-color: rgba(71, 85, 105, 0.4);
+}
+.phone-frame-light .predict-rank-ai-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 900;
+  color: #fff;
+  background: #475569;
+  padding: 1px 5px;
+  border-radius: 999px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
 .phone-frame-light .predict-rank-num {
   display: inline-flex;
   align-items: center;
