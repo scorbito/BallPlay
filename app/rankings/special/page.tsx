@@ -290,7 +290,7 @@ function formatAsOfDate(value: string) {
 
 export default function SpecialRankingsPage() {
   const [activeCategory, setActiveCategory] = useState<CategoryId>("offense");
-  const [activeTab, setActiveTab] = useState<keyof RankingRow>("total_bases");
+  const [activeTab, setActiveTab] = useState<keyof RankingRow>("avg_runs");
   const [data, setData] = useState<RankingRow[]>([]);
   const [asOfDate, setAsOfDate] = useState("");
   const [loading, setLoading] = useState(true);
