@@ -69,6 +69,21 @@ export async function renderBattleList(explicitDateParam: string | null) {
     });
   }
 
+  // 팀별 투표수 집계 (bp_ai_battle_votes: voted_side home/away)
+  const voteByGame = new Map<string, { home: number; away: number }>();
+  if (gameIds.length > 0) {
+    const { data: votes } = await supabase
+      .from("bp_ai_battle_votes")
+      .select("game_id, voted_side")
+      .in("game_id", gameIds);
+    for (const v of (votes ?? []) as Array<{ game_id: string; voted_side: string }>) {
+      const e = voteByGame.get(v.game_id) ?? { home: 0, away: 0 };
+      if (v.voted_side === "home") e.home += 1;
+      else if (v.voted_side === "away") e.away += 1;
+      voteByGame.set(v.game_id, e);
+    }
+  }
+
   const games = rawGames.map((g) => ({
     id: g.id,
     gameDate: g.date,
@@ -81,7 +96,9 @@ export async function renderBattleList(explicitDateParam: string | null) {
     status: g.status,
     homeStarter: g.homeStarter ?? null,
     awayStarter: g.awayStarter ?? null,
-    hasPrediction: predictedGameIds.has(g.id)
+    hasPrediction: predictedGameIds.has(g.id),
+    homeVotes: voteByGame.get(g.id)?.home ?? 0,
+    awayVotes: voteByGame.get(g.id)?.away ?? 0
   }));
 
   return <AiBattleListScreen key={selectedDate} games={games} selectedDate={selectedDate} />;

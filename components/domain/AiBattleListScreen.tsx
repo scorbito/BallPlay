@@ -7,6 +7,7 @@ import { CalendarDays, Bot, Clock, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
+import { ensureAwayFill } from "@/lib/utils/teamColors";
 import type { GameStatus } from "@/lib/types/api-contracts";
 
 
@@ -23,6 +24,8 @@ type GameRow = {
   homeStarter: string | null;
   awayStarter: string | null;
   hasPrediction: boolean;
+  homeVotes: number;
+  awayVotes: number;
 };
 
 type Props = {
@@ -179,15 +182,15 @@ export function AiBattleListScreen({ games: initialGames, selectedDate }: Props)
                         </div>
                       </div>
 
-                      {/* 우측: 원정팀 수호 박스 */}
+                      {/* 우측: 원정팀 수호 박스 — 홈과 대칭(점수·팀명·뱃지) */}
                       <div className="ai-battle-team-box away-box">
                         <div className="ai-battle-team-box-inner">
                           <div className="ai-battle-team-row" style={{ margin: "6px 0" }}>
-                            <TeamBadge teamId={g.awayTeamId} size="sm" />
-                            <span className="ai-battle-team-name">{away.name.split(" ")[0]}</span>
                             {finished && (
                               <span className="ai-battle-team-score">{g.awayScore ?? 0}</span>
                             )}
+                            <span className="ai-battle-team-name">{away.name.split(" ")[0]}</span>
+                            <TeamBadge teamId={g.awayTeamId} size="sm" />
                           </div>
                         </div>
                       </div>
@@ -199,6 +202,41 @@ export function AiBattleListScreen({ games: initialGames, selectedDate }: Props)
                         className="ai-battle-avatar-right"
                       />
                     </div>
+
+                    {/* 팀별 투표 분할 막대 — 투표 가능했던(또는 종료된) 경기만 */}
+                    {canEnter || finished
+                      ? (() => {
+                          const total = g.homeVotes + g.awayVotes;
+                          const homePct = total > 0 ? (g.homeVotes / total) * 100 : 0;
+                          const awayPct = total > 0 ? (g.awayVotes / total) * 100 : 0;
+                          const winnerSide =
+                            finished && g.homeScore !== null && g.awayScore !== null
+                              ? g.homeScore > g.awayScore
+                                ? "home"
+                                : g.awayScore > g.homeScore
+                                  ? "away"
+                                  : null
+                              : null;
+                          return (
+                            <div className="ai-battle-votes">
+                              <span className="ai-battle-votes-label">
+                                {g.homeVotes}표{winnerSide === "home" ? " ✓" : ""}
+                              </span>
+                              <div className="h2h-bar-container ai-battle-votes-bar">
+                                <div className="h2h-bar" style={{ width: `${homePct}%`, background: home.color }} />
+                                <div className="h2h-bar-gap" style={{ marginLeft: "auto" }} />
+                                <div
+                                  className="h2h-bar"
+                                  style={{ width: `${awayPct}%`, background: ensureAwayFill(home.color, away.color, away.accent) }}
+                                />
+                              </div>
+                              <span className="ai-battle-votes-label">
+                                {g.awayVotes}표{winnerSide === "away" ? " ✓" : ""}
+                              </span>
+                            </div>
+                          );
+                        })()
+                      : null}
 
                     {/* 하단 대결장 들어가기 버튼 */}
                     <div className="ai-battle-action-row">
