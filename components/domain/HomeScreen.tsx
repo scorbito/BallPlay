@@ -619,7 +619,20 @@ export function HomeScreen() {
           </div>
         ) : null;
 
-        return [aiSectionNode, predictBannerNode, bottomSectionNode, externalBannerNode];
+        const footerNode = (
+          <footer className="play-hub-footer" key="company-footer">
+            <a
+              href="https://dae-dan-company.vercel.app/"
+              target="_blank"
+              rel="noreferrer"
+              className="play-hub-footer-link"
+            >
+              Made by 대단컴퍼니
+            </a>
+          </footer>
+        );
+
+        return [aiSectionNode, predictBannerNode, bottomSectionNode, externalBannerNode, footerNode];
       })()}
     </AppShell>
   );
