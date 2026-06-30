@@ -13,10 +13,10 @@ const AI_LABEL: Record<string, string> = { gpt: "GPT", gemini: "Gemini", claude:
 
 export const dynamic = "force-dynamic";
 
-// KBO 주간(화요일 시작) — 오늘이 속한 주의 화요일 ISO. 월요일이면 직전 주 화요일.
+// KBO prediction week starts on Tuesday and shows the current in-progress week.
 function kstWeekStartTuesday(): string {
   const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const dow = kst.getDay(); // 0=일 .. 6=토
+  const dow = kst.getDay(); // 0=Sun .. 6=Sat
   const daysSinceTue = (dow - 2 + 7) % 7;
   kst.setDate(kst.getDate() - daysSinceTue);
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
@@ -28,10 +28,11 @@ export default async function PredictionRankingPage() {
   // 적중률 랭킹은 누구나 열람 가능(보기 무료). 비로그인은 본인 행 하이라이트만 없음.
 
   const weekStart = kstWeekStartTuesday();
+  const adminClient = createSupabaseAdminClient();
 
   // 주간(화~일, 우선 노출) + 전체(시즌) + 이번 주 AI별 적중률.
   const [weeklyResult, seasonResult, aiResult] = await Promise.all([
-    getWeeklyPredictionRanking(supabase, {
+    getWeeklyPredictionRanking(adminClient, {
       weekStartISO: weekStart,
       minGames: PREDICTION_RANKING_MIN_GAMES,
       limit: 20
@@ -42,7 +43,7 @@ export default async function PredictionRankingPage() {
       activeWithinDays: PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
       limit: 20
     }),
-    getAiByProviderStats(createSupabaseAdminClient(), weekStart)
+    getAiByProviderStats(adminClient, weekStart)
   ]);
 
   // 주간 랭킹에 3개 AI를 각각 기준 행으로 끼워 넣어 적중률순으로 정렬.
@@ -65,7 +66,13 @@ export default async function PredictionRankingPage() {
     : [];
 
   const weeklyRanking = [...weeklyUsers, ...aiRows]
-    .sort((a, b) => b.rate - a.rate || b.total - a.total)
+    // 적중률 동률이면 AI를 위로(벤치마크 강조) → 그 다음 경기수 많은 순.
+    .sort(
+      (a, b) =>
+        b.rate - a.rate ||
+        (a.isAi === b.isAi ? 0 : a.isAi ? -1 : 1) ||
+        b.total - a.total
+    )
     .map((row, index) => ({ ...row, rank: index + 1 }));
 
   return (

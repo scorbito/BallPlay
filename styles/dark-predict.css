@@ -713,6 +713,23 @@
   border-style: dashed;
   border-color: rgba(71, 85, 105, 0.4);
 }
+/* provider별 고유색 배경 — GPT 녹색 / Gemini 파랑 / Claude 주황 */
+.phone-frame-light .predict-rank-row.is-ai-gpt {
+  background: linear-gradient(135deg, rgba(16, 163, 127, 0.14), rgba(16, 163, 127, 0.04));
+  border-color: rgba(16, 163, 127, 0.45);
+}
+.phone-frame-light .predict-rank-row.is-ai-gemini {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.14), rgba(66, 133, 244, 0.04));
+  border-color: rgba(66, 133, 244, 0.45);
+}
+.phone-frame-light .predict-rank-row.is-ai-claude {
+  background: linear-gradient(135deg, rgba(217, 119, 87, 0.16), rgba(217, 119, 87, 0.05));
+  border-color: rgba(217, 119, 87, 0.5);
+}
+/* AI 태그 배지도 provider 색으로 */
+.phone-frame-light .predict-rank-row.is-ai-gpt .predict-rank-ai-tag { background: #10a37f; }
+.phone-frame-light .predict-rank-row.is-ai-gemini .predict-rank-ai-tag { background: #4285f4; }
+.phone-frame-light .predict-rank-row.is-ai-claude .predict-rank-ai-tag { background: #d97757; }
 .phone-frame-light .predict-rank-ai-tag {
   display: inline-flex;
   align-items: center;
