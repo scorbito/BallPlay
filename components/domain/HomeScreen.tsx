@@ -628,6 +628,13 @@ export function HomeScreen() {
               className="play-hub-footer-link"
             >
               Made by 대단컴퍼니
+              <Image
+                src="/company/logo_alpha.png"
+                alt="대단컴퍼니"
+                width={38}
+                height={16}
+                className="play-hub-footer-logo"
+              />
             </a>
           </footer>
         );
