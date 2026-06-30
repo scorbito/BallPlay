@@ -239,24 +239,26 @@ export async function getWeeklyPredictionRanking(
   const minGames = opts.minGames ?? PREDICTION_RANKING_MIN_GAMES;
   const limit = opts.limit ?? 20;
 
-  // 잠금·채점된 예측만, 그 주(화~) 범위. 행이 많을 수 있어 1000행씩 페이지네이션.
-  const byUser = new Map<string, { total: number; correct: number }>();
+  // Use submitted predictions for eligibility, but only judged games for accuracy.
+  const byUser = new Map<string, { submitted: number; judged: number; correct: number }>();
   const PAGE = 1000;
   const MAX_ROWS = 50000;
   for (let from = 0; from < MAX_ROWS; from += PAGE) {
     const { data, error } = await client
       .from(RESULTS_VIEW)
-      .select("user_id,is_correct")
+      .select("user_id,is_judged,is_correct")
       .gte("game_date", opts.weekStartISO)
       .not("locked_at", "is", null)
-      .eq("is_judged", true)
       .range(from, from + PAGE - 1);
     if (error) return { ok: false, error: error.message };
-    const rows = (data ?? []) as Array<{ user_id: string; is_correct: boolean | null }>;
+    const rows = (data ?? []) as Array<{ user_id: string; is_judged: boolean; is_correct: boolean | null }>;
     for (const row of rows) {
-      const agg = byUser.get(row.user_id) ?? { total: 0, correct: 0 };
-      agg.total += 1;
-      if (row.is_correct === true) agg.correct += 1;
+      const agg = byUser.get(row.user_id) ?? { submitted: 0, judged: 0, correct: 0 };
+      agg.submitted += 1;
+      if (row.is_judged === true) {
+        agg.judged += 1;
+        if (row.is_correct === true) agg.correct += 1;
+      }
       byUser.set(row.user_id, agg);
     }
     if (rows.length < PAGE) break;
@@ -265,11 +267,12 @@ export async function getWeeklyPredictionRanking(
   const ranked = Array.from(byUser.entries())
     .map(([user_id, agg]) => ({
       user_id,
-      total: agg.total,
+      total: agg.judged,
       correct: agg.correct,
-      rate: agg.total > 0 ? agg.correct / agg.total : 0
+      submitted: agg.submitted,
+      rate: agg.judged > 0 ? agg.correct / agg.judged : 0
     }))
-    .filter((r) => r.total >= minGames)
+    .filter((r) => r.submitted >= minGames && r.total > 0)
     .sort((a, b) => b.rate - a.rate || b.total - a.total)
     .slice(0, limit);
 

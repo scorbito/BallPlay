@@ -23,10 +23,10 @@ function addDays(dateISO: string, days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// KBO 주간(화요일 시작) — 오늘이 속한 주의 화요일 ISO. 월요일이면 직전 주 화요일.
+// KBO prediction week starts on Tuesday and shows the current in-progress week.
 function kstWeekStartTuesday(): string {
   const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const dow = kst.getDay(); // 0=일 .. 6=토
+  const dow = kst.getDay(); // 0=Sun .. 6=Sat
   const daysSinceTue = (dow - 2 + 7) % 7;
   kst.setDate(kst.getDate() - daysSinceTue);
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
