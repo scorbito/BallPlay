@@ -53,7 +53,7 @@ type Props = {
   nextGameDate: string | null;    // 오늘 경기 없을 때 다음 경기일 (오늘 한정)
   overallStats: AiOverallStats;
   providerStats: AiProviderStats[];
-  /** 이번 주(화~일) 누적 적중률 — 전체 통계 카드 하단에 따로 표시. */
+  /** 이번 주(화~일) 누적 적중률 — 전체 통계 카드 하단에 얇은 바로 표시. */
   weeklyOverallStats: AiOverallStats;
   weeklyProviderStats: AiProviderStats[];
   /** 소프트 게이트 — 현재는 항상 false(게이트 제거). 컴포넌트 호환 위해 prop 유지. */
@@ -310,6 +310,8 @@ export function AiWinnerListScreen({
   weeklyProviderStats,
   locked = false
 }: Props) {
+  const weeklyProviderByName = new Map<AiProvider, AiProviderStats>();
+  for (const p of weeklyProviderStats) weeklyProviderByName.set(p.ai_provider, p);
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.
   const loginHref = `/login?next=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`;
   // 클라이언트 hydration 후 게이트 계산 (SSR 미스매치 회피)
@@ -396,9 +398,31 @@ export function AiWinnerListScreen({
   return (
     <AppShell activeTab="home" title="AI 승리팀 예측" theme="light" backHref="/" wide>
       <section className="ai-winner-screen">
-        {/* ── 적중률 헤더 카드 — 전체(종합) + 이번 주(화~일 누적) ── */}
+        {/* ── 적중률 헤더 카드 — 전체(종합) + 이번 주(화~일 평균만 얇게) ── */}
         <AiStatsCard label="AI 종합" overall={overallStats} providerStats={providerStats} />
-        <AiStatsCard label="이번 주" overall={weeklyOverallStats} providerStats={weeklyProviderStats} showAvatar={false} />
+        <div className="ai-winner-weekly-bar">
+          <div className="ai-winner-weekly-bar-avg">
+            <span className="ai-winner-weekly-bar-label">
+              <Trophy size={12} strokeWidth={2.5} />
+              주간 적중률
+            </span>
+            <span className="ai-winner-weekly-bar-acc">
+              {weeklyOverallStats.accuracy !== null ? `${weeklyOverallStats.accuracy}%` : "—"}
+            </span>
+          </div>
+          <div className="ai-winner-weekly-bar-providers">
+            {AI_ORDER.map((name) => {
+              const acc = weeklyProviderByName.get(name)?.accuracy;
+              return (
+                <span key={name} className={`ai-winner-weekly-bar-prov ai-winner-provider-${name}`}>
+                  <span className="ai-winner-weekly-bar-prov-acc">
+                    {acc !== null && acc !== undefined ? `${acc}%` : "—"}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
 
         {/* ── 로그인 유도 배너 (비로그인/익명 한정). 위 종합 적중률은 미끼로 그대로 노출. ── */}
         {locked ? (
