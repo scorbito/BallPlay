@@ -86,6 +86,14 @@ function shortTime(t: string | null): string {
   return t.slice(0, 5); // "18:30:00" → "18:30"
 }
 
+// 경기 시작 시각(KST) → epoch ms. gameTime 없으면 null(판단 불가 → 시작 전으로 취급).
+// +09:00 오프셋을 명시해 클라 타임존과 무관하게 KST 기준으로 계산.
+function gameStartMs(dateISO: string, gameTime: string | null): number | null {
+  if (!gameTime) return null;
+  const ms = Date.parse(`${dateISO}T${gameTime.slice(0, 5)}:00+09:00`);
+  return Number.isNaN(ms) ? null : ms;
+}
+
 export function WinnerPredictScreen({
   selectedDateISO,
   isToday,
@@ -125,9 +133,27 @@ export function WinnerPredictScreen({
   //   - 미래: server에서 결정 (오직 "내일 + 오늘 경기 모두 끝남"인 경우만 true)
   //   - 모레 이후 미래 + 과거: read-only.
   const canEditOnThisDate = isToday || (isFuture && canEditFuture);
+
+  // 경기 시작 컷오프 — 시작 시각이 지난 경기는 예측/잠금 불가.
+  //   status가 KBO 동기화로 바뀌기 전이라도 시작 시각 기준으로 즉시 마감.
+  //   페이지를 열어둔 채 시작 시각이 지나도 반영되도록 15초마다 현재 시각 갱신(오늘만 필요).
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isToday) return; // 미래/과거 날짜는 시작 컷오프 불필요
+    const id = setInterval(() => setNowMs(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, [isToday]);
+  const isStarted = useCallback(
+    (game: WinnerPredictGame) => {
+      const start = gameStartMs(selectedDateISO, game.gameTime);
+      return start !== null && nowMs >= start;
+    },
+    [selectedDateISO, nowMs]
+  );
+
   const editableGames = useMemo(
-    () => (canEditOnThisDate ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id]) : []),
-    [games, lockedMap, canEditOnThisDate]
+    () => (canEditOnThisDate ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id] && !isStarted(g)) : []),
+    [games, lockedMap, canEditOnThisDate, isStarted]
   );
   // 애니메이션 트리거 조건: 픽한 경기 + 그 경기 결과(isJudged)가 하나라도 있을 때.
   //   - 오늘 픽 직후(결과 없음) → 정적
@@ -193,7 +219,8 @@ export function WinnerPredictScreen({
   const handlePick = useCallback(
     (game: WinnerPredictGame, teamId: string) => {
       // 오늘/미래만 저장 허용 (과거는 read-only). 버튼이 disabled지만 안전 가드.
-      if (!canEditOnThisDate || game.status !== "scheduled" || lockedMap[game.id]) return;
+      // 경기 시작 시각이 지났으면 차단.
+      if (!canEditOnThisDate || game.status !== "scheduled" || lockedMap[game.id] || isStarted(game)) return;
       setPredictions((prev) => ({ ...prev, [game.id]: teamId }));
 
       startSaving(async () => {
@@ -217,7 +244,7 @@ export function WinnerPredictScreen({
         }
       });
     },
-    [canEditOnThisDate, lockedMap, showToast, selectedDateISO]
+    [canEditOnThisDate, lockedMap, showToast, selectedDateISO, isStarted]
   );
 
   const handleSubmit = useCallback(() => {
@@ -453,7 +480,9 @@ export function WinnerPredictScreen({
               const picked = predictions[game.id];
               const locked = lockedMap[game.id];
               // canEditOnThisDate(=isToday||isFuture)와 일관되게 — 미래 날짜도 편집 허용.
-              const editable = canEditOnThisDate && game.status === "scheduled" && !locked;
+              // 단, 경기 시작 시각이 지났으면 마감.
+              const started = isStarted(game);
+              const editable = canEditOnThisDate && game.status === "scheduled" && !locked && !started;
               const showScores = game.status === "in_progress" || game.status === "finished";
 
               const homePicked = picked === game.homeTeamId;
@@ -520,8 +549,8 @@ export function WinnerPredictScreen({
                     ) : (
                       <>
                         <span className="predict-row-time">{shortTime(game.gameTime)}</span>
-                        <span className={`predict-row-status predict-row-status-${game.status}`}>
-                          {game.status === "in_progress" ? "진행중" : game.status === "finished" ? "종료" : game.status === "canceled" ? "취소" : "예정"}
+                        <span className={`predict-row-status predict-row-status-${started && game.status === "scheduled" ? "in_progress" : game.status}`}>
+                          {game.status === "in_progress" ? "진행중" : game.status === "finished" ? "종료" : game.status === "canceled" ? "취소" : started ? "마감" : "예정"}
                         </span>
                       </>
                     )}
