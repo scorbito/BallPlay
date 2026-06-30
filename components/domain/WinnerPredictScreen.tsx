@@ -117,6 +117,8 @@ export function WinnerPredictScreen({
   const [saving, startSaving] = useTransition();
   const [locking, setLocking] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  // 잠금 후 익명 계정이면 로그인 유도(이벤트 추첨 대상이 되려면 로그인 필요).
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
   // 편집 가능 조건:
   //   - 오늘: 항상 허용
@@ -223,6 +225,12 @@ export function WinnerPredictScreen({
     setSubmitConfirmOpen(true);
   }, [canSubmit]);
 
+  // 로그인 유도 모달 닫기 — 닫을 때 비로소 서버 상태 동기화(열려 있는 동안 refresh 금지).
+  const closeLoginPrompt = useCallback(() => {
+    setLoginPromptOpen(false);
+    router.refresh();
+  }, [router]);
+
   const confirmSubmit = useCallback(async () => {
     setSubmitConfirmOpen(false);
     setLocking(true);
@@ -254,22 +262,39 @@ export function WinnerPredictScreen({
     } catch {
       // BP reward failure must not block prediction submission.
     }
+    // 익명 여부 확인 — 로그인 유도 모달 분기용. (조회 실패 시 보수적으로 비익명 취급)
+    let isAnon = false;
+    try {
+      const { data: { user: authUser } } = await client.auth.getUser();
+      isAnon = !authUser || authUser.is_anonymous === true;
+    } catch {
+      // ignore
+    }
+
     setLockedMap((prev) => {
       const next = { ...prev };
       for (const g of editableGames) next[g.id] = true;
       return next;
     });
-    showToast(
-      awardedPoints > 0
-        ? `${result.locked}개 예측 완료!\n${awardedPoints.toLocaleString()}${POINT_LABEL} 획득!`
-        : `${result.locked}개 예측 완료!`
-    );
     void trackEvent("prediction_submitted", {
       gameDate: selectedDateISO,
       lockedCount: result.locked,
       pickedCount
     });
-    router.refresh();
+
+    if (isAnon) {
+      // 익명 → 로그인 유도 모달. router.refresh()는 이 컴포넌트를 리렌더/리마운트해
+      // 모달을 닫아버리므로, 모달이 열려 있는 동안엔 호출하지 않고 닫을 때 새로고침한다.
+      // (잠금 UI는 위 setLockedMap 으로 이미 반영됨)
+      setLoginPromptOpen(true);
+    } else {
+      showToast(
+        awardedPoints > 0
+          ? `${result.locked}개 예측 완료!\n${awardedPoints.toLocaleString()}${POINT_LABEL} 획득!`
+          : `${result.locked}개 예측 완료!`
+      );
+      router.refresh();
+    }
   }, [editableGames, pickedCount, router, showToast, selectedDateISO]);
 
   // 선택 날짜 라벨 — "5.26 (화)"
@@ -641,6 +666,41 @@ export function WinnerPredictScreen({
             >
               예측 완료
             </button>
+          </div>
+        </div>
+      </ModalShell>
+
+      <ModalShell
+        open={loginPromptOpen}
+        title="이벤트 참여하려면 로그인하세요"
+        onClose={closeLoginPrompt}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <div className="lineup-confirm-body">
+          <p className="lineup-confirm-msg">
+            예측이 완료됐어요! 🎉<br />
+            <strong>승부예측 AI 대결 이벤트</strong> 추첨 대상이 되려면 로그인이 필요해요.<br />
+            <span style={{ fontSize: "13px", color: "var(--bp-text-secondary)" }}>
+              (당첨 시 쿠폰 전달을 위해 메일·카카오 로그인이 필요합니다)
+            </span>
+          </p>
+          <div className="lineup-confirm-actions">
+            <button
+              type="button"
+              className="lineup-confirm-cancel"
+              onClick={closeLoginPrompt}
+            >
+              다음에
+            </button>
+            <Link
+              href={`/login?next=${encodeURIComponent(`/predict/winner?date=${selectedDateISO}`)}`}
+              className="lineup-confirm-destruct"
+              style={{ textDecoration: "none", textAlign: "center" }}
+              prefetch={false}
+            >
+              로그인하기
+            </Link>
           </div>
         </div>
       </ModalShell>
