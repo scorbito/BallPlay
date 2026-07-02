@@ -1,6 +1,7 @@
 /* 팀 전력비교(/compare) 전용 스타일. App Router에서 클라이언트 컴포넌트로 import → 전역 수집. */
 
 .cmp-wrap {
+  width: 100%;
   max-width: 720px;
   /* app-content 좌우 20px 여백을 일부 상쇄 — 모바일 좁은 폭에서 카드 너비 확보 */
   margin: 0 -12px;
@@ -8,10 +9,41 @@
 }
 /* 태블릿·데스크톱은 여유가 있으니 원래대로 가운데 정렬 */
 @media (min-width: 721px) {
+  .phone-frame-wide:has(.cmp-wrap) {
+    width: min(1024px, 100% - 32px);
+    max-width: 1024px;
+  }
+
   .cmp-wrap {
+    max-width: none;
     margin: 0 auto;
     padding-left: 14px;
     padding-right: 14px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .phone-frame-wide:has(.cmp-wrap) {
+    width: min(1120px, 100% - 48px);
+    max-width: 1120px;
+  }
+
+  .cmp-wrap {
+    padding: 24px 24px 104px;
+  }
+
+  .cmp-selectors {
+    gap: 14px;
+  }
+
+  .cmp-power,
+  .cmp-h2h {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .cmp-cards {
+    gap: 16px;
   }
 }
 
