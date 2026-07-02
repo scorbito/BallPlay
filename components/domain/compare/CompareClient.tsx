@@ -22,6 +22,40 @@ function ops(b: SimBatter): number {
   return b.obp + b.slg;
 }
 
+// ── 팀 컬러 대비 보정 (AiWinnerStatsTab 과 동일 규칙) ──
+// 두 팀 색이 비슷하면 원정팀(우측)을 accent 또는 명/암 조정색으로 바꿔 구분한다.
+type Rgb = [number, number, number];
+function hexToRgb(hex: string): Rgb {
+  const m = hex.replace("#", "");
+  const n = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
+  const int = parseInt(n, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const h = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+function colorDist(a: Rgb, b: Rgb): number {
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+}
+function mix(c: Rgb, t: Rgb, amt: number): Rgb {
+  return [c[0] + (t[0] - c[0]) * amt, c[1] + (t[1] - c[1]) * amt, c[2] + (t[2] - c[2]) * amt];
+}
+/** 홈 색과 원정 색이 너무 비슷하면 원정 색을 구분되는 색(accent→명/암)으로 치환. */
+function ensureAwayFill(homeHex: string, awayHex: string, awayAccent?: string): string {
+  const home = hexToRgb(homeHex);
+  const away = hexToRgb(awayHex);
+  if (colorDist(home, away) >= 110) return awayHex; // 충분히 다름
+  if (awayAccent) {
+    const acc = hexToRgb(awayAccent);
+    if (colorDist(home, acc) >= 110) return awayAccent;
+  }
+  const lighter = mix(away, [255, 255, 255], 0.55);
+  const darker = mix(away, [0, 0, 0], 0.5);
+  const chosen = colorDist(home, lighter) >= colorDist(home, darker) ? lighter : darker;
+  return rgbToHex(chosen[0], chosen[1], chosen[2]);
+}
+
 type SideState = {
   teamId: string;
   setTeamId: (id: string) => void;
@@ -187,8 +221,8 @@ export function CompareClient() {
     };
   };
 
-  const awayInput = buildTeamInput(a); // 좌(A) = 원정
-  const homeInput = buildTeamInput(b); // 우(B) = 홈
+  const homeInput = buildTeamInput(a); // 좌(A) = 홈
+  const awayInput = buildTeamInput(b); // 우(B) = 원정
   const matchReady = Boolean(awayInput && homeInput);
 
   // 편집 라인업으로 관전 매치 세션 저장 → 경기 진행 화면(/stadium/play)으로 이동.
@@ -196,8 +230,8 @@ export function CompareClient() {
   const startMatch = () => {
     if (!awayInput || !homeInput) return;
     saveMatchSession({
-      myTeamId: b.teamId,
-      opponentTeamId: a.teamId,
+      myTeamId: a.teamId,
+      opponentTeamId: b.teamId,
       seed: generateSeed(),
       input: { home: homeInput, away: awayInput, context: {} },
       startedAt: new Date().toISOString(),
@@ -231,8 +265,9 @@ export function CompareClient() {
       return next;
     });
 
+  // 좌(A)=홈은 팀 원색, 우(B)=원정은 색이 비슷하면 2번째 색(accent 등)으로 구분.
   const colorA = getTeam(a.teamId).color;
-  const colorB = getTeam(b.teamId).color;
+  const colorB = ensureAwayFill(colorA, getTeam(b.teamId).color, getTeam(b.teamId).accent);
 
   const totalA = a.power.total;
   const totalB = b.power.total;
@@ -345,7 +380,7 @@ export function CompareClient() {
         경기 시뮬레이션
       </button>
       <p className="cmp-match-note">
-        {getTeam(a.teamId).shortName}(원정) vs {getTeam(b.teamId).shortName}(홈) · 편집한 라인업으로 경기가 진행됩니다
+        {getTeam(a.teamId).shortName}(홈) vs {getTeam(b.teamId).shortName}(원정) · 편집한 라인업으로 경기가 진행됩니다
       </p>
 
       {/* 선수 교체 모달 */}
