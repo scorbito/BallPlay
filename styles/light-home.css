@@ -514,6 +514,32 @@
   object-fit: contain;
 }
 
+/* ── 하단 메뉴 카테고리 필터 칩 ── */
+.phone-frame-light .play-hub-cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 0 12px;
+}
+.phone-frame-light .play-hub-cat-chip {
+  flex: 0 1 auto;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.phone-frame-light .play-hub-cat-chip.is-active {
+  background: var(--bp-accent, #e84a8a);
+  border-color: var(--bp-accent, #e84a8a);
+  color: #fff;
+}
+
 /* ── 하단 메뉴용 반응형 flexible grid ── */
 .phone-frame-light .play-hub-flexible-grid {
   display: grid !important;

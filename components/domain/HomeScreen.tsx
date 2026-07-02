@@ -1,6 +1,6 @@
 "use client";
 
-import { type ElementType, type ReactNode } from "react";
+import { type ElementType, type ReactNode, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAppState } from "@/lib/state/AppState";
@@ -172,21 +172,21 @@ const sections: HomeSection[] = [
         badge: "EVENT"
       },
       {
-        id: "weekly-report",
-        href: "/weekly-report",
-        title: "주간 리포트",
-        description: "한 주간의 프로야구 성적 분석 리포트",
-        icon: FileText,
-        iconImage: "/icons/menu/weekly-report.png",
-        available: true
-      },
-      {
         id: "sim-1000",
         href: "/predict/sim-1000",
         title: "1000판 시뮬레이션",
         description: "오늘 경기 1000판 결과",
         icon: BarChart3,
         iconImage: "/icons/menu/sim-1000.png",
+        available: true
+      },
+      {
+        id: "predict-ranking",
+        href: "/predict/ranking",
+        title: "승리팀 예측 순위",
+        description: "참여 기록과 적중 흐름",
+        icon: Trophy,
+        iconImage: "/icons/menu/prediction-rank.png",
         available: true
       }
     ]
@@ -227,42 +227,12 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "special-rankings",
-        href: "/rankings/special",
-        title: "팀 별별랭킹",
-        description: "재미있고 독특한 10가지 구단 랭킹",
-        icon: Trophy,
-        iconImage: "/icons/menu/team-rank.png",
-        available: true,
-        badge: "NEW"
-      },
-      {
-        id: "player-special-rankings",
-        href: "/rankings/player-special",
-        title: "선수 별별랭킹",
-        description: "선수별 시즌 누적 이색 랭킹",
-        icon: Trophy,
-        iconImage: "/icons/menu/player-rank.png",
-        available: true,
-        badge: "NEW"
-      },
-      {
-        id: "recent10-top",
-        href: "/recent10-top",
-        title: "최근 10경기 TOP",
-        description: "타율·홈런·도루·ERA 랭킹",
-        icon: BarChart3,
-        iconImage: "/icons/menu/10game-top10.png",
-        available: true,
-        badge: "NEW"
-      },
-      {
-        id: "predict-ranking",
-        href: "/predict/ranking",
-        title: "승리팀 예측 순위",
-        description: "참여 기록과 적중 흐름",
-        icon: Trophy,
-        iconImage: "/icons/menu/prediction-rank.png",
+        id: "weekly-report",
+        href: "/weekly-report",
+        title: "주간 리포트",
+        description: "한 주간의 프로야구 성적 분석 리포트",
+        icon: FileText,
+        iconImage: "/icons/menu/weekly-report.png",
         available: true
       },
       {
@@ -272,6 +242,42 @@ const sections: HomeSection[] = [
         description: "프로야구 헤드라인·트레이드",
         icon: FileText,
         iconImage: "/icons/menu/baseball-news.png",
+        available: true
+      }
+    ]
+  },
+  {
+    id: "star-rankings",
+    label: "랭킹",
+    variant: "standard",
+    sectionIcon: Trophy,
+    gridCols: 3,
+    cards: [
+      {
+        id: "recent10-top",
+        href: "/recent10-top",
+        title: "최근 10경기 TOP",
+        description: "타율·홈런·도루·ERA 랭킹",
+        icon: BarChart3,
+        iconImage: "/icons/menu/10game-top10.png",
+        available: true
+      },
+      {
+        id: "special-rankings",
+        href: "/rankings/special",
+        title: "팀 별별랭킹",
+        description: "재미있고 독특한 10가지 구단 랭킹",
+        icon: Trophy,
+        iconImage: "/icons/menu/team-rank.png",
+        available: true
+      },
+      {
+        id: "player-special-rankings",
+        href: "/rankings/player-special",
+        title: "선수 별별랭킹",
+        description: "선수별 시즌 누적 이색 랭킹",
+        icon: Trophy,
+        iconImage: "/icons/menu/player-rank.png",
         available: true
       }
     ]
@@ -300,6 +306,16 @@ const sections: HomeSection[] = [
         icon: Swords,
         iconImage: "/icons/tabs/stadium.png",
         available: true
+      },
+      {
+        id: "compare",
+        href: "/compare",
+        title: "팀 전력비교",
+        description: "두 팀 전적·선발·타선 전력지수 비교",
+        icon: BarChart3,
+        iconImage: "/icons/menu/team-compare.png",
+        available: true,
+        badge: "NEW"
       }
     ]
   },
@@ -387,6 +403,8 @@ export function HomeScreen() {
   // isAdmin 은 AppState(클라이언트)에서 읽는다 — 홈 페이지를 정적/캐시 가능하게 하기 위해
   // 서버에서 auth 를 읽지 않음. 운영자 전용 카드는 클라이언트 로드 후 노출된다.
   const { isAdmin } = useAppState();
+  // 하단 플랫 메뉴 카테고리 필터 — 기본 "all"(전체 표시). 칩 선택 시 해당 카테고리만 노출.
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
       <header className="play-hub-header">
@@ -556,16 +574,18 @@ export function HomeScreen() {
         // 하단 플랫 메뉴용 카드들 수집 (ai-analysis, related 제외)
         const otherSections = sections.filter((s) => s.id !== "ai-analysis" && s.id !== "related");
         const bottomCards: HomeCard[] = [];
+        const categoryOfCard = new Map<string, string>(); // cardId → sectionId (칩 필터용)
         otherSections.forEach((section) => {
           if (section.adminOnly && !isAdmin) return;
           section.cards.forEach((card) => {
             if (card.adminOnly && !isAdmin) return;
             bottomCards.push(card);
+            categoryOfCard.set(card.id, section.id);
           });
         });
 
-        // Keep the two highlighted ranking cards first in the visible flat menu.
-        const highlightedIds = ["recent10-top", "special-rankings", "player-special-rankings"];
+        // "전체" 플랫 메뉴에서 맨 앞(상단 좌측)에 노출할 카드.
+        const highlightedIds = ["compare"];
         const highlightedCards: HomeCard[] = [];
         highlightedIds.forEach((id) => {
           const cardIdx = bottomCards.findIndex((c) => c.id === id);
@@ -578,10 +598,46 @@ export function HomeScreen() {
           bottomCards.unshift(...highlightedCards);
         }
 
+        // 카테고리 칩 정의 — 짧은 라벨로 축약. adminOnly 섹션은 운영자에게만.
+        const CHIP_LABELS: Record<string, string> = {
+          predict: "예측",
+          "kbo-info": "정보",
+          "star-rankings": "랭킹",
+          "lineup-tools": "분석",
+          content: "콘텐츠",
+          "admin-only": "운영자"
+        };
+        const chipDefs = [
+          { id: "all", label: "전체" },
+          ...otherSections
+            .filter((s) => !s.adminOnly || isAdmin)
+            .filter((s) => s.cards.some((c) => categoryOfCard.get(c.id) === s.id))
+            .map((s) => ({ id: s.id, label: CHIP_LABELS[s.id] ?? s.label }))
+        ];
+
+        const visibleBottomCards =
+          activeCategory === "all"
+            ? bottomCards
+            : bottomCards.filter((c) => categoryOfCard.get(c.id) === activeCategory);
+
         const bottomSectionNode = (
           <section className="play-hub-section play-hub-section-standard" key="bottom-menus">
+            <div className="play-hub-cat-chips" role="tablist" aria-label="메뉴 카테고리">
+              {chipDefs.map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeCategory === chip.id}
+                  className={`play-hub-cat-chip${activeCategory === chip.id ? " is-active" : ""}`}
+                  onClick={() => setActiveCategory(chip.id)}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
             <div className="play-hub-grid play-hub-grid-3 play-hub-flexible-grid">
-              {bottomCards.map(renderCard)}
+              {visibleBottomCards.map(renderCard)}
             </div>
           </section>
         );
