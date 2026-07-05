@@ -27,6 +27,42 @@ import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
 import { POINT_LABEL } from "@/lib/points/config";
+import type { AtBatOutcome } from "@/lib/sim/types";
+
+// 타석 결과 → 한글 라벨 (분석 로그용). 실황 중계가 아니라 '시뮬 상세 로그' 톤.
+const OUTCOME_KO: Record<AtBatOutcome, string> = {
+  K: "삼진",
+  GO: "땅볼 아웃",
+  FO: "뜬공 아웃",
+  PO: "내야 뜬공",
+  LO: "직선타 아웃",
+  SF: "희생플라이",
+  DP: "병살타",
+  BB: "볼넷",
+  HBP: "몸에 맞는 공",
+  "1B": "안타",
+  "2B": "2루타",
+  "3B": "3루타",
+  HR: "홈런",
+  E: "실책 출루"
+};
+// 안타/출루/아웃 구분 — 로그 색상 강조용.
+const OUTCOME_KIND: Record<AtBatOutcome, "hit" | "onbase" | "out"> = {
+  "1B": "hit",
+  "2B": "hit",
+  "3B": "hit",
+  HR: "hit",
+  BB: "onbase",
+  HBP: "onbase",
+  E: "onbase",
+  K: "out",
+  GO: "out",
+  FO: "out",
+  PO: "out",
+  LO: "out",
+  SF: "out",
+  DP: "out"
+};
 
 function getPlayableTeamMeta(teamId: string, displayName?: string) {
   try {
@@ -118,6 +154,18 @@ export function ResultScreen() {
       allPitchers.find((p) => p.playerId === mvpId) ??
       null
     );
+  }, [session]);
+
+  // playerId → 이름 맵 (박스스코어·타석 로그 렌더용).
+  const playerNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    const inp = session?.input;
+    if (inp) {
+      for (const b of [...inp.home.batters, ...inp.away.batters]) m.set(b.playerId, b.name);
+      for (const p of [inp.home.starter, ...inp.home.bullpen, inp.away.starter, ...inp.away.bullpen])
+        m.set(p.playerId, p.name);
+    }
+    return m;
   }, [session]);
 
   // 자동 저장 — source가 public/friend일 때만, 로그인+정식계정에서만.
@@ -303,7 +351,10 @@ export function ResultScreen() {
   }
 
   const { home, away } = session.input;
-  const { finalScore, mvp, innings, engineVersion, seed } = session.result;
+  const { finalScore, mvp, innings, engineVersion, seed, events, boxScore } = session.result;
+  const scoreDiff = Math.abs(finalScore.home - finalScore.away);
+  const nameOf = (id: string) => playerNameById.get(id) ?? id;
+  const fmtIp = (outs: number) => `${Math.floor(outs / 3)}.${outs % 3}`;
   const homeTeam = getPlayableTeamMeta(home.teamId, home.displayName);
   const awayTeam = getPlayableTeamMeta(away.teamId, away.displayName);
   // 사용자 지정 팀명(라인업 이름) 우선
@@ -409,18 +460,21 @@ export function ResultScreen() {
         ) : null}
       </ModalShell>
       <section className="stadium-result">
-        <div
-          className={`stadium-result-banner${
-            isChampion
-              ? " is-champion"
-              : isPlayoffWin
-                ? " is-playoff-win"
-                : ""
-          }`}
-        >
-          <Trophy size={24} />
-          <strong>{isChampion ? "🏆 한국시리즈 우승!" : winnerLabel}</strong>
-        </div>
+        {session.source === "playoff" ? (
+          <div
+            className={`stadium-result-banner${
+              isChampion ? " is-champion" : isPlayoffWin ? " is-playoff-win" : ""
+            }`}
+          >
+            <Trophy size={24} />
+            <strong>{isChampion ? "🏆 한국시리즈 우승!" : winnerLabel}</strong>
+          </div>
+        ) : (
+          <div className="stadium-result-report-head">
+            <span className="stadium-result-report-tag">시뮬레이션 분석 리포트</span>
+            <span className="stadium-result-report-sub">라인업 기반 가상 대결 분석</span>
+          </div>
+        )}
 
         <div className="stadium-result-scoreboard">
           <div className="stadium-result-team">
@@ -436,11 +490,35 @@ export function ResultScreen() {
           </div>
         </div>
 
+        {session.source !== "playoff" ? (
+          <div className="stadium-result-verdict">
+            {draw ? (
+              <span>무승부 예측</span>
+            ) : (
+              <span>
+                <strong>{homeWin ? homeLabel : awayLabel}</strong> 우세
+                <em>{scoreDiff >= 4 ? "뚜렷한 우위" : scoreDiff <= 1 ? "근소 우위" : "우위"}</em>
+              </span>
+            )}
+          </div>
+        ) : null}
+
         <div className="stadium-result-mvp">
-          <span className="stadium-result-mvp-label">MVP</span>
+          <span className="stadium-result-mvp-label">핵심 기여</span>
           <strong>{mvpPlayer?.name ?? mvp.playerId}</strong>
           <span className="stadium-result-mvp-reason">{mvp.reason}</span>
         </div>
+
+        {events && events.length > 0 ? (
+          <div className="stadium-result-highlights">
+            <span className="stadium-result-section-label">📌 주요 장면</span>
+            <ul>
+              {events.slice(0, 3).map((e, i) => (
+                <li key={i}>{e.description}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="stadium-result-line">
           <table className="stadium-result-linetable">
@@ -467,6 +545,101 @@ export function ResultScreen() {
             </tbody>
           </table>
         </div>
+
+        <details className="stadium-result-details">
+          <summary>상세 로그 · 선수 성적 · 타석별 전개</summary>
+          <div className="stadium-result-details-body">
+            {/* 선수 성적 (박스스코어) */}
+            {[
+              { label: awayLabel, batters: away.batters, pitchers: [away.starter, ...away.bullpen] },
+              { label: homeLabel, batters: home.batters, pitchers: [home.starter, ...home.bullpen] }
+            ].map((t) => (
+              <div key={t.label} className="stadium-result-box">
+                <span className="stadium-result-box-team">{t.label}</span>
+                <div className="stadium-result-box-scroll">
+                  <table className="stadium-result-boxtable">
+                    <thead>
+                      <tr>
+                        <th>타자</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>볼넷</th><th>삼진</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {t.batters.map((b) => {
+                        const line = boxScore.batting[b.playerId];
+                        if (!line) return null;
+                        return (
+                          <tr key={b.playerId}>
+                            <td>{b.name}</td>
+                            <td>{line.ab}</td>
+                            <td>{line.hits}</td>
+                            <td>{line.homers}</td>
+                            <td>{line.rbi}</td>
+                            <td>{line.walks}</td>
+                            <td>{line.strikeouts}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <table className="stadium-result-boxtable">
+                    <thead>
+                      <tr>
+                        <th>투수</th><th>이닝</th><th>피안타</th><th>실점</th><th>자책</th><th>볼넷</th><th>삼진</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {t.pitchers.map((p) => {
+                        const line = boxScore.pitching[p.playerId];
+                        if (!line) return null;
+                        return (
+                          <tr key={p.playerId}>
+                            <td>{p.name}</td>
+                            <td>{fmtIp(line.ipOuts)}</td>
+                            <td>{line.hits}</td>
+                            <td>{line.runs}</td>
+                            <td>{line.earnedRuns}</td>
+                            <td>{line.walks}</td>
+                            <td>{line.strikeouts}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+
+            {/* 타석별 전개 로그 (텍스트 — 실황이 아닌 시뮬 상세) */}
+            <div className="stadium-result-pbp">
+              <span className="stadium-result-section-label">타석별 전개</span>
+              {innings.map((inn) => (
+                <div key={inn.inning} className="stadium-result-pbp-inning">
+                  {[
+                    { half: "초", log: inn.top, atk: awayLabel },
+                    ...(inn.bottom ? [{ half: "말", log: inn.bottom, atk: homeLabel }] : [])
+                  ].map((h) => (
+                    <div key={h.half} className="stadium-result-pbp-half">
+                      <div className="stadium-result-pbp-head">
+                        {inn.inning}회{h.half} · {h.atk} 공격
+                      </div>
+                      <ul>
+                        {h.log.atBats.map((ab, i) => (
+                          <li key={i} className={`is-${OUTCOME_KIND[ab.outcome]}`}>
+                            <span>{nameOf(ab.batterId)}</span>
+                            <span>
+                              {OUTCOME_KO[ab.outcome]}
+                              {ab.runsScored > 0 ? ` · +${ab.runsScored}점` : ""}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </details>
 
         <div className="stadium-result-meta">
           <span>엔진 v{engineVersion}</span>
@@ -495,7 +668,7 @@ export function ResultScreen() {
           <footer className="stadium-result-actions">
             <button type="button" className="stadium-cta-primary" onClick={handleRematch}>
               <RotateCcw size={16} />
-              <span>다시 대결</span>
+              <span>다시 시뮬레이션</span>
             </button>
             <button
               type="button"
@@ -504,7 +677,7 @@ export function ResultScreen() {
               disabled={sharing}
             >
               <Share2 size={16} />
-              <span>{sharing ? "공유 중..." : "결과 공유"}</span>
+              <span>{sharing ? "공유 중..." : "분석 공유"}</span>
             </button>
             <Link className="stadium-cta-secondary" href="/stadium/lobby" prefetch>
               매칭풀로
