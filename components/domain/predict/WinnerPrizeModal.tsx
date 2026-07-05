@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ModalShell } from "@/components/common/ModalShell";
-
-const SUPPORT_EMAIL = "daedanbiz@gmail.com";
 
 type PrizeInfo = {
   role: "main" | "coupon";
@@ -53,19 +52,6 @@ export function WinnerPrizeModal() {
     setInfo(null);
   };
 
-  const mailtoHref = (() => {
-    if (!info) return "#";
-    const subject = `[야구놀이터] 이벤트 경품 수령 - ${info.nickname ?? ""}`;
-    const body = [
-      "안녕하세요, 야구놀이터 이벤트 당첨 경품 수령을 신청합니다.",
-      "",
-      `1) 야구놀이터 닉네임: ${info.nickname ?? ""}`,
-      "2) 카카오톡 프로필 이름: ",
-      "3) 경품 받을 이메일 주소 또는 카카오톡 ID: ",
-    ].join("\n");
-    return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  })();
-
   return (
     <ModalShell
       open={info !== null}
@@ -83,16 +69,13 @@ export function WinnerPrizeModal() {
             경품: <strong>{info.prize}</strong>
           </p>
           <p className="winner-prize-guide">
-            카카오 로그인 회원은 등록된 이메일이 없어, 경품 발송을 위해 아래 정보를 메일로 보내주세요.
+            경품 발송을 위해 <strong>받으실 이메일 또는 카카오톡 ID</strong>를 문의로 남겨주세요.
+            <br />
+            로그인 계정으로 확인되니 별도 신원 확인은 필요 없어요.
           </p>
-          <ul className="winner-prize-list">
-            <li>야구놀이터 닉네임</li>
-            <li>카카오톡 프로필 이름 (본인 확인용)</li>
-            <li>경품 받을 이메일 또는 카카오톡 ID</li>
-          </ul>
-          <a className="winner-prize-mail" href={mailtoHref} onClick={close}>
-            문의 메일 보내기
-          </a>
+          <Link className="winner-prize-mail" href="/my/contact?category=prize" onClick={close}>
+            문의 남기러 가기
+          </Link>
           <button type="button" className="winner-prize-later" onClick={close}>
             나중에
           </button>

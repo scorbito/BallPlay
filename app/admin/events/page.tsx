@@ -407,6 +407,27 @@ export default async function AdminEventsPage() {
         <span aria-hidden>→</span>
       </Link>
 
+      <Link
+        href="/admin/inquiries"
+        prefetch={false}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 18px",
+          margin: "0 0 4px",
+          borderRadius: 14,
+          background: "#eef2ff",
+          border: "1px solid #c7d2fe",
+          color: "#4338ca",
+          fontWeight: 900,
+          fontSize: 15
+        }}
+      >
+        💬 문의 관리
+        <span aria-hidden>→</span>
+      </Link>
+
       <AdminBpAdjustPanel initialBalance={myBpBalance} />
 
       {/* 승리팀 예측 참여 통계 — 이벤트 모니터링 */}
