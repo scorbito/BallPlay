@@ -509,16 +509,29 @@ export function ResultScreen() {
           <span className="stadium-result-mvp-reason">{mvp.reason}</span>
         </div>
 
-        {events && events.length > 0 ? (
-          <div className="stadium-result-highlights">
-            <span className="stadium-result-section-label">📌 주요 장면</span>
-            <ul>
-              {events.slice(0, 3).map((e, i) => (
-                <li key={i}>{e.description}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
+        {events && events.length > 0
+          ? (() => {
+              // 같은 이닝·같은 종류 이벤트 중복 제거 — 만루가 한 이닝에 여러 타석 이어질 때
+              // "N회말 만루"가 여러 번 찍히는 걸 1개로 합침.
+              const seen = new Set<string>();
+              const uniqueEvents = events.filter((e) => {
+                const key = `${e.inning}-${e.half}-${e.kind}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              });
+              return (
+                <div className="stadium-result-highlights">
+                  <span className="stadium-result-section-label">📌 주요 장면</span>
+                  <ul>
+                    {uniqueEvents.slice(0, 3).map((e, i) => (
+                      <li key={i}>{e.description}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()
+          : null}
 
         <div className="stadium-result-line">
           <table className="stadium-result-linetable">
