@@ -6,8 +6,8 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 
 export const metadata: Metadata = {
-  title: "일일 리포트",
-  description: "실제 KBO 경기 결과와 뉴스를 종합하여 제미나이 AI가 승리/패배 요인 및 오늘의 판도를 요약 분석한 고품질 일일 리포트입니다.",
+  title: "?? ???",
+  description: "KBO ?? ??? ?? ??? ??? ?? ??????.",
   alternates: {
     canonical: "/daily-report"
   }
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 type Props = {
   searchParams: {
     date?: string; // YYYY-MM-DD
-    nocache?: string; // "true" 이면 캐시를 무시하고 제미나이 강제 호출
+    nocache?: string;
     focus?: string; // 특정 경기 ID
     backHref?: string; // 뒤로가기 경로
   };
@@ -100,7 +100,7 @@ export default async function DailyReportPage({ searchParams }: Props) {
     );
   }
 
-  console.log(`[Daily Report Cache Miss] date: ${targetDate}. Run local sync:kbo-day to generate this report.`);
+  console.log(`[Daily Report Cache Miss] date: ${targetDate}. Insert a manual report with report:daily:upsert.`);
 
   // 해당 날짜의 경기 데이터 조회
   const games = await listGamesFromDb({

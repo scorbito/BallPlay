@@ -4,7 +4,7 @@ export async function POST() {
   return NextResponse.json(
     {
       ok: false,
-      error: "Daily reports are generated only by the local sync:kbo-day command."
+      error: "Daily reports are authored manually and inserted only with npm run report:daily:upsert."
     },
     { status: 403 }
   );

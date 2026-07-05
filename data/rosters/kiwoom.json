@@ -204,6 +204,17 @@
       "seasonGames": 0
     },
     {
+      "id": "kiwoom-24",
+      "name": "데이비슨",
+      "jerseyNumber": 24,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 63,
+      "_manual": true,
+      "_note": "Manual transfer from NC to Kiwoom on 2026-07-04; keeps jersey 24 and current season stats baseline."
+    },
+    {
       "id": "kiwoom-25",
       "name": "주성원",
       "jerseyNumber": 25,

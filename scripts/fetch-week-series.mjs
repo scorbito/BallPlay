@@ -1,5 +1,5 @@
-// 이번 주 시리즈 일정 조회 (2026-06-23 ~ 06-28).
-// early: 화-목 (6/23-6/25), weekend: 금-일 (6/26-6/28).
+// 이번 주 시리즈 일정 조회 (2026-07-07 ~ 06-28).
+// early: 화-목 (6/30-7/2), weekend: 금-일 (7/3-7/5).
 
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
@@ -23,8 +23,8 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
 const { data: games } = await sb
   .from("games")
   .select("id, game_date, game_time, stadium, home_team_id, away_team_id, home_starter, away_starter, status")
-  .gte("game_date", "2026-06-23")
-  .lte("game_date", "2026-06-28")
+  .gte("game_date", "2026-07-07")
+  .lte("game_date", "2026-07-12")
   .order("game_date")
   .order("game_time");
 
@@ -42,7 +42,7 @@ console.log(`\n매치업 수: ${byMatchup.size}`);
 for (const [key, gs] of byMatchup) {
   const [home, away] = key.split("|");
   const dates = gs.map((g) => g.game_date).join(", ");
-  const group = gs[0].game_date <= "2026-06-25" ? "early" : "weekend";
+  const group = gs[0].game_date <= "2026-07-09" ? "early" : "weekend";
   console.log(`\n[${group}] ${away} @ ${home} (${gs.length}경기) — ${dates}`);
   gs.forEach((g) => {
     console.log(`  ${g.game_date} ${g.game_time?.slice(0, 5)} ${g.stadium} | ${g.away_starter ?? "-"} vs ${g.home_starter ?? "-"} | ${g.id}`);

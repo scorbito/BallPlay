@@ -6,18 +6,19 @@
 //   5. parse pitcher game logs and pitcher-vs-team aggregates
 //   6. sync standings for the season
 //   7. sync player stat snapshots and recent-10 rankings
-//   8. generate and cache the daily AI report
+//   8. verify daily report is cached (manual agent-authored report; no AI API call here)
 //   9. generate and cache tomorrow's 1000-game simulations
-//  10. on Sundays, generate and cache the just-finished week's weekly AI report
+//  10. on Sundays, verify the just-finished week's weekly report is cached
 //
 // Usage:
 //   npm run sync:kbo-day
 //   npm run sync:kbo-day -- 2026-06-16
 //   npm run sync:kbo-day -- 2026-06-16 --force
-//   npm run sync:kbo-day -- 2026-06-16 --force-report
 //   npm run sync:kbo-day -- 2026-06-16 --skip-games --skip-lineups --skip-standings --skip-stats --skip-report
 //   npm run sync:kbo-day -- 2026-06-16 --skip-stats
 //   npm run sync:kbo-day -- 2026-06-16 --skip-report
+//   npm run report:daily:upsert -- 2026-06-16 .report-drafts/daily-2026-06-16.json
+//   npm run report:weekly:upsert -- 2026-06-15 .report-drafts/weekly-2026-06-15.json
 //   npm run sync:kbo-day -- 2026-06-16 --skip-schedule
 //   npm run sync:kbo-day -- 2026-06-16 --skip-team-stats
 //   npm run sync:kbo-day -- 2026-06-16 --skip-pitcher-logs
@@ -122,7 +123,6 @@ async function getSim1000ExistingState(admin: SupabaseClient, gameDate: string) 
 const args = process.argv.slice(2);
 const targetDate = args.find((arg) => DATE_RE.test(arg)) ?? defaultTargetDate();
 const force = args.includes("--force");
-const forceReport = args.includes("--force-report");
 const skipGames = args.includes("--skip-games");
 const skipStats = args.includes("--skip-stats");
 const skipRecent10 = args.includes("--skip-recent10");
@@ -159,11 +159,9 @@ const [
   { syncStandings },
   { syncStatsSnapshot },
   { upsertRecent10TopPlayers },
-  { listGamesFromDb, listStandingsFromDb },
-  { buildDailyReportSkeleton },
-  { generateDailyReportWithGemini },
+  { listGamesFromDb },
   { runDailySimAndUpsert },
-  { generateAndCacheWeeklyReport, getMondayOfDate, formatWeekName }
+  { getMondayOfDate, formatWeekName }
 ] = await Promise.all([
   import("@/lib/supabase/server"),
   import("@/lib/server/kbo/syncGames"),
@@ -174,8 +172,6 @@ const [
   import("@/lib/server/kbo/syncStats"),
   import("@/lib/server/recent10/upsertTopPlayers"),
   import("@/lib/supabase/query-parts/core"),
-  import("@/lib/utils/dailyReportHelper"),
-  import("@/lib/server/kbo/geminiDailyReport"),
   import("@/lib/server/sim/runDailySimAndUpsert"),
   import("@/lib/server/kbo/weeklyReport")
 ]);
@@ -215,6 +211,13 @@ if (!skipSchedule) {
   console.log("[sync:kbo-day] 2/7 upcoming schedule skipped");
 }
 
+const targetGames = await listGamesFromDb({ from: targetDate, to: targetDate });
+const unfinishedGames = targetGames.filter((game) => !isFinishedStatus(game.status));
+if (targetGames.length === 0) {
+  blockingIssues.push("target games not found");
+} else if (unfinishedGames.length > 0) {
+  blockingIssues.push(`unfinished games remain: ${unfinishedGames.length}/${targetGames.length}`);
+}
 if (!skipLineups) {
   console.log("[sync:kbo-day] 3/9 lineups");
   const lineups = await syncLineupsForDate(targetDate);
@@ -279,8 +282,8 @@ if (!skipReport) {
   const games = await listGamesFromDb({ from: targetDate, to: targetDate });
   if (games.length === 0) {
     console.log("[sync:kbo-day] report skipped: no games");
-  } else if (!forceReport && games.some((game) => !isFinishedStatus(game.status))) {
-    console.log("[sync:kbo-day] report skipped: unfinished games remain. Use --force-report to override.");
+  } else if (games.some((game) => !isFinishedStatus(game.status))) {
+    console.log("[sync:kbo-day] report skipped: unfinished games remain.");
   } else {
     const { data: existingReport } = await admin
       .from("daily_ai_reports")
@@ -288,35 +291,12 @@ if (!skipReport) {
       .eq("report_date", targetDate)
       .maybeSingle();
 
-    if (existingReport && !forceReport) {
-      console.log("[sync:kbo-day] report skipped: already cached. Use --force-report to regenerate.");
-    } else {
-      const { data: newsData } = await admin
-        .from("bp_news")
-        .select("title")
-        .gte("published_at", `${targetDate}T00:00:00+09:00`)
-        .lte("published_at", `${targetDate}T23:59:59+09:00`)
-        .order("published_at", { ascending: false });
-      const newsTitles = (newsData ?? []).map((news) => news.title);
-      const standingsData = await listStandingsFromDb(season).catch(() => []);
-      const skeleton = buildDailyReportSkeleton(games, targetDate);
-      const report = await generateDailyReportWithGemini(skeleton, newsTitles, standingsData);
-
-      if (!report) {
-        throw new Error("Daily report generation returned null");
-      }
-
-      const { error } = await admin.from("daily_ai_reports").upsert({
-        report_date: targetDate,
-        report_json: report,
-        created_at: new Date().toISOString()
-      });
-
-      if (error) {
-        throw new Error(`daily_ai_reports upsert failed: ${error.message}`);
-      }
-
+    if (existingReport) {
       console.log("[sync:kbo-day] report cached", JSON.stringify({ reportDate: targetDate }, null, 2));
+    } else {
+      console.log(
+        `[sync:kbo-day] report pending: run npm run report:daily:upsert -- ${targetDate} <report.json>`
+      );
     }
   }
 } else {
@@ -368,8 +348,8 @@ if (!skipSim1000) {
 }
 
 if (!skipWeekly) {
-  // 주간 리포트는 한 주(월~일)가 끝난 일요일에만 생성한다. (--force-weekly 로 우회)
-  const targetDow = parseLocalDate(targetDate).getDay(); // 0 = 일요일
+  // Weekly reports are checked only when the week is complete. Use --force-weekly to override.
+  const targetDow = parseLocalDate(targetDate).getDay(); // 0 = Sunday
   const weekMon = getMondayOfDate(parseLocalDate(targetDate));
 
   if (targetDow !== 0 && !forceWeekly) {
@@ -389,14 +369,9 @@ if (!skipWeekly) {
       );
     } else {
       console.log(`[sync:kbo-day] 10/10 weekly report week=${weekMon} (${formatWeekName(weekMon)})`);
-      const weekly = await generateAndCacheWeeklyReport(admin, weekMon);
       console.log(
-        "[sync:kbo-day] weekly report",
-        JSON.stringify({ weekId: weekMon, teamCount: weekly.rankings.length, cached: weekly.cached }, null, 2)
+        `[sync:kbo-day] weekly report pending: run npm run report:weekly:upsert -- ${weekMon} <rankings.json>`
       );
-      if (!weekly.cached) {
-        blockingIssues.push(`weekly report cache failed: ${weekly.error ?? "unknown"}`);
-      }
     }
   }
 } else {
@@ -416,3 +391,4 @@ writeCompletionMarker(completionMarkerPath, {
 });
 console.log(`[sync:kbo-day] completion marker written: ${completionMarkerPath}`);
 console.log("[sync:kbo-day] done");
+

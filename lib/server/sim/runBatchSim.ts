@@ -149,6 +149,24 @@ function findRosterIdByName(teamId: string, name: string | null): string | null 
   return partial?.id ?? null;
 }
 
+function findReplacementBatterId(
+  teamId: string,
+  usedIds: Set<string>,
+  stats: StatsDirectory,
+  preferredPosition: string | null
+): string | null {
+  const teamPrefix = `${teamId}-`;
+  const candidates = Array.from(stats.batters.values())
+    .filter((batter) => batter.playerId.startsWith(teamPrefix) && !usedIds.has(batter.playerId))
+    .sort((a, b) => (b.pa ?? 0) - (a.pa ?? 0));
+
+  const positionCandidates = preferredPosition
+    ? candidates.filter((batter) => batter.position === preferredPosition)
+    : [];
+
+  return (positionCandidates[0] ?? candidates[0])?.playerId ?? null;
+}
+
 function buildTeam(
   teamId: string,
   recent: RecentLineupRow,
@@ -156,11 +174,19 @@ function buildTeam(
   stats: StatsDirectory,
   displayName: string
 ): SimTeamInput {
-  // 타순: bp_team_recent_lineups.batting 의 rosterId 우선, 없으면 이름 매칭 폴백.
+  // Use the saved KBO lineup first. If a newly registered player has no stats yet,
+  // substitute an available same-team batter so the daily simulation can still run.
+  const usedBatterIds = new Set<string>();
   const slots: LineupSlot[] = recent.batting.map((b, i) => {
     let pid = b.rosterId;
     if (!pid) {
       pid = findRosterIdByName(teamId, b.name);
+    }
+    if (!pid || usedBatterIds.has(pid) || !stats.batters.has(pid)) {
+      pid = findReplacementBatterId(teamId, usedBatterIds, stats, b.position);
+    }
+    if (pid) {
+      usedBatterIds.add(pid);
     }
     return {
       order: ((b.order ?? i + 1) as LineupOrder),
