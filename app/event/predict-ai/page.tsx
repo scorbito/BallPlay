@@ -1,8 +1,10 @@
 import { unstable_cache } from "next/cache";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { getAiOverallStats } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { kstWeekStartTuesday } from "@/lib/server/predict/weeklyContest";
@@ -29,6 +31,9 @@ const getCachedWeeklyAiAvg = unstable_cache(
 );
 
 export default async function PredictAiEventPage() {
+  // 이벤트 중단 기간에는 안내 페이지 접근 차단 → 홈으로.
+  if (!WEEKLY_EVENT_ACTIVE) redirect("/");
+
   // 동기 부여용 — 이번 주 AI 평균 적중률(공개 데이터, 비로그인 OK).
   const aiAvg = await getCachedWeeklyAiAvg(kstWeekStartTuesday());
 

@@ -25,6 +25,7 @@ import {
 } from "@/lib/supabase/query-parts/bpPredictions";
 import { trackEvent } from "@/lib/analytics/events";
 import { POINT_LABEL } from "@/lib/points/config";
+import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 
 export type WinnerPredictGame = {
@@ -309,10 +310,10 @@ export function WinnerPredictScreen({
       pickedCount
     });
 
-    if (isAnon) {
+    if (isAnon && WEEKLY_EVENT_ACTIVE) {
       // 익명 → 로그인 유도 모달. router.refresh()는 이 컴포넌트를 리렌더/리마운트해
       // 모달을 닫아버리므로, 모달이 열려 있는 동안엔 호출하지 않고 닫을 때 새로고침한다.
-      // (잠금 UI는 위 setLockedMap 으로 이미 반영됨)
+      // (잠금 UI는 위 setLockedMap 으로 이미 반영됨) — 이벤트 중단 시엔 유도하지 않음.
       setLoginPromptOpen(true);
     } else {
       showToast(
@@ -333,26 +334,16 @@ export function WinnerPredictScreen({
 
   return (
     <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/" wide>
-      {/* ── 이번 주 나 vs AI 대결 (이벤트 동기 부여) ── */}
+      {/* ── 이번 주 나 vs AI 대결 (재미 요소로 상시 노출) ── */}
       {(() => {
         const myTotal = weekStats.total;
         const myRate = myTotal > 0 ? (weekStats.correct / myTotal) * 100 : null;
         const aiRate = aiWeeklyAccuracy;
         let tone: "neutral" | "win" | "lose" | "draw" = "neutral";
-        let msg = "";
-        if (aiRate === null) {
-          msg = "";
-        } else if (myRate === null) {
-          msg = "아직 채점된 예측이 없어요. 예측에 참여해 AI에 도전하세요!";
-        } else if (myRate > aiRate) {
-          tone = "win";
-          msg = "🔥 AI를 이기고 있어요! 이대로 가면 당첨 도전 가능!";
-        } else if (myRate < aiRate) {
-          tone = "lose";
-          msg = `AI에 ${Math.round(aiRate - myRate)}%p 뒤지는 중 — 더 맞혀보세요!`;
-        } else {
-          tone = "draw";
-          msg = "AI와 동률! 한 끗 차이예요.";
+        if (aiRate !== null && myRate !== null) {
+          if (myRate > aiRate) tone = "win";
+          else if (myRate < aiRate) tone = "lose";
+          else tone = "draw";
         }
         // 마주보는 분할 막대 — 두 적중률의 비율로 좌/우 점유.
         const totalRate = (myRate ?? 0) + (aiRate ?? 0);
@@ -374,7 +365,6 @@ export function WinnerPredictScreen({
               <div className="h2h-bar-gap" style={{ marginLeft: "auto" }} />
               <div className="h2h-bar predict-duel-bar-ai" style={{ width: `${aiPct}%` }} />
             </div>
-            {msg ? <p className="predict-duel-msg">{msg}</p> : null}
           </section>
         );
       })()}

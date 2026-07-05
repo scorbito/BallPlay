@@ -25,6 +25,7 @@ import { NoticeButton } from "@/components/domain/NoticeButton";
 import { WinnerPrizeModal } from "@/components/domain/predict/WinnerPrizeModal";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 import predictBannerSrc from "@/data/Images/ad-banner/이벤트당첨자발표.png";
+import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -170,7 +171,7 @@ const sections: HomeSection[] = [
         icon: Target,
         iconImage: "/icons/menu/predict-winner.png",
         available: true,
-        badge: "EVENT"
+        badge: WEEKLY_EVENT_ACTIVE ? "EVENT" : undefined
       },
       {
         id: "sim-1000",
@@ -390,11 +391,12 @@ const sections: HomeSection[] = [
       {
         id: "admin-events",
         href: "/admin/events",
-        title: "운영자 이벤트 통계",
+        title: "운영자 전용",
         description: "이벤트·포인트·가을야구 현황",
         icon: BarChart3,
-        iconImage: "/icons/menu/sim-1000.png",
-        available: true
+        iconImage: "/icons/menu/admin-menu.png",
+        available: true,
+        adminOnly: true
       }
     ]
   }
