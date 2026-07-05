@@ -6,6 +6,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { getAccountTierByWins, formatTierName } from "@/lib/tiers/accountTier";
+import { SHOW_ACCOUNT_TIER } from "@/lib/tiers/config";
 
 type Props = {
   wins: number;
@@ -25,6 +26,10 @@ export function AccountTierBadge({
   emptyFallback = null,
   className
 }: Props) {
+  // 등급 노출 OFF(탈-게임) — 0승 케이스와 동일하게 아무것도 표시하지 않음.
+  if (!SHOW_ACCOUNT_TIER) {
+    return <>{emptyFallback}</>;
+  }
   const tier = getAccountTierByWins(wins);
   if (!tier) {
     return <>{emptyFallback}</>;
