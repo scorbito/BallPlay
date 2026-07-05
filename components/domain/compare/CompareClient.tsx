@@ -119,8 +119,13 @@ function useSide(initial: string, persistKey: string): SideState {
         const d = res as CompareTeamData;
         setData(d);
 
-        // 선발 초기값: 최근 선발 → 없으면 선발(SP) 첫 명 → 아무 투수
-        const spFallback = d.rosterPitchers.find((p) => p.role !== "RP")?.playerId;
+        // 선발 초기값: 최근 선발 → 없으면 이닝 충분한 SP 중 최저 ERA → 아무 투수.
+        // (땜빵/오류 투수가 잡혀 선발 점수가 극단으로 떨어지는 것 방지)
+        const spFallback =
+          [...d.rosterPitchers]
+            .filter((p) => p.role === "SP" && p.ip >= 10)
+            .sort((a, b) => a.era - b.era)[0]?.playerId ??
+          d.rosterPitchers.find((p) => p.role !== "RP")?.playerId;
         setStarterId(d.recentStarter?.rosterId ?? spFallback ?? d.rosterPitchers[0]?.playerId ?? null);
 
         // 타순 초기값: 최근 라인업 → 부족분은 타석수 많은 순으로 보강, 9인.

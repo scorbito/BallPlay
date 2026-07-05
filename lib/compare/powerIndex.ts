@@ -14,12 +14,17 @@ const LEAGUE = {
 // 리그평균 쪽으로 IP 가중 회귀시켜 안정화. REG이닝만큼 리그평균을 섞는다.
 const ERA_REGRESSION_IP = 25;
 
+// ERA 상한 — 시드 데이터 오류(예: ERA 40)나 땜빵 등판 극단값이 점수를 0으로 만드는 걸 방어.
+// 이 값을 넘는 ERA는 "매우 나쁨"으로 동일 취급(점수는 낮되 바닥까지는 안 감).
+const ERA_CAP = 7.5;
+
 const clamp = (v: number, min = 1, max = 99) => Math.max(min, Math.min(max, v));
 
-/** 이닝 가중 회귀 ERA — 표본이 적을수록 리그평균에 수렴. */
+/** 이닝 가중 회귀 ERA — 표본이 적을수록 리그평균에 수렴. 극단값은 상한으로 방어. */
 function regressedEra(era: number, ip: number): number {
   if (!Number.isFinite(era) || ip <= 0) return LEAGUE.ERA;
-  return (era * ip + LEAGUE.ERA * ERA_REGRESSION_IP) / (ip + ERA_REGRESSION_IP);
+  const capped = Math.min(era, ERA_CAP);
+  return (capped * ip + LEAGUE.ERA * ERA_REGRESSION_IP) / (ip + ERA_REGRESSION_IP);
 }
 
 /** 타선 점수 — 라인업 타자들의 평균 OPS 기준. .040 OPS ≈ 10점. */

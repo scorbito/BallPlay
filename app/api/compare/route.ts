@@ -52,8 +52,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<CompareTea
   const today = kstToday();
   const season = Number(today.slice(0, 4));
 
-  // 저장된 스탯 스냅샷 기반 디렉토리 (최근폼 블렌딩 포함). 요청 중 스크래핑 없음.
-  const stats = await buildStatsDirectoryWithRecentForm(adminClient, [teamId], { asOfDate: today });
+  // 시즌 스탯 기반 디렉토리 — recentWeight:0 으로 최근폼 블렌딩을 끄고 KBO 1군 시즌 누적(latest 스냅샷)만 사용.
+  // (전력비교는 팀 시즌 전력 비교 성격 → 최근 소표본 변동 배제. 표시값은 KBO와 일치.)
+  const stats = await buildStatsDirectoryWithRecentForm(adminClient, [teamId], {
+    asOfDate: today,
+    recentWeight: 0,
+  });
 
   const roster = getRoster(teamId);
 
