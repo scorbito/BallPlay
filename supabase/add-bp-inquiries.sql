@@ -52,12 +52,10 @@ drop policy if exists "users select own inquiries" on public.bp_inquiries;
 create policy "users select own inquiries" on public.bp_inquiries
 for select using (auth.uid() = user_id);
 
--- 작성: 본인 + 비익명 로그인만.
+-- 작성: 본인 것만 (익명 포함 — 비로그인도 문의 가능).
+-- 실제 앱은 서버 액션이 service_role 로 insert 하지만, 정책도 의도(누구나 문의)와 일치시킨다.
 drop policy if exists "users insert own inquiries" on public.bp_inquiries;
 create policy "users insert own inquiries" on public.bp_inquiries
-for insert with check (
-  auth.uid() = user_id
-  and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false
-);
+for insert with check (auth.uid() = user_id);
 
 notify pgrst, 'reload schema';

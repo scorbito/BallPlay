@@ -69,7 +69,7 @@ export function WinnerPrizeModal() {
             경품: <strong>{info.prize}</strong>
           </p>
           <p className="winner-prize-guide">
-            경품 발송을 위해 <strong>받으실 이메일 또는 카카오톡 ID</strong>를 문의로 남겨주세요.
+            경품 발송을 위해 <strong>받으실 이메일 또는 휴대폰 번호</strong>를 문의로 남겨주세요.
             <br />
             로그인 계정으로 확인되니 별도 신원 확인은 필요 없어요.
           </p>

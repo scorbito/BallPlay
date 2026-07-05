@@ -14,10 +14,10 @@ export default async function ContactPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const loggedIn = Boolean(user && !user.is_anonymous);
 
+  // 익명 포함 현재 세션의 문의 내역만 조회(RLS 로 본인만). 세션 없으면 빈 목록.
   let inquiries: InquiryRow[] = [];
-  if (loggedIn && user) {
+  if (user) {
     const { data } = await supabase
       .from("bp_inquiries")
       .select("id, user_id, nickname, category, content, status, admin_reply, replied_at, created_at")
@@ -32,5 +32,5 @@ export default async function ContactPage({
     ? (searchParams.category as InquiryCategory)
     : undefined;
 
-  return <ContactScreen loggedIn={loggedIn} inquiries={inquiries} initialCategory={initialCategory} />;
+  return <ContactScreen inquiries={inquiries} initialCategory={initialCategory} />;
 }

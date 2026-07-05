@@ -2,36 +2,36 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
+import { ensureAnonymousSession } from "@/lib/actions/ensureAnonymousSession";
 import { getUserTier } from "@/lib/auth/userTier";
 import { type InquiryCategory, VALID_INQUIRY_CATEGORIES } from "@/lib/inquiries";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
-/** 사용자: 본인 계정으로 문의 작성 (RLS 로 본인만 insert). */
+/** 문의 작성 — 비로그인(익명 포함) 누구나 가능. 세션 없으면 익명 계정 lazy 생성. */
 export async function createInquiryAction(input: {
   category: InquiryCategory;
   content: string;
 }): Promise<ActionResult> {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || user.is_anonymous) return { ok: false, error: "로그인이 필요합니다." };
-
   const content = input.content.trim();
   if (!content) return { ok: false, error: "문의 내용을 입력해주세요." };
   if (content.length > 2000) return { ok: false, error: "문의는 2000자 이내로 입력해주세요." };
   const category = VALID_INQUIRY_CATEGORIES.includes(input.category) ? input.category : "general";
 
-  // 닉네임 스냅샷 — 목록/운영자 화면 표시용.
-  const { data: profile } = await supabase
+  // 세션 보장(없으면 익명 계정 생성) → 그 계정에 문의를 묶는다.
+  const session = await ensureAnonymousSession();
+  if (!session) return { ok: false, error: "잠시 후 다시 시도해주세요." };
+
+  // 서비스롤로 insert (검증된 userId 로 기록). 닉네임 스냅샷 포함.
+  const admin = createSupabaseAdminClient();
+  const { data: profile } = await admin
     .from("profiles")
     .select("nickname")
-    .eq("id", user.id)
+    .eq("id", session.userId)
     .maybeSingle();
 
-  const { error } = await supabase.from("bp_inquiries").insert({
-    user_id: user.id,
+  const { error } = await admin.from("bp_inquiries").insert({
+    user_id: session.userId,
     nickname: profile?.nickname ?? null,
     category,
     content,

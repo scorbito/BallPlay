@@ -27,12 +27,11 @@ function formatDate(iso: string): string {
 }
 
 type Props = {
-  loggedIn: boolean;
   inquiries: InquiryRow[];
   initialCategory?: InquiryCategory;
 };
 
-export function ContactScreen({ loggedIn, inquiries, initialCategory }: Props) {
+export function ContactScreen({ inquiries, initialCategory }: Props) {
   const router = useRouter();
   const [category, setCategory] = useState<InquiryCategory>(initialCategory ?? "general");
   const [content, setContent] = useState("");
@@ -82,8 +81,7 @@ export function ContactScreen({ loggedIn, inquiries, initialCategory }: Props) {
         </Link>
       </section>
 
-      {loggedIn ? (
-        <section className="inquiry-form">
+      <section className="inquiry-form">
           <label className="inquiry-label" htmlFor="inquiry-category">
             문의 유형
           </label>
@@ -108,7 +106,7 @@ export function ContactScreen({ loggedIn, inquiries, initialCategory }: Props) {
             className="inquiry-textarea"
             placeholder={
               category === "prize"
-                ? "경품 받을 이메일 주소 또는 카카오톡 ID를 적어주세요."
+                ? "경품 받을 이메일 주소 또는 휴대폰 번호를 적어주세요."
                 : "문의하실 내용을 자세히 적어주세요."
             }
             value={content}
@@ -123,17 +121,9 @@ export function ContactScreen({ loggedIn, inquiries, initialCategory }: Props) {
           <button type="button" className="inquiry-submit" onClick={submit} disabled={pending}>
             {pending ? "접수 중…" : "문의 남기기"}
           </button>
-        </section>
-      ) : (
-        <section className="inquiry-form">
-          <p className="inquiry-login-note">문의 작성과 답변 확인은 로그인 후 이용할 수 있어요.</p>
-          <Link className="inquiry-submit inquiry-login-link" href="/login" prefetch>
-            로그인하기
-          </Link>
-        </section>
-      )}
+      </section>
 
-      {loggedIn && inquiries.length > 0 ? (
+      {inquiries.length > 0 ? (
         <section className="inquiry-list">
           <h3 className="inquiry-list-title">내 문의 내역</h3>
           {inquiries.map((q) => (
