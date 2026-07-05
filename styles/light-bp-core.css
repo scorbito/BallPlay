@@ -373,6 +373,82 @@
   box-shadow: 0 12px 24px rgba(232, 74, 138, 0.18);
 }
 
+/* ── 이벤트 당첨 개별 모달 ── */
+.winner-prize-panel {
+  max-width: 340px;
+  border-color: rgba(232, 74, 138, 0.24);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 54px rgba(15, 23, 42, 0.22);
+}
+.winner-prize-body {
+  padding: 6px 4px 2px;
+  text-align: center;
+}
+.winner-prize-lead {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--bp-text-secondary);
+}
+.winner-prize-lead strong {
+  color: var(--bp-accent);
+  font-weight: 900;
+}
+.winner-prize-guide {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--bp-text-secondary);
+}
+.winner-prize-list {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  list-style: none;
+  text-align: left;
+  background: var(--bp-line-soft, #f1f5f9);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+.winner-prize-list li {
+  padding: 3px 0 3px 16px;
+  position: relative;
+}
+.winner-prize-list li::before {
+  content: "·";
+  position: absolute;
+  left: 4px;
+  color: var(--bp-accent);
+  font-weight: 900;
+}
+.winner-prize-mail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  background: var(--bp-accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 12px 24px rgba(232, 74, 138, 0.18);
+}
+.winner-prize-later {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border: 0;
+  background: none;
+  color: var(--bp-text-muted, #9ca3af);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .toast-message-text {
   white-space: pre-line;
 }

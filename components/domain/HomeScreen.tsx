@@ -22,8 +22,9 @@ import {
 } from "lucide-react";
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { NoticeButton } from "@/components/domain/NoticeButton";
+import { WinnerPrizeModal } from "@/components/domain/predict/WinnerPrizeModal";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
-import predictBannerSrc from "@/data/Images/ad-banner/승부예측_배너광고.png";
+import predictBannerSrc from "@/data/Images/ad-banner/이벤트당첨자발표.png";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -407,6 +408,7 @@ export function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   return (
     <AppShell activeTab="home" title="야구놀이터" theme="light" hideHeader hideFloatingPointChip wide>
+      <WinnerPrizeModal />
       <header className="play-hub-header">
         <h1>
           <Image
@@ -557,13 +559,13 @@ export function HomeScreen() {
         const predictBannerNode = (
           <Link
             className="play-hub-predict-banner"
-            href="/event/predict-ai"
+            href="/my/notices/fc8065b0-4fc6-48b5-a4ba-7a4356c09f12"
             prefetch={false}
             key="predict-banner"
           >
             <Image
               src={predictBannerSrc}
-              alt="승부예측 이벤트"
+              alt="승부예측 이벤트 당첨자 발표"
               sizes="(max-width: 640px) 100vw, 640px"
               style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }}
               priority
