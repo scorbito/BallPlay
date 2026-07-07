@@ -83,16 +83,19 @@ export async function GET(
 
   // 4. 팀 타선 평균 타격 지표 계산
   const getTeamBattingAvg = async (teamId: string) => {
-    // 최근 9인 라인업 조회
-    const { data: lineupRow } = await adminClient
+    // 최근 9인 라인업 조회 — 최신 행이 빈 배열([])일 수 있어(발표 전 빈 write 등)
+    // 최근 몇 행 중 '비어있지 않은' 가장 최근 라인업을 사용한다.
+    const { data: lineupRows } = await adminClient
       .from("bp_team_recent_lineups")
       .select("batting")
       .eq("team_id", teamId)
       .lte("game_date", gameDate)
       .order("game_date", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(6);
 
+    const lineupRow = (lineupRows || []).find(
+      (r) => Array.isArray(r.batting) && r.batting.length > 0
+    );
     const batting = lineupRow?.batting || [];
     const roster = getRoster(teamId);
 
