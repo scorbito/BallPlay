@@ -1,7 +1,7 @@
 {
   "teamId": "ssg",
   "teamName": "SSG 랜더스",
-  "_scrapedAt": "2026-07-06T02:58:29.566Z",
+  "_scrapedAt": "2026-07-13T02:34:05.287Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -21,7 +21,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 43
+      "seasonGames": 44
     },
     {
       "id": "ssg-2",
@@ -30,7 +30,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 83
+      "seasonGames": 86
     },
     {
       "id": "ssg-p55896",
@@ -57,7 +57,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 80
+      "seasonGames": 83
     },
     {
       "id": "ssg-4",
@@ -75,7 +75,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "ssg-p55899",
@@ -111,7 +111,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 21
+      "seasonGames": 23
     },
     {
       "id": "ssg-8",
@@ -173,7 +173,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 67
+      "seasonGames": 70
     },
     {
       "id": "ssg-15",
@@ -182,7 +182,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 41
+      "seasonGames": 43
     },
     {
       "id": "ssg-16",
@@ -191,7 +191,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 20
+      "seasonGames": 21
     },
     {
       "id": "ssg-18",
@@ -200,7 +200,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 37
     },
     {
       "id": "ssg-19",
@@ -209,7 +209,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 31
+      "seasonGames": 32
     },
     {
       "id": "ssg-20",
@@ -218,7 +218,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 59
+      "seasonGames": 61
     },
     {
       "id": "ssg-21",
@@ -236,7 +236,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 5
+      "seasonGames": 7
     },
     {
       "id": "ssg-23",
@@ -272,7 +272,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "R",
-      "seasonGames": 83
+      "seasonGames": 84
     },
     {
       "id": "ssg-28",
@@ -281,7 +281,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 29
+      "seasonGames": 30
     },
     {
       "id": "ssg-29",
@@ -299,7 +299,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 14
+      "seasonGames": 15
     },
     {
       "id": "ssg-31",
@@ -308,7 +308,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 55
+      "seasonGames": 58
     },
     {
       "id": "ssg-32",
@@ -317,7 +317,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 72
+      "seasonGames": 74
     },
     {
       "id": "ssg-34",
@@ -326,7 +326,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 26
     },
     {
       "id": "ssg-35",
@@ -353,7 +353,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 72
+      "seasonGames": 74
     },
     {
       "id": "ssg-38",
@@ -362,7 +362,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 37
+      "seasonGames": 38
     },
     {
       "id": "ssg-39",
@@ -380,7 +380,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "ssg-42",
@@ -389,7 +389,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 35
     },
     {
       "id": "ssg-43",
@@ -425,7 +425,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 28
+      "seasonGames": 30
     },
     {
       "id": "ssg-48",
@@ -487,7 +487,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 81
+      "seasonGames": 84
     },
     {
       "id": "ssg-55",
@@ -496,7 +496,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "ssg-56",
@@ -505,7 +505,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 33
+      "seasonGames": 35
     },
     {
       "id": "ssg-57",
@@ -514,7 +514,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 26
+      "seasonGames": 27
     },
     {
       "id": "ssg-58",
@@ -613,7 +613,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 1
+      "seasonGames": 2
     },
     {
       "id": "ssg-92",
@@ -622,7 +622,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 37
+      "seasonGames": 38
     },
     {
       "id": "ssg-97",
@@ -631,7 +631,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 42
+      "seasonGames": 44
     },
     {
       "id": "ssg-98",

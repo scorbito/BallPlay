@@ -1,10 +1,19 @@
 {
   "teamId": "kt",
   "teamName": "KT 위즈",
-  "_scrapedAt": "2026-07-06T02:57:03.656Z",
+  "_scrapedAt": "2026-07-13T02:32:52.395Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
+    {
+      "id": "kt-0",
+      "name": "이정범",
+      "jerseyNumber": 0,
+      "primaryPosition": "CF",
+      "throwingHand": "L",
+      "battingHand": "L",
+      "seasonGames": 6
+    },
     {
       "id": "kt-1",
       "name": "고영표",
@@ -29,7 +38,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 77
+      "seasonGames": 79
     },
     {
       "id": "kt-4",
@@ -38,7 +47,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 58
+      "seasonGames": 59
     },
     {
       "id": "kt-5",
@@ -65,7 +74,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 73
+      "seasonGames": 75
     },
     {
       "id": "kt-8",
@@ -74,7 +83,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 10
+      "seasonGames": 12
     },
     {
       "id": "kt-9",
@@ -92,7 +101,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 80
+      "seasonGames": 82
     },
     {
       "id": "kt-11",
@@ -101,7 +110,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 40
+      "seasonGames": 42
     },
     {
       "id": "kt-12",
@@ -109,7 +118,7 @@
       "jerseyNumber": 12,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 28
+      "seasonGames": 29
     },
     {
       "id": "kt-13",
@@ -118,7 +127,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 49
+      "seasonGames": 51
     },
     {
       "id": "kt-14",
@@ -207,7 +216,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 31
+      "seasonGames": 33
     },
     {
       "id": "kt-24",
@@ -243,7 +252,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 56
+      "seasonGames": 58
     },
     {
       "id": "kt-29",
@@ -252,7 +261,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 38
+      "seasonGames": 39
     },
     {
       "id": "kt-30",
@@ -261,7 +270,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "kt-31",
@@ -297,7 +306,7 @@
       "primaryPosition": "3B",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 81
+      "seasonGames": 83
     },
     {
       "id": "kt-35",
@@ -324,7 +333,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "kt-38",
@@ -333,7 +342,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 29
+      "seasonGames": 30
     },
     {
       "id": "kt-39",
@@ -360,7 +369,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 35
+      "seasonGames": 36
     },
     {
       "id": "kt-42",
@@ -369,7 +378,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 14
+      "seasonGames": 15
     },
     {
       "id": "kt-43",
@@ -378,7 +387,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "R",
-      "seasonGames": 3
+      "seasonGames": 4
     },
     {
       "id": "kt-44",
@@ -396,7 +405,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 68
+      "seasonGames": 70
     },
     {
       "id": "kt-46",
@@ -459,7 +468,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 68
+      "seasonGames": 70
     },
     {
       "id": "kt-53",
@@ -468,7 +477,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 60
+      "seasonGames": 62
     },
     {
       "id": "kt-54",
@@ -495,7 +504,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 43
+      "seasonGames": 45
     },
     {
       "id": "kt-57",
@@ -531,7 +540,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 32
+      "seasonGames": 34
     },
     {
       "id": "kt-61",
