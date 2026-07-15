@@ -578,6 +578,30 @@ function AiBullpenSection({
   awayFill,
   bullpen
 }: BullpenSectionProps) {
+  const [animate, setAnimate] = useState(false);
+  const [remountKey, setRemountKey] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+    const timer = setTimeout(() => {
+      observer = new IntersectionObserver(
+        ([entry]) => setAnimate(entry.isIntersecting),
+        { threshold: 0.1, rootMargin: "0px 0px -80px 0px" }
+      );
+      if (sectionRef.current) observer.observe(sectionRef.current);
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      if (observer) observer.disconnect();
+    };
+  }, [remountKey]);
+
+  const replayAnimation = () => {
+    setAnimate(false);
+    setRemountKey((previous) => previous + 1);
+  };
   const metrics = [
     { key: "era", label: "불펜 평균자책점 (ERA)", digits: 2 },
     { key: "whip", label: "불펜 출루허용률 (WHIP)", digits: 2 },
@@ -596,8 +620,8 @@ function AiBullpenSection({
   };
 
   return (
-    <section className="ai-stats-section">
-      <h3 className="ai-stats-section-title">최근 10경기 불펜 비교</h3>
+    <section className="ai-stats-section" key={remountKey} ref={sectionRef}>
+      <h3 className="ai-stats-section-title" onClick={replayAnimation} style={{ cursor: "pointer", userSelect: "none" }}>최근 10경기 불펜 비교</h3>
       <p className="ai-stats-section-subtitle">
         * 선발을 제외한 불펜 등판 기록과 경기 전 최근 3일 가용성을 비교합니다.
       </p>
@@ -607,7 +631,7 @@ function AiBullpenSection({
         <div className="ai-stats-starter-profile text-right"><span className="starter-label-team" style={{ color: awayColor }}>{awayTeamName}</span></div>
       </div>
       <div className="ai-stats-starter-metrics">
-        {metrics.map((metric) => {
+        {metrics.map((metric, index) => {
           const homeValue = bullpen.home[metric.key];
           const awayValue = bullpen.away[metric.key];
           const { homePct, awayPct } = gauge(homeValue, awayValue);
@@ -619,9 +643,9 @@ function AiBullpenSection({
                 <span className="metric-value away-val">{formatDecimal(awayValue, metric.digits)}</span>
               </div>
               <div className="metric-bar-container">
-                <div className="metric-bar home-bar" style={{ width: `${homePct}%`, background: homeColor }} />
+                <div className="metric-bar home-bar" style={{ width: animate ? `${homePct}%` : "0%", background: homeColor, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
                 <div className="metric-bar-gap" style={{ marginLeft: "auto" }} />
-                <div className="metric-bar away-bar" style={{ width: `${awayPct}%`, background: awayFill }} />
+                <div className="metric-bar away-bar" style={{ width: animate ? `${awayPct}%` : "0%", background: awayFill, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
               </div>
             </div>
           );
