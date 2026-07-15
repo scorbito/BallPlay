@@ -11,6 +11,26 @@ const PUBLIC_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900"
 };
 
+type BullpenSummary = {
+  games: number;
+  era: number | null;
+  whip: number | null;
+  lateRunsAllowedPerGame: number | null;
+  pitchesLast3Days: number;
+  backToBackPitchers: number;
+  highUsageYesterday: number;
+};
+
+function toDateString(date: Date): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+function daysBefore(dateString: string, days: number): string {
+  const date = new Date(`${dateString}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - days);
+  return toDateString(date);
+}
+
 function findRosterPlayerIdByName(teamId: string, name: string | null, isPitcher: boolean): string | null {
   if (!name) return null;
   const roster = getRoster(teamId);
@@ -159,6 +179,66 @@ export async function GET(
   };
 
   // 6. 팀 순위 및 성적(Form 포함) 획득
+  const getBullpenSummary = async (teamId: string): Promise<BullpenSummary> => {
+    const { data: recentGames } = await adminClient
+      .from("games")
+      .select("game_date")
+      .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+      .eq("status", "finished")
+      .lt("game_date", gameDate)
+      .order("game_date", { ascending: false })
+      .limit(10);
+
+    // games.id(UUID)와 KBO 박스스코어 game_id는 서로 다르므로, 공통 키인 경기일로 연결한다.
+    const gameDates = (recentGames ?? []).map((row) => row.game_date);
+    if (gameDates.length === 0) {
+      return { games: 0, era: null, whip: null, lateRunsAllowedPerGame: null, pitchesLast3Days: 0, backToBackPitchers: 0, highUsageYesterday: 0 };
+    }
+
+    const [logsResult, teamStatsResult] = await Promise.all([
+      adminClient
+        .from("bp_pitcher_game_logs")
+        .select("pitcher_name,game_date,pitches,outs,hits_allowed,walks_hbp,earned_runs")
+        .eq("team_id", teamId)
+        .neq("pitcher_order", "1")
+        .in("game_date", gameDates),
+      adminClient
+        .from("bp_team_game_stats")
+        .select("late_runs_allowed")
+        .eq("team_id", teamId)
+        .in("game_date", gameDates)
+    ]);
+
+    const logs = logsResult.data ?? [];
+    const totals = logs.reduce(
+      (acc, row) => ({
+        outs: acc.outs + Number(row.outs ?? 0),
+        hits: acc.hits + Number(row.hits_allowed ?? 0),
+        walks: acc.walks + Number(row.walks_hbp ?? 0),
+        earnedRuns: acc.earnedRuns + Number(row.earned_runs ?? 0)
+      }),
+      { outs: 0, hits: 0, walks: 0, earnedRuns: 0 }
+    );
+
+    const yesterday = daysBefore(gameDate, 1);
+    const twoDaysAgo = daysBefore(gameDate, 2);
+    const threeDaysAgo = daysBefore(gameDate, 3);
+    const recentBullpenLogs = logs.filter((row) => row.game_date >= threeDaysAgo && row.game_date <= yesterday);
+    const yesterdayPitchers = new Set(logs.filter((row) => row.game_date === yesterday).map((row) => row.pitcher_name));
+    const twoDaysAgoPitchers = new Set(logs.filter((row) => row.game_date === twoDaysAgo).map((row) => row.pitcher_name));
+    const lateRunsAllowed = (teamStatsResult.data ?? []).reduce((sum, row) => sum + Number(row.late_runs_allowed ?? 0), 0);
+    const rate = (numerator: number, denominator: number) => denominator > 0 ? Number((numerator / denominator).toFixed(2)) : null;
+
+    return {
+      games: gameDates.length,
+      era: rate(totals.earnedRuns * 27, totals.outs),
+      whip: rate((totals.hits + totals.walks) * 3, totals.outs),
+      lateRunsAllowedPerGame: (teamStatsResult.data?.length ?? 0) > 0 ? Number((lateRunsAllowed / gameDates.length).toFixed(1)) : null,
+      pitchesLast3Days: recentBullpenLogs.reduce((sum, row) => sum + Number(row.pitches ?? 0), 0),
+      backToBackPitchers: Array.from(yesterdayPitchers).filter((name) => twoDaysAgoPitchers.has(name)).length,
+      highUsageYesterday: logs.filter((row) => row.game_date === yesterday && Number(row.pitches ?? 0) >= 25).length
+    };
+  };
   const getTeamStandings = async () => {
     const { data } = await adminClient
       .from("team_standings")
@@ -288,7 +368,9 @@ export async function GET(
     homeStarterVsOpponent,
     awayStarterVsOpponent,
     homeStarterSeasonStartStats,
-    awayStarterSeasonStartStats
+    awayStarterSeasonStartStats,
+    homeBullpen,
+    awayBullpen
   ] = await Promise.all([
     getTeamBattingAvg(homeTeamId),
     getTeamBattingAvg(awayTeamId),
@@ -299,7 +381,9 @@ export async function GET(
     getPitcherVsTeamStats(homeStarterName, homeTeamId, awayTeamId),
     getPitcherVsTeamStats(awayStarterName, awayTeamId, homeTeamId),
     getPitcherSeasonStartStats(homeStarterName, homeTeamId),
-    getPitcherSeasonStartStats(awayStarterName, awayTeamId)
+    getPitcherSeasonStartStats(awayStarterName, awayTeamId),
+    getBullpenSummary(homeTeamId),
+    getBullpenSummary(awayTeamId)
   ]);
 
   // 상대전적 가공
@@ -384,6 +468,10 @@ export async function GET(
         bb9: awayStarterStats.bb9,
         vsOpponent: awayStarterVsOpponent
       }
+    },
+    bullpen: {
+      home: homeBullpen,
+      away: awayBullpen
     },
     batting: {
       home: homeBatting,

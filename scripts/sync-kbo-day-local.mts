@@ -156,6 +156,7 @@ const [
   { syncLineupsForDate },
   { syncTeamGameStatsForDate },
   { backfillPitcherGameLogsFromTeamStats },
+  { upsertBullpenDailySnapshots },
   { syncStandings },
   { syncStatsSnapshot },
   { upsertRecent10TopPlayers },
@@ -168,6 +169,7 @@ const [
   import("@/lib/server/kbo/syncLineups"),
   import("@/lib/server/kbo/syncTeamGameStats"),
   import("@/lib/server/kbo/pitcherGameLogs"),
+  import("@/lib/server/kbo/bullpenDaily"),
   import("@/lib/server/kbo/syncStandings"),
   import("@/lib/server/kbo/syncStats"),
   import("@/lib/server/recent10/upsertTopPlayers"),
@@ -249,6 +251,15 @@ if (!skipPitcherLogs && !skipTeamStats) {
   }
 } else {
   console.log("[sync:kbo-day] 5/9 pitcher game logs skipped");
+}
+
+// The snapshot is for tomorrow's AI prediction. It is refreshed after pitcher logs are finalized.
+if (!skipPitcherLogs && !skipTeamStats) {
+  console.log("[sync:kbo-day] bullpen daily snapshots");
+  const bullpenSnapshots = await upsertBullpenDailySnapshots(targetDate);
+  console.log("[sync:kbo-day] bullpen daily snapshots", JSON.stringify(bullpenSnapshots, null, 2));
+} else {
+  console.log("[sync:kbo-day] bullpen daily snapshots skipped");
 }
 
 if (!skipStandings) {

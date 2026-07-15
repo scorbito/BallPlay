@@ -52,6 +52,16 @@ type BattingStats = {
   contact: number;
 };
 
+type BullpenStats = {
+  games: number;
+  era: number | null;
+  whip: number | null;
+  lateRunsAllowedPerGame: number | null;
+  pitchesLast3Days: number;
+  backToBackPitchers: number;
+  highUsageYesterday: number;
+};
+
 type RecentGame = {
   date: string;
   score: number;
@@ -78,6 +88,10 @@ export type StatsTabData = {
   starters: {
     home: StarterStats;
     away: StarterStats;
+  };
+  bullpen: {
+    home: BullpenStats;
+    away: BullpenStats;
   };
   batting: {
     home: BattingStats;
@@ -226,6 +240,15 @@ export function AiWinnerStatsTab({ homeTeamId, awayTeamId, homeTeamName, awayTea
       />
 
       {/* ── [섹션 2] 팀 타선 지표 대조 ── */}
+      <AiBullpenSection
+        homeTeamName={homeTeamName}
+        awayTeamName={awayTeamName}
+        homeColor={homeColor}
+        awayColor={awayColor}
+        awayFill={awayFill}
+        bullpen={data.bullpen}
+      />
+
       <AiBattingSection
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
@@ -533,6 +556,85 @@ function formatVsInningsEra(stats: PitcherVsOpponentStats | null | undefined) {
 function formatVsWhipStrikeouts(stats: PitcherVsOpponentStats | null | undefined) {
   if (!stats || stats.games <= 0) return "-";
   return `${formatDecimal(stats.whip)} / ${stats.strikeouts}K`;
+}
+
+type BullpenSectionProps = {
+  homeTeamName: string;
+  awayTeamName: string;
+  homeColor: string;
+  awayColor: string;
+  awayFill: string;
+  bullpen: {
+    home: BullpenStats;
+    away: BullpenStats;
+  };
+};
+
+function AiBullpenSection({
+  homeTeamName,
+  awayTeamName,
+  homeColor,
+  awayColor,
+  awayFill,
+  bullpen
+}: BullpenSectionProps) {
+  const metrics = [
+    { key: "era", label: "불펜 평균자책점 (ERA)", digits: 2 },
+    { key: "whip", label: "불펜 출루허용률 (WHIP)", digits: 2 },
+    { key: "lateRunsAllowedPerGame", label: "후반 실점 (7회 이후)", digits: 1 }
+  ] as const;
+
+  const hasBullpenData = bullpen.home.era !== null || bullpen.away.era !== null;
+  const fatigueValue = (value: number, suffix: string) => hasBullpenData ? `${value}${suffix}` : "-";
+
+  const gauge = (homeValue: number | null, awayValue: number | null) => {
+    if (homeValue === null || awayValue === null) return { homePct: 50, awayPct: 50 };
+    const sum = homeValue + awayValue;
+    if (sum <= 0) return { homePct: 50, awayPct: 50 };
+    const homePct = Math.max(15, Math.min(85, Math.round((1 - homeValue / sum) * 100)));
+    return { homePct, awayPct: 100 - homePct };
+  };
+
+  return (
+    <section className="ai-stats-section">
+      <h3 className="ai-stats-section-title">최근 10경기 불펜 비교</h3>
+      <p className="ai-stats-section-subtitle">
+        * 선발을 제외한 불펜 등판 기록과 경기 전 최근 3일 가용성을 비교합니다.
+      </p>
+      <div className="ai-stats-starter-header">
+        <div className="ai-stats-starter-profile text-left"><span className="starter-label-team" style={{ color: homeColor }}>{homeTeamName}</span></div>
+        <span className="starter-vs-badge">VS</span>
+        <div className="ai-stats-starter-profile text-right"><span className="starter-label-team" style={{ color: awayColor }}>{awayTeamName}</span></div>
+      </div>
+      <div className="ai-stats-starter-metrics">
+        {metrics.map((metric) => {
+          const homeValue = bullpen.home[metric.key];
+          const awayValue = bullpen.away[metric.key];
+          const { homePct, awayPct } = gauge(homeValue, awayValue);
+          return (
+            <div className="starter-metric-row" key={metric.key}>
+              <div className="metric-row-info">
+                <span className="metric-value home-val">{formatDecimal(homeValue, metric.digits)}</span>
+                <span className="metric-label">{metric.label}</span>
+                <span className="metric-value away-val">{formatDecimal(awayValue, metric.digits)}</span>
+              </div>
+              <div className="metric-bar-container">
+                <div className="metric-bar home-bar" style={{ width: `${homePct}%`, background: homeColor }} />
+                <div className="metric-bar-gap" style={{ marginLeft: "auto" }} />
+                <div className="metric-bar away-bar" style={{ width: `${awayPct}%`, background: awayFill }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-5 border-t border-dashed border-slate-200 pt-4">
+        <div className="mb-2 text-center text-xs font-extrabold text-slate-400">불펜 피로도 · 가용성 (최근 3일)</div>
+        <VsMetricRow left={fatigueValue(bullpen.home.pitchesLast3Days, "구")} label="불펜 투구 수" right={fatigueValue(bullpen.away.pitchesLast3Days, "구")} />
+        <VsMetricRow left={fatigueValue(bullpen.home.backToBackPitchers, "명")} label="연투 투수" right={fatigueValue(bullpen.away.backToBackPitchers, "명")} />
+        <VsMetricRow left={fatigueValue(bullpen.home.highUsageYesterday, "명")} label="전날 25구 이상" right={fatigueValue(bullpen.away.highUsageYesterday, "명")} />
+      </div>
+    </section>
+  );
 }
 
 type BattingSectionProps = {
