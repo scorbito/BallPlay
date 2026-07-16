@@ -52,21 +52,6 @@ type BattingStats = {
   contact: number;
 };
 
-// 타선 막대 스케일 기준 — 팀 9인 타순 시즌 종합 성적의 현실적인 리그 범위.
-// 절댓값에 비례시키면 .280 과 .255 가 둘 다 최대치의 90%대라 길이 차이가 안 보인다.
-// 이 범위 안에서의 위치로 환산해 격차가 드러나게 한다. (범위 밖은 0/100% 로 clamp)
-const BATTING_LEAGUE_RANGE: Record<keyof BattingStats, { min: number; max: number }> = {
-  avg: { min: 0.23, max: 0.3 },
-  obp: { min: 0.3, max: 0.38 },
-  slg: { min: 0.33, max: 0.47 },
-  ops: { min: 0.64, max: 0.85 },
-  contact: { min: 0.7, max: 0.9 }
-};
-
-// 각 막대는 자기 쪽 절반 안에서만 자란다 — 가운데 여백을 남겨 좌우 비교가 쉽도록.
-const BAR_MAX_PCT = 46;
-const BAR_MIN_PCT = 6; // 리그 최하위여도 최소한 보이도록
-
 /** 열세 쪽 막대 색 — 우세한 쪽만 팀 컬러로 남겨 즉시 판별되게 한다. */
 const BAR_MUTED_COLOR = "#cbd5e1";
 
@@ -724,20 +709,19 @@ function AiBattingSection({
     };
   }, [remountKey]);
 
-  // 막대 길이 = '리그 스펙트럼 상 위치'.
-  //   기존엔 homeVal/(homeVal+awayVal) 비율이라 .280 vs .255 가 52:48 로 거의 같아 보였다.
-  //   각 팀을 리그 범위(min~max)에 독립적으로 정규화하면 격차가 눈에 띄고,
-  //   "리그에서 어느 수준인가"라는 의미까지 생긴다.
+  // 막대는 좌우가 맞붙는 형식 — 두 팀 합이 100%가 되도록 비율로 나눈다.
+  // 우열 판별은 길이가 아니라 색(우세만 팀 컬러)이 담당한다.
   const getBatterGauge = (metric: keyof BattingStats) => {
-    const range = BATTING_LEAGUE_RANGE[metric];
-    const toPct = (val: number) => {
-      const t = (val - range.min) / (range.max - range.min);
-      const clamped = Math.max(0, Math.min(1, t));
-      return Math.round(BAR_MIN_PCT + clamped * (BAR_MAX_PCT - BAR_MIN_PCT));
-    };
+    const homeVal = batting.home[metric];
+    const awayVal = batting.away[metric];
+    const sum = homeVal + awayVal;
+    if (sum === 0) return { homePct: 50, awayPct: 50 };
+
+    const homeRatio = homeVal / sum;
+    const homePct = Math.max(15, Math.min(85, Math.round(homeRatio * 100)));
     return {
-      homePct: toPct(batting.home[metric]),
-      awayPct: toPct(batting.away[metric])
+      homePct,
+      awayPct: 100 - homePct
     };
   };
 
@@ -756,7 +740,7 @@ function AiBattingSection({
         최근 선발 타선 전력 비교
       </h3>
       <p className="ai-stats-section-subtitle">
-        * 최근 9인 선발 타순의 시즌 종합 성적입니다. 막대는 리그 범위 대비 위치이며, 우세한 쪽만 팀 색으로 표시됩니다.
+        * 최근 9인 선발 타순의 시즌 종합 성적을 대칭 지표로 나타낸 것입니다. 우세한 쪽만 팀 색으로 표시됩니다.
       </p>
       <div className="ai-stats-starter-header">
         <div className="ai-stats-starter-profile text-left">
