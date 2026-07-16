@@ -29,6 +29,7 @@ import type {
 import type { BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
 import type { Sim1000LineupBatter } from "./AiWinnerSimTab";
 import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
+import { GameWinnerPickCard } from "@/components/domain/GameWinnerPickCard";
 
 
 type GameInfo = {
@@ -482,6 +483,17 @@ export function AiWinnerRevealScreen({
           )
         )}
       </section>
+      {/* 내 승리팀 예측 — 승리팀 예측 화면과 동일 규칙(선택=확정 / 재선택=취소 / 시작 시 자동 잠금).
+          아직 시작 전(scheduled) 경기에서만 노출. */}
+      {game.status === "scheduled" ? (
+        <GameWinnerPickCard
+          gameId={gameId}
+          gameDate={game.gameDate}
+          gameTime={game.gameTime}
+          homeTeamId={game.homeTeamId}
+          awayTeamId={game.awayTeamId}
+        />
+      ) : null}
       {predictions.length > 0 ? (
         <ContentPointClaimButton contentType="ai_prediction" contentId={gameId} />
       ) : null}

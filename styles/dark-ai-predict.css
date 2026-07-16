@@ -1581,6 +1581,70 @@
   padding-top: 4px;
 }
 
+/* ── 내 승리팀 예측 (AI 예측 상세 하단, BP 버튼 위) ── */
+.phone-frame-light .ai-reveal-pick {
+  margin: 16px 16px 0;
+  padding: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 14px;
+}
+
+.phone-frame-light .ai-reveal-pick-title {
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .ai-reveal-pick-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.phone-frame-light .ai-reveal-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 8px;
+  border: 1.5px solid var(--bp-line);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bp-text);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.phone-frame-light .ai-reveal-pick-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.phone-frame-light .ai-reveal-pick-btn.is-picked {
+  border-color: var(--bp-accent);
+  background: rgba(232, 74, 138, 0.08);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-reveal-pick-btn:disabled {
+  opacity: 0.55;
+}
+
+.phone-frame-light .ai-reveal-pick-check {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .ai-reveal-pick-hint {
+  margin: 9px 0 0;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--bp-text-secondary);
+}
+
 .phone-frame-light .ai-reveal-summary-tag {
   display: inline-flex;
   align-items: center;
