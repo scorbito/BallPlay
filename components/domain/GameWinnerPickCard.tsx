@@ -135,9 +135,11 @@ export function GameWinnerPickCard({ gameId, gameDate, gameTime, homeTeamId, awa
         } catch {
           // BP 실패가 예측을 막지 않는다.
         }
-        showToast(
-          awarded > 0 ? `예측 완료!\n${awarded.toLocaleString()}${POINT_LABEL} 획득!` : "예측 완료!"
-        );
+        // 선택됨은 버튼 하이라이트·체크로 이미 보이므로, 토스트는 BP를 실제로 받았을 때만.
+        // (BP는 경기당 1회라 팀을 바꿔 다시 눌러도 토스트가 반복되지 않는다)
+        if (awarded > 0) {
+          showToast(`예측 완료!\n${awarded.toLocaleString()}${POINT_LABEL} 획득!`);
+        }
       });
     },
     [editable, picked, gameId, gameDate, showToast]
