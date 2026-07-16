@@ -20,7 +20,7 @@ import { useAppState } from "@/lib/state/AppState";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import {
-  lockPredictionsForDate,
+  deletePrediction,
   upsertPrediction
 } from "@/lib/supabase/query-parts/bpPredictions";
 import { trackEvent } from "@/lib/analytics/events";
@@ -117,17 +117,10 @@ export function WinnerPredictScreen({
     return init;
   });
 
-  const [lockedMap, setLockedMap] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    for (const g of games) init[g.id] = g.lockedAt !== null;
-    return init;
-  });
-
   const [saving, startSaving] = useTransition();
-  const [locking, setLocking] = useState(false);
-  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
-  // 잠금 후 익명 계정이면 로그인 유도(이벤트 추첨 대상이 되려면 로그인 필요).
+  // 익명 계정이면 로그인 유도(이벤트 추첨 대상이 되려면 로그인 필요). 첫 픽에서 1회만.
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
+  const [loginPromptShown, setLoginPromptShown] = useState(false);
 
   // 편집 가능 조건:
   //   - 오늘: 항상 허용
@@ -152,9 +145,10 @@ export function WinnerPredictScreen({
     [selectedDateISO, nowMs]
   );
 
+  // 선택 = 예측 확정 모델 — 잠금 여부가 아니라 '경기 시작 전'인지가 편집 가능 기준.
   const editableGames = useMemo(
-    () => (canEditOnThisDate ? games.filter((g) => g.status === "scheduled" && !lockedMap[g.id] && !isStarted(g)) : []),
-    [games, lockedMap, canEditOnThisDate, isStarted]
+    () => (canEditOnThisDate ? games.filter((g) => g.status === "scheduled" && !isStarted(g)) : []),
+    [games, canEditOnThisDate, isStarted]
   );
   // 애니메이션 트리거 조건: 픽한 경기 + 그 경기 결과(isJudged)가 하나라도 있을 때.
   //   - 오늘 픽 직후(결과 없음) → 정적
@@ -213,16 +207,17 @@ export function WinnerPredictScreen({
     [editableGames, predictions]
   );
   const hasAnyEditable = editableGames.length > 0;
-  // 1경기라도 픽했으면 완료 가능. 나머지는 picked만 처리됨.
-  const canSubmit = hasAnyEditable && pickedCount > 0 && !locking;
-  const allLockedToday = games.length > 0 && games.every((g) => g.status !== "scheduled" || lockedMap[g.id]);
 
+  // 선택 = 예측 확정 / 같은 팀 재선택 = 예측 취소.
+  // 경기 시작 전까지 자유롭게 변경·취소 가능, 시작하면 자동 잠김(DB 트리거가 강제).
   const handlePick = useCallback(
     (game: WinnerPredictGame, teamId: string) => {
-      // 오늘/미래만 저장 허용 (과거는 read-only). 버튼이 disabled지만 안전 가드.
-      // 경기 시작 시각이 지났으면 차단.
-      if (!canEditOnThisDate || game.status !== "scheduled" || lockedMap[game.id] || isStarted(game)) return;
-      setPredictions((prev) => ({ ...prev, [game.id]: teamId }));
+      // 오늘/미래만 저장 허용 (과거는 read-only). 경기 시작 시각이 지났으면 차단.
+      if (!canEditOnThisDate || game.status !== "scheduled" || isStarted(game)) return;
+
+      const prevPick = predictions[game.id] ?? null;
+      const isCancel = prevPick === teamId;
+      setPredictions((prev) => ({ ...prev, [game.id]: isCancel ? null : teamId }));
 
       startSaving(async () => {
         const client = createSupabaseBrowserClient();
@@ -230,9 +225,21 @@ export function WinnerPredictScreen({
         const userId = await ensureAnonymousClient(client);
         if (!userId) {
           showToast("저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
-          setPredictions((prev) => ({ ...prev, [game.id]: game.predictedWinnerTeamId }));
+          setPredictions((prev) => ({ ...prev, [game.id]: prevPick }));
           return;
         }
+
+        if (isCancel) {
+          const res = await deletePrediction(client, userId, game.id);
+          if (!res.ok) {
+            showToast(`취소 실패: ${res.error}`);
+            setPredictions((prev) => ({ ...prev, [game.id]: prevPick }));
+            return;
+          }
+          showToast("예측을 취소했어요.");
+          return;
+        }
+
         const result = await upsertPrediction(client, {
           userId,
           gameId: game.id,
@@ -241,89 +248,54 @@ export function WinnerPredictScreen({
         });
         if (!result.ok) {
           showToast(`저장 실패: ${result.error}`);
-          setPredictions((prev) => ({ ...prev, [game.id]: game.predictedWinnerTeamId }));
+          setPredictions((prev) => ({ ...prev, [game.id]: prevPick }));
+          return;
+        }
+        void trackEvent("prediction_submitted", { gameDate: selectedDateISO, gameId: game.id });
+
+        // BP 지급 — rewardKey 로 경기당 1회 멱등이라 픽할 때마다 호출해도 중복 지급 없음.
+        let awardedPoints = 0;
+        try {
+          const pointRes = await fetch("/api/points/prediction-submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ gameDate: selectedDateISO })
+          });
+          const pointData = await pointRes.json();
+          if (pointRes.ok && pointData.ok) {
+            emitPointBalanceUpdated(pointData.balance);
+            awardedPoints = Number(pointData.awarded ?? 0);
+          }
+        } catch {
+          // BP reward failure must not block prediction.
+        }
+
+        // 익명이면 로그인 유도 — 첫 픽에서 1회만. (BP 토스트가 모달을 가리지 않도록 분기)
+        let isAnon = false;
+        try {
+          const { data: { user: authUser } } = await client.auth.getUser();
+          isAnon = !authUser || authUser.is_anonymous === true;
+        } catch {
+          // ignore
+        }
+        if (isAnon && WEEKLY_EVENT_ACTIVE && !loginPromptShown) {
+          setLoginPromptShown(true);
+          setLoginPromptOpen(true);
+          return;
+        }
+        if (awardedPoints > 0) {
+          showToast(`예측 완료!\n${awardedPoints.toLocaleString()}${POINT_LABEL} 획득!`);
         }
       });
     },
-    [canEditOnThisDate, lockedMap, showToast, selectedDateISO, isStarted]
+    [canEditOnThisDate, isStarted, predictions, selectedDateISO, showToast, loginPromptShown]
   );
-
-  const handleSubmit = useCallback(() => {
-    if (!canSubmit) return;
-    setSubmitConfirmOpen(true);
-  }, [canSubmit]);
 
   // 로그인 유도 모달 닫기 — 닫을 때 비로소 서버 상태 동기화(열려 있는 동안 refresh 금지).
   const closeLoginPrompt = useCallback(() => {
     setLoginPromptOpen(false);
     router.refresh();
   }, [router]);
-
-  const confirmSubmit = useCallback(async () => {
-    setSubmitConfirmOpen(false);
-    setLocking(true);
-    const client = createSupabaseBrowserClient();
-    const userId = await ensureAnonymousClient(client);
-    if (!userId) {
-      setLocking(false);
-      showToast("저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
-      return;
-    }
-    const result = await lockPredictionsForDate(client, userId, selectedDateISO);
-    setLocking(false);
-    if (!result.ok) {
-      showToast(`잠금 실패: ${result.error}`);
-      return;
-    }
-    let awardedPoints = 0;
-    try {
-      const pointRes = await fetch("/api/points/prediction-submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameDate: selectedDateISO })
-      });
-      const pointData = await pointRes.json();
-      if (pointRes.ok && pointData.ok) {
-        emitPointBalanceUpdated(pointData.balance);
-        awardedPoints = Number(pointData.awarded ?? 0);
-      }
-    } catch {
-      // BP reward failure must not block prediction submission.
-    }
-    // 익명 여부 확인 — 로그인 유도 모달 분기용. (조회 실패 시 보수적으로 비익명 취급)
-    let isAnon = false;
-    try {
-      const { data: { user: authUser } } = await client.auth.getUser();
-      isAnon = !authUser || authUser.is_anonymous === true;
-    } catch {
-      // ignore
-    }
-
-    setLockedMap((prev) => {
-      const next = { ...prev };
-      for (const g of editableGames) next[g.id] = true;
-      return next;
-    });
-    void trackEvent("prediction_submitted", {
-      gameDate: selectedDateISO,
-      lockedCount: result.locked,
-      pickedCount
-    });
-
-    if (isAnon && WEEKLY_EVENT_ACTIVE) {
-      // 익명 → 로그인 유도 모달. router.refresh()는 이 컴포넌트를 리렌더/리마운트해
-      // 모달을 닫아버리므로, 모달이 열려 있는 동안엔 호출하지 않고 닫을 때 새로고침한다.
-      // (잠금 UI는 위 setLockedMap 으로 이미 반영됨) — 이벤트 중단 시엔 유도하지 않음.
-      setLoginPromptOpen(true);
-    } else {
-      showToast(
-        awardedPoints > 0
-          ? `${result.locked}개 예측 완료!\n${awardedPoints.toLocaleString()}${POINT_LABEL} 획득!`
-          : `${result.locked}개 예측 완료!`
-      );
-      router.refresh();
-    }
-  }, [editableGames, pickedCount, router, showToast, selectedDateISO]);
 
   // 선택 날짜 라벨 — "5.26 (화)"
   const dateLabel = useMemo(() => {
@@ -424,8 +396,8 @@ export function WinnerPredictScreen({
             <span className="predict-day-hint">
               {hasAnyEditable
                 ? `오늘 · 승리팀 선택 (${editableGames.length - unselectedCount}/${editableGames.length})`
-                : allLockedToday && games.some((g) => g.status === "scheduled")
-                ? "오늘 · 예측 완료, 결과 대기"
+                : games.some((g) => g.status === "scheduled")
+                ? "오늘 · 예측 마감, 결과 대기"
                 : "오늘"}
             </span>
           </div>
@@ -468,11 +440,10 @@ export function WinnerPredictScreen({
               const home = getTeam(game.homeTeamId);
               const away = getTeam(game.awayTeamId);
               const picked = predictions[game.id];
-              const locked = lockedMap[game.id];
               // canEditOnThisDate(=isToday||isFuture)와 일관되게 — 미래 날짜도 편집 허용.
-              // 단, 경기 시작 시각이 지났으면 마감.
+              // 선택=확정 모델이라 잠금 여부는 보지 않고, 경기 시작 전이면 계속 변경·취소 가능.
               const started = isStarted(game);
-              const editable = canEditOnThisDate && game.status === "scheduled" && !locked && !started;
+              const editable = canEditOnThisDate && game.status === "scheduled" && !started;
               const showScores = game.status === "in_progress" || game.status === "finished";
 
               const homePicked = picked === game.homeTeamId;
@@ -630,22 +601,16 @@ export function WinnerPredictScreen({
             })}
           </section>
 
-          {/* 예측 완료 버튼 */}
+          {/* 선택 = 예측 확정. 별도 완료 버튼 없이 안내만 노출. */}
           {hasAnyEditable ? (
             <div className="predict-submit-bar">
-              <button
-                type="button"
-                className="predict-submit-btn"
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-              >
-                {locking
-                  ? "잠그는 중..."
-                  : pickedCount === 0
-                  ? "경기를 1개 이상 선택"
-                  : `예측 완료 (${pickedCount}경기)`}
-              </button>
-              <p className="predict-submit-hint">완료 후에는 수정할 수 없어요</p>
+              <p className="predict-submit-hint">
+                {pickedCount === 0
+                  ? "팀을 선택하면 바로 예측돼요"
+                  : `${pickedCount}경기 예측됨 · 같은 팀을 다시 누르면 취소`}
+                <br />
+                경기가 시작되면 자동으로 잠겨요
+              </p>
             </div>
           ) : null}
         </>
@@ -657,37 +622,6 @@ export function WinnerPredictScreen({
         <span>적중률 랭킹 보기</span>
         <ArrowRight size={14} />
       </Link>
-
-      <ModalShell
-        open={submitConfirmOpen}
-        title="예측 완료"
-        onClose={() => setSubmitConfirmOpen(false)}
-        panelClassName="lineup-confirm-modal-panel"
-        closeOnBackdrop
-      >
-        <div className="lineup-confirm-body">
-          <p className="lineup-confirm-msg">
-            오늘 예측을 완료할까요?<br />
-            완료 후에는 <strong>수정할 수 없어요.</strong>
-          </p>
-          <div className="lineup-confirm-actions">
-            <button
-              type="button"
-              className="lineup-confirm-cancel"
-              onClick={() => setSubmitConfirmOpen(false)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="lineup-confirm-destruct"
-              onClick={confirmSubmit}
-            >
-              예측 완료
-            </button>
-          </div>
-        </div>
-      </ModalShell>
 
       <ModalShell
         open={loginPromptOpen}

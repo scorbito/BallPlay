@@ -85,7 +85,10 @@ export async function upsertPrediction(
         user_id: input.userId,
         game_id: input.gameId,
         game_date: input.gameDate,
-        predicted_winner_team_id: input.predictedWinnerTeamId
+        predicted_winner_team_id: input.predictedWinnerTeamId,
+        // 선택 = 예측 확정. 별도 "예측 완료" 단계 없이 즉시 집계 대상이 되도록 locked_at 을 찍는다.
+        // 수정/취소 가능 여부는 locked_at 이 아니라 '경기 시작 시각'이 결정 (DB 트리거로 강제).
+        locked_at: new Date().toISOString()
       },
       { onConflict: "user_id,game_id" }
     )
@@ -96,7 +99,7 @@ export async function upsertPrediction(
 }
 
 // ============================================================
-// Delete — draft 예측 취소 (잠금 전에만 가능)
+// Delete — 예측 취소 (같은 팀 재선택). 경기 시작 전에만 가능 — DB 트리거가 강제.
 // ============================================================
 
 export async function deletePrediction(
@@ -104,12 +107,13 @@ export async function deletePrediction(
   userId: string,
   gameId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  // locked_at 은 선택 즉시 찍히므로 더 이상 취소 가능 여부의 기준이 아니다.
+  // 경기 시작 후 삭제(진 예측 지우기)는 bp_predictions_block_start 트리거가 차단.
   const { error } = await client
     .from(TABLE)
     .delete()
     .eq("user_id", userId)
-    .eq("game_id", gameId)
-    .is("locked_at", null);
+    .eq("game_id", gameId);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
