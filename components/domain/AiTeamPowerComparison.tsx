@@ -219,11 +219,11 @@ export function AiTeamPowerComparison({
           return (
             <div className="starter-metric-row" key={metric.key}>
               <div className="metric-row-info">
-                <span className="metric-value home-val" style={{ opacity: winner === "away" ? 0.45 : 1 }}>
+                <span className="metric-value home-val" style={{ fontWeight: winner === "away" ? 700 : 900 }}>
                   {metric.homeDisplay}
                 </span>
                 <span className="metric-label">{metric.label}</span>
-                <span className="metric-value away-val" style={{ opacity: winner === "home" ? 0.45 : 1 }}>
+                <span className="metric-value away-val" style={{ fontWeight: winner === "home" ? 700 : 900 }}>
                   {metric.awayDisplay}
                 </span>
               </div>

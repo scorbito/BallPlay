@@ -402,11 +402,11 @@ function AiStartersSection({
           return (
             <div className="starter-metric-row" key={metric}>
               <div className="metric-row-info">
-                <span className="metric-value home-val" style={{ opacity: winner === "away" ? 0.45 : 1 }}>
+                <span className="metric-value home-val" style={{ fontWeight: winner === "away" ? 700 : 900 }}>
                   {formatDecimal(homeVal)}
                 </span>
                 <span className="metric-label">{label}</span>
-                <span className="metric-value away-val" style={{ opacity: winner === "home" ? 0.45 : 1 }}>
+                <span className="metric-value away-val" style={{ fontWeight: winner === "home" ? 700 : 900 }}>
                   {formatDecimal(awayVal)}
                 </span>
               </div>
@@ -656,9 +656,9 @@ function AiBullpenSection({
           return (
             <div className="starter-metric-row" key={metric.key}>
               <div className="metric-row-info">
-                <span className="metric-value home-val" style={{ opacity: winner === "away" ? 0.45 : 1 }}>{formatDecimal(homeValue, metric.digits)}</span>
+                <span className="metric-value home-val" style={{ fontWeight: winner === "away" ? 700 : 900 }}>{formatDecimal(homeValue, metric.digits)}</span>
                 <span className="metric-label">{metric.label}</span>
-                <span className="metric-value away-val" style={{ opacity: winner === "home" ? 0.45 : 1 }}>{formatDecimal(awayValue, metric.digits)}</span>
+                <span className="metric-value away-val" style={{ fontWeight: winner === "home" ? 700 : 900 }}>{formatDecimal(awayValue, metric.digits)}</span>
               </div>
               <div className="metric-bar-container">
                 <div className="metric-bar home-bar" style={{ width: animate ? `${homePct}%` : "0%", background: winner === "away" ? BAR_MUTED_COLOR : homeColor, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
@@ -800,11 +800,11 @@ function AiBattingSection({
           return (
             <div className="starter-metric-row" key={metric}>
               <div className="metric-row-info">
-                <span className="metric-value home-val" style={{ opacity: homeLoses ? 0.45 : 1 }}>
+                <span className="metric-value home-val" style={{ fontWeight: homeLoses ? 700 : 900 }}>
                   {formatValue(homeVal)}
                 </span>
                 <span className="metric-label">{label}</span>
-                <span className="metric-value away-val" style={{ opacity: awayLoses ? 0.45 : 1 }}>
+                <span className="metric-value away-val" style={{ fontWeight: awayLoses ? 700 : 900 }}>
                   {formatValue(awayVal)}
                 </span>
               </div>
