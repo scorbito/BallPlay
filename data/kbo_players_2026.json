@@ -2987,6 +2987,28 @@
           "bbRate": 0.109,
           "kRate": 0.261,
           "contactScore": 0.739
+        },
+        {
+          "playerId": "doosan-severino",
+          "name": "세베리노",
+          "battingHand": "S",
+          "pa": 5,
+          "ab": 5,
+          "hits": 2,
+          "doubles": 1,
+          "triples": 0,
+          "homers": 0,
+          "walks": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "avg": 0.4,
+          "obp": 0.4,
+          "slg": 0.6,
+          "iso": 0.2,
+          "babip": 0.4,
+          "bbRate": 0,
+          "kRate": 0,
+          "contactScore": 1
         }
       ],
       "pitchers": [
@@ -10080,6 +10102,28 @@
           "bbRate": 0.154,
           "kRate": 0.077,
           "contactScore": 0.923
+        },
+        {
+          "playerId": "nc-50",
+          "name": "블레인",
+          "battingHand": "R",
+          "pa": 26,
+          "ab": 21,
+          "hits": 7,
+          "doubles": 1,
+          "triples": 0,
+          "homers": 0,
+          "walks": 4,
+          "hbp": 0,
+          "strikeouts": 6,
+          "avg": 0.333,
+          "obp": 0.423,
+          "slg": 0.381,
+          "iso": 0.048,
+          "babip": 0.467,
+          "bbRate": 0.154,
+          "kRate": 0.231,
+          "contactScore": 0.769
         }
       ],
       "pitchers": [

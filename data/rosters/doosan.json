@@ -784,6 +784,18 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
+    },
+    {
+      "id": "doosan-severino",
+      "name": "세베리노",
+      "jerseyNumber": 36,
+      "primaryPosition": "1B",
+      "throwingHand": "R",
+      "battingHand": "S",
+      "seasonGames": 1,
+      "_manual": true,
+      "_note": "Official KBO profile: No.36, infielder, R/S, born 1999-10-03; lineup position observed as 1B.",
+      "birthDate": "1999-10-03"
     }
   ]
 }

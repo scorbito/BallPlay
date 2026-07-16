@@ -131,11 +131,13 @@ async function getLatestLineup(
     .eq("team_id", teamId)
     .lte("game_date", simDate)
     .order("game_date", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(10);
   if (error) throw new Error(`recent_lineups[${teamId}]: ${error.message}`);
-  if (!data) throw new Error(`recent_lineups[${teamId}]: 데이터 없음`);
-  return data as RecentLineupRow;
+  const row = ((data ?? []) as RecentLineupRow[]).find(
+    (item) => Array.isArray(item.batting) && item.batting.length >= 9
+  );
+  if (!row) throw new Error(`recent_lineups[${teamId}]: 데이터 없음`);
+  return row;
 }
 
 function findRosterIdByName(teamId: string, name: string | null): string | null {
@@ -364,3 +366,4 @@ export async function runBatchSim(
     return { ok: false, error: (err as Error).message };
   }
 }
+

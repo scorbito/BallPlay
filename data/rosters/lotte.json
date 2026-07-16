@@ -844,6 +844,42 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
+    },
+    {
+      "id": "lotte-25",
+      "name": "한동희",
+      "jerseyNumber": 25,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "birthDate": "1999-06-01",
+      "heightCm": 182,
+      "weightKg": 108,
+      "school": "부산대연초-경남중-경남고-롯데-상무",
+      "signingBonusManwon": 18000,
+      "salaryManwon": 16200,
+      "draftInfo": "18 롯데 1차",
+      "seasonGames": 41,
+      "_manual": true,
+      "_note": "Official KBO profile: No.25, infielder, R/R, born 1999-06-01."
+    },
+    {
+      "id": "lotte-6",
+      "name": "한태양",
+      "jerseyNumber": 6,
+      "primaryPosition": "2B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "birthDate": "2003-09-15",
+      "heightCm": 181,
+      "weightKg": 76,
+      "school": "역삼초-언북중-덕수고-롯데-상무",
+      "signingBonusManwon": 5000,
+      "salaryManwon": 7000,
+      "draftInfo": "22 롯데 2차 6라운드 54순위",
+      "seasonGames": 1,
+      "_manual": true,
+      "_note": "Official KBO profile: No.6, infielder, R/R, born 2003-09-15; lineup position observed as 2B."
     }
   ]
 }

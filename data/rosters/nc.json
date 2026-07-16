@@ -414,10 +414,17 @@
       "id": "nc-50",
       "name": "블레인",
       "jerseyNumber": 50,
-      "primaryPosition": "3B",
+      "primaryPosition": "1B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 5
+      "seasonGames": 6,
+      "birthDate": "1997-06-17",
+      "heightCm": 178,
+      "weightKg": 101,
+      "school": "미국 Mississippi(대)",
+      "salaryUsd": 275000,
+      "_manual": true,
+      "_note": "Official KBO profile: No.50, infielder, R/R, born 1997-06-17, 178cm/101kg; lineup position observed as 1B."
     },
     {
       "id": "nc-51",
