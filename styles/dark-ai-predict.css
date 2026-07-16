@@ -1581,17 +1581,17 @@
   padding-top: 4px;
 }
 
-/* ── 내 승리팀 예측 (AI 예측 상세 하단, BP 버튼 위) ── */
+/* ── 내 승리팀 예측 (AI 예측 상세 하단, BP 버튼 위) ──
+   .ai-reveal-screen 안에 있어 좌우 패딩·카드 간격(gap)은 섹션이 담당한다. */
 .phone-frame-light .ai-reveal-pick {
-  margin: 16px 16px 0;
-  padding: 14px;
+  padding: 12px 14px;
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
 }
 
 .phone-frame-light .ai-reveal-pick-title {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   text-align: center;
   font-size: 13px;
   font-weight: 900;
@@ -1638,7 +1638,7 @@
 }
 
 .phone-frame-light .ai-reveal-pick-hint {
-  margin: 9px 0 0;
+  margin: 7px 0 0;
   text-align: center;
   font-size: 11.5px;
   font-weight: 650;
