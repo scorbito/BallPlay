@@ -4,6 +4,12 @@
 //   3) 그래도 안 되면 홈색에서 멀어지게 밝게/어둡게 보정한 색
 // (기존 AiWinnerStatsTab 등 여러 곳의 동일 로직을 공용화)
 
+/**
+ * 열세 쪽 지표 막대 색 — 우세한 쪽만 팀 컬러로 남겨 그래프만 봐도 우열이 읽히게 한다.
+ * (AI 예측 상세의 팀 전력/선발/불펜/타선 비교 공용)
+ */
+export const BAR_MUTED_COLOR = "#cbd5e1";
+
 function hexToRgb(hex: string): [number, number, number] {
   const m = hex.replace("#", "");
   const n = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;

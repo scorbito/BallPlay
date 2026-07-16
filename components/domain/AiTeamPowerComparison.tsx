@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BAR_MUTED_COLOR } from "@/lib/utils/teamColors";
 
 type TeamStandingData = {
   rank: number;
@@ -95,18 +96,26 @@ export function AiTeamPowerComparison({
     }
 
     const sum = homeVal + awayVal;
-    if (sum === 0) return { homePct: 50, awayPct: 50 };
+    if (sum === 0) return { homePct: 50, awayPct: 50, winner: null };
 
+    // 평균자책점은 낮을수록 우수하므로 반전 (승률·타율은 높을수록 우수)
+    const lowerIsBetter = metric === "era";
     let homeRatio = homeVal / sum;
-    if (metric === "era") {
-      // 평균자책점은 낮을수록 우수하므로 반전
+    if (lowerIsBetter) {
       homeRatio = 1 - homeRatio;
     }
 
     const homePct = Math.max(15, Math.min(85, Math.round(homeRatio * 100)));
+    const winner: "home" | "away" | null =
+      homeVal === awayVal
+        ? null
+        : (lowerIsBetter ? homeVal < awayVal : homeVal > awayVal)
+          ? "home"
+          : "away";
     return {
       homePct,
-      awayPct: 100 - homePct
+      awayPct: 100 - homePct,
+      winner
     };
   };
 
@@ -206,20 +215,24 @@ export function AiTeamPowerComparison({
       {/* ── 주요 지표 대칭 가로 바 ── */}
       <div className="power-card-metrics">
         {metrics.map((metric, idx) => {
-          const { homePct, awayPct } = getGaugePct(metric.key);
+          const { homePct, awayPct, winner } = getGaugePct(metric.key);
           return (
             <div className="starter-metric-row" key={metric.key}>
               <div className="metric-row-info">
-                <span className="metric-value home-val">{metric.homeDisplay}</span>
+                <span className="metric-value home-val" style={{ opacity: winner === "away" ? 0.45 : 1 }}>
+                  {metric.homeDisplay}
+                </span>
                 <span className="metric-label">{metric.label}</span>
-                <span className="metric-value away-val">{metric.awayDisplay}</span>
+                <span className="metric-value away-val" style={{ opacity: winner === "home" ? 0.45 : 1 }}>
+                  {metric.awayDisplay}
+                </span>
               </div>
               <div className="metric-bar-container">
                 <div
                   className="metric-bar home-bar"
                   style={{
                     width: animate ? `${homePct}%` : "0%",
-                    background: homeColor,
+                    background: winner === "away" ? BAR_MUTED_COLOR : homeColor,
                     transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
                     transitionDelay: `${idx * 80}ms`
                   }}
@@ -229,7 +242,7 @@ export function AiTeamPowerComparison({
                   className="metric-bar away-bar"
                   style={{
                     width: animate ? `${awayPct}%` : "0%",
-                    background: awayFill,
+                    background: winner === "home" ? BAR_MUTED_COLOR : awayFill,
                     transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
                     transitionDelay: `${idx * 80}ms`
                   }}

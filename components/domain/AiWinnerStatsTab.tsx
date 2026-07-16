@@ -12,6 +12,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { getTeam } from "@/lib/constants/teams";
+import { BAR_MUTED_COLOR } from "@/lib/utils/teamColors";
 import { AiTeamPowerComparison } from "./AiTeamPowerComparison";
 
 type StarterStats = {
@@ -52,8 +53,6 @@ type BattingStats = {
   contact: number;
 };
 
-/** 열세 쪽 막대 색 — 우세한 쪽만 팀 컬러로 남겨 즉시 판별되게 한다. */
-const BAR_MUTED_COLOR = "#cbd5e1";
 
 type BullpenStats = {
   games: number;
@@ -327,19 +326,28 @@ function AiStartersSection({
   const getPitcherGauge = (metric: "era" | "whip" | "k9" | "bb9") => {
     const homeVal = toFiniteNumber(starters.home[metric]);
     const awayVal = toFiniteNumber(starters.away[metric]);
-    if (homeVal === null || awayVal === null) return { homePct: 50, awayPct: 50 };
+    if (homeVal === null || awayVal === null) return { homePct: 50, awayPct: 50, winner: null };
 
     const sum = homeVal + awayVal;
-    if (sum === 0) return { homePct: 50, awayPct: 50 };
+    if (sum === 0) return { homePct: 50, awayPct: 50, winner: null };
 
+    // ERA/WHIP/BB9는 낮을수록 우수 → 막대 길이용 비율을 반전.
+    const lowerIsBetter = metric === "era" || metric === "whip" || metric === "bb9";
     let homeRatio = homeVal / sum;
-    if (metric === "era" || metric === "whip" || metric === "bb9") {
+    if (lowerIsBetter) {
       homeRatio = 1 - homeRatio;
     }
     const homePct = Math.max(15, Math.min(85, Math.round(homeRatio * 100)));
+    const winner: "home" | "away" | null =
+      homeVal === awayVal
+        ? null
+        : (lowerIsBetter ? homeVal < awayVal : homeVal > awayVal)
+          ? "home"
+          : "away";
     return {
       homePct,
-      awayPct: 100 - homePct
+      awayPct: 100 - homePct,
+      winner
     };
   };
 
@@ -389,21 +397,25 @@ function AiStartersSection({
                   : "9이닝 볼넷 (BB/9)";
           const homeVal = starters.home[metric];
           const awayVal = starters.away[metric];
-          const { homePct, awayPct } = getPitcherGauge(metric);
+          const { homePct, awayPct, winner } = getPitcherGauge(metric);
 
           return (
             <div className="starter-metric-row" key={metric}>
               <div className="metric-row-info">
-                <span className="metric-value home-val">{formatDecimal(homeVal)}</span>
+                <span className="metric-value home-val" style={{ opacity: winner === "away" ? 0.45 : 1 }}>
+                  {formatDecimal(homeVal)}
+                </span>
                 <span className="metric-label">{label}</span>
-                <span className="metric-value away-val">{formatDecimal(awayVal)}</span>
+                <span className="metric-value away-val" style={{ opacity: winner === "home" ? 0.45 : 1 }}>
+                  {formatDecimal(awayVal)}
+                </span>
               </div>
               <div className="metric-bar-container">
                 <div
                   className="metric-bar home-bar"
                   style={{
                     width: animate ? `${homePct}%` : "0%",
-                    background: homeColor,
+                    background: winner === "away" ? BAR_MUTED_COLOR : homeColor,
                     transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
                     transitionDelay: `${idx * 80}ms`
                   }}
@@ -413,7 +425,7 @@ function AiStartersSection({
                   className="metric-bar away-bar"
                   style={{
                     width: animate ? `${awayPct}%` : "0%",
-                    background: awayFill,
+                    background: winner === "home" ? BAR_MUTED_COLOR : awayFill,
                     transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
                     transitionDelay: `${idx * 80}ms`
                   }}
@@ -614,12 +626,15 @@ function AiBullpenSection({
   const hasBullpenData = bullpen.home.era !== null || bullpen.away.era !== null;
   const fatigueValue = (value: number, suffix: string) => hasBullpenData ? `${value}${suffix}` : "-";
 
+  // 불펜 3지표(ERA·WHIP·후반 실점)는 모두 낮을수록 우수 → 비율 반전 + 낮은 쪽이 우세.
   const gauge = (homeValue: number | null, awayValue: number | null) => {
-    if (homeValue === null || awayValue === null) return { homePct: 50, awayPct: 50 };
+    if (homeValue === null || awayValue === null) return { homePct: 50, awayPct: 50, winner: null };
     const sum = homeValue + awayValue;
-    if (sum <= 0) return { homePct: 50, awayPct: 50 };
+    if (sum <= 0) return { homePct: 50, awayPct: 50, winner: null };
     const homePct = Math.max(15, Math.min(85, Math.round((1 - homeValue / sum) * 100)));
-    return { homePct, awayPct: 100 - homePct };
+    const winner: "home" | "away" | null =
+      homeValue === awayValue ? null : homeValue < awayValue ? "home" : "away";
+    return { homePct, awayPct: 100 - homePct, winner };
   };
 
   return (
@@ -637,18 +652,18 @@ function AiBullpenSection({
         {metrics.map((metric, index) => {
           const homeValue = bullpen.home[metric.key];
           const awayValue = bullpen.away[metric.key];
-          const { homePct, awayPct } = gauge(homeValue, awayValue);
+          const { homePct, awayPct, winner } = gauge(homeValue, awayValue);
           return (
             <div className="starter-metric-row" key={metric.key}>
               <div className="metric-row-info">
-                <span className="metric-value home-val">{formatDecimal(homeValue, metric.digits)}</span>
+                <span className="metric-value home-val" style={{ opacity: winner === "away" ? 0.45 : 1 }}>{formatDecimal(homeValue, metric.digits)}</span>
                 <span className="metric-label">{metric.label}</span>
-                <span className="metric-value away-val">{formatDecimal(awayValue, metric.digits)}</span>
+                <span className="metric-value away-val" style={{ opacity: winner === "home" ? 0.45 : 1 }}>{formatDecimal(awayValue, metric.digits)}</span>
               </div>
               <div className="metric-bar-container">
-                <div className="metric-bar home-bar" style={{ width: animate ? `${homePct}%` : "0%", background: homeColor, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
+                <div className="metric-bar home-bar" style={{ width: animate ? `${homePct}%` : "0%", background: winner === "away" ? BAR_MUTED_COLOR : homeColor, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
                 <div className="metric-bar-gap" style={{ marginLeft: "auto" }} />
-                <div className="metric-bar away-bar" style={{ width: animate ? `${awayPct}%` : "0%", background: awayFill, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
+                <div className="metric-bar away-bar" style={{ width: animate ? `${awayPct}%` : "0%", background: winner === "home" ? BAR_MUTED_COLOR : awayFill, transition: "width 0.8s cubic-bezier(0.25, 1, 0.5, 1)", transitionDelay: `${index * 80}ms` }} />
               </div>
             </div>
           );
