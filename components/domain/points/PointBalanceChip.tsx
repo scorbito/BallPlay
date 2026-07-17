@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import { POINT_BALANCE_UPDATED_EVENT } from "./pointEvents";
 import { PointBaseballIcon } from "./PointBaseballIcon";
 
@@ -110,6 +110,9 @@ export function PointBalanceChip() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
+
+  // BP 숨김 — 모든 훅 호출 뒤에서 렌더만 차단(훅 규칙 준수).
+  if (!SHOW_BP) return null;
 
   return (
     <div className="point-chip-wrap" ref={rootRef}>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useRef, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { SHOW_BP } from "@/lib/points/config";
 import { LineupDiamond, type SwapTraveler } from "@/components/domain/LineupDiamond";
 import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
 import { PitcherSlotList } from "@/components/domain/lineup/PitcherSlotList";
@@ -1422,7 +1423,7 @@ export function MyTeamScreen() {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className={`mt-4 grid gap-2 ${SHOW_BP ? "grid-cols-3" : "grid-cols-2"}`}>
           <button
             type="button"
             onClick={() => {
@@ -1448,17 +1449,19 @@ export function MyTeamScreen() {
           >
             라인업관리
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("draw")}
-            className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
-              activeTab === "draw"
-                ? "bg-pink-500 text-white shadow-pink-200"
-                : "border border-slate-200 bg-white text-slate-700"
-            }`}
-          >
-            선수 영입
-          </button>
+          {SHOW_BP ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab("draw")}
+              className={`rounded-2xl px-2 py-3 text-xs font-black shadow-sm transition-all active:scale-95 ${
+                activeTab === "draw"
+                  ? "bg-pink-500 text-white shadow-pink-200"
+                  : "border border-slate-200 bg-white text-slate-700"
+              }`}
+            >
+              선수 영입
+            </button>
+          ) : null}
         </div>
       </div>
 

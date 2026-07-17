@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ModalShell } from "@/components/common/ModalShell";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import { PointBaseballIcon } from "./PointBaseballIcon";
 import { emitPointBalanceUpdated } from "./pointEvents";
 
@@ -73,6 +73,8 @@ export function PredictionCorrectBonusModal() {
       canceled = true;
     };
   }, []);
+
+  if (!SHOW_BP) return null; // BP 숨김
 
   return (
     <ModalShell

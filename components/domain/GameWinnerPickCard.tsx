@@ -18,7 +18,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
 import { deletePrediction, upsertPrediction } from "@/lib/supabase/query-parts/bpPredictions";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import { trackEvent } from "@/lib/analytics/events";
 
 type Props = {
@@ -156,7 +156,7 @@ export function GameWinnerPickCard({ gameId, gameDate, gameTime, homeTeamId, awa
         }
         // 선택됨은 버튼 하이라이트·체크로 이미 보이므로, 토스트는 BP를 실제로 받았을 때만.
         // (BP는 경기당 1회라 팀을 바꿔 다시 눌러도 토스트가 반복되지 않는다)
-        if (awarded > 0) {
+        if (SHOW_BP && awarded > 0) {
           showToast(`예측 완료!\n${awarded.toLocaleString()}${POINT_LABEL} 획득!`);
         }
         // 픽 확정 후 다른 사람들의 선택 공개(내 픽 1표 포함).

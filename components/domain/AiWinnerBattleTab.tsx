@@ -5,7 +5,7 @@ import { getTeam } from "@/lib/constants/teams";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { MessageCircle, ShieldAlert, Award, Star, ThumbsUp, ArrowRight } from "lucide-react";
 import { useAppState } from "@/lib/state/AppState";
-import { POINT_LABEL, POINT_REWARDS } from "@/lib/points/config";
+import { POINT_LABEL, POINT_REWARDS, SHOW_BP } from "@/lib/points/config";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -122,7 +122,10 @@ export function AiWinnerBattleTab({
       if (Number.isFinite(pointBalance)) {
         emitPointBalanceUpdated(pointBalance);
       }
-      if (d.pointAward?.awarded) {
+      if (!SHOW_BP) {
+        // BP 숨김 — 보상 언급 없이 투표 반영만 안내.
+        showToast("투표가 반영되었습니다.");
+      } else if (d.pointAward?.awarded) {
         showToast(`+${d.pointAward.amount}${POINT_LABEL} 획득!\n승부맞대결 투표 보상`);
       } else if (d.pointAward?.already_claimed) {
         showToast("이 경기 투표 BP는 이미 받았어요.");
@@ -283,7 +286,7 @@ export function AiWinnerBattleTab({
         <h4 className="ai-battle-vote-title">
           <MessageCircle size={16} /> 어느 대변인의 주장에 끌리시나요?
         </h4>
-        {!votedSide ? (
+        {!votedSide && SHOW_BP ? (
           <div className="ai-battle-point-hint">
             <PointBaseballIcon size={15} className="ai-battle-point-ball-icon" />
             <span>투표하면 +{POINT_REWARDS.aiBattleVotePerGame}{POINT_LABEL} 지급</span>

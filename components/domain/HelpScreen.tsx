@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { SHOW_BP } from "@/lib/points/config";
 import { BarChart3, Bot, CalendarDays, ChevronDown, FileText, LineChart, Mail, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 
@@ -105,7 +106,9 @@ export function HelpScreen() {
       <section className="help-section">
         <h2 className="help-section-title">자주 묻는 질문</h2>
         <div className="faq-list">
-          {faqs.map((faq, i) => {
+          {faqs
+            .filter((faq) => SHOW_BP || !faq.q.includes("BP"))
+            .map((faq, i) => {
             const open = openIndex === i;
             return (
               <div key={i} className={`faq-item${open ? " faq-item-open" : ""}`}>

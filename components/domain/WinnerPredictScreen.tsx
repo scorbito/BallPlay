@@ -24,7 +24,7 @@ import {
   upsertPrediction
 } from "@/lib/supabase/query-parts/bpPredictions";
 import { trackEvent } from "@/lib/analytics/events";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 
@@ -283,7 +283,7 @@ export function WinnerPredictScreen({
           setLoginPromptOpen(true);
           return;
         }
-        if (awardedPoints > 0) {
+        if (SHOW_BP && awardedPoints > 0) {
           showToast(`예측 완료!\n${awardedPoints.toLocaleString()}${POINT_LABEL} 획득!`);
         }
       });

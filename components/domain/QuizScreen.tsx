@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { trackEvent } from "@/lib/analytics/events";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import { useAppState } from "@/lib/state/AppState";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import quizData from "@/data/quiz/baseball-quiz.json";
@@ -164,7 +164,7 @@ export function QuizScreen() {
         const data = await res.json();
         if (!res.ok || !data.ok) return;
         emitPointBalanceUpdated(data.balance);
-        if (data.awarded > 0) {
+        if (SHOW_BP && data.awarded > 0) {
           showToast(`+${data.awarded}${POINT_LABEL} 획득!`);
         }
       } catch {

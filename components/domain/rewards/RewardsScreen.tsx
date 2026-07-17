@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Clock, Gift, Ticket, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import type { PointPrize } from "@/lib/server/prizes";
 import { useAppState } from "@/lib/state/AppState";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
@@ -53,6 +54,12 @@ export function RewardsScreen({ prizes, canEnter, setupError = null }: RewardsSc
   const [enteringId, setEnteringId] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const now = useMemo(() => Date.now(), []);
+  const router = useRouter();
+
+  // BP 숨김 — 경품 기능 비노출. 직접 URL 진입 시 마이페이지로 돌려보냄.
+  useEffect(() => {
+    if (!SHOW_BP) router.replace("/my");
+  }, [router]);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +109,8 @@ export function RewardsScreen({ prizes, canEnter, setupError = null }: RewardsSc
       setEnteringId(null);
     }
   };
+
+  if (!SHOW_BP) return null;
 
   return (
     <AppShell activeTab="my" title="경품 응모" theme="light" backHref="/my">

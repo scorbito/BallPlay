@@ -10,6 +10,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { AccountTierBadge } from "@/components/common/AccountTierBadge";
 import { Card } from "@/components/common/Card";
+import { SHOW_BP } from "@/lib/points/config";
 import { ModalShell } from "@/components/common/ModalShell";
 import { Button } from "@/components/common/Button";
 import { useAppState } from "@/lib/state/AppState";
@@ -250,7 +251,9 @@ export function MyScreen({ accountStats, tier, teamSummary, playoffSummary }: My
       ) : null}
 
       <section className="menu-list">
-        {menuItems.map((item) => {
+        {menuItems
+          .filter((item) => SHOW_BP || item.href !== "/rewards")
+          .map((item) => {
           const Icon = item.icon;
           return (
             <Link href={item.href} key={item.label} prefetch>

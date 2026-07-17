@@ -26,7 +26,7 @@ import { TierUpHost } from "@/components/common/TierUpHost";
 import { PlayoffWinFx } from "@/components/domain/stadium/playoff/PlayoffWinFx";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import type { AtBatOutcome } from "@/lib/sim/types";
 
 // 타석 결과 → 한글 라벨 (분석 로그용). 실황 중계가 아니라 '시뮬 상세 로그' 톤.
@@ -307,7 +307,7 @@ export function ResultScreen() {
           playSeed: s.seed,
           oppTeamId: s.opponentTeamId
         });
-        if (result.ok && result.pointAward?.awarded && result.pointAward.amount > 0) {
+        if (SHOW_BP && result.ok && result.pointAward?.awarded && result.pointAward.amount > 0) {
           emitPointBalanceUpdated(result.pointAward.balance);
           setPlayoffChampionPointAward({
             amount: result.pointAward.amount,

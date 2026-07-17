@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
-import { CONTENT_POINT_TYPES, POINT_LABEL, getContentPointAmount, type ContentPointType } from "@/lib/points/config";
+import { CONTENT_POINT_TYPES, POINT_LABEL, SHOW_BP, getContentPointAmount, type ContentPointType } from "@/lib/points/config";
 import { useAppState } from "@/lib/state/AppState";
 import { emitPointBalanceUpdated } from "./pointEvents";
 import { PointBaseballIcon } from "./PointBaseballIcon";
@@ -92,6 +92,7 @@ export function ContentPointClaimButton({ contentType, contentId, className }: P
     }
   };
 
+  if (!SHOW_BP) return null; // BP 숨김
   if (checkingStatus) return null;
 
   if (status !== "available") {

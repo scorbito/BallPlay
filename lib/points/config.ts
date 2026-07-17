@@ -1,5 +1,11 @@
 export const POINT_LABEL = "BP";
 
+// BP(포인트) 기능 노출 플래그.
+//   false = 지금은 BP를 안 쓰므로 UI 전부 숨김(잔액·획득 버튼/토스트·경품 응모).
+//   백엔드(지급/차감 API, awardPoints)는 그대로 둬도 무해 — 조용히 쌓일 뿐 화면엔 안 보임.
+//   되살릴 땐 true 로만 바꾸면 됨.
+export const SHOW_BP: boolean = false;
+
 export const POINT_CONTENT_REWARD_START_AT = "2026-06-13T00:00:00+09:00";
 
 export const POINT_REWARDS = {
