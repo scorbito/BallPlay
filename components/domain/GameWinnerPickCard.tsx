@@ -219,8 +219,8 @@ export function GameWinnerPickCard({ gameId, gameDate, gameTime, homeTeamId, awa
             👥 다른 사람들의 선택 · 총 {tallyTotal.toLocaleString()}명
           </span>
           <div className="ai-reveal-pick-tally-counts">
-            <span>{away.shortName} {Math.round(awayPct)}%</span>
-            <span>{home.shortName} {Math.round(homePct)}%</span>
+            <span>{away.shortName} {awayCount.toLocaleString()}명 · {Math.round(awayPct)}%</span>
+            <span>{home.shortName} {homeCount.toLocaleString()}명 · {Math.round(homePct)}%</span>
           </div>
           <div className="h2h-bar-container ai-reveal-pick-tally-bar">
             <div className="h2h-bar" style={{ width: `${awayPct}%`, background: away.color }} />
