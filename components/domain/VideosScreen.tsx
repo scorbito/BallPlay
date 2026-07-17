@@ -122,6 +122,9 @@ function groupIntoRows(videos: BpVideoWithOwnerRow[]): VideoRow[] {
   return rows;
 }
 
+// 첫 로드 및 "더보기" 1회 증가 단위. 링크라 오래된 영상도 계속 볼 수 있게 늘려간다.
+const VIDEOS_PAGE = 60;
+
 export function VideosScreen() {
   const [videos, setVideos] = useState<BpVideoWithOwnerRow[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -132,6 +135,9 @@ export function VideosScreen() {
   const [registerUrl, setRegisterUrl] = useState("");
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSubmitting, setRegisterSubmitting] = useState(false);
+  // 더보기 — limit 을 늘리면 이전(오래된) 영상까지 노출. 링크라 DB엔 계속 남아 있음.
+  const [limit, setLimit] = useState(VIDEOS_PAGE);
+  const [hasMore, setHasMore] = useState(false);
 
   const flatVideos = useMemo(() => videos ?? [], [videos]);
   const currentIndex = openVideo ? flatVideos.findIndex((v) => v.id === openVideo.id) : -1;
@@ -167,13 +173,15 @@ export function VideosScreen() {
     const client = createSupabaseBrowserClient();
     setLoading(true);
     setError(null);
-    const res = await listVideos(client, 100);
+    const res = await listVideos(client, limit);
     setLoading(false);
     if (!res.ok) {
       setError(res.error);
       return;
     }
     setVideos(res.rows);
+    // 요청한 limit 만큼 꽉 채워 왔으면 더 있을 가능성 → "더보기" 노출.
+    setHasMore(res.rows.length >= limit);
     // 홈 펄스 뱃지용 — 페이지 진입 시점 기준으로 viewed 마킹.
     // 이후 추가된 영상의 created_at > 이 시각 ⇒ 다시 뱃지 표시.
     try {
@@ -181,7 +189,7 @@ export function VideosScreen() {
     } catch {
       // ignore storage errors
     }
-  }, []);
+  }, [limit]);
 
   useEffect(() => {
     const client = createSupabaseBrowserClient();
@@ -285,6 +293,20 @@ export function VideosScreen() {
           );
         })}
       </section>
+
+      {/* 더보기 — 이전(오래된) 영상까지 노출 */}
+      {videos !== null && videos.length > 0 && hasMore ? (
+        <div className="videos-more">
+          <button
+            type="button"
+            className="videos-more-btn"
+            onClick={() => setLimit((l) => l + VIDEOS_PAGE)}
+            disabled={loading}
+          >
+            {loading ? "불러오는 중..." : "이전 영상 더보기"}
+          </button>
+        </div>
+      ) : null}
 
       <VideoPlayerModal
         openVideo={openVideo}
