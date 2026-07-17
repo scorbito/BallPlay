@@ -1645,6 +1645,35 @@
   color: var(--bp-text-secondary);
 }
 
+/* 다른 사람들의 선택 집계 — 내가 픽한 뒤 공개 */
+.phone-frame-light .ai-reveal-pick-tally {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .ai-reveal-pick-tally-label {
+  display: block;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  margin-bottom: 7px;
+}
+
+.phone-frame-light .ai-reveal-pick-tally-counts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 900;
+  color: var(--bp-text);
+  margin-bottom: 5px;
+}
+
+.phone-frame-light .ai-reveal-pick-tally-bar {
+  height: 9px;
+}
+
 .phone-frame-light .ai-reveal-summary-tag {
   display: inline-flex;
   align-items: center;
