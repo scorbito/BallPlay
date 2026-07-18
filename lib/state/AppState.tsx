@@ -7,7 +7,7 @@ import { useVisibilityRefresh } from "@/lib/hooks/useVisibilityRefresh";
 import { initCustomCursor } from "@/lib/cursor/customCursor";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureAnonymousClient } from "@/lib/supabase/ensureAnonymousClient";
-import { POINT_LABEL } from "@/lib/points/config";
+import { POINT_LABEL, SHOW_BP } from "@/lib/points/config";
 import { emitPointBalanceUpdated } from "@/components/domain/points/pointEvents";
 import { PointBaseballIcon } from "@/components/domain/points/PointBaseballIcon";
 
@@ -158,6 +158,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
 
   // 출석 보상 — 식별 정보가 확정된 뒤(identityLoaded) 1회 시도.
   useEffect(() => {
+    if (!SHOW_BP) return; // BP 숨김 — 출석 보상 모달 미노출
     if (!identityLoaded) return;
     const identity = profileId ?? (isAnonymous ? "anonymous" : "guest");
     if (checkinAttemptedRef.current === identity) return;
@@ -235,7 +236,7 @@ export function AppStateProvider({ children, initialProfile, initialIsAnonymous 
   return (
     <AppStateContext.Provider value={value}>
       {children}
-      {checkinRewardModal ? (
+      {SHOW_BP && checkinRewardModal ? (
         <div className="daily-checkin-backdrop" role="presentation">
           <section
             className="daily-checkin-panel"
