@@ -10,6 +10,8 @@ export type DrawWinnerResult =
       ok: true;
       winner: { userId: string; nickname: string | null; total: number; correct: number; rate: number };
       qualifierCount: number;
+      /** 1위가 적중률·게임수까지 완전 동점인 인원 수. 2 이상이면 그들끼리 추첨한 것. */
+      tiedCount: number;
     }
   | { ok: false; error: string };
 
@@ -28,7 +30,12 @@ async function requireAdminUserId(): Promise<string> {
   return authData.user.id;
 }
 
-/** 지정 주(화 weekStartISO)의 자격자 중 1명 무작위 추첨 → 이력 upsert(주별 1행, 재추첨 시 교체). */
+/**
+ * 지정 주(화 weekStartISO)의 메인 1등 선정 → 이력 upsert(주별 1행, 재선정 시 교체).
+ * 규칙: AI 평균을 넘은 자격자(20경기↑) 중 적중률 1위. 동률이면 게임 많은 사람.
+ *       적중률·게임수까지 완전 동점이면 그들끼리만 추첨.
+ * (AI를 하나의 참가자로 보므로, AI 평균을 넘은 사람이 없으면 = AI가 1등 → 메인 당첨자 없음)
+ */
 export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise<DrawWinnerResult> {
   try {
     const adminUserId = await requireAdminUserId();
@@ -36,10 +43,14 @@ export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise
     const contest = await computeWeeklyContest(admin, weekStartISO);
 
     if (contest.qualifiers.length === 0) {
-      return { ok: false, error: "자격자가 없어 추첨할 수 없습니다. (AI 평균 초과 + 자격선 충족자 0명)" };
+      return { ok: false, error: "AI 평균을 넘은 자격자가 없습니다. (이 주는 AI가 1위 — 메인 당첨자 없음)" };
     }
 
-    const winner = contest.qualifiers[Math.floor(Math.random() * contest.qualifiers.length)];
+    // qualifiers는 computeWeeklyContest에서 이미 적중률 desc → 게임수 desc 로 정렬됨.
+    // 맨 위와 적중률·게임수까지 완전히 같은 사람들 중에서만 추첨(그래도 동점일 때).
+    const top = contest.qualifiers[0];
+    const tied = contest.qualifiers.filter((q) => q.rate === top.rate && q.total === top.total);
+    const winner = tied.length > 1 ? tied[Math.floor(Math.random() * tied.length)] : top;
 
     const { error } = await admin
       .from("bp_predict_event_draws")
@@ -71,7 +82,8 @@ export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise
         correct: winner.correct,
         rate: winner.rate
       },
-      qualifierCount: contest.qualifiers.length
+      qualifierCount: contest.qualifiers.length,
+      tiedCount: tied.length
     };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "추첨에 실패했습니다." };

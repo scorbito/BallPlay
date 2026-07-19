@@ -109,9 +109,9 @@ export function PredictEventDrawPanel({
       {/* 이미 추첨된 주 */}
       {existingDraw && existingDraw.winnerUserId ? (
         <div style={{ ...box, background: "#fdf2f8", borderColor: "#fbcfe8" }}>
-          <div style={{ fontWeight: 800, color: "#db2777", marginBottom: 4 }}>이미 추첨됨</div>
+          <div style={{ fontWeight: 800, color: "#db2777", marginBottom: 4 }}>이미 선정됨</div>
           <div>
-            당첨자: <strong>{existingDraw.winnerNickname ?? "익명"}</strong>{" "}
+            1위: <strong>{existingDraw.winnerNickname ?? "익명"}</strong>{" "}
             <span style={{ fontSize: 12, color: "#64748b" }}>({existingDraw.winnerUserId})</span>
           </div>
           <div style={{ fontSize: 12, color: "#64748b" }}>추첨 시각: {new Date(existingDraw.drawnAt).toLocaleString("ko-KR")}</div>
@@ -136,7 +136,11 @@ export function PredictEventDrawPanel({
           marginBottom: 16
         }}
       >
-        {pending ? "추첨 중..." : existingDraw?.winnerUserId ? "다시 추첨 (교체)" : `자격자 ${qualifiers.length}명 중 1명 추첨`}
+        {pending
+          ? "선정 중..."
+          : existingDraw?.winnerUserId
+            ? "다시 선정 (교체)"
+            : `적중률 1위 선정 (자격자 ${qualifiers.length}명)`}
       </button>
 
       {/* 추첨 결과 */}
@@ -144,7 +148,10 @@ export function PredictEventDrawPanel({
         result.ok ? (
           <div style={{ ...box, background: "#ecfdf5", borderColor: "#a7f3d0" }}>
             <div style={{ fontWeight: 900, fontSize: 18, color: "#059669" }}>
-              🎉 당첨: {result.winner.nickname ?? "익명"}
+              🎉 1위: {result.winner.nickname ?? "익명"}
+              {result.tiedCount > 1 ? (
+                <span style={{ fontSize: 12, color: "#0f766e" }}> (동점 {result.tiedCount}명 중 추첨)</span>
+              ) : null}
             </div>
             <div style={{ fontSize: 13, color: "#475569" }}>
               적중 {result.winner.correct}/{result.winner.total} ({Math.round(result.winner.rate * 100)}%) · 자격자 {result.qualifierCount}명 · {result.winner.userId}
