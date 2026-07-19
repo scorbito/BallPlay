@@ -7,6 +7,7 @@ export interface SeriesResult {
   score: string;
   summary: string;
   details: string;
+  hidden?: boolean;
 }
 
 export interface TeamWeeklyReport {
@@ -19,7 +20,7 @@ export interface TeamWeeklyReport {
   winRate: number;
   overallComment: string;
   series1: SeriesResult; // 주중 (화~목)
-  series2: SeriesResult; // 주말 (금~일)
+  series2: SeriesResult; // 주말 (금~일), 단일 시리즈 주간이면 hidden 처리 가능
 }
 
 // 요일 판별 헬퍼 (일요일: 0, 월요일: 1, 화요일: 2, 수요일: 3, 목요일: 4, 금요일: 5, 토요일: 6)

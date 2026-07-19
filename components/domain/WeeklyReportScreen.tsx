@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -151,6 +151,9 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
             <div className="weekly-accordion-list">
               {initialRankings.map((team) => {
                 const isExpanded = expandedTeam === team.teamCode;
+                const seriesList = [team.series1, team.series2].filter(
+                  (series): series is NonNullable<typeof series> => Boolean(series) && !series.hidden
+                );
 
                 return (
                   <div 
@@ -179,8 +182,9 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
                         
                         {/* 시리즈 결과 배지 */}
                         <div className="grid-badges">
-                          {renderResultBadge(team.series1.result)}
-                          {renderResultBadge(team.series2.result)}
+                          {seriesList.map((series, index) => (
+                            <Fragment key={`${series.opponent}-${index}`}>{renderResultBadge(series.result)}</Fragment>
+                          ))}
                         </div>
                         
                         {/* 펼치기 아이콘 */}
@@ -201,23 +205,18 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
 
                         {/* 시리즈 2개 상세 */}
                         <div className="body-series-grid">
-                          <div className="series-detail-box">
-                            <div className="series-title-row">
-                              <span className="series-title-label">시리즈 1</span>
-                              <strong>vs {team.series1.opponent} ({team.series1.score})</strong>
+                          {seriesList.map((series, index) => (
+                            <div className="series-detail-box" key={`${series.opponent}-${index}`}>
+                              <div className="series-title-row">
+                                <span className="series-title-label">
+                                  {seriesList.length === 1 ? "시리즈" : `시리즈 ${index + 1}`}
+                                </span>
+                                <strong>vs {series.opponent} ({series.score})</strong>
+                              </div>
+                              <p className="series-summary">{series.summary}</p>
+                              <div className="series-details-content">{series.details}</div>
                             </div>
-                            <p className="series-summary">{team.series1.summary}</p>
-                            <div className="series-details-content">{team.series1.details}</div>
-                          </div>
-
-                          <div className="series-detail-box">
-                            <div className="series-title-row">
-                              <span className="series-title-label">시리즈 2</span>
-                              <strong>vs {team.series2.opponent} ({team.series2.score})</strong>
-                            </div>
-                            <p className="series-summary">{team.series2.summary}</p>
-                            <div className="series-details-content">{team.series2.details}</div>
-                          </div>
+                          ))}
                         </div>
                         <ContentPointClaimButton
                           contentType="weekly_report_team"
