@@ -173,21 +173,21 @@ const sections: HomeSection[] = [
         badge: WEEKLY_EVENT_ACTIVE ? "EVENT" : undefined
       },
       {
-        id: "sim-1000",
-        href: "/predict/sim-1000",
-        title: "1000판 시뮬레이션",
-        description: "오늘 경기 1000판 결과",
-        icon: BarChart3,
-        iconImage: "/icons/menu/sim-1000.png",
-        available: true
-      },
-      {
         id: "predict-ranking",
         href: "/predict/ranking",
         title: "승리팀 예측 순위",
         description: "참여 기록과 적중 흐름",
         icon: Trophy,
         iconImage: "/icons/menu/prediction-rank.png",
+        available: true
+      },
+      {
+        id: "sim-1000",
+        href: "/predict/sim-1000",
+        title: "1000판 시뮬레이션",
+        description: "오늘 경기 1000판 결과",
+        icon: BarChart3,
+        iconImage: "/icons/menu/sim-1000.png",
         available: true
       }
     ]
@@ -583,6 +583,21 @@ export function HomeScreen() {
         if (highlightedCards.length > 0) {
           bottomCards.unshift(...highlightedCards);
         }
+
+        // "전체" 목록에서의 자유 배치 — 카드의 섹션(탭 분류)과 무관하게 위치만 조정.
+        //   섹션(카테고리)은 categoryOfCard 로 유지되므로 탭 필터는 그대로,
+        //   전체 화면에서만 원하는 자리에 놓는다. [placeAfter card id]
+        const FLAT_PLACEMENT: Array<{ id: string; after: string }> = [
+          { id: "sim-1000", after: "news" } // 1000판: 예측 탭 소속 + 전체에선 야구 뉴스 뒤
+        ];
+        FLAT_PLACEMENT.forEach(({ id, after }) => {
+          const idx = bottomCards.findIndex((c) => c.id === id);
+          if (idx < 0) return;
+          const [card] = bottomCards.splice(idx, 1);
+          const afterIdx = bottomCards.findIndex((c) => c.id === after);
+          if (afterIdx > -1) bottomCards.splice(afterIdx + 1, 0, card);
+          else bottomCards.push(card);
+        });
 
         // 카테고리 칩 정의 — 짧은 라벨로 축약. adminOnly 섹션은 운영자에게만.
         const CHIP_LABELS: Record<string, string> = {
