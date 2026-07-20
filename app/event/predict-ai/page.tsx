@@ -8,7 +8,7 @@ import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { getAiOverallStats } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { kstWeekStartTuesday } from "@/lib/server/predict/weeklyContest";
-import bannerSrc from "@/data/Images/ad-banner/승부예측_배너광고.png";
+import bannerSrc from "@/data/Images/ad-banner/예측왕이벤트.png";
 import bhcSrc from "@/data/Images/ad-banner/뿌링클콤보.webp";
 import megaSrc from "@/data/Images/ad-banner/메가커피5000.webp";
 
@@ -42,19 +42,22 @@ export default async function PredictAiEventPage() {
       <section className="event-screen">
         <Image
           src={bannerSrc}
-          alt="승부예측 AI 대결 이벤트"
+          alt="예측왕 이벤트 — 1등 하고 치킨 먹자"
           className="event-banner"
           sizes="(max-width: 640px) 100vw, 640px"
           priority
         />
 
         <div className="event-intro">
-          <span className="event-badge">이번 주 시범 운영</span>
-          <h1>AI보다 잘 맞히면 상품을 드려요!</h1>
-          <p>매주 화~일, 승리팀 예측으로 3개 AI(GPT·Gemini·Claude)의 주간 평균 적중률을 이겨보세요.</p>
+          <span className="event-badge">주간 예측왕</span>
+          <h1>이번 주 예측왕이 되어보세요!</h1>
+          <p>
+            매주 화~일, 승리팀 예측 적중률 <strong>1위</strong>가 예측왕! 단, 3개 AI(GPT·Gemini·Claude)의
+            주간 평균 적중률은 넘어야 해요.
+          </p>
           {aiAvg !== null ? (
             <div className="event-ai-now">
-              이번 주 AI 평균 적중률 <strong>{aiAvg}%</strong> — 이걸 넘기면 도전 성공!
+              이번 주 AI 평균 적중률 <strong>{aiAvg}%</strong> — 이걸 넘어야 도전 자격!
             </div>
           ) : null}
         </div>
@@ -64,9 +67,15 @@ export default async function PredictAiEventPage() {
           <div className="event-prize event-prize-main">
             <Image src={bhcSrc} alt="뿌링클 콤보" width={92} height={92} className="event-prize-img" />
             <div className="event-prize-body">
-              <span className="event-prize-tag">1등 · 1명</span>
+              <span className="event-prize-tag">예측왕 · 1명</span>
               <strong>뿌링클 콤보</strong>
-              <p>한 주 30경기 중 20경기(2/3) 이상 예측 + AI 주간 평균 적중률 초과 → 추첨 1명</p>
+              <p>
+                한 주 30경기 중 20경기(2/3) 이상 예측 + AI 주간 평균 적중률 초과 → 그중 <strong>적중률 1위</strong> 1명
+                <br />
+                <span style={{ opacity: 0.75 }}>
+                  적중률이 같으면 예측한 경기 수가 많은 분, 그래도 같으면 추첨합니다.
+                </span>
+              </p>
             </div>
           </div>
 
@@ -89,18 +98,20 @@ export default async function PredictAiEventPage() {
           <h2>✅ 참여 방법</h2>
           <ul>
             <li>‘승리팀 예측하기’에서 경기별 승리팀을 예측하세요.</li>
-            <li>추첨 대상이 되려면 반드시 로그인이 필요합니다.</li>
+            <li>많이 예측할수록 유리해요 — 적중률이 같으면 예측 경기 수가 많은 분이 앞섭니다.</li>
+            <li>당첨 대상이 되려면 반드시 로그인이 필요합니다.</li>
           </ul>
 
           <h2>🎟 당첨자 발표 · 쿠폰 전달</h2>
           <ul>
-            <li>한 주가 끝난 뒤 추첨하여, 당첨자분께 가입하신 메일 또는 카카오 계정으로 쿠폰을 보내드립니다.</li>
+            <li>한 주가 끝난 뒤 집계하여, 당첨자분께 가입하신 메일 또는 카카오 계정으로 쿠폰을 보내드립니다.</li>
             <li>쿠폰 전달을 위해 로그인(이메일/카카오)이 꼭 필요해요.</li>
           </ul>
 
           <h2>ℹ️ 안내</h2>
           <ul>
-            <li>이번 주는 시범 운영이며, 참여가 많으면 매주 진행하고 경품도 늘려갈 예정입니다.</li>
+            <li>아무도 AI 평균 적중률을 넘지 못한 주에는 예측왕(1등)을 뽑지 않습니다. 참여상 3분은 그대로 드려요.</li>
+            <li>참여가 많으면 경품을 늘려갈 예정입니다.</li>
           </ul>
         </div>
 

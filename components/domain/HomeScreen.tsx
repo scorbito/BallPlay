@@ -25,6 +25,7 @@ import { NoticeButton } from "@/components/domain/NoticeButton";
 import { WinnerPrizeModal } from "@/components/domain/predict/WinnerPrizeModal";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
+import predictBannerSrc from "@/data/Images/ad-banner/예측왕이벤트.png";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -556,6 +557,23 @@ export function HomeScreen() {
           </section>
         ) : null;
 
+        // 히어로 카드와 일반 메뉴 사이 배너 광고 — 이벤트 진행 중일 때만 노출.
+        const predictBannerNode = WEEKLY_EVENT_ACTIVE ? (
+          <Link
+            className="play-hub-predict-banner"
+            href="/event/predict-ai"
+            prefetch={false}
+            key="predict-banner"
+          >
+            <Image
+              src={predictBannerSrc}
+              alt="예측왕 이벤트 — 1등 하고 치킨 먹자"
+              sizes="(max-width: 640px) 100vw, 640px"
+              style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }}
+              priority
+            />
+          </Link>
+        ) : null;
 
         // 하단 플랫 메뉴용 카드들 수집 (ai-analysis, related 제외)
         const otherSections = sections.filter((s) => s.id !== "ai-analysis" && s.id !== "related");
@@ -696,7 +714,7 @@ export function HomeScreen() {
           </footer>
         );
 
-        return [aiSectionNode, bottomSectionNode, externalBannerNode, footerNode];
+        return [aiSectionNode, predictBannerNode, bottomSectionNode, externalBannerNode, footerNode];
       })()}
     </AppShell>
   );
