@@ -11,8 +11,8 @@ import megaSrc from "@/data/Images/ad-banner/메가커피5000.webp";
 export const revalidate = 300;
 
 export const metadata = {
-  title: "승부예측 AI 대결 이벤트",
-  description: "AI보다 승부예측을 잘 맞히면 상품을 드려요!"
+  title: "승리팀 예측왕 이벤트",
+  description: "한 주 동안 승리팀 예측을 가장 잘 맞히면 상품을 드려요!"
 };
 
 export default async function PredictAiEventPage() {
@@ -20,7 +20,7 @@ export default async function PredictAiEventPage() {
   if (!WEEKLY_EVENT_ACTIVE) redirect("/");
 
   return (
-    <AppShell activeTab="home" title="승부예측 AI 대결 이벤트" theme="light" backHref="/">
+    <AppShell activeTab="home" title="승리팀 예측왕 이벤트" theme="light" backHref="/">
       <section className="event-screen">
         <Image
           src={bannerSrc}
