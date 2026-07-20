@@ -18,6 +18,7 @@ type Props = {
   gameCount: number;
   threshold: number;
   aiAvgAccuracy: number | null;
+  aiMaxAccuracy: number | null;
   aiProviders: AiProviderWeekly[];
   qualifiers: EventQualifier[];
   participantCount: number;
@@ -46,6 +47,7 @@ export function PredictEventDrawPanel({
   gameCount,
   threshold,
   aiAvgAccuracy,
+  aiMaxAccuracy,
   aiProviders,
   qualifiers,
   participantCount,
@@ -97,7 +99,10 @@ export function PredictEventDrawPanel({
         <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
           <span>경기 수: <strong>{gameCount}</strong></span>
           <span>자격선(2/3): <strong>{threshold}경기</strong></span>
-          <span>AI 평균 적중률: <strong>{aiAvgAccuracy !== null ? `${aiAvgAccuracy}%` : "—"}</strong></span>
+          <span>AI 평균: <strong>{aiAvgAccuracy !== null ? `${aiAvgAccuracy}%` : "—"}</strong></span>
+          <span>
+            기준선(최고 AI): <strong>{aiMaxAccuracy !== null ? `${aiMaxAccuracy}%` : "—"}</strong> 초과
+          </span>
           <span>자격자(메인): <strong>{qualifiers.length}명</strong></span>
           <span>참여자(쿠폰, 5경기↑): <strong>{participantCount}명</strong></span>
         </div>

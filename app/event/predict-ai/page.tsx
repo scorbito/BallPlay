@@ -34,8 +34,8 @@ export default async function PredictAiEventPage() {
           <span className="event-badge">주간 예측왕</span>
           <h1>이번 주 예측왕이 되어보세요!</h1>
           <p>
-            매주 화~일, 승리팀 예측 적중률 <strong>1위</strong>가 예측왕! 단, 3개 AI(GPT·Gemini·Claude)의
-            주간 평균 적중률은 넘어야 해요.
+            매주 화~일, 승리팀 예측 적중률 <strong>1위</strong>가 예측왕! 단, 3개 AI(GPT·Gemini·Claude)를
+            <strong> 모두 이겨야</strong> 해요.
           </p>
         </div>
 
@@ -47,7 +47,8 @@ export default async function PredictAiEventPage() {
               <span className="event-prize-tag">예측왕 · 1명</span>
               <strong>뿌링클 콤보</strong>
               <p>
-                한 주 30경기 중 20경기(2/3) 이상 예측 + AI 주간 평균 적중률 초과 → 그중 <strong>적중률 1위</strong> 1명
+                한 주 30경기 중 20경기(2/3) 이상 예측 + <strong>3개 AI 모두</strong>보다 높은 적중률 → 그중{" "}
+                <strong>적중률 1위</strong> 1명
                 <br />
                 <span style={{ opacity: 0.75 }}>
                   적중률이 같으면 예측한 경기 수가 많은 분, 그래도 같으면 추첨합니다.
@@ -98,7 +99,7 @@ export default async function PredictAiEventPage() {
 
           <h2>ℹ️ 안내</h2>
           <ul>
-            <li>아무도 AI 평균 적중률을 넘지 못한 주에는 예측왕(1등)을 뽑지 않습니다. 참여상 3분은 그대로 드려요.</li>
+            <li>AI도 참가자예요. 아무도 3개 AI를 모두 이기지 못한 주에는 예측왕(1등)을 뽑지 않습니다. 참여상 3분은 그대로 드려요.</li>
             <li>참여가 많으면 경품을 늘려갈 예정입니다.</li>
           </ul>
         </div>

@@ -28,9 +28,11 @@ export type WeeklyContest = {
   weekEndISO: string;   // 일
   gameCount: number;
   threshold: number;    // 자격선 = ceil(gameCount * 2/3)
-  aiAvgAccuracy: number | null; // 0~100, 3 AI 평균
+  aiAvgAccuracy: number | null; // 0~100, 3 AI 평균 (참고 표시용)
+  /** 0~100, 3 AI 중 최고 적중률. AI를 모두 이겨야 하므로 이 값이 자격 기준선. */
+  aiMaxAccuracy: number | null;
   aiProviders: AiProviderWeekly[];
-  /** 메인 추첨 후보 — 로그인 계정 + 자격선 이상 + AI평균 초과. */
+  /** 메인 후보 — 로그인 계정 + 자격선 이상 + 3개 AI를 모두 초과(=최고 AI 초과). */
   qualifiers: EventQualifier[];
   /** 쿠폰 추첨 후보 — 로그인 계정 + COUPON_MIN_GAMES 이상 예측한 참여자 전체. */
   participants: EventQualifier[];
@@ -130,6 +132,8 @@ export async function computeWeeklyContest(
   const accs = aiProviders.map((p) => p.accuracy).filter((x): x is number => x !== null);
   const aiAvgAccuracy =
     accs.length > 0 ? Math.round((accs.reduce((s, x) => s + x, 0) / accs.length) * 10) / 10 : null;
+  // AI도 참가자 → 모든 AI를 이겨야 하므로 '가장 높은 AI'가 넘어야 할 기준선.
+  const aiMaxAccuracy = accs.length > 0 ? Math.max(...accs) : null;
 
   // 3) 유저별 적중률 (화~일, 잠금+채점된 것만)
   const byUser = new Map<string, { total: number; correct: number }>();
@@ -155,7 +159,7 @@ export async function computeWeeklyContest(
   // 추첨 대상은 로그인 계정만 (익명 제외).
   const loggedIn = await filterLoggedIn(client, Array.from(byUser.keys()));
 
-  const aiAvgRate = aiAvgAccuracy === null ? null : aiAvgAccuracy / 100;
+  const aiMaxRate = aiMaxAccuracy === null ? null : aiMaxAccuracy / 100;
   const enriched = Array.from(byUser.entries())
     .filter(([userId]) => loggedIn.has(userId))
     .map(([userId, a]) => ({
@@ -165,9 +169,10 @@ export async function computeWeeklyContest(
       rate: a.total > 0 ? a.correct / a.total : 0
     }));
 
-  // 메인: 자격선 이상 + AI평균 초과 (AI평균 못 구한 빈 주는 자격자 없음).
+  // 메인: 자격선 이상 + 3개 AI를 모두 초과(=최고 AI 초과).
+  // AI 기록이 없는 빈 주는 기준선을 못 정하므로 자격자 없음.
   const ranked = enriched
-    .filter((q) => q.total >= threshold && aiAvgRate !== null && q.rate > aiAvgRate)
+    .filter((q) => q.total >= threshold && aiMaxRate !== null && q.rate > aiMaxRate)
     .sort((a, b) => b.rate - a.rate || b.total - a.total);
 
   // 쿠폰: COUPON_MIN_GAMES 이상 예측한 참여자 전체.
@@ -195,6 +200,7 @@ export async function computeWeeklyContest(
     gameCount,
     threshold,
     aiAvgAccuracy,
+    aiMaxAccuracy,
     aiProviders,
     qualifiers: ranked.map(withNick),
     participants: participantsRaw.map(withNick),

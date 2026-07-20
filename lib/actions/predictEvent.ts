@@ -32,9 +32,9 @@ async function requireAdminUserId(): Promise<string> {
 
 /**
  * 지정 주(화 weekStartISO)의 메인 1등 선정 → 이력 upsert(주별 1행, 재선정 시 교체).
- * 규칙: AI 평균을 넘은 자격자(20경기↑) 중 적중률 1위. 동률이면 게임 많은 사람.
+ * 규칙: 3개 AI를 모두 이긴 자격자(20경기↑) 중 적중률 1위. 동률이면 게임 많은 사람.
  *       적중률·게임수까지 완전 동점이면 그들끼리만 추첨.
- * (AI를 하나의 참가자로 보므로, AI 평균을 넘은 사람이 없으면 = AI가 1등 → 메인 당첨자 없음)
+ * (AI도 참가자이므로, 모든 AI를 이긴 사람이 없으면 = AI가 1등 → 메인 당첨자 없음)
  */
 export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise<DrawWinnerResult> {
   try {
@@ -43,7 +43,7 @@ export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise
     const contest = await computeWeeklyContest(admin, weekStartISO);
 
     if (contest.qualifiers.length === 0) {
-      return { ok: false, error: "AI 평균을 넘은 자격자가 없습니다. (이 주는 AI가 1위 — 메인 당첨자 없음)" };
+      return { ok: false, error: "3개 AI를 모두 이긴 자격자가 없습니다. (이 주는 AI가 1위 — 메인 당첨자 없음)" };
     }
 
     // qualifiers는 computeWeeklyContest에서 이미 적중률 desc → 게임수 desc 로 정렬됨.

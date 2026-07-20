@@ -56,6 +56,7 @@ export default async function PredictEventAdminPage({
         gameCount={contest.gameCount}
         threshold={contest.threshold}
         aiAvgAccuracy={contest.aiAvgAccuracy}
+        aiMaxAccuracy={contest.aiMaxAccuracy}
         aiProviders={contest.aiProviders}
         qualifiers={contest.qualifiers}
         participantCount={contest.participantCount}
