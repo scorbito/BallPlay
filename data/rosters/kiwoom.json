@@ -1,7 +1,7 @@
 {
   "teamId": "kiwoom",
   "teamName": "키움 히어로즈",
-  "_scrapedAt": "2026-07-13T02:36:33.812Z",
+  "_scrapedAt": "2026-07-20T03:22:03.942Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -12,7 +12,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 55
+      "seasonGames": 59
     },
     {
       "id": "kiwoom-p69328",
@@ -75,7 +75,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 1
+      "seasonGames": 2
     },
     {
       "id": "kiwoom-9",
@@ -84,7 +84,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 75
+      "seasonGames": 79
     },
     {
       "id": "kiwoom-10",
@@ -93,7 +93,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 47
+      "seasonGames": 49
     },
     {
       "id": "kiwoom-11",
@@ -111,7 +111,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 80
+      "seasonGames": 84
     },
     {
       "id": "kiwoom-13",
@@ -120,7 +120,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 1
+      "seasonGames": 3
     },
     {
       "id": "kiwoom-14",
@@ -129,7 +129,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 52
+      "seasonGames": 56
     },
     {
       "id": "kiwoom-15",
@@ -147,7 +147,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 53
+      "seasonGames": 56
     },
     {
       "id": "kiwoom-18",
@@ -156,7 +156,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 10
+      "seasonGames": 11
     },
     {
       "id": "kiwoom-19",
@@ -174,7 +174,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 26
+      "seasonGames": 28
     },
     {
       "id": "kiwoom-21",
@@ -192,7 +192,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 38
     },
     {
       "id": "kiwoom-23",
@@ -228,7 +228,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 28
     },
     {
       "id": "kiwoom-28",
@@ -246,7 +246,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 28
+      "seasonGames": 30
     },
     {
       "id": "kiwoom-30",
@@ -291,7 +291,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 67
+      "seasonGames": 71
     },
     {
       "id": "kiwoom-35",
@@ -318,7 +318,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 19
+      "seasonGames": 21
     },
     {
       "id": "kiwoom-38",
@@ -327,7 +327,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 20
+      "seasonGames": 23
     },
     {
       "id": "kiwoom-39",
@@ -354,7 +354,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "kiwoom-42",
@@ -372,7 +372,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 45
+      "seasonGames": 49
     },
     {
       "id": "kiwoom-44",
@@ -381,7 +381,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 19
+      "seasonGames": 20
     },
     {
       "id": "kiwoom-45",
@@ -390,7 +390,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "kiwoom-46",
@@ -398,7 +398,7 @@
       "jerseyNumber": 46,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 32
+      "seasonGames": 34
     },
     {
       "id": "kiwoom-47",
@@ -416,7 +416,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 38
+      "seasonGames": 41
     },
     {
       "id": "kiwoom-49",
@@ -425,7 +425,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 2
+      "seasonGames": 4
     },
     {
       "id": "kiwoom-50",
@@ -434,7 +434,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 15
+      "seasonGames": 16
     },
     {
       "id": "kiwoom-53",
@@ -443,7 +443,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 79
+      "seasonGames": 82
     },
     {
       "id": "kiwoom-54",
@@ -452,7 +452,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "kiwoom-56",
@@ -641,7 +641,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 33
+      "seasonGames": 37
     },
     {
       "id": "kiwoom-94",
@@ -650,7 +650,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 31
+      "seasonGames": 34
     },
     {
       "id": "kiwoom-95",

@@ -1,7 +1,7 @@
 {
   "teamId": "kt",
   "teamName": "KT 위즈",
-  "_scrapedAt": "2026-07-13T02:32:52.395Z",
+  "_scrapedAt": "2026-07-20T03:17:21.687Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -20,7 +20,7 @@
       "jerseyNumber": 1,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "kt-2",
@@ -38,7 +38,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 79
+      "seasonGames": 83
     },
     {
       "id": "kt-4",
@@ -47,7 +47,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 59
+      "seasonGames": 63
     },
     {
       "id": "kt-5",
@@ -74,7 +74,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 75
+      "seasonGames": 78
     },
     {
       "id": "kt-8",
@@ -83,7 +83,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 12
+      "seasonGames": 13
     },
     {
       "id": "kt-9",
@@ -92,7 +92,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 44
+      "seasonGames": 46
     },
     {
       "id": "kt-10",
@@ -101,7 +101,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 82
+      "seasonGames": 86
     },
     {
       "id": "kt-11",
@@ -110,7 +110,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 42
+      "seasonGames": 45
     },
     {
       "id": "kt-12",
@@ -118,7 +118,7 @@
       "jerseyNumber": 12,
       "primaryPosition": "P",
       "battingHand": "R",
-      "seasonGames": 29
+      "seasonGames": 30
     },
     {
       "id": "kt-13",
@@ -127,7 +127,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 51
+      "seasonGames": 55
     },
     {
       "id": "kt-14",
@@ -180,7 +180,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 7
+      "seasonGames": 8
     },
     {
       "id": "kt-20",
@@ -207,7 +207,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 52
+      "seasonGames": 56
     },
     {
       "id": "kt-23",
@@ -216,7 +216,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 33
+      "seasonGames": 37
     },
     {
       "id": "kt-24",
@@ -252,7 +252,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 58
+      "seasonGames": 62
     },
     {
       "id": "kt-29",
@@ -261,7 +261,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 39
+      "seasonGames": 42
     },
     {
       "id": "kt-30",
@@ -270,7 +270,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 11
+      "seasonGames": 12
     },
     {
       "id": "kt-31",
@@ -288,7 +288,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "kt-33",
@@ -297,7 +297,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 55
+      "seasonGames": 56
     },
     {
       "id": "kt-34",
@@ -306,7 +306,7 @@
       "primaryPosition": "3B",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 83
+      "seasonGames": 87
     },
     {
       "id": "kt-35",
@@ -318,22 +318,13 @@
       "seasonGames": 35
     },
     {
-      "id": "kt-36",
-      "name": "보쉴리",
-      "jerseyNumber": 36,
-      "primaryPosition": "P",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 11
-    },
-    {
       "id": "kt-37",
       "name": "이상동",
       "jerseyNumber": 37,
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 14
+      "seasonGames": 17
     },
     {
       "id": "kt-38",
@@ -369,7 +360,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 36
+      "seasonGames": 38
     },
     {
       "id": "kt-42",
@@ -378,7 +369,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 15
+      "seasonGames": 17
     },
     {
       "id": "kt-43",
@@ -387,7 +378,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "R",
-      "seasonGames": 4
+      "seasonGames": 5
     },
     {
       "id": "kt-44",
@@ -405,7 +396,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 70
+      "seasonGames": 73
     },
     {
       "id": "kt-46",
@@ -459,7 +450,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 21
+      "seasonGames": 23
     },
     {
       "id": "kt-52",
@@ -468,7 +459,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 70
+      "seasonGames": 74
     },
     {
       "id": "kt-53",
@@ -477,7 +468,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 62
+      "seasonGames": 65
     },
     {
       "id": "kt-54",
@@ -504,7 +495,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 45
+      "seasonGames": 48
     },
     {
       "id": "kt-57",
@@ -540,7 +531,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 36
     },
     {
       "id": "kt-61",

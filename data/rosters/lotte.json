@@ -1,7 +1,7 @@
 {
   "teamId": "lotte",
   "teamName": "롯데 자이언츠",
-  "_scrapedAt": "2026-07-13T02:37:10.511Z",
+  "_scrapedAt": "2026-07-20T03:22:52.811Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -12,7 +12,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 66,
+      "seasonGames": 69,
       "_note": "수동 추가 — KBO Player Search 누락 (2026-05-30 확인)",
       "_manual": true,
       "_playerId": "50500",
@@ -25,7 +25,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 55
+      "seasonGames": 58
     },
     {
       "id": "lotte-3",
@@ -34,7 +34,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 25
+      "seasonGames": 26
     },
     {
       "id": "lotte-4",
@@ -52,7 +52,25 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 36
+      "seasonGames": 39
+    },
+    {
+      "id": "lotte-6",
+      "name": "한태양",
+      "jerseyNumber": 6,
+      "primaryPosition": "2B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "birthDate": "2003-09-15",
+      "heightCm": 181,
+      "weightKg": 76,
+      "school": "역삼초-언북중-덕수고-롯데-상무",
+      "signingBonusManwon": 5000,
+      "salaryManwon": 7000,
+      "draftInfo": "22 롯데 2차 6라운드 54순위",
+      "seasonGames": 1,
+      "_manual": true,
+      "_note": "Official KBO profile: No.6, infielder, R/R, born 2003-09-15; lineup position observed as 2B."
     },
     {
       "id": "lotte-7",
@@ -88,7 +106,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 82
+      "seasonGames": 85
     },
     {
       "id": "lotte-15",
@@ -97,7 +115,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "lotte-16",
@@ -124,7 +142,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "lotte-21",
@@ -163,6 +181,24 @@
       "seasonGames": 0
     },
     {
+      "id": "lotte-25",
+      "name": "한동희",
+      "jerseyNumber": 25,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "birthDate": "1999-06-01",
+      "heightCm": 182,
+      "weightKg": 108,
+      "school": "부산대연초-경남중-경남고-롯데-상무",
+      "signingBonusManwon": 18000,
+      "salaryManwon": 16200,
+      "draftInfo": "18 롯데 1차",
+      "seasonGames": 41,
+      "_manual": true,
+      "_note": "Official KBO profile: No.25, infielder, R/R, born 1999-06-01."
+    },
+    {
       "id": "lotte-26",
       "name": "박재엽",
       "jerseyNumber": 26,
@@ -187,7 +223,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 79
+      "seasonGames": 82
     },
     {
       "id": "lotte-29",
@@ -196,7 +232,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "S",
-      "seasonGames": 85
+      "seasonGames": 88
     },
     {
       "id": "lotte-30",
@@ -214,7 +250,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "lotte-32",
@@ -232,7 +268,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 60
+      "seasonGames": 62
     },
     {
       "id": "lotte-34",
@@ -241,7 +277,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 38
+      "seasonGames": 39
     },
     {
       "id": "lotte-35",
@@ -268,7 +304,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 12
+      "seasonGames": 14
     },
     {
       "id": "lotte-39",
@@ -277,7 +313,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 7
+      "seasonGames": 8
     },
     {
       "id": "lotte-40",
@@ -313,7 +349,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "lotte-44",
@@ -331,7 +367,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 7
+      "seasonGames": 8
     },
     {
       "id": "lotte-46",
@@ -367,7 +403,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 26
     },
     {
       "id": "lotte-51",
@@ -376,7 +412,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 48
+      "seasonGames": 49
     },
     {
       "id": "lotte-52",
@@ -385,7 +421,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 59
+      "seasonGames": 62
     },
     {
       "id": "lotte-53",
@@ -394,7 +430,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 65
+      "seasonGames": 67
     },
     {
       "id": "lotte-54",
@@ -421,7 +457,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 37
+      "seasonGames": 38
     },
     {
       "id": "lotte-57",
@@ -457,7 +493,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 8
+      "seasonGames": 10
     },
     {
       "id": "lotte-61",
@@ -484,7 +520,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "lotte-65",
@@ -514,13 +550,22 @@
       "seasonGames": 1
     },
     {
+      "id": "lotte-68",
+      "name": "조민영",
+      "jerseyNumber": 68,
+      "primaryPosition": "CF",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 1
+    },
+    {
       "id": "lotte-69",
       "name": "박건우",
       "jerseyNumber": 69,
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 14
     },
     {
       "id": "lotte-91",
@@ -529,7 +574,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 47
+      "seasonGames": 48
     },
     {
       "id": "lotte-95",
@@ -721,7 +766,7 @@
     },
     {
       "id": "lotte-129",
-      "name": "박건",
+      "name": "박하늘",
       "jerseyNumber": 129,
       "primaryPosition": "CF",
       "throwingHand": "R",
@@ -742,15 +787,6 @@
       "name": "석상호",
       "jerseyNumber": 133,
       "primaryPosition": "P",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 0
-    },
-    {
-      "id": "lotte-134",
-      "name": "조민영",
-      "jerseyNumber": 134,
-      "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
@@ -844,42 +880,6 @@
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
-    },
-    {
-      "id": "lotte-25",
-      "name": "한동희",
-      "jerseyNumber": 25,
-      "primaryPosition": "3B",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "birthDate": "1999-06-01",
-      "heightCm": 182,
-      "weightKg": 108,
-      "school": "부산대연초-경남중-경남고-롯데-상무",
-      "signingBonusManwon": 18000,
-      "salaryManwon": 16200,
-      "draftInfo": "18 롯데 1차",
-      "seasonGames": 41,
-      "_manual": true,
-      "_note": "Official KBO profile: No.25, infielder, R/R, born 1999-06-01."
-    },
-    {
-      "id": "lotte-6",
-      "name": "한태양",
-      "jerseyNumber": 6,
-      "primaryPosition": "2B",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "birthDate": "2003-09-15",
-      "heightCm": 181,
-      "weightKg": 76,
-      "school": "역삼초-언북중-덕수고-롯데-상무",
-      "signingBonusManwon": 5000,
-      "salaryManwon": 7000,
-      "draftInfo": "22 롯데 2차 6라운드 54순위",
-      "seasonGames": 1,
-      "_manual": true,
-      "_note": "Official KBO profile: No.6, infielder, R/R, born 2003-09-15; lineup position observed as 2B."
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "teamId": "kia",
   "teamName": "KIA 타이거즈",
-  "_scrapedAt": "2026-07-13T02:35:17.803Z",
+  "_scrapedAt": "2026-07-20T03:20:23.199Z",
   "_source": "https://www.koreabaseball.com/Player/Search.aspx",
   "_note": "포지션: KBO는 투수/포수/내야수/외야수만 분류. 내야수→3B 기본값, 외야수→CF 기본값으로 매핑되어 있으며 라인업 빌더에서 세부 포지션 수동 조정 가능. _manual:true 마킹된 선수는 다음 스크랩 시 자동 보존(같은 name으로 KBO 결과에 다시 들어오면 자연 통합).",
   "players": [
@@ -12,7 +12,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 20
+      "seasonGames": 22
     },
     {
       "id": "kia-1",
@@ -21,7 +21,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 64
+      "seasonGames": 67
     },
     {
       "id": "kia-2",
@@ -39,7 +39,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 83
+      "seasonGames": 87
     },
     {
       "id": "kia-4",
@@ -57,7 +57,16 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 86
+      "seasonGames": 90
+    },
+    {
+      "id": "kia-6",
+      "name": "엄준현",
+      "jerseyNumber": 6,
+      "primaryPosition": "3B",
+      "throwingHand": "R",
+      "battingHand": "R",
+      "seasonGames": 3
     },
     {
       "id": "kia-8",
@@ -93,7 +102,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 40
+      "seasonGames": 42
     },
     {
       "id": "kia-12",
@@ -102,7 +111,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 74
+      "seasonGames": 78
     },
     {
       "id": "kia-13",
@@ -120,7 +129,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 78
+      "seasonGames": 82
     },
     {
       "id": "kia-15",
@@ -129,7 +138,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 82
+      "seasonGames": 85
     },
     {
       "id": "kia-16",
@@ -182,7 +191,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 8
+      "seasonGames": 9
     },
     {
       "id": "kia-23",
@@ -209,7 +218,7 @@
       "primaryPosition": "C",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 74
+      "seasonGames": 78
     },
     {
       "id": "kia-26",
@@ -218,7 +227,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 41
+      "seasonGames": 45
     },
     {
       "id": "kia-27",
@@ -227,7 +236,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 85
+      "seasonGames": 89
     },
     {
       "id": "kia-28",
@@ -236,7 +245,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 17
+      "seasonGames": 18
     },
     {
       "id": "kia-29",
@@ -245,7 +254,7 @@
       "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 23
+      "seasonGames": 26
     },
     {
       "id": "kia-31",
@@ -272,7 +281,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "kia-35",
@@ -299,7 +308,7 @@
       "primaryPosition": "CF",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 34
+      "seasonGames": 37
     },
     {
       "id": "kia-38",
@@ -326,7 +335,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 18
+      "seasonGames": 19
     },
     {
       "id": "kia-41",
@@ -363,7 +372,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "L",
-      "seasonGames": 11
+      "seasonGames": 13
     },
     {
       "id": "kia-45",
@@ -390,7 +399,7 @@
       "primaryPosition": "CF",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 82
+      "seasonGames": 86
     },
     {
       "id": "kia-48",
@@ -399,7 +408,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 10
+      "seasonGames": 13
     },
     {
       "id": "kia-49",
@@ -408,7 +417,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 43
+      "seasonGames": 44
     },
     {
       "id": "kia-50",
@@ -417,7 +426,7 @@
       "primaryPosition": "3B",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 24
+      "seasonGames": 28
     },
     {
       "id": "kia-51",
@@ -426,7 +435,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 13
+      "seasonGames": 15
     },
     {
       "id": "kia-52",
@@ -453,7 +462,7 @@
       "primaryPosition": "P",
       "throwingHand": "L",
       "battingHand": "L",
-      "seasonGames": 16
+      "seasonGames": 17
     },
     {
       "id": "kia-55",
@@ -462,7 +471,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 36
+      "seasonGames": 37
     },
     {
       "id": "kia-56",
@@ -525,7 +534,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 31
+      "seasonGames": 33
     },
     {
       "id": "kia-63",
@@ -534,7 +543,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 6
+      "seasonGames": 7
     },
     {
       "id": "kia-64",
@@ -552,7 +561,7 @@
       "primaryPosition": "P",
       "throwingHand": "R",
       "battingHand": "R",
-      "seasonGames": 32
+      "seasonGames": 33
     },
     {
       "id": "kia-66",
@@ -774,15 +783,6 @@
       "name": "나연우",
       "jerseyNumber": 129,
       "primaryPosition": "P",
-      "throwingHand": "R",
-      "battingHand": "R",
-      "seasonGames": 0
-    },
-    {
-      "id": "kia-131",
-      "name": "엄준현",
-      "jerseyNumber": 131,
-      "primaryPosition": "3B",
       "throwingHand": "R",
       "battingHand": "R",
       "seasonGames": 0
