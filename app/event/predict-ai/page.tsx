@@ -1,13 +1,9 @@
-import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
-import { createSupabaseCacheClient } from "@/lib/supabase/server";
-import { getAiOverallStats } from "@/lib/supabase/query-parts/bpAiPredictions";
-import { kstWeekStartTuesday } from "@/lib/server/predict/weeklyContest";
 import bannerSrc from "@/data/Images/ad-banner/예측왕이벤트.png";
 import bhcSrc from "@/data/Images/ad-banner/뿌링클콤보.webp";
 import megaSrc from "@/data/Images/ad-banner/메가커피5000.webp";
@@ -19,23 +15,9 @@ export const metadata = {
   description: "AI보다 승부예측을 잘 맞히면 상품을 드려요!"
 };
 
-// AI 적중률은 RPC(POST)라 정적 생성에서 동적을 유발할 수 있어 unstable_cache 로 결과를 캐시.
-const getCachedWeeklyAiAvg = unstable_cache(
-  async (weekStartISO: string) => {
-    const supabase = createSupabaseCacheClient(300);
-    const result = await getAiOverallStats(supabase, weekStartISO);
-    return result.ok ? result.stats.accuracy : null;
-  },
-  ["event-predict-ai-weekly-ai-avg"],
-  { revalidate: 300, tags: ["ai-winner-stats"] }
-);
-
 export default async function PredictAiEventPage() {
   // 이벤트 중단 기간에는 안내 페이지 접근 차단 → 홈으로.
   if (!WEEKLY_EVENT_ACTIVE) redirect("/");
-
-  // 동기 부여용 — 이번 주 AI 평균 적중률(공개 데이터, 비로그인 OK).
-  const aiAvg = await getCachedWeeklyAiAvg(kstWeekStartTuesday());
 
   return (
     <AppShell activeTab="home" title="승부예측 AI 대결 이벤트" theme="light" backHref="/">
@@ -55,11 +37,6 @@ export default async function PredictAiEventPage() {
             매주 화~일, 승리팀 예측 적중률 <strong>1위</strong>가 예측왕! 단, 3개 AI(GPT·Gemini·Claude)의
             주간 평균 적중률은 넘어야 해요.
           </p>
-          {aiAvg !== null ? (
-            <div className="event-ai-now">
-              이번 주 AI 평균 적중률 <strong>{aiAvg}%</strong> — 이걸 넘어야 도전 자격!
-            </div>
-          ) : null}
         </div>
 
         <p className="event-section-label">🎁 경품</p>
@@ -104,9 +81,20 @@ export default async function PredictAiEventPage() {
 
           <h2>🎟 당첨자 발표 · 쿠폰 전달</h2>
           <ul>
-            <li>한 주가 끝난 뒤 집계하여, 당첨자분께 가입하신 메일 또는 카카오 계정으로 쿠폰을 보내드립니다.</li>
-            <li>쿠폰 전달을 위해 로그인(이메일/카카오)이 꼭 필요해요.</li>
+            <li>한 주가 끝난 뒤 집계하여 당첨자분께 쿠폰을 보내드립니다.</li>
+            <li>
+              <strong>구글 로그인</strong>으로 참여하신 분은 가입하신 <strong>이메일</strong>로 보내드려요.
+            </li>
+            <li>
+              <strong>카카오 로그인</strong>은 연락처를 알 수 없어요. <strong>설정 &gt; 문의하기</strong>에서
+              쿠폰 받으실 <strong>이메일 또는 휴대폰 번호</strong>를 남겨주세요.
+            </li>
+            <li>당첨 대상이 되려면 로그인이 꼭 필요해요.</li>
           </ul>
+          <Link href="/my/contact" className="event-inline-link" prefetch={false}>
+            연락처 남기러 가기
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
 
           <h2>ℹ️ 안내</h2>
           <ul>
