@@ -567,7 +567,7 @@ export function HomeScreen() {
           >
             <Image
               src={predictBannerSrc}
-              alt="예측왕 이벤트 — 1등 하고 치킨 먹자"
+              alt="주간 예측왕 이벤트 — 1등 하고 치킨 먹자"
               sizes="(max-width: 640px) 100vw, 640px"
               style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }}
               priority

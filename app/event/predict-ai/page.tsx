@@ -11,7 +11,7 @@ import megaSrc from "@/data/Images/ad-banner/메가커피5000.webp";
 export const revalidate = 300;
 
 export const metadata = {
-  title: "승리팀 예측왕 이벤트",
+  title: "주간 예측왕 이벤트",
   description: "한 주 동안 승리팀 예측을 가장 잘 맞히면 상품을 드려요!"
 };
 
@@ -20,11 +20,11 @@ export default async function PredictAiEventPage() {
   if (!WEEKLY_EVENT_ACTIVE) redirect("/");
 
   return (
-    <AppShell activeTab="home" title="승리팀 예측왕 이벤트" theme="light" backHref="/">
+    <AppShell activeTab="home" title="주간 예측왕 이벤트" theme="light" backHref="/">
       <section className="event-screen">
         <Image
           src={bannerSrc}
-          alt="예측왕 이벤트 — 1등 하고 치킨 먹자"
+          alt="주간 예측왕 이벤트 — 1등 하고 치킨 먹자"
           className="event-banner"
           sizes="(max-width: 640px) 100vw, 640px"
           priority
