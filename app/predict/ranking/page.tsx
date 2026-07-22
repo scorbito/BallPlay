@@ -12,6 +12,9 @@ import { getAiByProviderStats } from "@/lib/supabase/query-parts/bpAiPredictions
 
 const AI_LABEL: Record<string, string> = { gpt: "GPT", gemini: "Gemini", claude: "Claude" };
 
+/** 인원 제한 없음. Postgres int 최대값 — RPC p_limit이 int라 이 값을 넘기면 out of range. */
+const NO_LIMIT = 2147483647;
+
 export const dynamic = "force-dynamic";
 
 // KBO prediction week starts on Tuesday and shows the current in-progress week.
@@ -37,14 +40,17 @@ export default async function PredictionRankingPage() {
     getWeeklyPredictionRanking(adminClient, {
       weekStartISO: weekStart,
       minGames: PREDICTION_RANKING_MIN_GAMES,
-      limit: Number.MAX_SAFE_INTEGER
+      limit: NO_LIMIT
     }),
     // 전체(시즌) 랭킹은 표본 하한을 높이고 최근 활동자만 — 유령 계정 상위권 점유 방지.
+    // 인원 제한 없음: RPC가 limit과 무관하게 이미 전원 집계·정렬하므로 부하 차이가 없고,
+    // 위 필터로 목록이 이미 걸러져 있어 다 보여줘도 지저분해지지 않는다.
     getPredictionRanking(supabase, {
       period: "season",
       minGames: PREDICTION_RANKING_SEASON_MIN_GAMES,
       activeWithinDays: PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
-      limit: 20
+      // RPC의 p_limit은 Postgres int → MAX_SAFE_INTEGER를 넘기면 out of range 에러.
+      limit: NO_LIMIT
     }),
     getAiByProviderStats(adminClient, weekStart)
   ]);
