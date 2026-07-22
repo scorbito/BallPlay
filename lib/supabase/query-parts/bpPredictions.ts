@@ -6,7 +6,16 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 const TABLE = "bp_predictions";
 const RESULTS_VIEW = "bp_prediction_results";
 export const PREDICTION_RANKING_MIN_GAMES = 5;
-export const PREDICTION_RANKING_ACTIVE_WITHIN_DAYS = 0; // 0 = no activity retention filter.
+/**
+ * 전체(시즌) 랭킹 노출 최소 채점 경기 수.
+ * 5경기만 찍고 떠난 계정이 100%로 상위권을 점유하던 문제 → 표본 하한을 올림.
+ */
+export const PREDICTION_RANKING_SEASON_MIN_GAMES = 10;
+/**
+ * 전체(시즌) 랭킹 활동 유지 기간(일). 최근 N일 안에 예측한 적이 있어야 노출.
+ * 0 = 필터 없음. 옛날에 반짝 참여하고 안 하는 계정을 순위에서 제외한다.
+ */
+export const PREDICTION_RANKING_ACTIVE_WITHIN_DAYS = 14;
 
 // ============================================================
 // 타입

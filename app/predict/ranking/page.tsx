@@ -3,6 +3,7 @@ import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/sup
 import {
   PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
   PREDICTION_RANKING_MIN_GAMES,
+  PREDICTION_RANKING_SEASON_MIN_GAMES,
   getPredictionRanking,
   getWeeklyPredictionRanking,
   type PredictionRankingRow
@@ -37,9 +38,10 @@ export default async function PredictionRankingPage() {
       minGames: PREDICTION_RANKING_MIN_GAMES,
       limit: 20
     }),
+    // 전체(시즌) 랭킹은 표본 하한을 높이고 최근 활동자만 — 유령 계정 상위권 점유 방지.
     getPredictionRanking(supabase, {
       period: "season",
-      minGames: PREDICTION_RANKING_MIN_GAMES,
+      minGames: PREDICTION_RANKING_SEASON_MIN_GAMES,
       activeWithinDays: PREDICTION_RANKING_ACTIVE_WITHIN_DAYS,
       limit: 20
     }),

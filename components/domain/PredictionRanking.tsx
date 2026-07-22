@@ -25,7 +25,11 @@ export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Pro
           <Trophy size={16} />
           <strong>적중률 랭킹</strong>
         </div>
-        <p className="predict-rank-sub">최소 5경기 예측 · 채점된 경기만 집계</p>
+        <p className="predict-rank-sub">
+          {tab === "week"
+            ? "최소 5경기 예측 · 채점된 경기만 집계"
+            : "최소 10경기 예측 · 최근 14일 내 참여자 · 채점된 경기만 집계"}
+        </p>
       </header>
 
       <div className="predict-rank-tabs" role="tablist">
