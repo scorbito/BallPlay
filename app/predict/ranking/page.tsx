@@ -33,10 +33,11 @@ export default async function PredictionRankingPage() {
 
   // 주간(화~일, 우선 노출) + 전체(시즌) + 이번 주 AI별 적중률.
   const [weeklyResult, seasonResult, aiResult] = await Promise.all([
+    // 주간은 매주 리셋되고 이벤트 대상이라 전원 노출 — 자기 순위를 항상 확인할 수 있게.
     getWeeklyPredictionRanking(adminClient, {
       weekStartISO: weekStart,
       minGames: PREDICTION_RANKING_MIN_GAMES,
-      limit: 20
+      limit: Number.MAX_SAFE_INTEGER
     }),
     // 전체(시즌) 랭킹은 표본 하한을 높이고 최근 활동자만 — 유령 계정 상위권 점유 방지.
     getPredictionRanking(supabase, {
