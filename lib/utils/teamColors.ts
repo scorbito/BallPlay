@@ -35,12 +35,29 @@ export function ensureAwayFill(homeHex: string, awayHex: string, awayAccent?: st
     const acc = hexToRgb(awayAccent);
     if (colorDist(home, acc) >= 110) return awayAccent;
   }
+  // 밝게 보정은 '원정 팀 색' 기준으로 한다. 홈 색 기준으로 흰색과 섞으면
+  // 홈이 검정·회색일 때 결과가 무채색이 되어 '열세 회색'과 구분이 안 된다.
+  // (섞는 비율도 낮춰 채도를 살림 — 흰색을 많이 섞을수록 회색빛이 된다)
   const lighter: [number, number, number] = [
-    home[0] + (255 - home[0]) * 0.55,
-    home[1] + (255 - home[1]) * 0.55,
-    home[2] + (255 - home[2]) * 0.55
+    away[0] + (255 - away[0]) * 0.4,
+    away[1] + (255 - away[1]) * 0.4,
+    away[2] + (255 - away[2]) * 0.4
   ];
   const darker: [number, number, number] = [away[0] * 0.5, away[1] * 0.5, away[2] * 0.5];
-  const chosen = colorDist(home, lighter) >= colorDist(home, darker) ? lighter : darker;
+
+  // 폴백이 '열세 회색'과 비슷하면 우열 판별이 안 되므로, 회색에서 먼 쪽을 고른다.
+  // (밝게 보정하면 회색빛이 되기 쉬워 어둡게 보정한 색이 대체로 안전)
+  const muted = hexToRgb(BAR_MUTED_COLOR);
+  const lighterOk = colorDist(home, lighter) >= 110 && colorDist(muted, lighter) >= 110;
+  const darkerOk = colorDist(home, darker) >= 110 && colorDist(muted, darker) >= 110;
+  let chosen: [number, number, number];
+  if (darkerOk && !lighterOk) chosen = darker;
+  else if (lighterOk && !darkerOk) chosen = lighter;
+  else {
+    // 둘 다 되거나 둘 다 안 되면 — 홈/회색 양쪽에서 가장 먼 쪽.
+    const scoreL = Math.min(colorDist(home, lighter), colorDist(muted, lighter));
+    const scoreD = Math.min(colorDist(home, darker), colorDist(muted, darker));
+    chosen = scoreD >= scoreL ? darker : lighter;
+  }
   return rgbToHex(chosen[0], chosen[1], chosen[2]);
 }
