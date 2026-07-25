@@ -2,6 +2,40 @@
  * ?�리?� ?�측 (predict/winner) ???�이???�마, ?�정 ?�이지 ???��??? * ============================================================ */
 
 /* ?�?� ?�단 ?�중�?????�?컴팩??(?�늘 | ?�체) ?�?� */
+/* ── 비로그인 상시 안내 띠 (이벤트 응모 유도) ── */
+.phone-frame-light .predict-guest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.12), rgba(232, 74, 138, 0.05));
+  border: 1px solid rgba(232, 74, 138, 0.35);
+  text-decoration: none;
+}
+.phone-frame-light .predict-guest-banner-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text);
+  line-height: 1.4;
+}
+.phone-frame-light .predict-guest-banner-text strong {
+  color: var(--bp-accent);
+  font-weight: 900;
+}
+.phone-frame-light .predict-guest-banner-cta {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  background: var(--bp-accent);
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 /* ── 이번 주 나 vs AI 대결 (막대그래프) ── */
 .phone-frame-light .predict-duel {
   display: flex;

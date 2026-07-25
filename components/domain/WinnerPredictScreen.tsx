@@ -121,6 +121,24 @@ export function WinnerPredictScreen({
   // 익명 계정이면 로그인 유도(이벤트 추첨 대상이 되려면 로그인 필요). 첫 픽에서 1회만.
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const [loginPromptShown, setLoginPromptShown] = useState(false);
+  // 상시 안내용 — 비로그인(세션 없음 or 익명)이면 true. 로그인/회원이면 false.
+  const [isGuest, setIsGuest] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const client = createSupabaseBrowserClient();
+        const { data: { user } } = await client.auth.getUser();
+        if (!cancelled) setIsGuest(!user || user.is_anonymous === true);
+      } catch {
+        // 조회 실패 시 안내를 띄우는 쪽(보수적)으로 — 로그인 유도가 과하진 않음.
+        if (!cancelled) setIsGuest(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 편집 가능 조건:
   //   - 오늘: 항상 허용
@@ -306,6 +324,20 @@ export function WinnerPredictScreen({
 
   return (
     <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/" wide>
+      {/* ── 비로그인 상시 안내 — 이벤트 진행 중 + 게스트일 때만. 모달은 1회지만 이 띠는 계속 노출 ── */}
+      {WEEKLY_EVENT_ACTIVE && isGuest ? (
+        <Link
+          href={`/login?next=${encodeURIComponent(`/predict/winner?date=${selectedDateISO}`)}`}
+          className="predict-guest-banner"
+          prefetch={false}
+        >
+          <span className="predict-guest-banner-text">
+            🏆 지금은 <strong>당첨 대상이 아니에요.</strong> 로그인하면 주간 예측왕 이벤트에 응모돼요.
+          </span>
+          <span className="predict-guest-banner-cta">로그인 &rsaquo;</span>
+        </Link>
+      ) : null}
+
       {/* ── 이번 주 나 vs AI 대결 (재미 요소로 상시 노출) ── */}
       {(() => {
         const myTotal = weekStats.total;
@@ -633,7 +665,7 @@ export function WinnerPredictScreen({
         <div className="lineup-confirm-body">
           <p className="lineup-confirm-msg">
             예측이 완료됐어요! 🎉<br />
-            <strong>승부예측 AI 대결 이벤트</strong> 추첨 대상이 되려면 로그인이 필요해요.<br />
+            <strong>주간 예측왕 이벤트</strong> 당첨 대상이 되려면 로그인이 필요해요.<br />
             <span style={{ fontSize: "13px", color: "var(--bp-text-secondary)" }}>
               (당첨 시 쿠폰 전달을 위해 메일·카카오 로그인이 필요합니다)
             </span>
