@@ -71,13 +71,13 @@ export default async function PredictKingWinnersPage() {
               </div>
             ) : null}
 
-            {/* 쿠폰 전달 안내 + 문의 바로가기 */}
+            {/* 쿠폰 전달 안내 + 문의 바로가기 (공지와 동일 내용) */}
             <div className="winners-notice">
-              <h2>📮 쿠폰을 못 받으셨나요?</h2>
+              <h2>📮 쿠폰 전달 안내</h2>
               <ul>
-                <li>구글 로그인은 가입하신 이메일로 보내드려요.</li>
-                <li>카카오 로그인 등 연락처가 필요하면 아래에서 남겨주세요.</li>
-                <li>다른 이메일·휴대폰으로 받고 싶어도 문의로 알려주세요.</li>
+                <li>가입하신 이메일 또는 남겨주신 연락처로 쿠폰을 보내드립니다.</li>
+                <li>다른 곳(이메일/휴대폰)으로 받고 싶으시면 설정 &gt; 문의하기에 원하시는 연락처를 남겨주세요.</li>
+                <li>변경 요청이 없으시면 확보된 연락처로 이번 주 수요일에 쿠폰을 바로 전달해 드립니다.</li>
               </ul>
               <Link href="/my/contact" className="event-cta" prefetch={false}>
                 문의로 연락처 남기기
