@@ -587,7 +587,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 8px;
+  /* .app-content flex gap(18px)을 상쇄해 배너 바로 아래로 붙임 */
+  margin-top: -14px;
   padding: 10px 14px;
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(255, 184, 28, 0.14), rgba(232, 74, 138, 0.06));
