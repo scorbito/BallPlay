@@ -594,10 +594,46 @@
   padding: 10px 14px;
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(255, 184, 28, 0.32), rgba(232, 74, 138, 0.16));
-  border: 1.5px solid rgba(255, 184, 28, 0.85);
+  border: 1.5px solid transparent;
   text-decoration: none;
   /* 골드 글로우가 뚜렷하게 맥동 — 축하 분위기 */
   animation: winner-strip-glow 1.8s ease-in-out infinite;
+}
+
+/* 흐르는 골드 테두리 — conic 그라데이션을 회전시켜 테두리를 따라 빛이 돎.
+   ::after 를 테두리 두께만큼 바깥에 깔고, mask 로 안쪽을 파내 '테두리만' 남긴다. */
+.phone-frame-light .home-winner-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0; /* overflow:hidden 에 안 잘리도록 경계 안쪽에 링 배치 */
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 0deg,
+    #ffb81c,
+    #ffe9a8,
+    #e84a8a,
+    #ffb81c,
+    #ffe9a8,
+    #ffb81c
+  );
+  /* 테두리 형태만 남기기(안쪽 도려내기) */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: winner-strip-border 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes winner-strip-border {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 /* 빛이 좌→우로 슥 지나가는 축하 쉬머 */
