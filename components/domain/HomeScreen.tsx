@@ -26,6 +26,7 @@ import { WinnerPrizeModal } from "@/components/domain/predict/WinnerPrizeModal";
 import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 import predictBannerSrc from "@/data/Images/ad-banner/예측왕이벤트.png";
+import { LatestWinnerStrip } from "@/components/domain/predict/LatestWinnerStrip";
 
 // 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
 // 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
@@ -714,7 +715,10 @@ export function HomeScreen() {
           </footer>
         );
 
-        return [aiSectionNode, predictBannerNode, bottomSectionNode, externalBannerNode, footerNode];
+        // 지난주 예측왕 스트립 — 이벤트 진행 중일 때만, 배너 바로 아래.
+        const winnerStripNode = WEEKLY_EVENT_ACTIVE ? <LatestWinnerStrip key="winner-strip" /> : null;
+
+        return [aiSectionNode, predictBannerNode, winnerStripNode, bottomSectionNode, externalBannerNode, footerNode];
       })()}
     </AppShell>
   );

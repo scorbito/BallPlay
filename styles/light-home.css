@@ -581,6 +581,48 @@
   margin-top: -18px;
 }
 
+/* 지난주 예측왕 스트립 — 배너 바로 아래 텍스트 한 줄 */
+.phone-frame-light .home-winner-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 184, 28, 0.14), rgba(232, 74, 138, 0.06));
+  border: 1px solid rgba(232, 74, 138, 0.22);
+  text-decoration: none;
+}
+.phone-frame-light .home-winner-strip-main {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.phone-frame-light .home-winner-strip-main strong {
+  color: var(--bp-accent);
+  font-weight: 900;
+}
+.phone-frame-light .home-winner-strip-none {
+  color: var(--bp-text-secondary) !important;
+  font-weight: 800 !important;
+}
+.phone-frame-light .home-winner-strip-sub {
+  color: var(--bp-text-secondary);
+  font-weight: 650;
+}
+.phone-frame-light .home-winner-strip-more {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  white-space: nowrap;
+}
+
 /* 홈 하단 회사 푸터 */
 .phone-frame-light .play-hub-footer {
   margin-top: 8px;
