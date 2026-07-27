@@ -6,13 +6,22 @@ type Props = {
 };
 
 function formatDateTime(iso: string) {
-  const d = new Date(iso);
-  const yy = d.getFullYear();
-  const mm = `${d.getMonth() + 1}`.padStart(2, "0");
-  const dd = `${d.getDate()}`.padStart(2, "0");
-  const hh = `${d.getHours()}`.padStart(2, "0");
-  const mi = `${d.getMinutes()}`.padStart(2, "0");
-  return `${yy}.${mm}.${dd} ${hh}:${mi}`;
+  // published_at 은 UTC(timestamptz). 서버(Vercel)가 UTC라 getHours() 등은 9시간 밀림 →
+  // 반드시 한국 시간(Asia/Seoul)으로 명시 변환한다. formatToParts 로 안전하게 조립.
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    })
+      .formatToParts(new Date(iso))
+      .map((x) => [x.type, x.value])
+  );
+  return `${p.year}.${p.month}.${p.day} ${p.hour}:${p.minute}`;
 }
 
 export function NoticeDetailScreen({ notice }: Props) {

@@ -13,11 +13,18 @@ type Props = {
 const LAST_SEEN_KEY = "notices.lastSeenAt";
 
 function formatDate(iso: string) {
-  const d = new Date(iso);
-  const yy = d.getFullYear();
-  const mm = `${d.getMonth() + 1}`.padStart(2, "0");
-  const dd = `${d.getDate()}`.padStart(2, "0");
-  return `${yy}.${mm}.${dd}`;
+  // 서버(Vercel)가 UTC라 로컬 getter는 날짜가 밀릴 수 있어 KST로 명시 변환.
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    })
+      .formatToParts(new Date(iso))
+      .map((x) => [x.type, x.value])
+  );
+  return `${p.year}.${p.month}.${p.day}`;
 }
 
 function summarize(body: string, limit = 80) {
