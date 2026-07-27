@@ -1,10 +1,9 @@
 name: Sync KBO Rosters
 
-# 매주 월요일 09:00 KST (= 00:00 UTC) 자동 실행 + 수동 트리거 가능.
-# KBO는 보통 월요일이 휴식일이라 주말 경기 결과까지 반영된 상태로 갱신됨.
+# 스케줄 비활성화(2026-07-27): KBO 사이트가 GitHub Actions의 해외(미국) IP를
+# 차단·리셋해서 매번 실패함. 로스터 갱신은 한국 IP인 로컬 PC의 작업 스케줄러가
+# 담당(npm run scrape:rosters). 필요 시 아래 수동 트리거로만 실행.
 on:
-  schedule:
-    - cron: '0 0 * * 1'
   workflow_dispatch:
 
 jobs:
