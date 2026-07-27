@@ -82,18 +82,15 @@ export default async function PredictAiEventPage() {
 
           <h2>🎟 당첨자 발표 · 쿠폰 전달</h2>
           <ul>
-            <li>한 주가 끝난 뒤 집계하여 당첨자분께 쿠폰을 보내드립니다.</li>
+            <li>한 주가 끝난 뒤 집계하여 당첨자분께 쿠폰을 드립니다.</li>
             <li>
-              <strong>구글 로그인</strong>으로 참여하신 분은 가입하신 <strong>이메일</strong>로 보내드려요.
+              쿠폰은 로그인 계정의 <strong>설정 &gt; 내 쿠폰함</strong>으로 바로 들어갑니다. 별도 연락처가 필요 없어요.
             </li>
-            <li>
-              <strong>카카오 로그인</strong>은 연락처를 알 수 없어요. <strong>설정 &gt; 문의하기</strong>에서
-              쿠폰 받으실 <strong>이메일 또는 휴대폰 번호</strong>를 남겨주세요.
-            </li>
-            <li>당첨 대상이 되려면 로그인이 꼭 필요해요.</li>
+            <li>도착하면 홈 알림과 설정 탭 배지로 알려드리고, 쿠폰함에서 언제든 확인·저장할 수 있어요.</li>
+            <li>쿠폰은 로그인 계정에 보관되니, 당첨·수령을 위해 로그인이 꼭 필요해요.</li>
           </ul>
-          <Link href="/my/contact" className="event-inline-link" prefetch={false}>
-            연락처 남기러 가기
+          <Link href="/my/coupons" className="event-inline-link" prefetch={false}>
+            내 쿠폰함 열기
             <ArrowRight size={14} strokeWidth={2.5} />
           </Link>
 

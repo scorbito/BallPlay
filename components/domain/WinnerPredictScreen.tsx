@@ -55,7 +55,7 @@ type Props = {
   isToday: boolean;
   /** 선택된 날짜가 오늘보다 미래인지 — true면 read-only로만 표시 */
   isFuture: boolean;
-  /** 미래 날짜 편집 허용 여부 — server에서 "내일 + 오늘 경기 모두 끝남"인 경우만 true. */
+  /** 미래 날짜 편집 허용 여부 — server에서 "다음 경기일 + 오늘 경기 모두 끝남(또는 휴식일)"인 경우만 true. */
   canEditFuture: boolean;
   /** 이전 경기일 (없으면 null — 화살표 숨김) */
   prevDateISO: string | null;
@@ -142,8 +142,8 @@ export function WinnerPredictScreen({
 
   // 편집 가능 조건:
   //   - 오늘: 항상 허용
-  //   - 미래: server에서 결정 (오직 "내일 + 오늘 경기 모두 끝남"인 경우만 true)
-  //   - 모레 이후 미래 + 과거: read-only.
+  //   - 미래: server에서 결정 (오직 "다음 경기일 + 오늘 경기 모두 끝남(또는 휴식일)"인 경우만 true)
+  //   - 그 다음 경기일 이후 미래 + 과거: read-only.
   const canEditOnThisDate = isToday || (isFuture && canEditFuture);
 
   // 경기 시작 컷오프 — 시작 시각이 지난 경기는 예측/잠금 불가.

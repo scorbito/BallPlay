@@ -50,17 +50,19 @@ export default async function WinnerPredictPage({
   let selectedDate = explicitDate ?? today;
   let gamesResult = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);
 
-  // 오늘 진입인데 경기 자체가 없음 → 14일 lookahead 중 가장 이른 경기일로 자동 이동.
+  // 오늘 이후 가장 이른 경기일(=다음 경기일). 자동 이동 + 다음 경기 예측 개방 판정에 공용.
+  //   월요일 휴식일처럼 내일이 비면 화요일이 다음 경기일이 된다.
+  const afterToday = await listGamesFromDb({
+    from: addDays(today, 1),
+    to: addDays(today, 14)
+  }).catch(() => []);
+  const nextGameDate = afterToday.length > 0 ? afterToday[0].date : null;
+
+  // 오늘 진입인데 경기 자체가 없음 → 다음 경기일로 자동 이동.
   // (승리팀 예측이 목적이라 오늘 경기 없는 날에 빈 화면 대신 미리 다음 경기 예측 화면 노출.)
-  if (!explicitDate && gamesResult.length === 0) {
-    const lookahead = await listGamesFromDb({
-      from: addDays(today, 1),
-      to: addDays(today, 14)
-    }).catch(() => []);
-    if (lookahead.length > 0) {
-      selectedDate = lookahead[0].date;
-      gamesResult = lookahead.filter((g) => g.date === selectedDate);
-    }
+  if (!explicitDate && gamesResult.length === 0 && nextGameDate) {
+    selectedDate = nextGameDate;
+    gamesResult = afterToday.filter((g) => g.date === selectedDate);
   }
 
   // 인접 경기일 탐색 — prev/next 화살표가 경기 없는 날을 자동으로 스킵.
@@ -76,18 +78,16 @@ export default async function WinnerPredictPage({
 
   const isToday = selectedDate === today;
   const isFuture = selectedDate > today;
-  // 미래 예측은 "내일까지만, 오늘 경기 끝났을 때만" 허용.
+  // 미래 예측은 "다음 경기일 하나만, 오늘 경기가 모두 끝났을 때" 허용.
   //   - 오늘 → 항상 편집 가능
-  //   - 내일(today+1) + 오늘 경기 모두 끝남 → 편집 가능
+  //   - 다음 경기일(nextGameDate) + 오늘 경기 모두 끝남 → 편집 가능
+  //     · 오늘이 휴식일(경기 0건)이면 기다릴 경기가 없어 every()가 true → 즉시 개방.
+  //       예) 일요일 경기 종료 → 월요일 휴식 → 화요일 예측 바로 가능.
   //   - 그 외 미래 → 보기만 가능
-  const tomorrow = addDays(today, 1);
-  const isTomorrow = selectedDate === tomorrow;
   let canEditFuture = false;
-  if (isTomorrow) {
+  if (isFuture && selectedDate === nextGameDate) {
     const todayGames = await listGamesFromDb({ from: today, to: today }).catch(() => []);
-    canEditFuture =
-      todayGames.length > 0 &&
-      todayGames.every((g) => g.status === "finished" || g.status === "canceled");
+    canEditFuture = todayGames.every((g) => g.status === "finished" || g.status === "canceled");
   }
 
   // 본인 예측 + 통계 — 로그인(또는 익명 세션) 있을 때만 fetch. 비로그인은 빈 값.
