@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Check, ChevronRight, Download, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, UserCircle } from "lucide-react";
+import { Bell, Check, ChevronRight, Download, FileText, HelpCircle, Loader2, LogIn, LogOut, Mail, MousePointer2, ShieldCheck, Ticket, UserCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
@@ -41,9 +41,11 @@ function formatAccountLabel(info: AuthAccountInfo | null | undefined): { label: 
 type SettingsScreenProps = {
   accountInfo?: AuthAccountInfo | null;
   isAdmin?: boolean;
+  /** 안 본 쿠폰 수 — "내 쿠폰함" NEW 배지 */
+  couponUnseen?: number;
 };
 
-export function SettingsScreen({ accountInfo = null, isAdmin = false }: SettingsScreenProps) {
+export function SettingsScreen({ accountInfo = null, isAdmin = false, couponUnseen = 0 }: SettingsScreenProps) {
   const { isAnonymous, profile, showToast } = useAppState();
   const { isStandalone } = useInstallPrompt();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -209,6 +211,20 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false }: Settings
         )}
       </section>
 
+      {/* 내 쿠폰함 — 당첨 쿠폰 보관·열람. 안 본 쿠폰 있으면 NEW 배지. */}
+      <section className="menu-list settings-list settings-list-secondary" aria-label="쿠폰">
+        <Link className="settings-row" href="/my/coupons" prefetch={false}>
+          <Ticket size={18} />
+          <strong>내 쿠폰함</strong>
+          <span className="settings-value">
+            {couponUnseen > 0 ? (
+              <span className="settings-new-badge">NEW {couponUnseen}</span>
+            ) : null}
+          </span>
+          <ChevronRight size={18} aria-hidden />
+        </Link>
+      </section>
+
       {/* 알림 — 웹 푸시 구독 토글. 오늘 AI 예측 발행 시 정오에 1건 발송. */}
       <section className="menu-list settings-list settings-list-secondary" aria-label="알림">
         <button
@@ -268,6 +284,12 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false }: Settings
           <Link className="settings-row" href="/admin/events" prefetch>
             <ShieldCheck size={18} />
             <strong>운영자 이벤트 통계</strong>
+            <span className="settings-value" />
+            <ChevronRight size={18} />
+          </Link>
+          <Link className="settings-row" href="/admin/coupons" prefetch={false}>
+            <Ticket size={18} />
+            <strong>쿠폰 지급</strong>
             <span className="settings-value" />
             <ChevronRight size={18} />
           </Link>

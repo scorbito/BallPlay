@@ -49,6 +49,10 @@ export type EventDraw = {
   participantCount: number;
   winnerUserId: string | null;
   winnerNickname: string | null;
+  /** 예측왕의 예측 경기수 (추첨 시 스냅샷). 없으면 null(구 기록). */
+  winnerTotal: number | null;
+  /** 예측왕 적중률 0~1 (추첨 시 스냅샷). 없으면 null. */
+  winnerRate: number | null;
   couponWinners: CouponWinner[];
   drawnAt: string;
 };
@@ -212,7 +216,7 @@ export async function listEventDraws(client: SupabaseClient): Promise<EventDraw[
   const { data, error } = await client
     .from("bp_predict_event_draws")
     .select(
-      "week_start_date,week_end_date,game_count,threshold,ai_avg_accuracy,qualifier_count,participant_count,winner_user_id,winner_nickname,coupon_winners,drawn_at"
+      "week_start_date,week_end_date,game_count,threshold,ai_avg_accuracy,qualifier_count,participant_count,winner_user_id,winner_nickname,winner_total,winner_rate,coupon_winners,drawn_at"
     )
     .order("week_start_date", { ascending: false });
   if (error) return [];
@@ -226,6 +230,8 @@ export async function listEventDraws(client: SupabaseClient): Promise<EventDraw[
     participantCount: Number(r.participant_count ?? 0),
     winnerUserId: r.winner_user_id ? String(r.winner_user_id) : null,
     winnerNickname: r.winner_nickname ? String(r.winner_nickname) : null,
+    winnerTotal: r.winner_total === null || r.winner_total === undefined ? null : Number(r.winner_total),
+    winnerRate: r.winner_rate === null || r.winner_rate === undefined ? null : Number(r.winner_rate),
     couponWinners: Array.isArray(r.coupon_winners) ? (r.coupon_winners as CouponWinner[]) : [],
     drawnAt: String(r.drawn_at)
   }));

@@ -12,5 +12,23 @@ export default async function SettingsPage() {
     getUserTier(supabase).catch(() => ({ tier: "guest" as const, user: null }))
   ]);
 
-  return <SettingsScreen accountInfo={accountInfo} isAdmin={userTier.tier === "admin"} />;
+  // 안 본 쿠폰 수 — 설정 "내 쿠폰함" 줄의 NEW 배지용 (로그인 계정만).
+  let couponUnseen = 0;
+  const user = userTier.user;
+  if (user && !user.is_anonymous) {
+    const { count } = await supabase
+      .from("bp_coupons")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .is("viewed_at", null);
+    couponUnseen = count ?? 0;
+  }
+
+  return (
+    <SettingsScreen
+      accountInfo={accountInfo}
+      isAdmin={userTier.tier === "admin"}
+      couponUnseen={couponUnseen}
+    />
+  );
 }

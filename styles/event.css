@@ -239,6 +239,13 @@
   font-size: 14px;
   color: var(--bp-text-secondary);
 }
+.phone-frame-light .winners-card-stat {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
 .phone-frame-light .winners-card-names {
   display: flex;
   flex-wrap: wrap;
@@ -309,4 +316,103 @@
   color: var(--bp-text-secondary);
   font-size: 13px;
   padding: 24px 0;
+}
+
+/* 당첨자 페이지 → 명예의 전당 링크 */
+.phone-frame-light .winners-hof-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 184, 28, 0.16), rgba(232, 74, 138, 0.08));
+  border: 1px solid rgba(255, 184, 28, 0.5);
+  color: #b45309;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+/* ── 예측왕 명예의 전당 ── */
+.phone-frame-light .hof-hero {
+  text-align: center;
+  padding: 22px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 184, 28, 0.18), rgba(232, 74, 138, 0.08));
+  border: 1px solid rgba(255, 184, 28, 0.5);
+}
+.phone-frame-light .hof-hero-icon {
+  color: #eab308;
+}
+.phone-frame-light .hof-hero h1 {
+  margin: 6px 0 4px;
+  font-size: 20px;
+  font-weight: 950;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+.phone-frame-light .hof-hero p {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .hof-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.phone-frame-light .hof-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+}
+.phone-frame-light .hof-card-ordinal {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 52px;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: rgba(255, 184, 28, 0.12);
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 900;
+}
+.phone-frame-light .hof-card-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.phone-frame-light .hof-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.phone-frame-light .hof-card-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+.phone-frame-light .hof-card-wins {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.12);
+  color: var(--bp-accent);
+  font-size: 11px;
+  font-weight: 800;
+}
+.phone-frame-light .hof-card-meta {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
 }

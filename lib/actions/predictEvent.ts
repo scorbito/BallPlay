@@ -65,6 +65,9 @@ export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise
           participant_count: contest.participantCount,
           winner_user_id: winner.userId,
           winner_nickname: winner.nickname,
+          winner_total: winner.total,
+          winner_correct: winner.correct,
+          winner_rate: winner.rate,
           drawn_by: adminUserId,
           drawn_at: new Date().toISOString()
         },

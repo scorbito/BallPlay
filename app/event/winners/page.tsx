@@ -22,7 +22,6 @@ export default async function PredictKingWinnersPage() {
   // 실제로 추첨된 주(당첨자 있음)만.
   const drawn = draws.filter((d) => d.winnerUserId || d.couponWinners.length > 0);
   const latest = drawn[0] ?? null;
-  const past = drawn.slice(1);
 
   return (
     <AppShell activeTab="home" title="주간 예측왕 당첨자" theme="light" backHref="/">
@@ -45,7 +44,14 @@ export default async function PredictKingWinnersPage() {
               <div className="winners-card-body">
                 <span className="winners-card-role">예측왕 · 뿌링클 콤보</span>
                 {latest.winnerNickname ? (
-                  <strong className="winners-card-name">{latest.winnerNickname}</strong>
+                  <>
+                    <strong className="winners-card-name">{latest.winnerNickname}</strong>
+                    {latest.winnerTotal && latest.winnerRate !== null ? (
+                      <span className="winners-card-stat">
+                        {latest.winnerTotal}경기 참여 · {Math.round(latest.winnerRate * 100)}% 적중
+                      </span>
+                    ) : null}
+                  </>
                 ) : (
                   <strong className="winners-card-name winners-card-none">
                     이번 주는 예측왕 없음 (AI 승)
@@ -71,41 +77,25 @@ export default async function PredictKingWinnersPage() {
               </div>
             ) : null}
 
-            {/* 쿠폰 전달 안내 + 문의 바로가기 (공지와 동일 내용) */}
+            {/* 쿠폰 전달 안내 + 쿠폰함 바로가기 (공지와 동일 내용) */}
             <div className="winners-notice">
-              <h2>📮 쿠폰 전달 안내</h2>
+              <h2>🎟 쿠폰 전달 안내</h2>
               <ul>
-                <li>가입하신 이메일 또는 남겨주신 연락처로 쿠폰을 보내드립니다.</li>
-                <li>다른 곳(이메일/휴대폰)으로 받고 싶으시면 설정 &gt; 문의하기에 원하시는 연락처를 남겨주세요.</li>
-                <li>변경 요청이 없으시면 확보된 연락처로 이번 주 수요일에 쿠폰을 바로 전달해 드립니다.</li>
+                <li>쿠폰은 늦어도 이번 주 수요일 전까지 <strong>설정 &gt; 내 쿠폰함</strong>으로 보내드립니다.</li>
+                <li>도착하면 홈 알림과 설정 탭 배지로 알려드려요.</li>
+                <li>내 쿠폰함에서 언제든 확인하고 이미지로 저장할 수 있어요.</li>
               </ul>
-              <Link href="/my/contact" className="event-cta" prefetch={false}>
-                문의로 연락처 남기기
+              <Link href="/my/coupons" className="event-cta" prefetch={false}>
+                내 쿠폰함 열기
                 <ArrowRight size={18} strokeWidth={2.5} />
               </Link>
             </div>
 
-            {/* 지난 주차 */}
-            {past.length > 0 ? (
-              <>
-                <p className="event-section-label">📜 지난 당첨자</p>
-                <div className="winners-history">
-                  {past.map((d) => (
-                    <div key={d.weekStartDate} className="winners-history-row">
-                      <span className="winners-history-week">
-                        {mmdd(d.weekStartDate)}~{mmdd(d.weekEndDate)}
-                      </span>
-                      <span className="winners-history-detail">
-                        🏆 {d.winnerNickname ?? "—"}
-                        {d.couponWinners.length > 0
-                          ? ` · 🎟 ${d.couponWinners.map((w) => w.nickname ?? "익명").join(", ")}`
-                          : ""}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : null}
+            {/* 역대 예측왕 → 명예의 전당 */}
+            <Link href="/event/hall-of-fame" className="winners-hof-link" prefetch={false}>
+              🏅 역대 예측왕 명예의 전당 보기
+              <ArrowRight size={18} strokeWidth={2.5} />
+            </Link>
           </>
         ) : (
           <p className="winners-empty">아직 발표된 당첨자가 없어요. 첫 주가 끝나면 이곳에서 발표됩니다.</p>
