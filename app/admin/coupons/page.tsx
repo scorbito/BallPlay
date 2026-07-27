@@ -40,6 +40,7 @@ export default async function AdminCouponsPage() {
       weekStartDate: d.weekStartDate,
       weekEndDate: d.weekEndDate,
       source: `predict-king-${d.weekStartDate}`,
+      externalIssued: d.couponIssuedExternal,
       winner: d.winnerUserId
         ? { userId: d.winnerUserId, nickname: d.winnerNickname, role: "main" as const }
         : null,

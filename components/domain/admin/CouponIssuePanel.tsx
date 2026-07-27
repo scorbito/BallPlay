@@ -20,6 +20,8 @@ export type WinnerWeek = {
   weekStartDate: string;
   weekEndDate: string;
   source: string;
+  /** 외부(카톡/이메일)로 이미 지급 완료 처리한 당첨자 user_id 목록. */
+  externalIssued: string[];
   winner: Winner | null;
   couponWinners: Winner[];
 };
@@ -60,12 +62,16 @@ function WinnerRow({
   winner,
   source,
   issuedTitle,
-  onIssued
+  externalDone,
+  onIssued,
+  onToggleExternal
 }: {
   winner: Winner;
   source: string;
   issuedTitle: string | null;
+  externalDone: boolean;
   onIssued: (c: IssuedCoupon) => void;
+  onToggleExternal: (userId: string, done: boolean) => Promise<void>;
 }) {
   const [title, setTitle] = useState(DEFAULT_TITLE[winner.role]);
   const [file, setFile] = useState<File | null>(null);
@@ -73,21 +79,71 @@ function WinnerRow({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [markBusy, setMarkBusy] = useState(false);
 
   const roleLabel = winner.role === "main" ? "예측왕(1등)" : "참여상";
 
+  const toggleExternal = async (done: boolean) => {
+    if (markBusy) return;
+    setMarkBusy(true);
+    setError(null);
+    try {
+      await onToggleExternal(winner.userId, done);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "처리 실패");
+    } finally {
+      setMarkBusy(false);
+    }
+  };
+
+  // 1) 사이트 쿠폰함으로 지급 완료
   if (issuedTitle) {
     return (
       <div style={{ ...box, marginBottom: 10, borderColor: "#86efac", background: "#f0fdf4" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <span style={{ ...label, color: "#16a34a" }}>{roleLabel} · 지급 완료 ✓</span>
+            <span style={{ ...label, color: "#16a34a" }}>{roleLabel} · 쿠폰함 지급 완료 ✓</span>
             <div style={{ fontSize: 15, fontWeight: 800, marginTop: 2 }}>
               {winner.nickname ?? "익명"}
             </div>
           </div>
           <span style={{ fontSize: 12, color: "#64748b" }}>{issuedTitle}</span>
         </div>
+      </div>
+    );
+  }
+
+  // 2) 외부(카톡/이메일) 지급 완료로 표시된 상태
+  if (externalDone) {
+    return (
+      <div style={{ ...box, marginBottom: 10, borderColor: "#93c5fd", background: "#eff6ff" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          <div>
+            <span style={{ ...label, color: "#2563eb" }}>{roleLabel} · 외부 지급 완료 ✓</span>
+            <div style={{ fontSize: 15, fontWeight: 800, marginTop: 2 }}>
+              {winner.nickname ?? "익명"}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => toggleExternal(false)}
+            disabled={markBusy}
+            style={{
+              flex: "0 0 auto",
+              padding: "6px 10px",
+              border: "1px solid #cbd5e1",
+              borderRadius: 8,
+              background: "#fff",
+              color: "#64748b",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: markBusy ? "default" : "pointer"
+            }}
+          >
+            표시 취소
+          </button>
+        </div>
+        {error ? <p style={{ color: "#dc2626", fontSize: 12, margin: "8px 0 0" }}>{error}</p> : null}
       </div>
     );
   }
@@ -181,12 +237,37 @@ function WinnerRow({
       >
         {busy ? "지급 중..." : "쿠폰 지급"}
       </button>
+      <button
+        type="button"
+        onClick={() => toggleExternal(true)}
+        disabled={markBusy}
+        style={{
+          marginTop: 8,
+          width: "100%",
+          padding: "9px",
+          border: "1px solid #cbd5e1",
+          borderRadius: 8,
+          background: "#fff",
+          color: "#475569",
+          fontSize: 13,
+          fontWeight: 700,
+          cursor: markBusy ? "default" : "pointer"
+        }}
+      >
+        {markBusy ? "처리 중..." : "이미(외부로) 지급 완료로 표시"}
+      </button>
     </div>
   );
 }
 
 export function CouponIssuePanel({ weeks, issued: initialIssued }: Props) {
   const [issued, setIssued] = useState<IssuedCoupon[]>(initialIssued);
+  // 주차별 외부 지급 완료 user_id 집합 (토글로 갱신).
+  const [external, setExternal] = useState<Record<string, Set<string>>>(() => {
+    const init: Record<string, Set<string>> = {};
+    for (const w of weeks) init[w.weekStartDate] = new Set(w.externalIssued);
+    return init;
+  });
 
   const issuedKey = useMemo(() => {
     const map = new Map<string, string>(); // `${userId}|${source}` -> title
@@ -197,6 +278,17 @@ export function CouponIssuePanel({ weeks, issued: initialIssued }: Props) {
   }, [issued]);
 
   const onIssued = (c: IssuedCoupon) => setIssued((prev) => [c, ...prev]);
+
+  const toggleExternal = async (weekStartDate: string, userId: string, done: boolean) => {
+    const res = await fetch("/api/admin/coupons/mark", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ weekStartDate, userId, done })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error ?? "처리 실패");
+    setExternal((prev) => ({ ...prev, [weekStartDate]: new Set<string>(data.external ?? []) }));
+  };
 
   if (weeks.length === 0) {
     return (
@@ -230,7 +322,9 @@ export function CouponIssuePanel({ weeks, issued: initialIssued }: Props) {
                   winner={w}
                   source={week.source}
                   issuedTitle={issuedKey.get(`${w.userId}|${week.source}`) ?? null}
+                  externalDone={external[week.weekStartDate]?.has(w.userId) ?? false}
                   onIssued={onIssued}
+                  onToggleExternal={(userId, done) => toggleExternal(week.weekStartDate, userId, done)}
                 />
               ))
             )}
