@@ -191,3 +191,122 @@
   text-decoration: none;
   box-shadow: 0 6px 18px rgba(219, 39, 119, 0.25);
 }
+
+/* 보조 CTA (테두리형) */
+.phone-frame-light .event-cta-ghost {
+  margin-top: 10px;
+  background: #fff;
+  color: var(--bp-accent);
+  border: 1.5px solid var(--bp-accent);
+  box-shadow: none;
+}
+
+/* ── 당첨자 발표 페이지 ── */
+.phone-frame-light .winners-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--bp-line-soft);
+  background: var(--bp-card);
+}
+.phone-frame-light .winners-card-main {
+  background: linear-gradient(135deg, rgba(255, 184, 28, 0.16), rgba(232, 74, 138, 0.07));
+  border-color: rgba(255, 184, 28, 0.55);
+}
+.phone-frame-light .winners-card-icon {
+  flex: 0 0 auto;
+  color: var(--bp-accent);
+  margin-top: 2px;
+}
+.phone-frame-light .winners-card-body {
+  min-width: 0;
+}
+.phone-frame-light .winners-card-role {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  margin-bottom: 3px;
+}
+.phone-frame-light .winners-card-name {
+  font-size: 18px;
+  font-weight: 950;
+  color: var(--bp-text);
+}
+.phone-frame-light .winners-card-none {
+  font-size: 14px;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .winners-card-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.phone-frame-light .winners-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(232, 74, 138, 0.1);
+  color: var(--bp-accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+.phone-frame-light .winners-notice {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+}
+.phone-frame-light .winners-notice h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+.phone-frame-light .winners-notice ul {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.phone-frame-light .winners-notice li {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--bp-text-secondary);
+  line-height: 1.5;
+}
+.phone-frame-light .winners-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.phone-frame-light .winners-history-row {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+}
+.phone-frame-light .winners-history-week {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .winners-history-detail {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text);
+  min-width: 0;
+}
+.phone-frame-light .winners-empty {
+  text-align: center;
+  color: var(--bp-text-secondary);
+  font-size: 13px;
+  padding: 24px 0;
+}

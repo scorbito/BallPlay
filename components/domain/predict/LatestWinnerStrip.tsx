@@ -42,7 +42,8 @@ export function LatestWinnerStrip() {
 
   if (!data?.show) return null;
 
-  const href = data.noticeId ? `/my/notices/${data.noticeId}` : "/my/notices";
+  // 당첨자 발표 페이지로 이동(문의 링크 포함). 공지 링크는 미사용.
+  const href = "/event/winners";
   const period = `${mmdd(data.weekStart)}~${mmdd(data.weekEnd)}`;
 
   return (
