@@ -331,7 +331,7 @@ const sections: HomeSection[] = [
       {
         id: "wordle",
         href: "/play/wordle",
-        title: "선수 맞히기",
+        title: "오늘 선수는 누구?",
         description: "하루 한 명, 6번의 기회",
         // icon 은 iconImage 로드 실패 시를 위한 폴백.
         icon: BaseballIcon,
