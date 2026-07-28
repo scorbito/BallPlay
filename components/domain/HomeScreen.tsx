@@ -329,12 +329,13 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        // 전용 아이콘 이미지가 아직 없어 lucide 폴백(야구공)으로 노출.
         id: "wordle",
         href: "/play/wordle",
         title: "선수 맞히기",
         description: "하루 한 명, 6번의 기회",
+        // icon 은 iconImage 로드 실패 시를 위한 폴백.
         icon: BaseballIcon,
+        iconImage: "/icons/menu/선수맞추기.png",
         available: true,
         badge: "NEW"
       }
