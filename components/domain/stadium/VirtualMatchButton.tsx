@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/state/AppState";
 import { startSpectatorMatch, type SpectatorMatchGame } from "@/lib/sim/spectatorMatch";
@@ -9,11 +9,13 @@ type Props = {
   /** 대전 팀 2개(+선택 선발). 어떤 경기 row 든 이 형태로만 맞춰 넘기면 된다. */
   game: SpectatorMatchGame;
   className?: string;
-  /** 평상시 라벨. 기본 "경기 시뮬". */
-  idleLabel?: string;
+  /** 평상시 라벨. 기본 "경기 시뮬". 아이콘만 쓰는 호출부를 위해 ReactNode 허용. */
+  idleLabel?: ReactNode;
   /** 준비 중 라벨. 기본 "준비". */
-  busyLabel?: string;
+  busyLabel?: ReactNode;
   title?: string;
+  /** 아이콘만 노출할 때의 접근성 이름. 텍스트 라벨이면 생략. */
+  ariaLabel?: string;
   /** 매치 세션 저장 성공 직후, 경기장으로 이동하기 전에 호출(분석 트래킹 등). */
   onStarted?: () => void;
 };
@@ -29,6 +31,7 @@ export function VirtualMatchButton({
   idleLabel = "경기 시뮬",
   busyLabel = "준비",
   title = "최신 라인업과 오늘 선발로 경기 시뮬레이션을 확인",
+  ariaLabel,
   onStarted
 }: Props) {
   const router = useRouter();
@@ -59,6 +62,7 @@ export function VirtualMatchButton({
       onClick={() => void handleClick()}
       disabled={starting}
       title={title}
+      aria-label={ariaLabel}
     >
       {starting ? busyLabel : idleLabel}
     </button>

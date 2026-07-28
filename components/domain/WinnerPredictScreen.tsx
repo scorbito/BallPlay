@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, X } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Play, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -660,8 +660,18 @@ export function WinnerPredictScreen({
                           awayStarter: game.awayStarter
                         }}
                         className="predict-row-play-btn"
-                        idleLabel="경기 시뮬"
-                        busyLabel="준비중"
+                        // 아이콘만 — 이 페이지의 주 액션은 팀 선택이라 보조 액션은 폭까지 양보.
+                        idleLabel={<Play size={13} strokeWidth={2.5} aria-hidden />}
+                        busyLabel={<Play size={13} strokeWidth={2.5} aria-hidden />}
+                        ariaLabel="경기 시뮬레이션 보기"
+                        // 진입점 유지 여부를 데이터로 판단하기 위한 트래킹.
+                        onStarted={() => {
+                          void trackEvent("spectator_match_started", {
+                            from: "winner_predict",
+                            gameId: game.id,
+                            gameDate: selectedDateISO
+                          });
+                        }}
                       />
                     ) : (
                       <span className="predict-row-play-placeholder" aria-hidden />

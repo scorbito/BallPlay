@@ -9,6 +9,8 @@ export type AnalyticsEventName =
   | "lineup_withdrawn"
   | "match_started"
   | "match_completed"
+  /** 관전형 가상경기(경기 시뮬) 시작. properties.from 으로 진입 화면 구분. */
+  | "spectator_match_started"
   | "prediction_submitted"
   | "prediction_correct"
   | "ai_prediction_viewed"

@@ -234,7 +234,7 @@
 .phone-frame-light .predict-row {
   position: relative;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 22px minmax(0, 1fr) 76px;
+  grid-template-columns: 48px minmax(0, 1fr) 22px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 6px;
   padding: 4px 6px 4px 10px;
@@ -491,9 +491,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 76px;
+  width: 32px;
   min-height: 32px;
-  padding: 7px 8px;
+  padding: 0;
   border: 1px solid var(--bp-line);
   border-radius: 999px;
   background: transparent;
@@ -523,7 +523,7 @@
 }
 
 .phone-frame-light .predict-row-play-placeholder {
-  width: 76px;
+  width: 32px;
   min-height: 32px;
 }
 
@@ -995,13 +995,13 @@
     font-size: 28px;
   }
   .phone-frame-wide .predict-row {
-    grid-template-columns: 58px minmax(0, 1fr) 28px minmax(0, 1fr) 88px;
+    grid-template-columns: 58px minmax(0, 1fr) 28px minmax(0, 1fr) 36px;
     gap: 10px;
     padding: 6px 10px;
   }
   .phone-frame-wide .predict-row-play-btn,
   .phone-frame-wide .predict-row-play-placeholder {
-    width: 88px;
+    width: 36px;
   }
   .phone-frame-wide .predict-row-team {
     font-size: 14px;
