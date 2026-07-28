@@ -88,15 +88,86 @@
 .phone-frame-light .predict-duel-win .predict-duel-bar-me { background: #16a34a; }
 .phone-frame-light .predict-duel-win .predict-duel-msg { color: #16a34a; }
 
+/* 항목 수가 1~2개로 변하므로 고정 5컬럼 그리드 대신 flex — 칸이 비어도 균형이 유지된다. */
 .phone-frame-light .predict-stats {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-around;
   gap: 10px;
   padding: 14px 16px;
   background: var(--bp-card);
   border: 1px solid var(--bp-line-soft);
   border-radius: 14px;
+}
+
+/* ── 선택 날짜 결과 배너 — 채점 결과가 있을 때만 상단에 뜬다 ── */
+.phone-frame-light .predict-result-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.1), rgba(232, 74, 138, 0.03));
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  border-radius: 14px;
+}
+
+.phone-frame-light .predict-result-banner-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.phone-frame-light .predict-result-banner-rate {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--bp-accent);
+  letter-spacing: -0.8px;
+  line-height: 1;
+}
+
+.phone-frame-light .predict-result-banner-detail {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  white-space: nowrap;
+}
+
+/* ── 헤더 ⓘ — 상시 안내 문구를 접어 넣은 도움말 진입점 ── */
+.phone-frame-light .predict-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 50%;
+  background: var(--bp-card);
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .predict-help-btn:hover {
+  background: var(--bp-bg);
+  color: var(--bp-accent);
+  border-color: var(--bp-accent);
+}
+
+.predict-help-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--bp-text-secondary);
 }
 
 .phone-frame-light .predict-stat {

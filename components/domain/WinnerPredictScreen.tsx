@@ -7,10 +7,10 @@
 //
 // 디자인: 일정 페이지처럼 컴팩트한 1줄 행 — 5경기가 한 화면에 다 보이도록.
 
-import { useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Play, X } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -156,6 +156,8 @@ export function WinnerPredictScreen({
   });
 
   const [saving, startSaving] = useTransition();
+  // 규칙 안내 — 상시 문구로 두면 세 번째 방문부터 아무도 안 읽어서 헤더 ⓘ로 접었다.
+  const [helpOpen, setHelpOpen] = useState(false);
   // 익명 계정이면 로그인 유도(이벤트 추첨 대상이 되려면 로그인 필요). 첫 픽에서 1회만.
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const [loginPromptShown, setLoginPromptShown] = useState(false);
@@ -361,7 +363,23 @@ export function WinnerPredictScreen({
   }, [selectedDateISO]);
 
   return (
-    <AppShell activeTab="home" title="승리팀 예측" theme="light" backHref="/" wide>
+    <AppShell
+      activeTab="home"
+      title="승리팀 예측"
+      theme="light"
+      backHref="/"
+      wide
+      headerAction={
+        <button
+          type="button"
+          className="predict-help-btn"
+          onClick={() => setHelpOpen(true)}
+          aria-label="예측 규칙 안내"
+        >
+          <Info size={16} strokeWidth={2.5} />
+        </button>
+      }
+    >
       {/* ── 비로그인 상시 안내 — 이벤트 진행 중 + 게스트일 때만. 모달은 1회지만 이 띠는 계속 노출 ── */}
       {WEEKLY_EVENT_ACTIVE && isGuest ? (
         <Link
@@ -376,46 +394,13 @@ export function WinnerPredictScreen({
         </Link>
       ) : null}
 
-      {/* ── 이번 주 나 vs AI 대결 (재미 요소로 상시 노출) ── */}
-      {(() => {
-        const myTotal = weekStats.total;
-        const myRate = myTotal > 0 ? (weekStats.correct / myTotal) * 100 : null;
-        const aiRate = aiWeeklyAccuracy;
-        let tone: "neutral" | "win" | "lose" | "draw" = "neutral";
-        if (aiRate !== null && myRate !== null) {
-          if (myRate > aiRate) tone = "win";
-          else if (myRate < aiRate) tone = "lose";
-          else tone = "draw";
-        }
-        // 마주보는 분할 막대 — 두 적중률의 비율로 좌/우 점유.
-        const totalRate = (myRate ?? 0) + (aiRate ?? 0);
-        const myPct = totalRate > 0 ? ((myRate ?? 0) / totalRate) * 100 : 50;
-        const aiPct = 100 - myPct;
-        return (
-          <section className={`predict-duel predict-duel-${tone}`} aria-label="이번 주 AI 대결">
-            <div className="predict-duel-head">
-              <span className="predict-duel-head-me">
-                나{myTotal > 0 ? ` (${myTotal})` : ""} <strong>{myRate !== null ? `${Math.round(myRate)}%` : "—"}</strong>
-              </span>
-              <span className="predict-duel-head-title">⚔ 이번 주 AI 대결</span>
-              <span className="predict-duel-head-ai">
-                <strong>{aiRate !== null ? `${aiRate}%` : "—"}</strong> AI 평균
-              </span>
-            </div>
-            <div className="h2h-bar-container predict-duel-bar">
-              <div className="h2h-bar predict-duel-bar-me" style={{ width: `${myPct}%` }} />
-              <div className="h2h-bar-gap" style={{ marginLeft: "auto" }} />
-              <div className="h2h-bar predict-duel-bar-ai" style={{ width: `${aiPct}%` }} />
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* 상단 적중률 — 한 줄 컴팩트. 좌측은 선택 날짜 기준이라 어제로 가면 어제 통계.
-          애니메이션 트리거(hasAnyJudgedPick) 시 카드 등장 끝난 후 페이드인 + 숫자 카운트업. */}
-      <section className="predict-stats" aria-label="적중률">
-        <div
-          className="predict-stat"
+      {/* ── 선택 날짜 결과 배너 — 채점된 픽이 있을 때만 상단에 노출 ──
+          결과가 없는 날(주 초반·첫 방문)에는 아무것도 그리지 않고 바로 경기 목록으로 간다.
+          예전엔 빈 통계 카드 2개가 상단을 점유해 핵심 액션이 화면 아래로 밀려 있었다. */}
+      {dateStats.total > 0 ? (
+        <section
+          className="predict-result-banner"
+          aria-label="선택 날짜 적중 결과"
           style={
             hasAnyJudgedPick
               ? {
@@ -425,25 +410,15 @@ export function WinnerPredictScreen({
               : undefined
           }
         >
-          <span className="predict-stat-label">{isToday ? "오늘" : dateLabel}</span>
-          <strong className="predict-stat-value">
+          <span className="predict-result-banner-label">
+            {isToday ? "오늘 결과" : `${dateLabel} 결과`}
+          </span>
+          <strong className="predict-result-banner-rate">
             {shouldAnimateDateRate ? `${displayDateRate}%` : rateLabel(dateStats)}
           </strong>
-          <span className="predict-stat-detail">{rateDetail(dateStats)}</span>
-        </div>
-        <div className="predict-stat-divider" aria-hidden="true" />
-        <div className="predict-stat">
-          <span className="predict-stat-label">이번 주</span>
-          <strong className="predict-stat-value">{rateLabel(weekStats)}</strong>
-          <span className="predict-stat-detail">{rateDetail(weekStats)}</span>
-        </div>
-        <div className="predict-stat-divider" aria-hidden="true" />
-        <div className="predict-stat">
-          <span className="predict-stat-label">전체</span>
-          <strong className="predict-stat-value">{rateLabel(allTimeStats)}</strong>
-          <span className="predict-stat-detail">{rateDetail(allTimeStats)}</span>
-        </div>
-      </section>
+          <span className="predict-result-banner-detail">{rateDetail(dateStats)}</span>
+        </section>
+      ) : null}
 
       {/* 날짜 헤더 — 좌우 화살표로 이전/다음 경기일 이동. 경기 없는 날은 자동 스킵.
           (예: 5/31 → 6/2 점프, 6/1 월요일은 KBO 휴식일이라 노출 안 함) */}
@@ -738,20 +713,82 @@ export function WinnerPredictScreen({
             })}
           </section>
 
-          {/* 선택 = 예측 확정. 별도 완료 버튼 없이 안내만 노출. */}
-          {hasAnyEditable ? (
+          {/* 선택 = 예측 확정. 첫 진입 온보딩 한 줄만 남기고 나머지 규칙은 헤더 ⓘ로.
+              픽을 시작한 뒤에는 진행도가 날짜 헤더(n/5)에 이미 보이므로 문구를 지운다. */}
+          {hasAnyEditable && pickedCount === 0 ? (
             <div className="predict-submit-bar">
-              <p className="predict-submit-hint">
-                {pickedCount === 0
-                  ? "팀을 선택하면 바로 예측돼요"
-                  : `${pickedCount}경기 예측됨 · 같은 팀을 다시 누르면 취소`}
-                <br />
-                경기가 시작되면 자동으로 잠겨요
-              </p>
+              <p className="predict-submit-hint">팀을 선택하면 바로 예측돼요</p>
             </div>
           ) : null}
         </>
       )}
+
+      {/* ── 이번 주 나 vs AI 대결 ──
+          이벤트에서 출발한 재미 요소라 핵심 액션(픽) 아래로 내렸다. */}
+      {(() => {
+        const myTotal = weekStats.total;
+        const myRate = myTotal > 0 ? (weekStats.correct / myTotal) * 100 : null;
+        const aiRate = aiWeeklyAccuracy;
+        let tone: "neutral" | "win" | "lose" | "draw" = "neutral";
+        if (aiRate !== null && myRate !== null) {
+          if (myRate > aiRate) tone = "win";
+          else if (myRate < aiRate) tone = "lose";
+          else tone = "draw";
+        }
+        // 양쪽 값이 다 있을 때만 막대를 채운다. 예전엔 데이터가 없어도 50:50으로
+        // 칠해져서 숫자는 "—"인데 막대는 경쟁 중인 것처럼 보이는 오해가 있었다.
+        const comparable = myRate !== null && aiRate !== null;
+        const totalRate = (myRate ?? 0) + (aiRate ?? 0);
+        const myPct = comparable && totalRate > 0 ? ((myRate ?? 0) / totalRate) * 100 : 0;
+        const aiPct = comparable && totalRate > 0 ? 100 - myPct : 0;
+        return (
+          <section className={`predict-duel predict-duel-${tone}`} aria-label="이번 주 AI 대결">
+            <div className="predict-duel-head">
+              <span className="predict-duel-head-me">
+                나{myTotal > 0 ? ` (${myTotal})` : ""} <strong>{myRate !== null ? `${Math.round(myRate)}%` : "—"}</strong>
+              </span>
+              <span className="predict-duel-head-title">⚔ 이번 주 AI 대결</span>
+              <span className="predict-duel-head-ai">
+                <strong>{aiRate !== null ? `${aiRate}%` : "—"}</strong> AI 평균
+              </span>
+            </div>
+            <div className="h2h-bar-container predict-duel-bar">
+              <div className="h2h-bar predict-duel-bar-me" style={{ width: `${myPct}%` }} />
+              <div className="h2h-bar-gap" style={{ marginLeft: "auto" }} />
+              <div className="h2h-bar predict-duel-bar-ai" style={{ width: `${aiPct}%` }} />
+            </div>
+            {!comparable ? (
+              <p className="predict-duel-msg">
+                {myRate === null
+                  ? "이번 주 예측 결과가 나오면 AI와 비교돼요"
+                  : "AI 집계를 기다리는 중이에요"}
+              </p>
+            ) : null}
+          </section>
+        );
+      })()}
+
+      {/* 누적 적중률 — 값이 있는 항목만 그린다. 주간 집계가 화요일에 리셋되는 탓에
+          예전엔 매주 화·수요일마다 3칸 중 2칸이 "—"로 비어 있었다. */}
+      {(() => {
+        const items: Array<{ key: string; label: string; stats: Stats }> = [];
+        if (weekStats.total > 0) items.push({ key: "week", label: "이번 주", stats: weekStats });
+        items.push({ key: "all", label: "전체", stats: allTimeStats });
+        return (
+          <section className="predict-stats" aria-label="적중률">
+            {items.map((item, idx) => (
+              <Fragment key={item.key}>
+                {idx > 0 ? <div className="predict-stat-divider" aria-hidden="true" /> : null}
+                <div className="predict-stat">
+                  <span className="predict-stat-label">{item.label}</span>
+                  <strong className="predict-stat-value">{rateLabel(item.stats)}</strong>
+                  <span className="predict-stat-detail">{rateDetail(item.stats)}</span>
+                </div>
+              </Fragment>
+            ))}
+          </section>
+        );
+      })()}
 
       {/* 적중률 랭킹 페이지 진입 — 항상 노출 */}
       <Link href="/predict/ranking" className="predict-rank-link" prefetch>
@@ -759,6 +796,22 @@ export function WinnerPredictScreen({
         <span>적중률 랭킹 보기</span>
         <ArrowRight size={14} />
       </Link>
+
+      <ModalShell
+        open={helpOpen}
+        title="예측 규칙"
+        onClose={() => setHelpOpen(false)}
+        panelClassName="lineup-confirm-modal-panel"
+        closeOnBackdrop
+      >
+        <ul className="predict-help-list">
+          <li>팀을 누르면 그 자리에서 예측이 저장돼요. 별도 완료 버튼은 없어요.</li>
+          <li>같은 팀을 다시 누르면 예측이 취소돼요.</li>
+          <li>경기가 시작되면 자동으로 잠겨서 수정할 수 없어요.</li>
+          <li>AI 예측은 내가 고른 뒤에 열려요. 따라 찍기를 막기 위한 규칙이에요.</li>
+          <li>다음 경기일 예측은 오늘 경기가 모두 끝나면 열려요.</li>
+        </ul>
+      </ModalShell>
 
       <ModalShell
         open={loginPromptOpen}
