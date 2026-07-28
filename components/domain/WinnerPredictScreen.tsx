@@ -10,7 +10,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, Users, X } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, Timer, Users, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -175,6 +175,38 @@ function rateDetail(stats: Stats): string {
 function shortTime(t: string | null): string {
   if (!t) return "";
   return t.slice(0, 5); // "18:30:00" → "18:30"
+}
+
+/** 남은 시간 라벨 — "2시간 15분" / "42분" / "1분 미만". */
+function formatRemaining(ms: number): string {
+  const totalMin = Math.floor(ms / 60000);
+  if (totalMin < 1) return "1분 미만";
+  if (totalMin < 60) return `${totalMin}분`;
+  const hours = Math.floor(totalMin / 60);
+  const minutes = totalMin % 60;
+  return minutes === 0 ? `${hours}시간` : `${hours}시간 ${minutes}분`;
+}
+
+/** 선발투수 표시용 야구공. lucide 1.14 에 baseball 아이콘이 없어 인라인 SVG로 둔다. */
+function BaseballIcon({ size = 10 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+      focusable="false"
+      style={{ flexShrink: 0 }}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M5.5 5.5C7.9 7.3 9 9.4 9 12s-1.1 4.7-3.5 6.5" />
+      <path d="M18.5 5.5C16.1 7.3 15 9.4 15 12s1.1 4.7 3.5 6.5" />
+    </svg>
+  );
 }
 
 // 경기 시작 시각(KST) → epoch ms. gameTime 없으면 null(판단 불가 → 시작 전으로 취급).
@@ -343,15 +375,33 @@ export function WinnerPredictScreen({
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [shouldAnimateDateRate, dateRateTarget, lastCardEndMs]);
-  const unselectedCount = useMemo(
-    () => editableGames.filter((g) => !predictions[g.id]).length,
-    [editableGames, predictions]
-  );
   const pickedCount = useMemo(
     () => editableGames.filter((g) => predictions[g.id]).length,
     [editableGames, predictions]
   );
   const hasAnyEditable = editableGames.length > 0;
+
+  // 다음 예측 마감(=가장 이른 미시작 경기)까지 남은 ms. 오늘이 아니면 표시하지 않는다.
+  //   nowMs 가 오늘만 15초 주기로 갱신되므로 다른 날짜에선 값이 멈춘다.
+  const nextDeadlineMs = useMemo(() => {
+    if (!isToday || !canEditOnThisDate) return null;
+    const upcoming = games
+      .filter((g) => g.status === "scheduled")
+      .map((g) => gameStartMs(selectedDateISO, g.gameTime))
+      .filter((ms): ms is number => ms !== null && ms > nowMs);
+    if (upcoming.length === 0) return null;
+    return Math.min(...upcoming) - nowMs;
+  }, [games, selectedDateISO, nowMs, isToday, canEditOnThisDate]);
+
+  // 10분 이내 = 빨강, 1시간 이내 = 주황, 그 밖 = 기본.
+  const deadlineTone =
+    nextDeadlineMs === null
+      ? null
+      : nextDeadlineMs <= 10 * 60_000
+      ? "urgent"
+      : nextDeadlineMs <= 60 * 60_000
+      ? "soon"
+      : "normal";
 
   // 선택 = 예측 확정 / 같은 팀 재선택 = 예측 취소.
   // 경기 시작 전까지 자유롭게 변경·취소 가능, 시작하면 자동 잠김(DB 트리거가 강제).
@@ -527,7 +577,7 @@ export function WinnerPredictScreen({
             <strong>{dateLabel}</strong>
             <span className="predict-day-hint">
               {hasAnyEditable
-                ? `오늘 · 승리팀 선택 (${editableGames.length - unselectedCount}/${editableGames.length})`
+                ? "오늘"
                 : games.some((g) => g.status === "scheduled")
                 ? "오늘 · 예측 마감, 결과 대기"
                 : "오늘"}
@@ -560,6 +610,44 @@ export function WinnerPredictScreen({
         )}
       </header>
 
+      {/* ── 픽 진행도 + 마감 카운트다운 ──
+          둘 다 "지금 찍어야 한다"는 같은 맥락이라 한 줄로 묶었다. 날짜 헤더에 넣으면
+          3줄이 되고, 여기 두면 다음 경기일(미래 편집 가능)에서도 진행도가 보인다.
+          카운트다운은 nowMs(잠금 판정용, 15초 주기)를 그대로 재사용해 추가 타이머가 없다. */}
+      {hasAnyEditable || nextDeadlineMs !== null ? (
+        <div className="predict-pickbar">
+          {hasAnyEditable ? (
+            <span
+              className={`predict-progress${
+                pickedCount === editableGames.length ? " is-complete" : ""
+              }`}
+              aria-label={`${pickedCount}/${editableGames.length}경기 예측`}
+            >
+              {editableGames.map((g) => (
+                <span
+                  key={g.id}
+                  className={`predict-progress-dot${predictions[g.id] ? " is-filled" : ""}`}
+                  aria-hidden
+                />
+              ))}
+              <span className="predict-progress-label">
+                {pickedCount === editableGames.length
+                  ? "예측 완료"
+                  : `${pickedCount}/${editableGames.length}`}
+              </span>
+            </span>
+          ) : null}
+          {nextDeadlineMs !== null ? (
+            <span className={`predict-deadline predict-deadline-${deadlineTone}`} role="status">
+              <Timer size={13} strokeWidth={2.5} aria-hidden />
+              <span>
+                마감까지 <strong>{formatRemaining(nextDeadlineMs)}</strong>
+              </span>
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
       {games.length === 0 ? (
         <section className="predict-empty">
           <strong>{isToday ? "오늘 경기가 없어요" : "이 날 경기가 없어요"}</strong>
@@ -577,6 +665,22 @@ export function WinnerPredictScreen({
               const started = isStarted(game);
               const editable = canEditOnThisDate && game.status === "scheduled" && !started;
               const showScores = game.status === "in_progress" || game.status === "finished";
+
+              // 1시간 이내면 "예정" 대신 남은 분을 띄운다. meta 컬럼이 48px 라 분 단위만.
+              const startMs = gameStartMs(selectedDateISO, game.gameTime);
+              const remainMs = startMs !== null ? startMs - nowMs : null;
+              const isSoon =
+                isToday &&
+                game.status === "scheduled" &&
+                remainMs !== null &&
+                remainMs > 0 &&
+                remainMs <= 60 * 60_000;
+              const statusKind = started && game.status === "scheduled" ? "in_progress" : game.status;
+              const statusExtra = isSoon
+                ? (remainMs as number) <= 10 * 60_000
+                  ? " is-urgent"
+                  : " is-soon"
+                : "";
 
               const homePicked = picked === game.homeTeamId;
               const awayPicked = picked === game.awayTeamId;
@@ -642,8 +746,18 @@ export function WinnerPredictScreen({
                     ) : (
                       <>
                         <span className="predict-row-time">{shortTime(game.gameTime)}</span>
-                        <span className={`predict-row-status predict-row-status-${started && game.status === "scheduled" ? "in_progress" : game.status}`}>
-                          {game.status === "in_progress" ? "진행중" : game.status === "finished" ? "종료" : game.status === "canceled" ? "취소" : started ? "마감" : "예정"}
+                        <span className={`predict-row-status predict-row-status-${statusKind}${statusExtra}`}>
+                          {game.status === "in_progress"
+                            ? "진행중"
+                            : game.status === "finished"
+                            ? "종료"
+                            : game.status === "canceled"
+                            ? "취소"
+                            : started
+                            ? "마감"
+                            : isSoon
+                            ? `${Math.max(1, Math.ceil((remainMs as number) / 60_000))}분`
+                            : "예정"}
                         </span>
                       </>
                     )}
@@ -662,7 +776,10 @@ export function WinnerPredictScreen({
                     <span className="predict-row-team-block">
                       <span className="predict-row-team">{away.shortName}</span>
                       {game.awayStarter ? (
-                        <span className="predict-row-starter-inline">{game.awayStarter}</span>
+                        <span className="predict-row-starter-inline" title="선발투수">
+                          <BaseballIcon />
+                          <span className="predict-row-starter-name">{game.awayStarter}</span>
+                        </span>
                       ) : null}
                     </span>
                     <span className="predict-row-side-trail">
@@ -703,7 +820,10 @@ export function WinnerPredictScreen({
                     <span className="predict-row-team-block">
                       <span className="predict-row-team">{home.shortName}</span>
                       {game.homeStarter ? (
-                        <span className="predict-row-starter-inline">{game.homeStarter}</span>
+                        <span className="predict-row-starter-inline" title="선발투수">
+                          <BaseballIcon />
+                          <span className="predict-row-starter-name">{game.homeStarter}</span>
+                        </span>
                       ) : null}
                     </span>
                     <TeamBadge teamId={game.homeTeamId} size="sm" />

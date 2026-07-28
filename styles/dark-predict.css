@@ -290,6 +290,90 @@
   cursor: default;
 }
 
+/* ── 픽 진행 점 ── 작은 회색 "(3/5)" 텍스트보다 완료감이 크다. */
+.phone-frame-light .predict-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-frame-light .predict-progress-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bp-line);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.phone-frame-light .predict-progress-dot.is-filled {
+  background: var(--bp-accent);
+  transform: scale(1.15);
+}
+
+.phone-frame-light .predict-progress-label {
+  margin-left: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+/* 전부 채우면 초록으로 — 완료 자체가 보상이 되도록. */
+.phone-frame-light .predict-progress.is-complete .predict-progress-dot.is-filled {
+  background: var(--bp-success);
+}
+
+.phone-frame-light .predict-progress.is-complete .predict-progress-label {
+  color: var(--bp-success);
+  font-weight: 800;
+}
+
+/* 진행도 + 마감을 담는 한 줄 스트립 */
+.phone-frame-light .predict-pickbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+
+/* ── 마감 카운트다운 ── */
+.phone-frame-light .predict-deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(20, 30, 50, 0.04);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .predict-deadline strong {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .predict-deadline-soon {
+  background: rgba(234, 88, 12, 0.1);
+  color: #c2410c;
+}
+
+.phone-frame-light .predict-deadline-soon strong {
+  color: #c2410c;
+}
+
+.phone-frame-light .predict-deadline-urgent {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--bp-danger);
+}
+
+.phone-frame-light .predict-deadline-urgent strong {
+  color: var(--bp-danger);
+}
+
 /* ?�?� 경기 ??리스???�?� */
 .phone-frame-light .predict-row-list {
   display: flex;
@@ -325,15 +409,25 @@
   line-height: 1.15;
 }
 
+/* 선발투수 — 야구공 아이콘을 붙여 이 이름이 선발투수라는 걸 알린다.
+   아이콘 없이 이름만 두면 처음 온 사람은 이게 뭔지 알 수 없다. */
 .phone-frame-light .predict-row-starter-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  min-width: 0;
   font-size: 10px;
   font-weight: 600;
   color: var(--bp-text-muted);
+  letter-spacing: -0.1px;
+}
+
+.phone-frame-light .predict-row-starter-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
-  letter-spacing: -0.1px;
+  min-width: 0;
 }
 
 .phone-frame-light .predict-row.is-editable {
@@ -554,6 +648,26 @@
 .phone-frame-light .predict-row-status-canceled {
   background: rgba(20, 30, 50, 0.04);
   color: var(--bp-text-muted);
+}
+
+/* 마감 임박 — scheduled 배지 위에 얹는 수정자라 뒤에 두어 색을 덮는다.
+   1시간 이내는 주황, 10분 이내는 빨강 + 펄스. */
+.phone-frame-light .predict-row-status.is-soon {
+  background: rgba(234, 88, 12, 0.14);
+  color: #c2410c;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-frame-light .predict-row-status.is-urgent {
+  background: rgba(239, 68, 68, 0.16);
+  color: var(--bp-danger);
+  font-variant-numeric: tabular-nums;
+  animation: predict-status-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes predict-status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 /* 보조 액션이라 고스트 스타일. accent 솔리드로 두면 5줄 반복되면서
