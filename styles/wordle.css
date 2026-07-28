@@ -1,0 +1,537 @@
+/* ============================================================
+   선수명 워들 "선수들"
+   prefix: .wordle-*
+   ============================================================ */
+
+.phone-frame-light .wordle-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 28px;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.phone-frame-light .wordle-screen > * {
+  min-width: 0;
+}
+
+.phone-frame-light .wordle-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 50%;
+  background: var(--bp-card);
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .wordle-help-btn:hover {
+  background: var(--bp-bg);
+  color: var(--bp-accent);
+  border-color: var(--bp-accent);
+}
+
+/* ── 헤더 ── */
+.phone-frame-light .wordle-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.phone-frame-light .wordle-head-date {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--bp-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+  /* 날짜는 클라이언트에서 확정되므로 첫 페인트에 빈 문자열이 온다. 높이를 미리 잡아 밀림 방지. */
+  min-height: 17px;
+}
+
+.phone-frame-light .wordle-head-sub {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-empty {
+  margin: 0;
+  padding: 40px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  text-align: center;
+  background: var(--bp-bg);
+  border: 1px dashed var(--bp-line);
+  border-radius: 12px;
+}
+
+/* ── 격자 ── */
+.phone-frame-light .wordle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.phone-frame-light .wordle-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-frame-light .wordle-row-cells {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* 음절 1칸 — 큰 글자 + 하단 자모 색바 3개.
+   자모를 9칸으로 쪼개면 3칸 x 6줄이 한 화면에 안 들어간다. */
+.phone-frame-light .wordle-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 62px;
+  height: 62px;
+  border-radius: 12px;
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  animation: wordle-cell-in 0.28s ease-out backwards;
+}
+
+.phone-frame-light .wordle-cell.is-blank {
+  background: transparent;
+  border-style: dashed;
+  animation: none;
+}
+
+.phone-frame-light .wordle-cell-char {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--bp-text);
+  letter-spacing: -0.5px;
+}
+
+.phone-frame-light .wordle-cell-bars {
+  display: flex;
+  gap: 3px;
+}
+
+.phone-frame-light .wordle-bar {
+  width: 13px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--bp-line);
+}
+
+.phone-frame-light .wordle-bar.is-hit {
+  background: var(--bp-success);
+}
+
+.phone-frame-light .wordle-bar.is-near {
+  background: #eab308;
+}
+
+.phone-frame-light .wordle-bar.is-miss {
+  background: #cbd5e1;
+}
+
+/* 종성이 없는 음절 — 색을 주지 않고 자리만 비운다. */
+.phone-frame-light .wordle-bar.is-empty {
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  height: 5px;
+}
+
+@keyframes wordle-cell-in {
+  0% {
+    opacity: 0;
+    transform: rotateX(-70deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0);
+  }
+}
+
+/* ── 속성 힌트 ── */
+.phone-frame-light .wordle-row-hint {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.phone-frame-light .wordle-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(20, 30, 50, 0.05);
+  color: var(--bp-text-muted);
+  white-space: nowrap;
+}
+
+.phone-frame-light .wordle-chip.is-match {
+  background: rgba(22, 163, 74, 0.14);
+  color: #15803d;
+}
+
+.phone-frame-light .wordle-chip-jersey {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 선수 검색 ── */
+.phone-frame-light .wordle-search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.phone-frame-light .wordle-search-field {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-search-field:focus-within {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .wordle-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bp-text);
+  outline: none;
+}
+
+.phone-frame-light .wordle-search-field input::placeholder {
+  color: var(--bp-text-muted);
+  font-weight: 600;
+}
+
+.phone-frame-light .wordle-search-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phone-frame-light .wordle-search-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 10px;
+  background: var(--bp-card);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.phone-frame-light .wordle-search-item:hover:not(:disabled) {
+  background: var(--bp-bg);
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .wordle-search-item.is-used {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.phone-frame-light .wordle-search-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .wordle-search-meta {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-search-used {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-search-empty {
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  text-align: center;
+}
+
+/* ── 자모 현황 (접이식) ── */
+.phone-frame-light .wordle-jamo {
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  background: var(--bp-card);
+  overflow: hidden;
+}
+
+.phone-frame-light .wordle-jamo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 10px 13px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+}
+
+.phone-frame-light .wordle-jamo-toggle svg {
+  transition: transform 0.15s ease;
+}
+
+.phone-frame-light .wordle-jamo.is-open .wordle-jamo-toggle svg {
+  transform: rotate(180deg);
+}
+
+.phone-frame-light .wordle-jamo-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 13px 12px;
+}
+
+.phone-frame-light .wordle-jamo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.phone-frame-light .wordle-jamo-label {
+  flex: 0 0 26px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--bp-text-muted);
+  padding-top: 3px;
+}
+
+.phone-frame-light .wordle-jamo-chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.phone-frame-light .wordle-jamo-char {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(20, 30, 50, 0.04);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .wordle-jamo-char.is-hit {
+  background: var(--bp-success);
+  color: #fff;
+}
+
+.phone-frame-light .wordle-jamo-char.is-near {
+  background: #eab308;
+  color: #fff;
+}
+
+.phone-frame-light .wordle-jamo-char.is-miss {
+  opacity: 0.3;
+}
+
+/* ── 결과 시트 ── */
+.phone-frame-light .wordle-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.09), rgba(232, 74, 138, 0.03));
+  border: 1px solid rgba(232, 74, 138, 0.26);
+}
+
+.phone-frame-light .wordle-result-headline {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .wordle-result-headline.is-solved {
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .wordle-result-comment {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-result-answer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+}
+
+.phone-frame-light .wordle-result-answer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-frame-light .wordle-result-answer-text strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--bp-text);
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .wordle-result-answer-text span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-result-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 8px;
+}
+
+.phone-frame-light .wordle-result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.phone-frame-light .wordle-result-stat strong {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--bp-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+}
+
+.phone-frame-light .wordle-result-stat span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .wordle-result-share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--bp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: filter 0.12s ease, transform 0.1s ease;
+}
+
+.phone-frame-light .wordle-result-share:hover {
+  filter: brightness(1.05);
+}
+
+.phone-frame-light .wordle-result-share:active {
+  transform: scale(0.99);
+}
+
+.phone-frame-light .wordle-result-preview {
+  margin: 0;
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--bp-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.phone-frame-light .wordle-result-next {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+/* ── 도움말 ── */
+.wordle-help-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--bp-text-secondary);
+}
+
+.wordle-help-list strong {
+  font-weight: 900;
+  color: var(--bp-text);
+}

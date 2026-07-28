@@ -423,6 +423,10 @@
   letter-spacing: -0.1px;
 }
 
+.phone-frame-light .predict-row-starter-inline svg {
+  flex-shrink: 0;
+}
+
 .phone-frame-light .predict-row-starter-name {
   white-space: nowrap;
   overflow: hidden;

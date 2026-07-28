@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // 공개 게임 메뉴
     { url: `${SITE_URL}/play/lineup`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/play/lineup/ranking`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/play/wordle`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/stadium/lobby`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/predict/winner`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/predict/ranking`, lastModified: now, changeFrequency: "daily", priority: 0.6 },

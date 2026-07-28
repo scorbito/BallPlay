@@ -20,6 +20,7 @@ import {
   Trophy,
   Users
 } from "lucide-react";
+import { BaseballIcon } from "@/components/common/BaseballIcon";
 import { HomeCardCorner } from "@/components/domain/HomeCardCorner";
 import { NoticeButton } from "@/components/domain/NoticeButton";
 import { WinnerPrizeModal } from "@/components/domain/predict/WinnerPrizeModal";
@@ -27,28 +28,6 @@ import { PointBalanceChip } from "@/components/domain/points/PointBalanceChip";
 import { WEEKLY_EVENT_ACTIVE } from "@/lib/predict/eventConfig";
 import predictBannerSrc from "@/data/Images/ad-banner/예측왕이벤트.png";
 import { LatestWinnerStrip } from "@/components/domain/predict/LatestWinnerStrip";
-
-// 커스텀 야구공 아이콘 — lucide-react 1.14.0에 Baseball이 없어서 직접 SVG로 그림.
-// 원형 + 좌우 stitching 곡선으로 야구공 표현. lucide 아이콘과 동일하게 size prop 받음.
-function BaseballIcon({ size = 24 }: { size?: number }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M5.5 6.5c1.2 1.6 1.8 3.5 1.8 5.5s-.6 3.9-1.8 5.5" />
-      <path d="M18.5 6.5c-1.2 1.6-1.8 3.5-1.8 5.5s.6 3.9 1.8 5.5" />
-    </svg>
-  );
-}
 
 // 큼직한 베이스(루)가 강조된 다이아몬드 SVG 아이콘
 function LineupDiamondIcon({ size = 18 }: { size?: number }) {
@@ -84,7 +63,8 @@ type HomeCard = {
   href: string;
   title: string;
   description: string;
-  icon: typeof ListChecks;
+  /** lucide 아이콘 또는 size prop을 받는 커스텀 SVG 컴포넌트 모두 허용 (sectionIcon과 동일). */
+  icon: ElementType;
   available: boolean;
   badge?: string;
   /** 외부 사이트 링크 — 새 탭으로 열고 우상단 ↗ 표시 */
@@ -347,6 +327,16 @@ const sections: HomeSection[] = [
         icon: Brain,
         iconImage: "/icons/menu/baseball-quiz.png",
         available: true
+      },
+      {
+        // 전용 아이콘 이미지가 아직 없어 lucide 폴백(야구공)으로 노출.
+        id: "wordle",
+        href: "/play/wordle",
+        title: "선수들",
+        description: "하루 한 명, 6번의 기회",
+        icon: BaseballIcon,
+        available: true,
+        badge: "NEW"
       }
     ]
   },

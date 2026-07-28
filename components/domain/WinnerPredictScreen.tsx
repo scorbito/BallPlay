@@ -11,6 +11,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState, useTransition, typ
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, Timer, Users, X } from "lucide-react";
+import { BaseballIcon } from "@/components/common/BaseballIcon";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -185,28 +186,6 @@ function formatRemaining(ms: number): string {
   const hours = Math.floor(totalMin / 60);
   const minutes = totalMin % 60;
   return minutes === 0 ? `${hours}시간` : `${hours}시간 ${minutes}분`;
-}
-
-/** 선발투수 표시용 야구공. lucide 1.14 에 baseball 아이콘이 없어 인라인 SVG로 둔다. */
-function BaseballIcon({ size = 10 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-      focusable="false"
-      style={{ flexShrink: 0 }}
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M5.5 5.5C7.9 7.3 9 9.4 9 12s-1.1 4.7-3.5 6.5" />
-      <path d="M18.5 5.5C16.1 7.3 15 9.4 15 12s1.1 4.7 3.5 6.5" />
-    </svg>
-  );
 }
 
 // 경기 시작 시각(KST) → epoch ms. gameTime 없으면 null(판단 불가 → 시작 전으로 취급).
@@ -777,7 +756,7 @@ export function WinnerPredictScreen({
                       <span className="predict-row-team">{away.shortName}</span>
                       {game.awayStarter ? (
                         <span className="predict-row-starter-inline" title="선발투수">
-                          <BaseballIcon />
+                          <BaseballIcon size={10} />
                           <span className="predict-row-starter-name">{game.awayStarter}</span>
                         </span>
                       ) : null}
@@ -821,7 +800,7 @@ export function WinnerPredictScreen({
                       <span className="predict-row-team">{home.shortName}</span>
                       {game.homeStarter ? (
                         <span className="predict-row-starter-inline" title="선발투수">
-                          <BaseballIcon />
+                          <BaseballIcon size={10} />
                           <span className="predict-row-starter-name">{game.homeStarter}</span>
                         </span>
                       ) : null}

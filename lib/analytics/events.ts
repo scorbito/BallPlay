@@ -17,6 +17,8 @@ export type AnalyticsEventName =
   | "sim1000_viewed"
   | "quiz_started"
   | "quiz_completed"
+  /** 선수명 워들 한 판 종료. properties: date, solved, attempts */
+  | "wordle_completed"
   | "video_submitted"
   | "point_earned"
   | "point_spent";
