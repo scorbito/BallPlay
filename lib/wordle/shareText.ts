@@ -18,7 +18,7 @@ const EMOJI: Record<CellState, string> = {
   empty: "⬛"
 };
 
-const SHARE_TITLE = "선수들";
+const SHARE_TITLE = "선수 맞히기";
 const SHARE_URL = "ballnori.com/play/wordle";
 
 export function buildShareText(params: {
