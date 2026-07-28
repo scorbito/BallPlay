@@ -769,10 +769,6 @@ export function WinnerPredictScreen({
                       ai.majorityTeamId,
                       users?.majorityTeamId ?? null
                     );
-                    // AI와 유저 다수가 같은 팀이면 팀명을 한 번만 쓴다 — 좁은 화면 폭 절약.
-                    const showUserTeam =
-                      users?.majorityTeamId != null && users.majorityTeamId !== ai.majorityTeamId;
-
                     return (
                       <Link
                         href={`/predict/ai-winner/${game.id}`}
@@ -798,7 +794,7 @@ export function WinnerPredictScreen({
                                 ? `유저 ${users.majorityPct}%`
                                 : "유저 50:50"}
                             </span>
-                            {showUserTeam && users.majorityTeamId ? (
+                            {users.majorityTeamId ? (
                               <span className="predict-row-ai-team">
                                 {getTeam(users.majorityTeamId).shortName}
                               </span>
