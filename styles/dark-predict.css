@@ -643,6 +643,21 @@
   min-width: 0;
 }
 
+/* 유저 픽 집계 — AI와 같은 줄에 이어 붙인다. 줄을 나누면 두 값이 별개 축으로
+   읽혀서 "AI는 두산, 유저는 SSG" 같은 대비가 안 보인다. */
+.phone-frame-light .predict-row-ai-users {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.phone-frame-light .predict-row-ai-users::before {
+  content: "·";
+  margin-right: 2px;
+  color: var(--bp-text-muted);
+}
+
 .phone-frame-light .predict-row-ai-trail {
   display: inline-flex;
   align-items: center;
@@ -674,6 +689,28 @@
 .phone-frame-light .predict-row-ai-verdict.is-split {
   background: rgba(20, 30, 50, 0.06);
   color: var(--bp-text-secondary);
+}
+
+/* 내 픽 vs AI 다수 vs 유저 다수 — 4가지 관계를 배지 하나로.
+   "나 혼자"(AI·유저 둘 다 반대)가 가장 강한 톤을 갖는다. */
+.phone-frame-light .predict-row-ai-verdict.is-plain {
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .predict-row-ai-verdict.is-ai {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.phone-frame-light .predict-row-ai-verdict.is-crowd {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.phone-frame-light .predict-row-ai-verdict.is-alone {
+  background: var(--bp-accent);
+  color: #fff;
 }
 
 /* ?�?� 채점??본인 ?�측 ????결과 배�? (?�중!/?�쉬?�요) ?�?� */

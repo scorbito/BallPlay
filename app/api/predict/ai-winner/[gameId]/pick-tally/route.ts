@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { getPickTally } from "@/lib/supabase/query-parts/bpPredictionTallies";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,8 @@ export const dynamic = "force-dynamic";
 const PUBLIC_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300"
 };
+
+const EMPTY = { total: 0, teams: {} };
 
 /**
  * GET /api/predict/ai-winner/:gameId/pick-tally
@@ -19,32 +22,26 @@ export async function GET(
 ) {
   const { gameId } = await params;
   if (!gameId) {
-    return NextResponse.json({ total: 0, teams: {} }, { headers: PUBLIC_CACHE_HEADERS });
+    return NextResponse.json(EMPTY, { headers: PUBLIC_CACHE_HEADERS });
   }
 
   const supabase = createSupabaseAdminClient();
-  // locked_at 유무와 무관하게 전부 집계 — 새 모델에선 선택 즉시 locked 라 사실상 동일.
-  const teams: Record<string, number> = {};
-  let total = 0;
-  const PAGE = 1000;
-  for (let from = 0; from < 50000; from += PAGE) {
-    const { data, error } = await supabase
-      .from("bp_predictions")
-      .select("predicted_winner_team_id")
-      .eq("game_id", gameId)
-      .range(from, from + PAGE - 1);
-    if (error) {
-      return NextResponse.json({ total: 0, teams: {} }, { headers: PUBLIC_CACHE_HEADERS });
-    }
-    const rows = (data ?? []) as Array<{ predicted_winner_team_id: string | null }>;
-    for (const r of rows) {
-      const t = r.predicted_winner_team_id;
-      if (!t) continue;
-      teams[t] = (teams[t] ?? 0) + 1;
-      total += 1;
-    }
-    if (rows.length < PAGE) break;
+  // count 쿼리를 쓰려면 셀 팀을 알아야 하므로 경기의 홈/원정을 먼저 조회.
+  const { data: game, error } = await supabase
+    .from("games")
+    .select("id,home_team_id,away_team_id")
+    .eq("id", gameId)
+    .maybeSingle();
+  if (error || !game) {
+    return NextResponse.json(EMPTY, { headers: PUBLIC_CACHE_HEADERS });
   }
 
-  return NextResponse.json({ total, teams }, { headers: PUBLIC_CACHE_HEADERS });
+  const row = game as { id: string; home_team_id: string; away_team_id: string };
+  const tally = await getPickTally(supabase, {
+    id: row.id,
+    homeTeamId: row.home_team_id,
+    awayTeamId: row.away_team_id
+  });
+
+  return NextResponse.json(tally, { headers: PUBLIC_CACHE_HEADERS });
 }

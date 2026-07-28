@@ -10,7 +10,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, X } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, Users, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -67,6 +67,64 @@ function hexToRgba(hex: string, alpha: number): string {
   const num = Number.parseInt(full, 16);
   if (!Number.isFinite(num)) return `rgba(232, 74, 138, ${alpha})`;
   return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+}
+
+/** 경기별 유저 픽 집계 응답(/api/predict/winner/pick-tallies). */
+type PickTally = { total: number; teams: Record<string, number> };
+
+/** 이 표본 미만이면 비율을 아예 안 보여준다. 3명 중 2명을 "67%"로 쓰면 숫자가 거짓말을 한다.
+ *  실측(2026-07): 경기당 픽이 당일 34~36건, 며칠 전 날짜는 17~20건.
+ *  20으로 잡으면 과거 날짜 대부분이 가려져 히스토리를 훑을 때 들쭉날쭉해 보이므로 10으로 둔다. */
+const MIN_TALLY_SAMPLE = 10;
+
+type UserPickSummary = {
+  /** 다수 선택 팀. 동수면 null */
+  majorityTeamId: string | null;
+  /** 다수 선택 비율(%) */
+  majorityPct: number;
+};
+
+/** 홈/원정 픽 수만으로 다수 요약. 표본이 적으면 null → 화면에서 유저 파트를 생략. */
+function summarizeUserPicks(
+  tally: PickTally | undefined,
+  homeTeamId: string,
+  awayTeamId: string
+): UserPickSummary | null {
+  if (!tally) return null;
+  const home = tally.teams[homeTeamId] ?? 0;
+  const away = tally.teams[awayTeamId] ?? 0;
+  const total = home + away;
+  if (total < MIN_TALLY_SAMPLE) return null;
+  if (home === away) return { majorityTeamId: null, majorityPct: 50 };
+  return {
+    majorityTeamId: home > away ? homeTeamId : awayTeamId,
+    majorityPct: Math.round((Math.max(home, away) / total) * 100)
+  };
+}
+
+/**
+ * 내 픽이 AI·유저 다수와 어떤 관계인지 배지 하나로 압축.
+ * AI용·유저용 배지를 따로 달면 정보량은 같은데 폭만 두 배 먹는다.
+ */
+function computeVerdict(
+  picked: string | null | undefined,
+  aiMajorityTeamId: string | null,
+  userMajorityTeamId: string | null
+): { cls: string; text: string } | null {
+  if (!picked) return null;
+  // 유저 표본이 부족하면 AI 기준 2단계로 폴백.
+  if (!userMajorityTeamId) {
+    if (!aiMajorityTeamId) return { cls: "is-split", text: "AI도 갈렸어요" };
+    return picked === aiMajorityTeamId
+      ? { cls: "is-same", text: "나와 같음" }
+      : { cls: "is-diff", text: "나와 다름" };
+  }
+  const withAi = aiMajorityTeamId !== null && picked === aiMajorityTeamId;
+  const withCrowd = picked === userMajorityTeamId;
+  if (withAi && withCrowd) return { cls: "is-plain", text: "무난" };
+  if (withAi) return { cls: "is-ai", text: "AI 편" };
+  if (withCrowd) return { cls: "is-crowd", text: "사람 편" };
+  return { cls: "is-alone", text: "나 혼자" };
 }
 
 /** 픽한 카드에 팀 컬러를 CSS 변수로 주입. 실제 배경·테두리 적용은 dark-predict.css. */
@@ -216,6 +274,35 @@ export function WinnerPredictScreen({
     () => games.some((g) => predictions[g.id] && g.isJudged),
     [games, predictions]
   );
+
+  // ── 유저 픽 집계 ──
+  // 공개 조건(픽했거나 이미 시작·종료)을 만족하는 경기가 하나라도 있을 때만 가져온다.
+  // 픽 전에 남의 선택을 보여주면 다수 쪽으로 쏠려서(밴드왜건) 통계가 스스로를 강화해 죽는다.
+  const [tallies, setTallies] = useState<Record<string, PickTally>>({});
+  const revealedCount = useMemo(
+    () =>
+      games.filter((g) => Boolean(predictions[g.id]) || isStarted(g) || g.status !== "scheduled")
+        .length,
+    [games, predictions, isStarted]
+  );
+
+  useEffect(() => {
+    if (revealedCount === 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/predict/winner/pick-tallies?date=${selectedDateISO}`);
+        if (!res.ok) return;
+        const data = (await res.json()) as { tallies?: Record<string, PickTally> };
+        if (!cancelled && data.tallies) setTallies(data.tallies);
+      } catch {
+        // 집계 실패는 조용히 무시 — AI 정보만 보여도 화면은 성립한다.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDateISO, revealedCount]);
 
   // 카드 stagger 애니메이션이 끝나는 시점 = 마지막 카드 등장(슬라이드 완료) ms.
   // 마지막 카드 인덱스 = games.length - 1, stagger 간격 500ms, 슬라이드 0.45s.
@@ -670,15 +757,21 @@ export function WinnerPredictScreen({
                       );
                     }
 
-                    const majorityTeam = ai.majorityTeamId ? getTeam(ai.majorityTeamId) : null;
+                    const aiTeam = ai.majorityTeamId ? getTeam(ai.majorityTeamId) : null;
                     const minorityVotes = ai.totalVotes - ai.majorityVotes;
-                    const verdict = !majorityTeam
-                      ? { cls: "is-split", text: "AI도 갈렸어요" }
-                      : !picked
-                      ? null
-                      : picked === ai.majorityTeamId
-                      ? { cls: "is-same", text: "나와 같음" }
-                      : { cls: "is-diff", text: "나와 다름" };
+                    const users = summarizeUserPicks(
+                      tallies[game.id],
+                      game.homeTeamId,
+                      game.awayTeamId
+                    );
+                    const verdict = computeVerdict(
+                      picked,
+                      ai.majorityTeamId,
+                      users?.majorityTeamId ?? null
+                    );
+                    // AI와 유저 다수가 같은 팀이면 팀명을 한 번만 쓴다 — 좁은 화면 폭 절약.
+                    const showUserTeam =
+                      users?.majorityTeamId != null && users.majorityTeamId !== ai.majorityTeamId;
 
                     return (
                       <Link
@@ -687,16 +780,31 @@ export function WinnerPredictScreen({
                         prefetch={false}
                       >
                         <Bot size={12} aria-hidden />
-                        {majorityTeam ? (
+                        {aiTeam ? (
                           <>
                             <span className="predict-row-ai-votes">
                               {`AI ${ai.majorityVotes}:${minorityVotes}`}
                             </span>
-                            <span className="predict-row-ai-team">{`${majorityTeam.shortName} 우세`}</span>
+                            <span className="predict-row-ai-team">{aiTeam.shortName}</span>
                           </>
                         ) : (
                           <span className="predict-row-ai-votes">{`AI ${ai.totalVotes}표 동수`}</span>
                         )}
+                        {users ? (
+                          <span className="predict-row-ai-users">
+                            <Users size={12} aria-hidden />
+                            <span className="predict-row-ai-votes">
+                              {users.majorityTeamId
+                                ? `유저 ${users.majorityPct}%`
+                                : "유저 50:50"}
+                            </span>
+                            {showUserTeam && users.majorityTeamId ? (
+                              <span className="predict-row-ai-team">
+                                {getTeam(users.majorityTeamId).shortName}
+                              </span>
+                            ) : null}
+                          </span>
+                        ) : null}
                         <span className="predict-row-ai-trail">
                           {verdict ? (
                             <span className={`predict-row-ai-verdict ${verdict.cls}`}>
