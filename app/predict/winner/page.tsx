@@ -1,6 +1,10 @@
-import { WinnerPredictScreen, type WinnerPredictGame } from "@/components/domain/WinnerPredictScreen";
+import {
+  WinnerPredictScreen,
+  type AiGamePick,
+  type WinnerPredictGame
+} from "@/components/domain/WinnerPredictScreen";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
-import { getAiOverallStats } from "@/lib/supabase/query-parts/bpAiPredictions";
+import { getAiOverallStats, listAiPredictionsForDate } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   getMyPredictionStats,
@@ -119,6 +123,43 @@ export default async function WinnerPredictPage({
   const aiWeeklyResult = await getAiOverallStats(createSupabaseAdminClient(), kstWeekStartTuesday()).catch(() => null);
   const aiWeeklyAccuracy = aiWeeklyResult && aiWeeklyResult.ok ? aiWeeklyResult.stats.accuracy : null;
 
+  // 경기별 AI 픽 — 유저 클라이언트로 조회해 published_at RLS를 그대로 태운다.
+  //   (공개 전 예측이 화면에 새어나가면 안 되므로 admin 클라이언트를 쓰지 않는다.)
+  const aiPicksResult = await listAiPredictionsForDate(supabase, selectedDate).catch(() => null);
+  const aiPicks: AiGamePick[] = [];
+  if (aiPicksResult && aiPicksResult.ok) {
+    // game_id → (team_id → 표 수)
+    const votesByGame = new Map<string, Map<string, number>>();
+    for (const row of aiPicksResult.rows) {
+      const votes = votesByGame.get(row.game_id) ?? new Map<string, number>();
+      votes.set(row.predicted_winner_team_id, (votes.get(row.predicted_winner_team_id) ?? 0) + 1);
+      votesByGame.set(row.game_id, votes);
+    }
+    // target es5 라 Map 직접 for...of 는 downlevelIteration 필요 → Array.from 경유.
+    for (const [gameId, votes] of Array.from(votesByGame)) {
+      let majorityTeamId: string | null = null;
+      let majorityVotes = 0;
+      let totalVotes = 0;
+      let tied = false;
+      for (const [teamId, count] of Array.from(votes)) {
+        totalVotes += count;
+        if (count > majorityVotes) {
+          majorityVotes = count;
+          majorityTeamId = teamId;
+          tied = false;
+        } else if (count === majorityVotes) {
+          tied = true;
+        }
+      }
+      aiPicks.push({
+        gameId,
+        majorityTeamId: tied ? null : majorityTeamId,
+        majorityVotes,
+        totalVotes
+      });
+    }
+  }
+
   const games: WinnerPredictGame[] = gamesResult.map((g) => {
     const pred = predictionByGameId.get(g.id) ?? null;
     return {
@@ -156,6 +197,7 @@ export default async function WinnerPredictPage({
       weekStats={weekStats}
       allTimeStats={allTimeStats}
       aiWeeklyAccuracy={aiWeeklyAccuracy}
+      aiPicks={aiPicks}
     />
   );
 }

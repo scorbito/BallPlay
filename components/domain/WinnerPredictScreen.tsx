@@ -7,10 +7,10 @@
 //
 // 디자인: 일정 페이지처럼 컴팩트한 1줄 행 — 5경기가 한 화면에 다 보이도록.
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Crown, X } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -49,6 +49,36 @@ export type WinnerPredictGame = {
 
 type Stats = { total: number; correct: number; pending: number };
 
+/** 경기별 AI 다수결 요약 — 공개된(published_at 지난) 예측만 집계된다. */
+export type AiGamePick = {
+  gameId: string;
+  /** 최다 득표 팀. 동수면 null(= AI끼리 갈림) */
+  majorityTeamId: string | null;
+  /** 최다 득표 수 */
+  majorityVotes: number;
+  /** 공개된 AI 예측 총 개수 */
+  totalVotes: number;
+};
+
+/** #rrggbb → rgba(). 팀 컬러를 카드 배경 틴트로 쓰기 위한 변환. */
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const num = Number.parseInt(full, 16);
+  if (!Number.isFinite(num)) return `rgba(232, 74, 138, ${alpha})`;
+  return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+}
+
+/** 픽한 카드에 팀 컬러를 CSS 변수로 주입. 실제 배경·테두리 적용은 dark-predict.css. */
+function pickTintStyle(isPicked: boolean, teamId: string): CSSProperties | undefined {
+  if (!isPicked) return undefined;
+  const color = getTeam(teamId).color;
+  return {
+    "--pick-line": color,
+    "--pick-tint": hexToRgba(color, 0.1)
+  } as CSSProperties;
+}
+
 type Props = {
   /** 화면에 표시 중인 날짜 (URL ?date=) */
   selectedDateISO: string;
@@ -69,6 +99,8 @@ type Props = {
   allTimeStats: Stats;
   /** 이번 주 AI 3개 평균 적중률(0~100). 집계 전이면 null. — 나 vs AI 대결 표시용 */
   aiWeeklyAccuracy: number | null;
+  /** 선택 날짜의 경기별 AI 다수결. 예측이 없는 경기는 배열에서 빠진다. */
+  aiPicks: AiGamePick[];
 };
 
 function rateLabel(stats: Stats): string {
@@ -106,10 +138,16 @@ export function WinnerPredictScreen({
   dateStats,
   weekStats,
   allTimeStats,
-  aiWeeklyAccuracy
+  aiWeeklyAccuracy,
+  aiPicks
 }: Props) {
   const router = useRouter();
   const { showToast } = useAppState();
+
+  const aiPickByGame = useMemo(
+    () => new Map(aiPicks.map((pick) => [pick.gameId, pick])),
+    [aiPicks]
+  );
 
   const [predictions, setPredictions] = useState<Record<string, string | null>>(() => {
     const init: Record<string, string | null> = {};
@@ -553,6 +591,7 @@ export function WinnerPredictScreen({
                   <button
                     type="button"
                     className={sideClass(awayPicked, awayWon)}
+                    style={pickTintStyle(awayPicked, game.awayTeamId)}
                     onClick={() => handlePick(game, game.awayTeamId)}
                     disabled={!editable || saving}
                     aria-pressed={awayPicked}
@@ -583,6 +622,7 @@ export function WinnerPredictScreen({
                   <button
                     type="button"
                     className={`${sideClass(homePicked, homeWon)} predict-row-side-right`}
+                    style={pickTintStyle(homePicked, game.homeTeamId)}
                     onClick={() => handlePick(game, game.homeTeamId)}
                     disabled={!editable || saving}
                     aria-pressed={homePicked}
@@ -628,6 +668,61 @@ export function WinnerPredictScreen({
                     )}
                   </span>
 
+                  {/* 경기별 AI 픽 — 픽하면 열리는 구조.
+                      AI 픽을 먼저 보여주면 따라 찍게 되고 "나 vs AI 대결"이 성립하지 않는다. */}
+                  {(() => {
+                    const ai = aiPickByGame.get(game.id);
+                    if (!ai || ai.totalVotes === 0) return null;
+
+                    // 이미 시작·종료된 경기는 가릴 이유가 없어 픽 없이도 공개.
+                    const revealed = Boolean(picked) || started || game.status !== "scheduled";
+                    if (!revealed) {
+                      return (
+                        <span className="predict-row-ai predict-row-ai-locked">
+                          <Bot size={12} aria-hidden />
+                          <span>승리팀을 고르면 AI 예측이 열려요</span>
+                        </span>
+                      );
+                    }
+
+                    const majorityTeam = ai.majorityTeamId ? getTeam(ai.majorityTeamId) : null;
+                    const minorityVotes = ai.totalVotes - ai.majorityVotes;
+                    const verdict = !majorityTeam
+                      ? { cls: "is-split", text: "AI도 갈렸어요" }
+                      : !picked
+                      ? null
+                      : picked === ai.majorityTeamId
+                      ? { cls: "is-same", text: "나와 같음" }
+                      : { cls: "is-diff", text: "나와 다름" };
+
+                    return (
+                      <Link
+                        href={`/predict/ai-winner/${game.id}`}
+                        className="predict-row-ai"
+                        prefetch={false}
+                      >
+                        <Bot size={12} aria-hidden />
+                        {majorityTeam ? (
+                          <>
+                            <span className="predict-row-ai-votes">
+                              {`AI ${ai.majorityVotes}:${minorityVotes}`}
+                            </span>
+                            <span className="predict-row-ai-team">{`${majorityTeam.shortName} 우세`}</span>
+                          </>
+                        ) : (
+                          <span className="predict-row-ai-votes">{`AI ${ai.totalVotes}표 동수`}</span>
+                        )}
+                        <span className="predict-row-ai-trail">
+                          {verdict ? (
+                            <span className={`predict-row-ai-verdict ${verdict.cls}`}>
+                              {verdict.text}
+                            </span>
+                          ) : null}
+                          <ChevronRight size={12} aria-hidden />
+                        </span>
+                      </Link>
+                    );
+                  })()}
                 </article>
               );
             })}
