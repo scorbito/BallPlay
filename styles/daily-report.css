@@ -868,18 +868,16 @@
     height: 76px;
   }
 
+  /* 기본 규칙과 동일하게 줄 수를 제한하지 않는다(clamp 를 걸면 신규 슬롯의 긴 제목이
+     잘린다). 좁은 화면에서는 글자만 14px 로 줄인다. */
   .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-title {
-    display: -webkit-box;
+    display: block;
     font-size: 14px;
     line-height: 1.18;
     white-space: normal;
-    overflow: hidden;
+    overflow: visible;
     text-overflow: clip;
     word-break: keep-all;
-    -webkit-box-orient: vertical;
-    /* 기본 규칙과 동일하게 3줄. 히어로 3번은 신규 메뉴 전용 슬롯이라 제목 길이를
-       미리 알 수 없어 좁은 화면에서도 여유를 둔다. */
-    -webkit-line-clamp: 3;
   }
 }
 

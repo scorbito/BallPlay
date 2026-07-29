@@ -456,19 +456,19 @@
   font-weight: 800;
   line-height: 1.22;
   text-align: left;
-  /* 최대 3줄까지 허용한다.
-     히어로 3번은 신규 메뉴 전용 슬롯이라 제목 길이를 미리 알 수 없다. 카드 id별
-     override(.play-hub-card-wrap-*)를 계속 추가하면 슬롯이 교체될 때마다 CSS를
-     손대야 하므로 기본 규칙에서 해결한다.
-     이 카드는 아이콘과 나란히 놓여 텍스트 폭이 90px 남짓이다. 16px/2줄로는
-     11자("오늘의 선수를 맞혀라!")가 잘렸다 -> 15px/3줄로 약 18자까지 수용.
-     짧은 제목은 그대로 1줄로 남고, 넘칠 때만 줄이 늘어난다. */
+  /* 줄 수를 제한하지 않는다.
+     히어로 3번은 신규 메뉴 전용 슬롯이라 제목 길이를 미리 알 수 없다. 1줄 강제(nowrap)와
+     2·3줄 clamp 를 차례로 시도했지만 "오늘의 선수를 맞혀라!"(11자)가 계속 잘렸다 —
+     이 카드는 아이콘과 나란히 놓여 텍스트 폭이 90px 남짓이라 줄 수를 못 박으면
+     언젠가 넘친다.
+     같은 히어로에 있는 AI 승부 맞대결은 .play-hub-card-wrap-ai-battle override 로
+     display:block + overflow:visible 를 받아 안 잘리고 있었다. 그 방식이 이미 검증됐으니
+     카드 id별 override 대신 기본 규칙으로 올린다(슬롯이 교체돼도 CSS를 안 건드림).
+     카드 높이는 grid-template-rows: auto 라 필요한 만큼 늘어난다. */
+  display: block;
   white-space: normal;
   word-break: keep-all;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+  overflow: visible;
   text-overflow: clip;
 }
 
