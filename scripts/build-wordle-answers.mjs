@@ -105,7 +105,15 @@ for (const file of readdirSync(ROSTER_DIR)) {
     });
   }
 }
-players.sort((a, b) => a.id.localeCompare(b.id));
+// 정렬 = 출장 수 내림차순(인지도 프록시), 동수는 이름순으로 안정화.
+//
+// 이 순서가 그대로 검색 결과 순서가 된다. 예전에는 id 문자열 순이었는데
+// id 가 "doosan-7", "hanwha-30" 형태라 알파벳상 doosan 이 항상 맨 앞이어서
+// 모든 유저의 모든 검색에 두산 선수가 먼저 나오는 편향이 있었다.
+//
+// seasonGames 자체는 guessable.json 에 넣지 않는다(정답 풀 추론 힌트 방지).
+// 순서만 남기면 인지도 정렬 효과는 그대로 얻으면서 수치는 노출되지 않는다.
+players.sort((a, b) => b.seasonGames - a.seasonGames || a.name.localeCompare(b.name, "ko"));
 
 if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
 

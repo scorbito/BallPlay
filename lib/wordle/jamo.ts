@@ -91,9 +91,24 @@ function charMatches(nameCh: string, queryCh: string): boolean {
   return false;
 }
 
+/** 이름의 특정 위치부터 검색어가 이어지는지. */
+export function matchesQueryFrom(name: string, query: string, start: number): boolean {
+  const q = Array.from(query.replace(/\s+/g, ""));
+  if (q.length === 0) return false;
+  const chars = Array.from(name);
+  if (start < 0 || start + q.length > chars.length) return false;
+  for (let i = 0; i < q.length; i++) {
+    if (!charMatches(chars[start + i], q[i])) return false;
+  }
+  return true;
+}
+
 /**
  * 선수 검색 매칭. 이름의 어느 위치에서 시작해도 되고, 초성·조합 중 입력도 허용한다.
  *   "김도" / "ㄱㄷㅇ" / "도영" / "김ㄷ" 모두 "김도영" 을 찾는다.
+ *
+ * 위치를 가리지 않으므로 "ㅇ" 하나로도 "최우인"(우), "김지윤"(윤)이 걸린다.
+ * 그래서 호출부(searchPlayers)는 첫 글자부터 맞는 결과를 먼저 보여준다.
  */
 export function matchesQuery(name: string, query: string): boolean {
   const q = Array.from(query.replace(/\s+/g, ""));
@@ -102,14 +117,7 @@ export function matchesQuery(name: string, query: string): boolean {
   if (q.length > chars.length) return false;
 
   for (let start = 0; start + q.length <= chars.length; start++) {
-    let ok = true;
-    for (let i = 0; i < q.length; i++) {
-      if (!charMatches(chars[start + i], q[i])) {
-        ok = false;
-        break;
-      }
-    }
-    if (ok) return true;
+    if (matchesQueryFrom(name, query, start)) return true;
   }
   return false;
 }
