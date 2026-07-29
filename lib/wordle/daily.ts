@@ -7,8 +7,14 @@
 import answersData from "@/data/wordle/answers.json";
 import { findPlayerById, type WordlePlayer } from "./pool";
 
-/** dayIndex 0 에 해당하는 KST 날짜. */
-export const WORDLE_DAY0 = "2026-08-01";
+/**
+ * 서비스 시작일(KST) = 정답 배열의 0번째 날.
+ *
+ * 정답을 특정 날짜에 못 박아둔 게 아니라 answers 배열은 "순서"만 갖고 있고,
+ * 이 상수가 그 순서의 시작점을 잡는다. 한 번 정하면 다시 손댈 일이 없다 —
+ * 바꾸면 그날 이후 모든 날짜의 정답이 밀리므로 운영 중에는 고정한다.
+ */
+export const WORDLE_DAY0 = "2026-07-29";
 
 /** 하루 시도 횟수. */
 export const MAX_ATTEMPTS = 6;
