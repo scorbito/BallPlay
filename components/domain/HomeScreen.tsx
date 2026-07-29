@@ -99,12 +99,27 @@ type HomeSection = {
   adminOnly?: boolean;
 };
 
+/**
+ * 히어로(상단 강조 배치)에 올릴 카드 3장. **배치일 뿐 카테고리가 아니다** —
+ * 각 카드는 아래 sections 에서 자기 카테고리(칩)에 그대로 소속돼 있고,
+ * 여기서는 id 로만 참조한다. 그래서 칩을 눌렀을 때도 정상적으로 찾을 수 있다.
+ *
+ * 순서가 배치를 결정한다: 1번 = 왼쪽 큰 카드, 2·3번 = 오른쪽 상·하.
+ * CSS(.play-hub-hero-cards)가 3장 배치를 못 박아 두었으므로 정확히 3개여야 한다.
+ *
+ * 3번 슬롯은 "신규 메뉴 전용"으로 운영한다. 새 기능이 나오면 이 한 줄만 교체하면 되고,
+ * 졸업한 메뉴는 원래 카테고리에 그대로 남아 있으므로 옮길 것이 없다.
+ * 유저도 "새 기능은 저 자리"를 한 번 학습하면 이후 교체가 예상 범위 안이 된다.
+ */
+const HERO_CARD_IDS: readonly string[] = ["ai-predict", "ai-battle", "wordle"];
+
 const sections: HomeSection[] = [
   {
-    id: "ai-analysis",
-    label: "프로야구 AI 예측·분석",
-    variant: "hero",
-    heroSubtitle: "오늘의 프로야구 경기 예측, 승부 맞대결, 리포트를 한눈에 확인하세요.",
+    id: "predict",
+    label: "예측 참여",
+    variant: "standard",
+    sectionIcon: Trophy,
+    sectionIconImage: "/icons/sections/predict.png",
     gridCols: 3,
     cards: [
       {
@@ -117,34 +132,6 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "ai-battle",
-        href: "/predict/battle",
-        title: "AI 승부 맞대결",
-        description: "Gemini vs GPT 승리 근거 비교",
-        icon: Swords,
-        iconImage: "/icons/menu/ai-battle.png",
-        available: true
-      },
-      {
-        id: "daily-report",
-        href: "/daily-report",
-        title: "일일 리포트",
-        description: "경기 결과와 주요 흐름 요약",
-        icon: FileText,
-        iconImage: "/icons/menu/daily-report.png",
-        available: true
-      }
-    ]
-  },
-  {
-    id: "predict",
-    label: "예측 참여",
-    variant: "standard",
-    sectionIcon: Trophy,
-    sectionIconImage: "/icons/sections/predict.png",
-    gridCols: 3,
-    cards: [
-      {
         id: "winner-predict",
         href: "/predict/winner",
         title: "승리팀 예측하기",
@@ -153,6 +140,15 @@ const sections: HomeSection[] = [
         iconImage: "/icons/menu/predict-winner.png",
         available: true,
         badge: WEEKLY_EVENT_ACTIVE ? "EVENT" : undefined
+      },
+      {
+        id: "ai-battle",
+        href: "/predict/battle",
+        title: "AI 승부 맞대결",
+        description: "Gemini vs GPT 승리 근거 비교",
+        icon: Swords,
+        iconImage: "/icons/menu/ai-battle.png",
+        available: true
       },
       {
         id: "predict-ranking",
@@ -207,6 +203,17 @@ const sections: HomeSection[] = [
         description: "순위 + 최근 5경기",
         icon: Trophy,
         iconImage: "/icons/menu/team-standings.png",
+        available: true
+      },
+      {
+        // 히어로에서 내려온 카드. Vercel 통계상 39명/재방문 1.4 로 히어로 3장 중 최하위였다.
+        // 리포트 2형제를 나란히 두어 찾을 때 추론이 되게 한다.
+        id: "daily-report",
+        href: "/daily-report",
+        title: "일일 리포트",
+        description: "경기 결과와 주요 흐름 요약",
+        icon: FileText,
+        iconImage: "/icons/menu/daily-report.png",
         available: true
       },
       {
@@ -329,6 +336,8 @@ const sections: HomeSection[] = [
         available: true
       },
       {
+        // 현재 히어로 3번(신규 슬롯)에 배치돼 있지만 카테고리 소속은 여기다.
+        // "콘텐츠" 칩에서 정상적으로 찾을 수 있고, 신규 슬롯에서 졸업하면 이 자리에 남는다.
         id: "wordle",
         href: "/play/wordle",
         title: "오늘 선수는 누구?",
@@ -512,42 +521,29 @@ export function HomeScreen() {
         };
 
         // 상단 AI 예측·분석 영역 렌더링
-        const aiSection = sections.find((s) => s.id === "ai-analysis");
-        const aiSectionNode = aiSection ? (
-          <section
-            className={`play-hub-section play-hub-section-${aiSection.variant}`}
-            key={aiSection.id}
-          >
-            <div className="play-hub-hero">
-              <div className="play-hub-hero-header">
-                <div className="play-hub-hero-text">
-                  <div className="play-hub-hero-title-row">
-                    <h2 className="play-hub-hero-title">{aiSection.label}</h2>
-                  </div>
-                  {aiSection.heroSubtitle ? (
-                    <div className="play-hub-hero-subtitle-row">
-                      <p className="play-hub-hero-subtitle">{aiSection.heroSubtitle}</p>
-                    </div>
-                  ) : null}
+        // 히어로 = 배치 전용. HERO_CARD_IDS 순서대로 카드를 찾아 3장을 올린다.
+        const allCards = sections.flatMap((s) => s.cards);
+        const heroCards = HERO_CARD_IDS.map((id) => allCards.find((c) => c.id === id)).filter(
+          (c): c is HomeCard => Boolean(c) && (!c!.adminOnly || isAdmin)
+        );
+
+        // 화면에는 제목·부제를 두지 않는다. 3번 슬롯이 신규 메뉴 전용이라 주제를 명명하면
+        // 슬롯이 교체될 때마다 라벨이 틀리게 된다. 대신 sr-only 헤딩으로 스크린리더용
+        // 영역 이름과 문서 헤딩 구조는 남긴다(이 페이지의 유일한 헤딩).
+        //
+        // 칩으로 카테고리를 필터링하는 중에는 히어로를 숨긴다 — 히어로는 "전체" 화면용
+        // 강조 장치인데, 정보 탭을 보는 중에 예측 카드를 위에 띄우면 앞뒤가 안 맞는다.
+        const heroNode =
+          activeCategory === "all" && heroCards.length > 0 ? (
+            <section className="play-hub-section play-hub-section-hero" key="hero">
+              <h2 className="sr-only">주요 메뉴</h2>
+              <div className="play-hub-hero">
+                <div className="play-hub-grid play-hub-hero-cards">
+                  {heroCards.map(renderCard)}
                 </div>
-                {aiSection.heroIllustration ? (
-                  <div className="play-hub-hero-illust">
-                    <Image
-                      src={aiSection.heroIllustration}
-                      alt=""
-                      width={160}
-                      height={160}
-                      priority
-                    />
-                  </div>
-                ) : null}
               </div>
-              <div className="play-hub-grid play-hub-hero-cards">
-                {aiSection.cards.filter((card) => !card.adminOnly || isAdmin).map(renderCard)}
-              </div>
-            </div>
-          </section>
-        ) : null;
+            </section>
+          ) : null;
 
         // 히어로 카드와 일반 메뉴 사이 배너 광고 — 이벤트 진행 중일 때만 노출.
         const predictBannerNode = WEEKLY_EVENT_ACTIVE ? (
@@ -567,8 +563,10 @@ export function HomeScreen() {
           </Link>
         ) : null;
 
-        // 하단 플랫 메뉴용 카드들 수집 (ai-analysis, related 제외)
-        const otherSections = sections.filter((s) => s.id !== "ai-analysis" && s.id !== "related");
+        // 하단 플랫 메뉴용 카드들 수집. related(외부 앱)만 제외 — 별도 배너로 렌더된다.
+        // 히어로 카드도 여기 포함된다. 히어로는 배치일 뿐이고 카테고리 소속은 유지되므로,
+        // 칩을 눌렀을 때 정상적으로 나와야 한다. "전체"에서만 중복을 걷어낸다(아래).
+        const otherSections = sections.filter((s) => s.id !== "related");
         const bottomCards: HomeCard[] = [];
         const categoryOfCard = new Map<string, string>(); // cardId → sectionId (칩 필터용)
         otherSections.forEach((section) => {
@@ -626,9 +624,12 @@ export function HomeScreen() {
             .map((s) => ({ id: s.id, label: CHIP_LABELS[s.id] ?? s.label }))
         ];
 
+        // "전체"에서는 히어로 3장을 걷어낸다 — 바로 위에 이미 크게 노출돼 있어 중복이다.
+        // 칩이 선택된 경우엔 히어로가 숨겨지므로 그 카테고리의 카드를 전부 보여준다.
+        const heroCardIdSet = new Set(heroCards.map((c) => c.id));
         const visibleBottomCards =
           activeCategory === "all"
-            ? bottomCards
+            ? bottomCards.filter((c) => !heroCardIdSet.has(c.id))
             : bottomCards.filter((c) => categoryOfCard.get(c.id) === activeCategory);
 
         const bottomSectionNode = (
@@ -709,7 +710,7 @@ export function HomeScreen() {
         // 지난주 예측왕 스트립 — 이벤트 진행 중일 때만, 배너 바로 아래.
         const winnerStripNode = WEEKLY_EVENT_ACTIVE ? <LatestWinnerStrip key="winner-strip" /> : null;
 
-        return [aiSectionNode, predictBannerNode, winnerStripNode, bottomSectionNode, externalBannerNode, footerNode];
+        return [heroNode, predictBannerNode, winnerStripNode, bottomSectionNode, externalBannerNode, footerNode];
       })()}
     </AppShell>
   );
