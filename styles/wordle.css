@@ -299,9 +299,10 @@
 }
 
 /* ── 선수 검색 ── */
-/* 후보 목록을 흐름에서 빼서(absolute) 위로 펼친다.
+/* 후보 목록을 흐름에서 빼서(absolute) 아래로 펼친다.
    흐름 안에 두면 한 글자 입력할 때마다 목록 높이가 바뀌어 아래 콘텐츠가 전부 밀린다.
-   위로 펼치는 건 입력칸이 화면 하단에 있어서 — 아래로 펼치면 탭바에 가린다. */
+   위로 펼치면 격자(글자 힌트)를 덮어버려서 아래로 펼친다 — 대신 목록을 짧게 유지해
+   하단 탭바에 가리는 범위를 줄인다. */
 .phone-frame-light .wordle-search {
   position: relative;
 }
@@ -343,7 +344,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   z-index: 30;
   display: flex;
   flex-direction: column;
@@ -351,13 +352,13 @@
   margin: 0;
   padding: 6px;
   list-style: none;
-  max-height: 258px;
+  max-height: 216px;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--bp-card);
   border: 1px solid var(--bp-line);
   border-radius: 12px;
-  box-shadow: 0 -10px 28px rgba(20, 30, 50, 0.14);
+  box-shadow: 0 10px 28px rgba(20, 30, 50, 0.16);
 }
 
 .phone-frame-light .wordle-search-item {

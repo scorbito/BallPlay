@@ -20,7 +20,9 @@ type Props = {
   onPick: (player: WordlePlayer) => void;
 };
 
-const RESULT_LIMIT = 8;
+// 목록이 길면 아래로 펼칠 때 하단 탭바에 가린다. 후보를 줄이는 건 난이도에도 낫다 —
+// 목록을 길게 늘어놓으면 추측을 쓰지 않고 눈으로 훑어 좁히는 쪽으로 흐른다.
+const RESULT_LIMIT = 5;
 
 export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Props) {
   const [query, setQuery] = useState("");
