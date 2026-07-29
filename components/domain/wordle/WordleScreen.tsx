@@ -208,7 +208,11 @@ export function WordleScreen() {
               </div>
             </section>
 
-            <WordleGrid results={results} guessedPlayers={guessedPlayers} hints={hints} />
+            {/* 입력을 격자 위에 둔다.
+                워들 원작이 키보드를 아래 두는 건 키보드이기 때문이고, 이 게임의 입력은
+                자동완성 검색이다. 6줄 격자가 빈 상태로 400px 가까이 차지해서 입력이
+                아래 있으면 탭바 뒤로 밀린다. 입력이 위, 기록이 아래인 구조가
+                선수 맞히기류(Poeltl 등)의 일반적 배치이기도 하다. */}
 
             {/* 첫 수 유도 — 워들에서 첫 추측은 정답을 노리는 게 아니라 단서를 뽑는
                 프로브인데, 처음 접하는 사람은 그걸 모르고 빈 격자 앞에서 멈춘다. */}
@@ -240,6 +244,7 @@ export function WordleScreen() {
               <WordlePlayerSearch usedNames={guesses} onPick={handlePick} />
             ) : null}
 
+            {/* 결과도 격자 위 — 판이 끝나면 스크롤 없이 결과부터 보이게 한다. */}
             {answer && finished && stats ? (
               <WordleResultSheet
                 solved={solved}
@@ -250,6 +255,8 @@ export function WordleScreen() {
                 onShare={handleShare}
               />
             ) : null}
+
+            <WordleGrid results={results} guessedPlayers={guessedPlayers} hints={hints} />
 
             <WordleJamoPanel status={jamoStatus} />
           </>

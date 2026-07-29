@@ -121,7 +121,7 @@
 .phone-frame-light .wordle-grid {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
 }
 
 .phone-frame-light .wordle-row {
@@ -144,16 +144,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  width: 62px;
-  height: 62px;
-  border-radius: 12px;
+  gap: 4px;
+  width: 54px;
+  height: 54px;
+  border-radius: 11px;
   background: var(--bp-card);
   border: 1.5px solid var(--bp-line);
   animation: wordle-cell-in 0.28s ease-out backwards;
 }
 
+/* 아직 안 쓴 줄 — 남은 기회 개수를 보여주는 역할만 하므로 높이를 낮춰
+   빈 격자가 화면을 독점하지 않게 한다. 채워지면 위 규칙의 정규 높이로 커진다. */
 .phone-frame-light .wordle-cell.is-blank {
+  height: 34px;
   background: transparent;
   border-style: dashed;
   animation: none;
