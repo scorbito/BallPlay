@@ -68,3 +68,36 @@ export function getAnswerForDate(dateISO: string): WordlePlayer | null {
 export function getAnswerPoolSize(): number {
   return ENCODED_ANSWERS.length;
 }
+
+/**
+ * 연습 모드용 랜덤 정답.
+ *
+ * excludeIds 로 오늘의 정답과 이미 푼 선수를 제외한다. 오늘의 정답을 빼는 건
+ * 연습이 데일리를 스포일러하지 않게 하기 위함이고, 이미 푼 선수를 빼는 건
+ * 연달아 같은 사람이 나오는 걸 막기 위함이다.
+ *
+ * Math.random 을 쓰므로 클라이언트 이벤트 핸들러에서만 호출한다(SSR 불일치 방지).
+ */
+export function getRandomAnswer(excludeIds: readonly string[] = []): WordlePlayer | null {
+  if (ENCODED_ANSWERS.length === 0) return null;
+  const excluded = new Set(excludeIds);
+
+  const candidates: WordlePlayer[] = [];
+  for (const encoded of ENCODED_ANSWERS) {
+    let player: WordlePlayer | null = null;
+    try {
+      player = findPlayerById(decodeId(encoded));
+    } catch {
+      player = null;
+    }
+    if (!player) continue;
+    if (excluded.has(player.id)) continue;
+    candidates.push(player);
+  }
+  // 풀을 다 돌았으면 제외 목록을 무시하고 다시 고른다(무한 연습 대비).
+  // excluded 가 비어 있는데도 후보가 없으면 데이터 자체가 깨진 것이므로 재귀하지 않는다.
+  if (candidates.length === 0) {
+    return excluded.size > 0 ? getRandomAnswer([]) : null;
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}

@@ -16,6 +16,7 @@ import {
   MAX_ATTEMPTS,
   getAnswerForDate,
   getAnswerPoolSize,
+  getRandomAnswer,
   kstDateString
 } from "@/lib/wordle/daily";
 import { buildJamoStatus, judgeGuess, type GuessResult } from "@/lib/wordle/judge";
@@ -32,7 +33,9 @@ import {
 import { WordleGrid, type AttributeHint } from "./WordleGrid";
 import { WordlePlayerSearch } from "./WordlePlayerSearch";
 import { WordleJamoPanel } from "./WordleJamoPanel";
-import { WordleResultSheet } from "./WordleResultSheet";
+import { WordleResultSheet, type PracticeSession } from "./WordleResultSheet";
+
+type Mode = "daily" | "practice";
 
 function findPlayerByName(name: string): WordlePlayer | null {
   return getGuessablePlayers().find((player) => player.name === name) ?? null;
@@ -44,18 +47,33 @@ export function WordleScreen() {
   // 날짜·정답은 클라이언트에서만 확정한다. 서버 렌더 시점의 날짜와 사용자 기기의
   // KST 날짜가 어긋나면 하이드레이션 불일치가 나므로 mount 후에 세팅.
   const [dateISO, setDateISO] = useState<string | null>(null);
-  const [guesses, setGuesses] = useState<string[]>([]);
+  const [dailyGuesses, setDailyGuesses] = useState<string[]>([]);
   const [stats, setStats] = useState<WordleStats | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
 
-  const answer = useMemo(() => (dateISO ? getAnswerForDate(dateISO) : null), [dateISO]);
+  // ── 연습 모드 ──
+  // 공식 문제는 하루 1판(공유·streak·누적통계의 근거). 연습은 랜덤 정답으로 무제한이고
+  // localStorage 저장도, 누적 통계 반영도, 공유도 하지 않는다. 연습 기록을 누적에 섞으면
+  // 정답률·연속 지표가 무의미해진다.
+  const [mode, setMode] = useState<Mode>("daily");
+  const [practiceAnswer, setPracticeAnswer] = useState<WordlePlayer | null>(null);
+  const [practiceGuesses, setPracticeGuesses] = useState<string[]>([]);
+  const [practiceSession, setPracticeSession] = useState<PracticeSession>({ played: 0, won: 0 });
+  // 이번 세션에 이미 나온 정답 — 연달아 같은 선수가 나오지 않게.
+  const [practiceSeen, setPracticeSeen] = useState<string[]>([]);
+
+  const dailyAnswer = useMemo(() => (dateISO ? getAnswerForDate(dateISO) : null), [dateISO]);
+
+  const isDaily = mode === "daily";
+  const answer = isDaily ? dailyAnswer : practiceAnswer;
+  const guesses = isDaily ? dailyGuesses : practiceGuesses;
 
   // 최초 마운트 — 오늘 날짜 확정 + 저장된 진행 상태 복원.
   useEffect(() => {
     const today = kstDateString();
     setDateISO(today);
     const saved = loadProgress(today);
-    setGuesses(saved?.guesses ?? []);
+    setDailyGuesses(saved?.guesses ?? []);
     setStats(loadStats());
   }, []);
 
@@ -95,19 +113,22 @@ export function WordleScreen() {
   const jamoStatus = useMemo(() => buildJamoStatus(results), [results]);
 
   // 첫 추측 유도 — 빈 격자 앞에서 멈추지 않게 탭 한 번으로 시작되는 후보를 준다.
+  // 연습에서는 숨긴다. 연습까지 온 사람은 규칙을 이미 알고, 회전이 날짜 기준이라
+  // 매 연습 판마다 같은 이름이 뜬다.
   const starters = useMemo(
-    () => (dateISO ? getStarterSuggestions(dateISO, answer) : []),
-    [dateISO, answer]
+    () => (isDaily && dateISO ? getStarterSuggestions(dateISO, dailyAnswer) : []),
+    [isDaily, dateISO, dailyAnswer]
   );
 
   const shareText = useMemo(() => {
-    if (!dateISO) return "";
+    if (!dateISO || !isDaily) return "";
     return buildShareText({ dateISO, results, solved });
-  }, [dateISO, results, solved]);
+  }, [dateISO, isDaily, results, solved]);
 
-  // 판이 끝나면 통계에 1회 기록. recordFinishedGame 이 같은 날짜 중복 호출을 막는다.
+  // 공식 문제가 끝나면 통계에 1회 기록. recordFinishedGame 이 같은 날짜 중복 호출을 막는다.
+  // 연습은 여기에 들어오지 않는다(mode 가드).
   useEffect(() => {
-    if (!dateISO || !finished) return;
+    if (!isDaily || !dateISO || !finished) return;
     const next = recordFinishedGame({
       dateISO,
       solved,
@@ -119,24 +140,51 @@ export function WordleScreen() {
       solved,
       attempts: guesses.length
     });
-  }, [dateISO, finished, solved, guesses.length]);
+  }, [isDaily, dateISO, finished, solved, guesses.length]);
 
   const handlePick = useCallback(
     (player: WordlePlayer) => {
-      if (!dateISO || !answer || finished) return;
+      if (!answer || finished) return;
       if (guesses.includes(player.name)) return;
 
       const nextGuesses = [...guesses, player.name];
       const isSolved = player.name === answer.name;
-      setGuesses(nextGuesses);
-      saveProgress({
-        date: dateISO,
-        guesses: nextGuesses,
-        status: isSolved ? "won" : nextGuesses.length >= MAX_ATTEMPTS ? "lost" : "playing"
-      });
+
+      if (isDaily) {
+        if (!dateISO) return;
+        setDailyGuesses(nextGuesses);
+        saveProgress({
+          date: dateISO,
+          guesses: nextGuesses,
+          status: isSolved ? "won" : nextGuesses.length >= MAX_ATTEMPTS ? "lost" : "playing"
+        });
+        return;
+      }
+
+      setPracticeGuesses(nextGuesses);
+      // 연습 세션 집계는 여기서 한다 — effect 로 하면 mode 전환 타이밍에 중복 집계 위험.
+      if (isSolved || nextGuesses.length >= MAX_ATTEMPTS) {
+        setPracticeSession((prev) => ({
+          played: prev.played + 1,
+          won: prev.won + (isSolved ? 1 : 0)
+        }));
+      }
     },
-    [dateISO, answer, finished, guesses]
+    [answer, finished, guesses, isDaily, dateISO]
   );
+
+  const startPractice = useCallback(() => {
+    const exclude = [...practiceSeen];
+    if (dailyAnswer) exclude.push(dailyAnswer.id);
+    const next = getRandomAnswer(exclude);
+    if (!next) return;
+    setPracticeAnswer(next);
+    setPracticeGuesses([]);
+    setPracticeSeen((prev) => [...prev, next.id]);
+    setMode("practice");
+  }, [practiceSeen, dailyAnswer]);
+
+  const backToDaily = useCallback(() => setMode("daily"), []);
 
   const handleShare = useCallback(async () => {
     try {
@@ -171,16 +219,28 @@ export function WordleScreen() {
     >
       <div className="wordle-screen">
         <header className="wordle-head">
-          <p className="wordle-head-date">{dateISO ?? " "}</p>
+          <p className="wordle-head-date">
+            {isDaily ? (
+              dateISO ?? " "
+            ) : (
+              <span className="wordle-head-practice">{`연습 ${practiceSession.played + 1}판`}</span>
+            )}
+          </p>
           <p className="wordle-head-sub">
             {finished
-              ? "오늘 문제 완료"
+              ? isDaily
+                ? "오늘 공식 문제 완료"
+                : "연습 판 완료"
               : `KBO 선수 한 명 · 남은 기회 ${MAX_ATTEMPTS - guesses.length}`}
           </p>
         </header>
 
         {dateISO && !answer ? (
-          <p className="wordle-empty">오늘 문제를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.</p>
+          <p className="wordle-empty">
+            {isDaily
+              ? "오늘 문제를 불러올 수 없어요. 잠시 후 다시 시도해 주세요."
+              : "연습 문제를 불러올 수 없어요."}
+          </p>
         ) : (
           <>
             {/* 색 범례 — 색바만 보고는 무슨 뜻인지 알 수 없어서 격자 위에 상시 노출한다.
@@ -240,14 +300,18 @@ export function WordleScreen() {
               <WordlePlayerSearch usedNames={guesses} onPick={handlePick} />
             ) : null}
 
-            {answer && finished && stats ? (
+            {answer && finished ? (
               <WordleResultSheet
+                mode={mode}
                 solved={solved}
                 attempts={guesses.length}
                 answer={answer}
                 stats={stats}
+                session={practiceSession}
                 shareText={shareText}
                 onShare={handleShare}
+                onPractice={startPractice}
+                onBackToDaily={backToDaily}
               />
             ) : null}
 
@@ -279,6 +343,10 @@ export function WordleScreen() {
           <li>추측한 선수의 팀·포지션이 정답과 같은지도 알려줘요.</li>
           <li>4번째 시도부터는 등번호가 정답보다 큰지 작은지도 열려요.</li>
           <li>6번 안에 맞히면 성공이에요. 자정에 새 문제로 바뀌어요.</li>
+          <li>
+            <strong>공식 문제는 하루 한 판</strong>이에요. 다 풀면 <strong>연습</strong>으로 계속
+            할 수 있는데, 연습은 랜덤 문제라 기록과 공유에는 반영되지 않아요.
+          </li>
           <li>정답 후보는 올 시즌 30경기 이상 출장한 {getAnswerPoolSize()}명이에요.</li>
         </ul>
       </ModalShell>

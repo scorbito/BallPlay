@@ -633,6 +633,75 @@
   font-size: 11px;
   font-weight: 700;
   color: var(--bp-text-muted);
+  text-align: center;
+}
+
+/* ── 연습 모드 ── */
+.phone-frame-light .wordle-result-mode {
+  align-self: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(20, 30, 50, 0.07);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .wordle-head-practice {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
+}
+
+/* 연습은 보조 액션이라 공유 버튼(솔리드)보다 약하게 — 고스트. */
+.phone-frame-light .wordle-result-practice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--bp-accent);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--bp-accent);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.phone-frame-light .wordle-result-practice:hover {
+  background: rgba(232, 74, 138, 0.07);
+}
+
+.phone-frame-light .wordle-result-practice:active {
+  transform: scale(0.99);
+}
+
+.phone-frame-light .wordle-result-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.phone-frame-light .wordle-result-back:hover {
+  color: var(--bp-accent);
 }
 
 /* ── 도움말 ── */
