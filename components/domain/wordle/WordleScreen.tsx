@@ -176,6 +176,31 @@ export function WordleScreen() {
           <p className="wordle-empty">오늘 문제를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.</p>
         ) : (
           <>
+            {/* 색 범례 — 색바만 보고는 무슨 뜻인지 알 수 없어서 격자 위에 상시 노출한다.
+                색 클래스(.wordle-bar.is-*)를 격자와 공유하므로 색이 어긋날 수 없다.
+                채점 단위 설명은 첫 추측 전에만 — 한 번 보면 되는 정보다. */}
+            <section className="wordle-legend" aria-label="색상 설명">
+              {results.length === 0 ? (
+                <p className="wordle-legend-intro">
+                  글자마다 <strong>초성·중성·종성</strong>을 따로 채점해요
+                </p>
+              ) : null}
+              <div className="wordle-legend-items">
+                <span className="wordle-legend-item">
+                  <i className="wordle-bar is-hit" aria-hidden />
+                  자리까지 정확
+                </span>
+                <span className="wordle-legend-item">
+                  <i className="wordle-bar is-near" aria-hidden />
+                  자리만 다름
+                </span>
+                <span className="wordle-legend-item">
+                  <i className="wordle-bar is-miss" aria-hidden />
+                  없음
+                </span>
+              </div>
+            </section>
+
             <WordleGrid results={results} guessedPlayers={guessedPlayers} hints={hints} />
 
             {!finished ? (
