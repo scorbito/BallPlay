@@ -21,6 +21,7 @@ import {
 import { buildJamoStatus, judgeGuess, type GuessResult } from "@/lib/wordle/judge";
 import { getGuessablePlayers, type WordlePlayer } from "@/lib/wordle/pool";
 import { buildShareText } from "@/lib/wordle/shareText";
+import { getStarterSuggestions } from "@/lib/wordle/starters";
 import {
   loadProgress,
   loadStats,
@@ -92,6 +93,12 @@ export function WordleScreen() {
   }, [guessedPlayers, answer]);
 
   const jamoStatus = useMemo(() => buildJamoStatus(results), [results]);
+
+  // 첫 추측 유도 — 빈 격자 앞에서 멈추지 않게 탭 한 번으로 시작되는 후보를 준다.
+  const starters = useMemo(
+    () => (dateISO ? getStarterSuggestions(dateISO, answer?.id ?? null) : []),
+    [dateISO, answer]
+  );
 
   const shareText = useMemo(() => {
     if (!dateISO) return "";
@@ -202,6 +209,32 @@ export function WordleScreen() {
             </section>
 
             <WordleGrid results={results} guessedPlayers={guessedPlayers} hints={hints} />
+
+            {/* 첫 수 유도 — 워들에서 첫 추측은 정답을 노리는 게 아니라 단서를 뽑는
+                프로브인데, 처음 접하는 사람은 그걸 모르고 빈 격자 앞에서 멈춘다. */}
+            {!finished && results.length === 0 ? (
+              <section className="wordle-starters" aria-label="첫 추측 추천">
+                {/* 안내 문구는 정적이라 첫 페인트부터 보인다. 추천 칩은 날짜가 확정된
+                    뒤에 채워지므로 자리만 미리 잡아 레이아웃이 밀리지 않게 한다. */}
+                <p className="wordle-starters-hint">
+                  <strong>생각나는 선수를 아무나</strong> 넣어보세요.
+                  <br />
+                  정답이 아니어도 글자 단서가 나와요.
+                </p>
+                <div className="wordle-starter-chips">
+                  {starters.map((player) => (
+                    <button
+                      key={player.id}
+                      type="button"
+                      className="wordle-starter-chip"
+                      onClick={() => handlePick(player)}
+                    >
+                      {player.name}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             {!finished ? (
               <WordlePlayerSearch usedNames={guesses} onPick={handlePick} />

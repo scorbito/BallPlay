@@ -237,6 +237,64 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── 첫 추측 유도 ── */
+.phone-frame-light .wordle-starters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(232, 74, 138, 0.08), rgba(232, 74, 138, 0.02));
+  border: 1px solid rgba(232, 74, 138, 0.24);
+}
+
+.phone-frame-light .wordle-starters-hint {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--bp-text-secondary);
+  text-align: center;
+}
+
+.phone-frame-light .wordle-starters-hint strong {
+  font-weight: 900;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .wordle-starter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  /* 칩은 하이드레이션 후에 채워진다. 높이를 미리 잡아 레이아웃 밀림을 없앤다. */
+  min-height: 37px;
+}
+
+.phone-frame-light .wordle-starter-chip {
+  padding: 8px 14px;
+  border: 1.5px solid var(--bp-line);
+  border-radius: 999px;
+  background: var(--bp-card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--bp-text);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
+}
+
+.phone-frame-light .wordle-starter-chip:hover {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .wordle-starter-chip:active {
+  transform: scale(0.97);
+}
+
 /* ── 선수 검색 ── */
 .phone-frame-light .wordle-search {
   display: flex;
