@@ -351,8 +351,11 @@
   right: 0;
   top: calc(100% + 6px);
   z-index: 30;
-  display: flex;
-  flex-direction: column;
+  /* 2단 그리드 — 한 줄에 이름+팀·포지션만 들어가 오른쪽 여백이 많이 남았다.
+     8개가 4줄에 들어가 높이가 절반 가까이 줄고 스크롤도 거의 필요 없어진다.
+     auto-fit + minmax 라 좁은 화면(약 292px 이하)에서는 자동으로 1단으로 떨어진다. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 4px;
   margin: 0;
   padding: 6px;
@@ -369,9 +372,10 @@
 .phone-frame-light .wordle-search-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  padding: 10px 12px;
+  height: 100%;
+  padding: 9px 10px;
   border: 1px solid var(--bp-line-soft);
   border-radius: 10px;
   background: var(--bp-card);
@@ -379,6 +383,7 @@
   text-align: left;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
+  min-width: 0;
 }
 
 .phone-frame-light .wordle-search-item:hover:not(:disabled) {
@@ -392,25 +397,33 @@
 }
 
 .phone-frame-light .wordle-search-name {
+  flex-shrink: 0;
   font-size: 14px;
   font-weight: 900;
   color: var(--bp-text);
 }
 
+/* 2단이라 셀 폭이 좁다 — 팀·포지션이 넘치면 이름을 밀어내지 않고 여기서 줄인다. */
 .phone-frame-light .wordle-search-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 11px;
   font-weight: 700;
   color: var(--bp-text-muted);
 }
 
 .phone-frame-light .wordle-search-used {
-  margin-left: auto;
+  flex-shrink: 0;
   font-size: 10px;
   font-weight: 800;
   color: var(--bp-text-muted);
+  white-space: nowrap;
 }
 
 .phone-frame-light .wordle-search-empty {
+  grid-column: 1 / -1;
   padding: 12px;
   font-size: 12px;
   font-weight: 600;

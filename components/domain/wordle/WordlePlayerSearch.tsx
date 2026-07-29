@@ -79,10 +79,14 @@ export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Prop
                     disabled={isUsed}
                   >
                     <span className="wordle-search-name">{player.name}</span>
-                    <span className="wordle-search-meta">
-                      {getTeam(player.teamId).shortName} · {player.posGroup}
-                    </span>
-                    {isUsed ? <span className="wordle-search-used">이미 추측</span> : null}
+                    {/* 2단이라 셀이 좁다 — 이미 추측한 항목은 팀·포지션 대신 상태만 보여준다. */}
+                    {isUsed ? (
+                      <span className="wordle-search-used">이미 추측</span>
+                    ) : (
+                      <span className="wordle-search-meta">
+                        {`${getTeam(player.teamId).shortName} · ${player.posGroup}`}
+                      </span>
+                    )}
                   </button>
                 </li>
               );
