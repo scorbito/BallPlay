@@ -1,6 +1,6 @@
 "use client";
 
-// 선수명 워들 "오늘 선수는 누구?" — 하루 한 명, 6번의 기회.
+// 선수명 워들 "오늘의 선수를 맞혀라!" — 하루 한 명, 6번의 기회.
 //
 // 서버 호출이 없다. 정답은 커밋된 스냅샷을 날짜로 순환해 클라이언트에서 계산하고,
 // 진행 상태·통계는 localStorage 에 둔다. 덕분에 페이지가 정적으로 유지된다.
@@ -212,7 +212,7 @@ export function WordleScreen() {
   return (
     <AppShell
       activeTab="home"
-      title="오늘 선수는 누구?"
+      title="오늘의 선수를 맞혀라!"
       theme="light"
       backHref="/"
       headerAction={

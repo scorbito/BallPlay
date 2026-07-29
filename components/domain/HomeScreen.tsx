@@ -339,7 +339,7 @@ const sections: HomeSection[] = [
         // "콘텐츠" 칩에서 정상적으로 찾을 수 있고, 신규 슬롯에서 졸업하면 이 자리에 남는다.
         id: "wordle",
         href: "/play/wordle",
-        title: "오늘 선수는 누구?",
+        title: "오늘의 선수를 맞혀라!",
         description: "하루 한 명, 6번의 기회",
         // icon 은 iconImage 로드 실패 시를 위한 폴백.
         icon: BaseballIcon,

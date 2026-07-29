@@ -18,7 +18,7 @@ const EMOJI: Record<CellState, string> = {
   empty: "⬛"
 };
 
-const SHARE_TITLE = "오늘 선수는 누구?";
+const SHARE_TITLE = "오늘의 선수를 맞혀라!";
 const SHARE_URL = "ballnori.com/play/wordle";
 
 export function buildShareText(params: {
@@ -36,7 +36,7 @@ export function buildShareText(params: {
     )
     .join("\n");
 
-  // 게임명이 물음표로 끝나므로 날짜·점수를 같은 줄에 붙이면 어색하다. 제목을 독립 줄로
-  // 두면 물음표가 오히려 "너도 해볼래?" 하는 훅으로 읽힌다.
+  // 게임명이 느낌표로 끝나므로 날짜·점수를 같은 줄에 붙이면 어색하다. 제목을 독립 줄로
+  // 두면 도전을 던지는 문장으로 읽혀 받는 사람을 끌어들인다.
   return `${SHARE_TITLE}\n${dateISO}  ${score}\n\n${grid}\n\n${SHARE_URL}`;
 }

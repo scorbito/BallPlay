@@ -45,6 +45,10 @@
   z-index: 1;
   max-width: calc(100% - 200px);
   overflow: hidden;
+  /* 좌우 버튼 자리를 200px 예약해 두므로 좁은 화면에서는 긴 제목이 넘친다.
+     ellipsis 가 없으면 글자가 통째로 잘려 나가 무슨 말인지 알 수 없게 되므로,
+     최소한 "..." 로 잘렸다는 걸 보이게 한다. */
+  text-overflow: ellipsis;
   font-size: 18px;
   font-weight: 700;
   color: var(--bp-text-strong);
