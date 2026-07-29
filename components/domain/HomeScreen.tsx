@@ -526,15 +526,20 @@ export function HomeScreen() {
         const heroCards = HERO_CARD_IDS.map((id) => allCards.find((c) => c.id === id)).filter(
           (c): c is HomeCard => Boolean(c) && (!c!.adminOnly || isAdmin)
         );
+        // 히어로 3장은 어느 화면에서도 하단 그리드에서 걷어낸다 — 히어로가 항상 위에
+        // 떠 있으므로 그대로 두면 같은 화면에 같은 카드가 두 번 나온다.
+        // 칩으로 걸러도 히어로에서 계속 보이니 접근 경로는 유지된다.
+        // (칩 정의에서도 쓰므로 여기서 미리 선언 — 아래에서 선언하면 TDZ 오류)
+        const heroCardIdSet = new Set(heroCards.map((c) => c.id));
 
         // 화면에는 제목·부제를 두지 않는다. 3번 슬롯이 신규 메뉴 전용이라 주제를 명명하면
         // 슬롯이 교체될 때마다 라벨이 틀리게 된다. 대신 sr-only 헤딩으로 스크린리더용
         // 영역 이름과 문서 헤딩 구조는 남긴다(이 페이지의 유일한 헤딩).
         //
-        // 칩으로 카테고리를 필터링하는 중에는 히어로를 숨긴다 — 히어로는 "전체" 화면용
-        // 강조 장치인데, 정보 탭을 보는 중에 예측 카드를 위에 띄우면 앞뒤가 안 맞는다.
+        // 카테고리 칩을 눌러도 히어로는 그대로 둔다 — 상단에 고정된 바로가기 묶음처럼
+        // 동작해야 하고, 필터를 옮길 때마다 화면 위쪽이 사라지면 위치 감각이 흔들린다.
         const heroNode =
-          activeCategory === "all" && heroCards.length > 0 ? (
+          heroCards.length > 0 ? (
             <section className="play-hub-section play-hub-section-hero" key="hero">
               <h2 className="sr-only">주요 메뉴</h2>
               <div className="play-hub-hero">
@@ -616,21 +621,24 @@ export function HomeScreen() {
           content: "콘텐츠",
           "admin-only": "운영자"
         };
+        // 히어로에 올라간 카드는 하단 그리드에서 빠지므로, 그 카테고리에 남는 카드가
+        // 하나도 없으면 칩을 눌러도 빈 화면이 된다. 그런 칩은 아예 만들지 않는다.
+        // (그 카드는 히어로에서 계속 보이므로 접근 경로는 유지된다)
         const chipDefs = [
           { id: "all", label: "전체" },
           ...otherSections
             .filter((s) => !s.adminOnly || isAdmin)
-            .filter((s) => s.cards.some((c) => categoryOfCard.get(c.id) === s.id))
+            .filter((s) =>
+              s.cards.some(
+                (c) => categoryOfCard.get(c.id) === s.id && !heroCardIdSet.has(c.id)
+              )
+            )
             .map((s) => ({ id: s.id, label: CHIP_LABELS[s.id] ?? s.label }))
         ];
 
-        // "전체"에서는 히어로 3장을 걷어낸다 — 바로 위에 이미 크게 노출돼 있어 중복이다.
-        // 칩이 선택된 경우엔 히어로가 숨겨지므로 그 카테고리의 카드를 전부 보여준다.
-        const heroCardIdSet = new Set(heroCards.map((c) => c.id));
-        const visibleBottomCards =
-          activeCategory === "all"
-            ? bottomCards.filter((c) => !heroCardIdSet.has(c.id))
-            : bottomCards.filter((c) => categoryOfCard.get(c.id) === activeCategory);
+        const visibleBottomCards = bottomCards
+          .filter((c) => !heroCardIdSet.has(c.id))
+          .filter((c) => activeCategory === "all" || categoryOfCard.get(c.id) === activeCategory);
 
         const bottomSectionNode = (
           <section className="play-hub-section play-hub-section-standard" key="bottom-menus">
