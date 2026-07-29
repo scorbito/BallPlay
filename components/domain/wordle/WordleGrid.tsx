@@ -6,6 +6,7 @@
 // 자모를 9칸으로 쪼개 보여주면 모바일에서 3칸 x 6줄이 한 화면에 안 들어간다.
 // 색바만으로도 "몇 번째 자모가 맞았는지"는 전달된다.
 
+import { Check, X } from "lucide-react";
 import { getTeam } from "@/lib/constants/teams";
 import { MAX_ATTEMPTS, SYLLABLE_COUNT } from "@/lib/wordle/daily";
 import { JAMO_KINDS } from "@/lib/wordle/jamo";
@@ -31,6 +32,15 @@ const DIRECTION_LABEL: Record<"up" | "down" | "same", string> = {
   down: "↓",
   same: "="
 };
+
+/** 칩 안에 붙는 일치/불일치 마크. 색에 의존하지 않고 의미를 전달한다. */
+function MatchMark({ matched }: { matched: boolean }) {
+  return matched ? (
+    <Check size={10} strokeWidth={3.5} className="wordle-chip-mark" aria-hidden />
+  ) : (
+    <X size={10} strokeWidth={3.5} className="wordle-chip-mark" aria-hidden />
+  );
+}
 
 export function WordleGrid({ results, guessedPlayers, hints }: Props) {
   const emptyRows = Math.max(0, MAX_ATTEMPTS - results.length);
@@ -59,20 +69,47 @@ export function WordleGrid({ results, guessedPlayers, hints }: Props) {
               })}
             </div>
             {player && hint ? (
+              // 일치/불일치를 색으로만 표시하면 색약 사용자가 구분할 수 없고, 회색은
+              // "아님"보다 "정보 없음"으로 읽힌다. 그래서 체크·엑스 마크를 함께 붙인다.
               <div className="wordle-row-hint">
-                <span className={`wordle-chip${hint.teamMatch ? " is-match" : ""}`}>
+                <span
+                  className={`wordle-chip${hint.teamMatch ? " is-match" : ""}`}
+                  aria-label={`팀 ${getTeam(player.teamId).shortName} ${
+                    hint.teamMatch ? "일치" : "불일치"
+                  }`}
+                >
                   {getTeam(player.teamId).shortName}
+                  <MatchMark matched={hint.teamMatch} />
                 </span>
-                <span className={`wordle-chip${hint.posMatch ? " is-match" : ""}`}>
+                <span
+                  className={`wordle-chip${hint.posMatch ? " is-match" : ""}`}
+                  aria-label={`포지션 ${player.posGroup} ${hint.posMatch ? "일치" : "불일치"}`}
+                >
                   {player.posGroup}
+                  <MatchMark matched={hint.posMatch} />
                 </span>
                 {hint.jerseyDirection ? (
                   <span
                     className={`wordle-chip wordle-chip-jersey${
                       hint.jerseyDirection === "same" ? " is-match" : ""
                     }`}
+                    aria-label={
+                      hint.jerseyDirection === "same"
+                        ? `등번호 ${player.jersey} 일치`
+                        : `정답 등번호는 ${player.jersey}번보다 ${
+                            hint.jerseyDirection === "up" ? "큼" : "작음"
+                          }`
+                    }
                   >
-                    {`${player.jersey}${DIRECTION_LABEL[hint.jerseyDirection]}`}
+                    {/* 등번호는 ↑↓ 가 이미 "다르다 + 방향"을 말해주므로 엑스를 덧붙이지 않는다. */}
+                    {hint.jerseyDirection === "same" ? (
+                      <>
+                        {player.jersey}
+                        <MatchMark matched />
+                      </>
+                    ) : (
+                      `${player.jersey}${DIRECTION_LABEL[hint.jerseyDirection]}`
+                    )}
                   </span>
                 ) : null}
               </div>

@@ -222,7 +222,8 @@
 .phone-frame-light .wordle-chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  gap: 3px;
+  padding: 2px 7px 2px 8px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
@@ -234,6 +235,10 @@
 .phone-frame-light .wordle-chip.is-match {
   background: rgba(22, 163, 74, 0.14);
   color: #15803d;
+}
+
+.phone-frame-light .wordle-chip-mark {
+  flex-shrink: 0;
 }
 
 .phone-frame-light .wordle-chip-jersey {
