@@ -456,10 +456,19 @@
   font-weight: 800;
   line-height: 1.25;
   text-align: left;
-  /* 좁�? 카드 ??��??5~6???�목??2줄로 ?�어지지 ?�게 1�?강제 */
-  white-space: nowrap;
+  /* 최대 2줄까지 허용한다.
+     예전에는 1줄 강제(nowrap + ellipsis)였는데, 히어로 3번 슬롯이 신규 메뉴 전용으로
+     운영되면서 제목 길이를 미리 알 수 없게 됐다("오늘 선수는 누구?"가 잘렸다).
+     카드 id별 override(.play-hub-card-wrap-*)를 계속 추가하는 방식은 슬롯이 교체될
+     때마다 CSS를 손대야 하므로, 기본 규칙에서 해결한다.
+     짧은 제목은 그대로 1줄로 남고, 넘칠 때만 2줄이 된다. */
+  white-space: normal;
+  word-break: keep-all;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip;
 }
 
 .phone-frame-light .play-hub-hero-cards > :not(:first-child) .play-hub-card-icon {
