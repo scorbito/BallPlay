@@ -526,10 +526,9 @@ export function HomeScreen() {
         const heroCards = HERO_CARD_IDS.map((id) => allCards.find((c) => c.id === id)).filter(
           (c): c is HomeCard => Boolean(c) && (!c!.adminOnly || isAdmin)
         );
-        // 히어로 3장은 어느 화면에서도 하단 그리드에서 걷어낸다 — 히어로가 항상 위에
-        // 떠 있으므로 그대로 두면 같은 화면에 같은 카드가 두 번 나온다.
-        // 칩으로 걸러도 히어로에서 계속 보이니 접근 경로는 유지된다.
-        // (칩 정의에서도 쓰므로 여기서 미리 선언 — 아래에서 선언하면 TDZ 오류)
+        // "전체"에서만 히어로 3장을 하단 그리드에서 걷어낸다 — 바로 위에 같은 카드가
+        // 있어서 중복이 눈에 띈다. 반면 카테고리 칩을 누른 화면은 "그 분류를 통째로
+        // 보는 것"이므로 히어로에 올라간 카드도 목록에 함께 나오는 게 맞다.
         const heroCardIdSet = new Set(heroCards.map((c) => c.id));
 
         // 화면에는 제목·부제를 두지 않는다. 3번 슬롯이 신규 메뉴 전용이라 주제를 명명하면
@@ -621,24 +620,18 @@ export function HomeScreen() {
           content: "콘텐츠",
           "admin-only": "운영자"
         };
-        // 히어로에 올라간 카드는 하단 그리드에서 빠지므로, 그 카테고리에 남는 카드가
-        // 하나도 없으면 칩을 눌러도 빈 화면이 된다. 그런 칩은 아예 만들지 않는다.
-        // (그 카드는 히어로에서 계속 보이므로 접근 경로는 유지된다)
         const chipDefs = [
           { id: "all", label: "전체" },
           ...otherSections
             .filter((s) => !s.adminOnly || isAdmin)
-            .filter((s) =>
-              s.cards.some(
-                (c) => categoryOfCard.get(c.id) === s.id && !heroCardIdSet.has(c.id)
-              )
-            )
+            .filter((s) => s.cards.some((c) => categoryOfCard.get(c.id) === s.id))
             .map((s) => ({ id: s.id, label: CHIP_LABELS[s.id] ?? s.label }))
         ];
 
-        const visibleBottomCards = bottomCards
-          .filter((c) => !heroCardIdSet.has(c.id))
-          .filter((c) => activeCategory === "all" || categoryOfCard.get(c.id) === activeCategory);
+        const visibleBottomCards =
+          activeCategory === "all"
+            ? bottomCards.filter((c) => !heroCardIdSet.has(c.id))
+            : bottomCards.filter((c) => categoryOfCard.get(c.id) === activeCategory);
 
         const bottomSectionNode = (
           <section className="play-hub-section play-hub-section-standard" key="bottom-menus">
