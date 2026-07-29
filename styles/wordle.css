@@ -241,6 +241,14 @@
   flex-shrink: 0;
 }
 
+/* 아직 안 열린 단계 안내 — 칩이 하나도 없으면 빈 줄처럼 보여서 자리만 잡아준다. */
+.phone-frame-light .wordle-chip-locked {
+  background: transparent;
+  border: 1px dashed var(--bp-line);
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
 .phone-frame-light .wordle-chip-jersey {
   font-variant-numeric: tabular-nums;
 }

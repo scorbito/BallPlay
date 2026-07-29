@@ -22,7 +22,21 @@ export const MAX_ATTEMPTS = 6;
 /** 격자 칸 수 = 정답 음절 수. */
 export const SYLLABLE_COUNT = 3;
 
-/** 등번호 힌트가 열리는 시도 번호(1-based). 그 전에는 팀·포지션만 공개. */
+// ── 속성 힌트 단계 개방 (1-based 시도 번호) ──
+//
+// 실측: 자모 제약만으로 1수 후 후보가 평균 3.2명까지 좁혀지고, 여기에 팀·포지션이
+// 붙으면 2.0명이 된다. 즉 속성은 "마지막 한 명을 고르는" 역할이다.
+// 1시도부터 다 열어두면 첫 수에 자모 3개 + 팀 + 포지션이 한 번에 들어와
+// 글자 추리 없이 검색 목록에서 골라내는 흐름이 된다(실제 플레이에서 2수에 풀렸다).
+//
+// 약한 힌트(포지션, 4분류)부터 열고 강한 힌트(팀, 10분류)를 뒤로 미룬다.
+// 개방은 소급 적용한다 — 3시도에 도달하면 1·2시도 줄에도 팀이 표시된다.
+// 그렇지 않으면 어느 줄에 어떤 칩이 있었는지 외워야 해서 기억력 게임이 된다.
+/** 포지션 힌트가 열리는 시도 번호. */
+export const POSITION_HINT_FROM_ATTEMPT = 2;
+/** 팀 힌트가 열리는 시도 번호. */
+export const TEAM_HINT_FROM_ATTEMPT = 3;
+/** 등번호 힌트가 열리는 시도 번호. */
 export const JERSEY_HINT_FROM_ATTEMPT = 4;
 
 const ENCODED_ANSWERS = (answersData as { answers: string[] }).answers;

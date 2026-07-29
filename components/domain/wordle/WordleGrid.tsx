@@ -8,15 +8,19 @@
 
 import { Check, X } from "lucide-react";
 import { getTeam } from "@/lib/constants/teams";
-import { MAX_ATTEMPTS, SYLLABLE_COUNT } from "@/lib/wordle/daily";
+import {
+  MAX_ATTEMPTS,
+  POSITION_HINT_FROM_ATTEMPT,
+  SYLLABLE_COUNT
+} from "@/lib/wordle/daily";
 import { JAMO_KINDS } from "@/lib/wordle/jamo";
 import type { GuessResult } from "@/lib/wordle/judge";
 import type { WordlePlayer } from "@/lib/wordle/pool";
 
+/** 각 항목은 아직 안 열렸으면 null. 개방은 시도 횟수에 따라 소급 적용된다. */
 export type AttributeHint = {
-  teamMatch: boolean;
-  posMatch: boolean;
-  /** 등번호 방향. 아직 안 열렸으면 null. */
+  teamMatch: boolean | null;
+  posMatch: boolean | null;
   jerseyDirection: "up" | "down" | "same" | null;
 };
 
@@ -72,22 +76,34 @@ export function WordleGrid({ results, guessedPlayers, hints }: Props) {
               // 일치/불일치를 색으로만 표시하면 색약 사용자가 구분할 수 없고, 회색은
               // "아님"보다 "정보 없음"으로 읽힌다. 그래서 체크·엑스 마크를 함께 붙인다.
               <div className="wordle-row-hint">
-                <span
-                  className={`wordle-chip${hint.teamMatch ? " is-match" : ""}`}
-                  aria-label={`팀 ${getTeam(player.teamId).shortName} ${
-                    hint.teamMatch ? "일치" : "불일치"
-                  }`}
-                >
-                  {getTeam(player.teamId).shortName}
-                  <MatchMark matched={hint.teamMatch} />
-                </span>
-                <span
-                  className={`wordle-chip${hint.posMatch ? " is-match" : ""}`}
-                  aria-label={`포지션 ${player.posGroup} ${hint.posMatch ? "일치" : "불일치"}`}
-                >
-                  {player.posGroup}
-                  <MatchMark matched={hint.posMatch} />
-                </span>
+                {/* 아무 속성도 안 열린 단계(1시도)에는 빈 줄처럼 보이지 않게 안내를 둔다. */}
+                {hint.posMatch === null &&
+                hint.teamMatch === null &&
+                hint.jerseyDirection === null ? (
+                  <span className="wordle-chip wordle-chip-locked">
+                    {`${POSITION_HINT_FROM_ATTEMPT}시도부터 속성 힌트`}
+                  </span>
+                ) : null}
+                {hint.posMatch !== null ? (
+                  <span
+                    className={`wordle-chip${hint.posMatch ? " is-match" : ""}`}
+                    aria-label={`포지션 ${player.posGroup} ${hint.posMatch ? "일치" : "불일치"}`}
+                  >
+                    {player.posGroup}
+                    <MatchMark matched={hint.posMatch} />
+                  </span>
+                ) : null}
+                {hint.teamMatch !== null ? (
+                  <span
+                    className={`wordle-chip${hint.teamMatch ? " is-match" : ""}`}
+                    aria-label={`팀 ${getTeam(player.teamId).shortName} ${
+                      hint.teamMatch ? "일치" : "불일치"
+                    }`}
+                  >
+                    {getTeam(player.teamId).shortName}
+                    <MatchMark matched={hint.teamMatch} />
+                  </span>
+                ) : null}
                 {hint.jerseyDirection ? (
                   <span
                     className={`wordle-chip wordle-chip-jersey${

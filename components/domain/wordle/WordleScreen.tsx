@@ -14,6 +14,8 @@ import { trackEvent } from "@/lib/analytics/events";
 import {
   JERSEY_HINT_FROM_ATTEMPT,
   MAX_ATTEMPTS,
+  POSITION_HINT_FROM_ATTEMPT,
+  TEAM_HINT_FROM_ATTEMPT,
   getAnswerForDate,
   getAnswerPoolSize,
   getRandomAnswer,
@@ -92,21 +94,28 @@ export function WordleScreen() {
     [guesses]
   );
 
-  // 속성 힌트 — 등번호 방향은 4번째 시도부터. 팀·포지션만으로도 초반 정보량이 충분해서
-  // 처음부터 다 열면 글자 추리 없이 속성만으로 좁혀지는 게임이 된다.
+  // 속성 힌트 — 시도 횟수에 따라 단계적으로 열린다(포지션 2 → 팀 3 → 등번호 4).
+  //
+  // 기준은 "몇 번째 줄인지"가 아니라 "지금까지 몇 번 시도했는지"다. 즉 3시도에 도달하면
+  // 1·2시도 줄에도 팀이 소급 표시된다. 줄마다 다르게 열면 어느 줄에 어떤 칩이 있었는지
+  // 외워야 해서 추리가 아니라 기억력 게임이 된다.
   const hints = useMemo<AttributeHint[]>(() => {
     if (!answer) return [];
-    return guessedPlayers.map((player, index) => ({
-      teamMatch: player.teamId === answer.teamId,
-      posMatch: player.posGroup === answer.posGroup,
-      jerseyDirection:
-        index + 1 >= JERSEY_HINT_FROM_ATTEMPT
-          ? player.jersey === answer.jersey
-            ? "same"
-            : player.jersey < answer.jersey
-            ? "up"
-            : "down"
-          : null
+    const attempts = guessedPlayers.length;
+    const posOpen = attempts >= POSITION_HINT_FROM_ATTEMPT;
+    const teamOpen = attempts >= TEAM_HINT_FROM_ATTEMPT;
+    const jerseyOpen = attempts >= JERSEY_HINT_FROM_ATTEMPT;
+
+    return guessedPlayers.map((player) => ({
+      teamMatch: teamOpen ? player.teamId === answer.teamId : null,
+      posMatch: posOpen ? player.posGroup === answer.posGroup : null,
+      jerseyDirection: !jerseyOpen
+        ? null
+        : player.jersey === answer.jersey
+        ? "same"
+        : player.jersey < answer.jersey
+        ? "up"
+        : "down"
     }));
   }, [guessedPlayers, answer]);
 
@@ -340,8 +349,12 @@ export function WordleScreen() {
             글자마다 초성·중성·종성을 따로 채점해요. 초록은 자리까지 정확, 노랑은 정답에 있지만
             다른 글자 자리, 회색은 없음이에요.
           </li>
-          <li>추측한 선수의 팀·포지션이 정답과 같은지도 알려줘요.</li>
-          <li>4번째 시도부터는 등번호가 정답보다 큰지 작은지도 열려요.</li>
+          <li>
+            속성 힌트는 단계적으로 열려요. <strong>{POSITION_HINT_FROM_ATTEMPT}시도</strong>부터
+            포지션, <strong>{TEAM_HINT_FROM_ATTEMPT}시도</strong>부터 팀,{" "}
+            <strong>{JERSEY_HINT_FROM_ATTEMPT}시도</strong>부터 등번호 높낮이가 보여요.
+          </li>
+          <li>열리면 앞선 시도의 줄에도 함께 표시돼요. 외워둘 필요 없어요.</li>
           <li>6번 안에 맞히면 성공이에요. 자정에 새 문제로 바뀌어요.</li>
           <li>
             <strong>공식 문제는 하루 한 판</strong>이에요. 다 풀면 <strong>연습</strong>으로 계속
