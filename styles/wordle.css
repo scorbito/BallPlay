@@ -357,7 +357,7 @@
   margin: 0;
   padding: 6px;
   list-style: none;
-  max-height: 216px;
+  max-height: 240px;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--bp-card);

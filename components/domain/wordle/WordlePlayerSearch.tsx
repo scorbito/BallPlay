@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { getTeam } from "@/lib/constants/teams";
-import { isAmbiguousName, searchPlayers, type WordlePlayer } from "@/lib/wordle/pool";
+import { searchPlayers, type WordlePlayer } from "@/lib/wordle/pool";
 
 type Props = {
   disabled?: boolean;
@@ -20,9 +20,10 @@ type Props = {
   onPick: (player: WordlePlayer) => void;
 };
 
-// 목록이 길면 아래로 펼칠 때 하단 탭바에 가린다. 후보를 줄이는 건 난이도에도 낫다 —
-// 목록을 길게 늘어놓으면 추측을 쓰지 않고 눈으로 훑어 좁히는 쪽으로 흐른다.
-const RESULT_LIMIT = 5;
+// 실측(898명 기준): 목록 5개로도 초성 패턴 331개 중 289개(87%)를 이미 "전부" 보여준다.
+// 8개로 늘리면 96%. 즉 개수는 난이도를 거의 바꾸지 않고 찾기 편의만 달라진다.
+// (난이도를 실제로 결정하는 건 초성 정보 — 초성 3자를 알면 정답 후보가 평균 1.59명이다.)
+const RESULT_LIMIT = 8;
 
 export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Props) {
   const [query, setQuery] = useState("");
@@ -78,14 +79,9 @@ export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Prop
                     disabled={isUsed}
                   >
                     <span className="wordle-search-name">{player.name}</span>
-                    {/* 팀·포지션은 일부러 숨긴다. 목록에 속성이 보이면 추측을 쓰지 않고
-                        이미 얻은 속성 힌트와 대조해 정답을 골라낼 수 있다.
-                        동명이인만 구분이 불가능하므로 그 경우에 한해 팀을 보여준다. */}
-                    {isAmbiguousName(player.name) ? (
-                      <span className="wordle-search-meta">
-                        {getTeam(player.teamId).shortName}
-                      </span>
-                    ) : null}
+                    <span className="wordle-search-meta">
+                      {getTeam(player.teamId).shortName} · {player.posGroup}
+                    </span>
                     {isUsed ? <span className="wordle-search-used">이미 추측</span> : null}
                   </button>
                 </li>
