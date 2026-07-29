@@ -24,6 +24,12 @@ const OUT_DIR = join(ROOT, "data", "wordle");
 
 /** 정답이 되기 위한 최소 시즌 출장 수. 1군 주력만 정답으로 삼아 "누군지 모르는 선수" 불만을 막는다. */
 const MIN_SEASON_GAMES = 30;
+/**
+ * 첫 추측 추천 후보의 최소 출장 수. 정답 기준보다 높게 잡아 인지도 높은 선수만 남긴다.
+ * 55 이상 = 약 99명이고, 이 규모면 "정답과 적당히 겹치는" 후보를 매일 3명 확보할 수 있다
+ * (201일 전량 검증). 더 좁히면 어떤 날은 후보가 부족해진다.
+ */
+const STARTER_MIN_SEASON_GAMES = 55;
 /** 격자가 3칸 고정이라 3음절만 다룬다(로스터 940명 중 898명 = 95.5%). */
 const NAME_SYLLABLES = 3;
 
@@ -117,6 +123,27 @@ writeFileSync(
   `${JSON.stringify({ players: guessable }, null, 0)}\n`,
   "utf8"
 );
+
+// ── starters.json — 첫 추측 추천 후보 풀 ──
+// 실제 선정(정답과의 근접도 밴드 필터)은 런타임에서 한다. 여기서는 "인지도 있는 선수"
+// 목록만 뽑아둔다. 이름은 guessable.json 에서 조회하므로 id 만 저장.
+const starterPool = players.filter((p) => p.seasonGames >= STARTER_MIN_SEASON_GAMES);
+writeFileSync(
+  join(OUT_DIR, "starters.json"),
+  `${JSON.stringify(
+    {
+      _note:
+        "첫 추측 추천 후보 풀(인지도 프록시 = 시즌 출장 수). 정답과의 근접도 필터는 lib/wordle/starters.ts 런타임에서 적용.",
+      minSeasonGames: STARTER_MIN_SEASON_GAMES,
+      ids: starterPool.map((p) => p.id)
+    },
+    null,
+    0
+  )}\n`,
+  "utf8"
+);
+const starterTeams = new Set(starterPool.map((p) => p.teamId));
+console.log(`추천 후보 풀 ${starterPool.length}명 (${starterTeams.size}개 구단)`);
 
 // ── answers.json — 정답 풀 ──
 const answerPool = players.filter((p) => p.seasonGames >= MIN_SEASON_GAMES);

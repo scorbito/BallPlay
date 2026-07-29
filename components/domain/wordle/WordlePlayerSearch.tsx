@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { getTeam } from "@/lib/constants/teams";
-import { searchPlayers, type WordlePlayer } from "@/lib/wordle/pool";
+import { isAmbiguousName, searchPlayers, type WordlePlayer } from "@/lib/wordle/pool";
 
 type Props = {
   disabled?: boolean;
@@ -76,9 +76,14 @@ export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Prop
                     disabled={isUsed}
                   >
                     <span className="wordle-search-name">{player.name}</span>
-                    <span className="wordle-search-meta">
-                      {getTeam(player.teamId).shortName} · {player.posGroup}
-                    </span>
+                    {/* 팀·포지션은 일부러 숨긴다. 목록에 속성이 보이면 추측을 쓰지 않고
+                        이미 얻은 속성 힌트와 대조해 정답을 골라낼 수 있다.
+                        동명이인만 구분이 불가능하므로 그 경우에 한해 팀을 보여준다. */}
+                    {isAmbiguousName(player.name) ? (
+                      <span className="wordle-search-meta">
+                        {getTeam(player.teamId).shortName}
+                      </span>
+                    ) : null}
                     {isUsed ? <span className="wordle-search-used">이미 추측</span> : null}
                   </button>
                 </li>

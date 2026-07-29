@@ -51,3 +51,19 @@ export function searchPlayers(query: string, limit = 8): WordlePlayer[] {
 export function isGuessableName(name: string): boolean {
   return PLAYERS.some((p) => p.name === name);
 }
+
+const NAME_COUNTS = PLAYERS.reduce<Record<string, number>>((acc, player) => {
+  acc[player.name] = (acc[player.name] ?? 0) + 1;
+  return acc;
+}, {});
+
+/**
+ * 동명이인이 있는 이름인지.
+ *
+ * 검색 목록에는 팀·포지션을 노출하지 않는다 — 그걸 보여주면 추측을 쓰지 않고 목록만
+ * 훑어서 속성 힌트와 대조해 정답을 골라낼 수 있다(실제 플레이에서 확인된 누출).
+ * 다만 3음절 898명 중 43개 이름은 동명이인이라, 그 경우에만 구분용으로 팀을 보여준다.
+ */
+export function isAmbiguousName(name: string): boolean {
+  return (NAME_COUNTS[name] ?? 0) > 1;
+}

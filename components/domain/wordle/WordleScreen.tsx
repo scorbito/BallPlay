@@ -96,7 +96,7 @@ export function WordleScreen() {
 
   // 첫 추측 유도 — 빈 격자 앞에서 멈추지 않게 탭 한 번으로 시작되는 후보를 준다.
   const starters = useMemo(
-    () => (dateISO ? getStarterSuggestions(dateISO, answer?.id ?? null) : []),
+    () => (dateISO ? getStarterSuggestions(dateISO, answer) : []),
     [dateISO, answer]
   );
 
