@@ -16,16 +16,21 @@
   min-width: 0;
 }
 
+/* 아이콘 원형 대신 텍스트 라벨 알약 — 처음 온 사람이 "누를 수 있는 것"임을 알게 한다.
+   헤더 제목이 max-width: calc(100% - 200px) 로 잡혀 있어 폭을 100px 이내로 유지한다. */
 .phone-frame-light .wordle-help-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--bp-line-soft);
-  border-radius: 50%;
+  gap: 3px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--bp-line);
+  border-radius: 999px;
   background: var(--bp-card);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
   color: var(--bp-text-secondary);
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
@@ -54,6 +59,22 @@
   letter-spacing: -0.2px;
   /* 날짜는 클라이언트에서 확정되므로 첫 페인트에 빈 문자열이 온다. 높이를 미리 잡아 밀림 방지. */
   min-height: 17px;
+}
+
+.phone-frame-light .wordle-head-desc {
+  margin: 1px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--bp-text-secondary);
+  text-align: center;
+  /* 좁은 화면에서 단어 중간이 끊기지 않게 */
+  word-break: keep-all;
+}
+
+.phone-frame-light .wordle-head-desc strong {
+  font-weight: 900;
+  color: var(--bp-accent);
 }
 
 .phone-frame-light .wordle-head-sub {

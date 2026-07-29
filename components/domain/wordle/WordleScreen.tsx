@@ -216,13 +216,12 @@ export function WordleScreen() {
       theme="light"
       backHref="/"
       headerAction={
-        <button
-          type="button"
-          className="wordle-help-btn"
-          onClick={() => setHelpOpen(true)}
-          aria-label="게임 규칙 안내"
-        >
-          <Info size={16} strokeWidth={2.5} />
+        // ⓘ 아이콘만 두면 "누를 수 있는 것"임을 아는 사람만 누른다. 텍스트 라벨로 바꿨다.
+        // "도움말"보다 "게임방법"이 무엇이 나올지 명확하다(도움말은 문의·FAQ로도 읽힌다).
+        // 헤더 제목이 max-width: calc(100% - 200px) 라 버튼 폭은 100px 이내로 유지해야 한다.
+        <button type="button" className="wordle-help-btn" onClick={() => setHelpOpen(true)}>
+          <Info size={13} strokeWidth={2.5} aria-hidden />
+          <span>게임방법</span>
         </button>
       }
     >
@@ -235,11 +234,20 @@ export function WordleScreen() {
               <span className="wordle-head-practice">{`연습 ${practiceSession.played + 1}판`}</span>
             )}
           </p>
+          {/* 게임 목적 한 줄 — 범례는 "채점 방식", 추천 칩은 "무엇을 할지"를 알려주지만
+              "이게 무슨 게임인가"는 어디에도 없었다. 첫 추측 전에만 노출한다. */}
+          {isDaily && results.length === 0 ? (
+            <p className="wordle-head-desc">
+              이름의 <strong>자음·모음 힌트</strong>로 오늘의 선수를 맞혀 보세요
+            </p>
+          ) : null}
           <p className="wordle-head-sub">
             {finished
               ? isDaily
                 ? "오늘 공식 문제 완료"
                 : "연습 판 완료"
+              : results.length === 0
+              ? `${MAX_ATTEMPTS}번의 기회`
               : `KBO 선수 한 명 · 남은 기회 ${MAX_ATTEMPTS - guesses.length}`}
           </p>
         </header>
@@ -331,7 +339,7 @@ export function WordleScreen() {
 
       <ModalShell
         open={helpOpen}
-        title="게임 규칙"
+        title="게임방법"
         onClose={() => setHelpOpen(false)}
         panelClassName="lineup-confirm-modal-panel"
         closeOnBackdrop
