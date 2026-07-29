@@ -877,7 +877,9 @@
     text-overflow: clip;
     word-break: keep-all;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    /* 기본 규칙과 동일하게 3줄. 히어로 3번은 신규 메뉴 전용 슬롯이라 제목 길이를
+       미리 알 수 없어 좁은 화면에서도 여유를 둔다. */
+    -webkit-line-clamp: 3;
   }
 }
 
