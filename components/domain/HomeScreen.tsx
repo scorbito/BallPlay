@@ -304,8 +304,7 @@ const sections: HomeSection[] = [
         description: "두 팀 전적·선발·타선 전력지수 비교",
         icon: BarChart3,
         iconImage: "/icons/menu/team-compare.png",
-        available: true,
-        badge: "NEW"
+        available: true
       }
     ]
   },
@@ -582,8 +581,10 @@ export function HomeScreen() {
           });
         });
 
-        // "전체" 플랫 메뉴에서 맨 앞(상단 좌측)에 노출할 카드.
-        const highlightedIds = ["compare"];
+        // 하단 메뉴 맨 앞에 고정할 카드(배열 순서 = 화면 순서).
+        // 승리팀 예측하기는 앱의 핵심 기능이라 항상 1번이다. 이 순서는 "전체"뿐 아니라
+        // 카테고리 칩 화면에도 그대로 적용된다(필터가 이 순서를 유지하므로).
+        const highlightedIds = ["winner-predict", "predict-ranking", "compare"];
         const highlightedCards: HomeCard[] = [];
         highlightedIds.forEach((id) => {
           const cardIdx = bottomCards.findIndex((c) => c.id === id);
