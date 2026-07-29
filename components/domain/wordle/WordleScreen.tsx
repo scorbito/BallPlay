@@ -235,8 +235,11 @@ export function WordleScreen() {
             )}
           </p>
           {/* 게임 목적 한 줄 — 범례는 "채점 방식", 추천 칩은 "무엇을 할지"를 알려주지만
-              "이게 무슨 게임인가"는 어디에도 없었다. 첫 추측 전에만 노출한다. */}
-          {isDaily && results.length === 0 ? (
+              "이게 무슨 게임인가"는 어디에도 없었다.
+              처음엔 첫 추측 전에만 띄웠는데, 그러면 이미 오늘 문제를 시작한 사람은
+              (localStorage 복원 후) 영원히 못 본다. 판이 끝날 때까지 유지하고,
+              결과 시트가 뜨는 시점에만 자리를 비운다. */}
+          {isDaily && !finished ? (
             <p className="wordle-head-desc">
               이름의 <strong>자음·모음 힌트</strong>로 오늘의 선수를 맞혀 보세요
             </p>
@@ -246,9 +249,7 @@ export function WordleScreen() {
               ? isDaily
                 ? "오늘 공식 문제 완료"
                 : "연습 판 완료"
-              : results.length === 0
-              ? `${MAX_ATTEMPTS}번의 기회`
-              : `KBO 선수 한 명 · 남은 기회 ${MAX_ATTEMPTS - guesses.length}`}
+              : `남은 기회 ${MAX_ATTEMPTS - guesses.length}`}
           </p>
         </header>
 
