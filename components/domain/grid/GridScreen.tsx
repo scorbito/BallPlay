@@ -193,20 +193,23 @@ export function GridScreen() {
   };
 
   return (
-    <AppShell>
+    // theme="light" 가 .phone-frame-light 를 붙인다 — grid.css 전체가 이 클래스 아래로
+    // 스코프돼 있어 빠뜨리면 스타일이 통째로 죽는다(워들과 동일한 구조).
+    <AppShell
+      activeTab="home"
+      title="9칸을 채워라!"
+      theme="light"
+      backHref="/"
+      headerAction={
+        <button type="button" className="grid-help-btn" onClick={() => setHelpOpen(true)}>
+          <Info size={13} strokeWidth={2.5} aria-hidden />
+          <span>게임방법</span>
+        </button>
+      }
+    >
       <div className="grid-game">
         <header className="grid-head">
-          <div className="grid-head-top">
-            <h1 className="grid-title">9칸을 채워라!</h1>
-            <button
-              type="button"
-              className="grid-help-btn"
-              onClick={() => setHelpOpen(true)}
-              aria-label="게임 방법"
-            >
-              <Info size={16} />
-            </button>
-          </div>
+          <p className="grid-head-date">{isDaily ? (dateISO ?? " ") : "연습 판"}</p>
           <p className="grid-subtitle">
             {finished
               ? `${filled.length}/9칸 · 시도 ${used}회`
