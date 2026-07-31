@@ -555,18 +555,18 @@
   }
 }
 
-/* 태블릿 해상도 대응 */
+/* 태블릿 — 4열 유지, 간격만 넓힘 */
 @media (min-width: 768px) {
   .phone-frame-light .play-hub-flexible-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 12px !important;
   }
 }
 
-/* 데스크톱 해상도 대응 */
+/* 데스크톱 — 4열 유지 (홈 프레임이 좁아 auto-fill이면 3열로 떨어짐) */
 @media (min-width: 1025px) {
   .phone-frame-light .play-hub-flexible-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 16px !important;
   }
 }
