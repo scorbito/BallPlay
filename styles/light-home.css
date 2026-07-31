@@ -543,22 +543,22 @@
 /* ── 하단 메뉴용 반응형 flexible grid ── */
 .phone-frame-light .play-hub-flexible-grid {
   display: grid !important;
-  /* 기본 모바일에서는 3열 배치 (최소 너비 약 95px) */
-  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)) !important;
+  /* 모바일 4열 (아이콘 축소한 세로 타일) */
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 8px !important;
 }
 
-/* 400px 이상 스마트폰에서 조금 더 널널하게 배치 */
+/* 큰 스마트폰에서도 4열 유지 */
 @media (min-width: 400px) {
   .phone-frame-light .play-hub-flexible-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 }
 
 /* 태블릿 해상도 대응 */
 @media (min-width: 768px) {
   .phone-frame-light .play-hub-flexible-grid {
-    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
     gap: 12px !important;
   }
 }
@@ -566,7 +566,7 @@
 /* 데스크톱 해상도 대응 */
 @media (min-width: 1025px) {
   .phone-frame-light .play-hub-flexible-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
     gap: 16px !important;
   }
 }

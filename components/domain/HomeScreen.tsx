@@ -134,7 +134,7 @@ const sections: HomeSection[] = [
       {
         id: "winner-predict",
         href: "/predict/winner",
-        title: "승리팀 예측하기",
+        title: "승리팀 예측",
         description: "오늘 경기 승리팀 선택",
         icon: Target,
         iconImage: "/icons/menu/predict-winner.png",
@@ -153,7 +153,7 @@ const sections: HomeSection[] = [
       {
         id: "predict-ranking",
         href: "/predict/ranking",
-        title: "승리팀 예측 순위",
+        title: "예측 순위",
         description: "참여 기록과 적중 흐름",
         icon: Trophy,
         iconImage: "/icons/menu/prediction-rank.png",
@@ -162,7 +162,7 @@ const sections: HomeSection[] = [
       {
         id: "sim-1000",
         href: "/predict/sim-1000",
-        title: "1000판 시뮬레이션",
+        title: "1000판 시뮬",
         description: "오늘 경기 1000판 결과",
         icon: BarChart3,
         iconImage: "/icons/menu/sim-1000.png",
@@ -291,7 +291,7 @@ const sections: HomeSection[] = [
       {
         id: "stadium",
         href: "/stadium",
-        title: "라인업 시뮬레이션",
+        title: "라인업 시뮬",
         description: "라인업 기반 경기 흐름 참고",
         icon: Swords,
         iconImage: "/icons/tabs/stadium.png",
@@ -319,7 +319,7 @@ const sections: HomeSection[] = [
       {
         id: "videos",
         href: "/videos",
-        title: "재밌는 야구 영상",
+        title: "야구 영상",
         description: "끝내기·호수비·짤방 모음",
         icon: PlaySquare,
         iconImage: "/icons/menu/fun-videos.png",
@@ -328,7 +328,7 @@ const sections: HomeSection[] = [
       {
         id: "quiz",
         href: "/quiz",
-        title: "야구 상식 퀴즈",
+        title: "야구 퀴즈",
         description: "랜덤 10문제 도전",
         icon: Brain,
         iconImage: "/icons/menu/baseball-quiz.png",
@@ -449,7 +449,7 @@ export function HomeScreen() {
           const displayDescription =
             card.id === "recent10-top" ? "타율·홈런·도루·ERA 랭킹" : card.description;
 
-          const cardDisplayTitle = card.id === "recent10-top" ? "요즘 폼 TOP10" : displayTitle;
+          const cardDisplayTitle = card.id === "recent10-top" ? "요즘 폼 탑10" : displayTitle;
           const cardDisplayDescription =
             card.id === "recent10-top" ? "최근 흐름이 좋은 선수들" : displayDescription;
 
