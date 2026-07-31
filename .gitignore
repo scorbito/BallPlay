@@ -40,3 +40,6 @@ scripts/
 !/scripts/sync-kbo-stats-local.mts
 # 워들 정답 스냅샷 생성기 — 로스터 갱신 시 재실행해야 하므로 추적 대상.
 !/scripts/build-wordle-answers.mjs
+# 그리드 게임 데이터 — 시즌 종료 시 재수집해야 하므로 추적 대상.
+!/scripts/scrape-kbo-careers.mjs
+!/scripts/build-grid-data.mjs

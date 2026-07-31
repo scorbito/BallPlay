@@ -1,0 +1,394 @@
+/* ============================================================
+   그리드 게임 "9칸을 채워라!"
+   prefix: .grid-*
+   워들과 동일하게 .phone-frame-light 아래로 스코프한다.
+   ============================================================ */
+
+.phone-frame-light .grid-game {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 28px;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.phone-frame-light .grid-game > * {
+  min-width: 0;
+}
+
+/* ── 헤더 ── */
+
+.phone-frame-light .grid-head-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-frame-light .grid-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .grid-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--bp-line);
+  border-radius: 999px;
+  background: var(--bp-card);
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+}
+
+.phone-frame-light .grid-subtitle {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+/* ── 모드 탭 ── */
+
+.phone-frame-light .grid-mode-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.phone-frame-light .grid-mode-tab {
+  flex: 1;
+  height: 32px;
+  border: 1px solid var(--bp-line);
+  border-radius: 999px;
+  background: var(--bp-card);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+}
+
+.phone-frame-light .grid-mode-tab.is-active {
+  border-color: var(--bp-accent);
+  background: var(--bp-accent);
+  color: #fff;
+}
+
+/* ── 격자 ──
+   4열 = 머리 1 + 칸 3. 행 머리를 왼쪽에 두려고 각 행을 grid-row 로 감싼다.
+   칸은 정사각(aspect-ratio)이라 화면 폭이 좁아도 비율이 유지된다. */
+
+.phone-frame-light .grid-board {
+  display: grid;
+  grid-template-columns: 54px repeat(3, 1fr);
+  gap: 5px;
+}
+
+.phone-frame-light .grid-row {
+  display: contents;
+}
+
+.phone-frame-light .grid-corner {
+  /* 좌상단 빈 칸 — 자리만 차지한다 */
+}
+
+.phone-frame-light .grid-axis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  text-align: center;
+  line-height: 1.15;
+}
+
+.phone-frame-light .grid-axis-col {
+  min-height: 52px;
+}
+
+.phone-frame-light .grid-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  aspect-ratio: 1 / 1;
+  padding: 4px;
+  border: 1.5px solid var(--bp-line);
+  border-radius: 12px;
+  background: var(--bp-card);
+  font: inherit;
+  color: var(--bp-text);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.phone-frame-light .grid-cell:hover:not(:disabled) {
+  border-color: var(--bp-accent);
+}
+
+.phone-frame-light .grid-cell.is-filled {
+  border-color: #2f9e5f;
+  background: rgba(47, 158, 95, 0.1);
+  cursor: default;
+}
+
+/* 못 채운 칸은 판이 끝난 뒤에만 흐리게 — 진행 중에 미리 죽은 칸처럼 보이면 안 된다 */
+.phone-frame-light .grid-cell.is-missed {
+  border-style: dashed;
+  background: var(--bp-bg);
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-cell-name {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.phone-frame-light .grid-cell-pool {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-cell-plus {
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-guide {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  text-align: center;
+}
+
+.phone-frame-light .grid-empty {
+  padding: 32px 0;
+  font-size: 13px;
+  color: var(--bp-text-muted);
+  text-align: center;
+}
+
+/* ── 결과 ── */
+
+.phone-frame-light .grid-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--bp-line);
+  border-radius: 14px;
+  background: var(--bp-card);
+  text-align: center;
+}
+
+.phone-frame-light .grid-result-line {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .grid-result-stats {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-result-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.phone-frame-light .grid-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1;
+  height: 38px;
+  border: 1px solid var(--bp-line);
+  border-radius: 10px;
+  background: var(--bp-card);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--bp-text-secondary);
+  cursor: pointer;
+}
+
+.phone-frame-light .grid-btn.is-primary {
+  border-color: var(--bp-accent);
+  background: var(--bp-accent);
+  color: #fff;
+}
+
+/* ── 입력 시트 ── */
+
+.phone-frame-light .grid-sheet-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.phone-frame-light .grid-sheet-x {
+  font-style: normal;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px 8px;
+}
+
+.phone-frame-light .grid-sheet-sub {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .grid-sheet-note {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-sheet-remaining {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .grid-sheet-field {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--bp-card);
+  border: 1.5px solid var(--bp-line);
+  color: var(--bp-text-muted);
+}
+
+.phone-frame-light .grid-sheet-field:focus-within {
+  border-color: var(--bp-accent);
+  color: var(--bp-accent);
+}
+
+.phone-frame-light .grid-sheet-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bp-text);
+  outline: none;
+}
+
+.phone-frame-light .grid-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.phone-frame-light .grid-sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 10px;
+  background: var(--bp-card);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.phone-frame-light .grid-sheet-item.is-used {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.phone-frame-light .grid-sheet-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+
+.phone-frame-light .grid-sheet-meta {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bp-text-muted);
+  white-space: nowrap;
+}
+
+.phone-frame-light .grid-sheet-empty,
+.phone-frame-light .grid-sheet-hint {
+  margin: 0;
+  padding: 14px 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  text-align: center;
+  list-style: none;
+}
+
+/* ── 도움말 ── */
+
+.phone-frame-light .grid-help {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--bp-text-secondary);
+}
+
+.phone-frame-light .grid-help ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.phone-frame-light .grid-help-foot {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--bp-text-muted);
+}
