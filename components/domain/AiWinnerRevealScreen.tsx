@@ -18,16 +18,15 @@ const AiWinnerStatsTab = dynamic(
   () => import("./AiWinnerStatsTab").then((m) => m.AiWinnerStatsTab),
   { ssr: false }
 );
-const AiWinnerSimTab = dynamic(
-  () => import("./AiWinnerSimTab").then((m) => m.AiWinnerSimTab),
+const ConsensusGameCardView = dynamic(
+  () => import("./ConsensusScreen").then((m) => m.ConsensusGameCardView),
   { ssr: false }
 );
 import type {
   AiProvider,
   BpAiPredictionRow
 } from "@/lib/supabase/query-parts/bpAiPredictions";
-import type { BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
-import type { Sim1000LineupBatter } from "./AiWinnerSimTab";
+import type { ConsensusGameCard } from "@/lib/predict/consensus";
 import { ContentPointClaimButton } from "@/components/domain/points/ContentPointClaimButton";
 import { GameWinnerPickCard } from "@/components/domain/GameWinnerPickCard";
 
@@ -53,9 +52,8 @@ type Props = {
   isToday?: boolean;
   isFuture?: boolean;
   selectedDate?: string;
-  sim: BpSimResultRow | null;
-  homeLineup: Sim1000LineupBatter[] | null;
-  awayLineup: Sim1000LineupBatter[] | null;
+  /** 종합분석 탭 데이터 — 3AI 취합 + 불펜/폼. null 이면 탭 숨김. (기존 1000판 시뮬 탭 대체) */
+  consensusCard: ConsensusGameCard | null;
 };
 
 const AI_LABEL: Record<AiProvider, string> = {
@@ -108,9 +106,7 @@ export function AiWinnerRevealScreen({
   isToday = true,
   isFuture = false,
   selectedDate,
-  sim,
-  homeLineup,
-  awayLineup
+  consensusCard
 }: Props) {
   const home = getTeam(game.homeTeamId);
   const away = getTeam(game.awayTeamId);
@@ -126,7 +122,7 @@ export function AiWinnerRevealScreen({
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   // 전력 비교 탭 관련 상태 및 fetch 로직
-  const [activeTab, setActiveTab] = useState<"ai" | "stats" | "sim">("ai");
+  const [activeTab, setActiveTab] = useState<"ai" | "stats" | "consensus">("ai");
   const [statsData, setStatsData] = useState<any | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
@@ -214,7 +210,7 @@ export function AiWinnerRevealScreen({
       title="AI 분석 결과"
       backHref={`/predict/ai-winner/date/${selectedDate ?? game.gameDate}`}
       theme="light"
-      wide={activeTab === "sim"}
+      wide={false}
       headerAction={
         visibleStage >= 4 ? (
           <button
@@ -304,13 +300,13 @@ export function AiWinnerRevealScreen({
               정밀 데이터 비교
             </button>
           )}
-          {sim && (
+          {consensusCard && (
             <button
               type="button"
-              className={`ai-reveal-tab-btn ${activeTab === "sim" ? "is-active" : ""}`}
-              onClick={() => setActiveTab("sim")}
+              className={`ai-reveal-tab-btn ${activeTab === "consensus" ? "is-active" : ""}`}
+              onClick={() => setActiveTab("consensus")}
             >
-              1000판 시뮬
+              종합분석
             </button>
           )}
         </div>
@@ -461,26 +457,7 @@ export function AiWinnerRevealScreen({
             )}
           </div>
         ) : (
-          sim && (
-            <AiWinnerSimTab
-              game={{
-                gameId,
-                gameDate: game.gameDate,
-                gameTime: game.gameTime,
-                stadium: game.stadium,
-                homeTeamId: game.homeTeamId,
-                awayTeamId: game.awayTeamId,
-                homeStarter: game.homeStarter,
-                awayStarter: game.awayStarter,
-                homeScore: game.homeScore,
-                awayScore: game.awayScore,
-                status: game.status
-              }}
-              sim={sim}
-              homeLineup={homeLineup}
-              awayLineup={awayLineup}
-            />
-          )
+          consensusCard && <ConsensusGameCardView card={consensusCard} />
         )}
         {/* 내 승리팀 예측 — 승리팀 예측 화면과 동일 규칙(선택=확정 / 재선택=취소 / 시작 시 자동 잠금).
             아직 시작 전(scheduled) 경기에서만 노출. 섹션 안에 둬서 위 카드들과 같은 간격(gap)을 탄다. */}

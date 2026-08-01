@@ -9,7 +9,7 @@ import {
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { AiWinnerRevealScreen } from "@/components/domain/AiWinnerRevealScreen";
 import type { GameStatus } from "@/lib/types/api-contracts";
-import { getSimResultByGameId, type BpSimResultRow } from "@/lib/supabase/query-parts/bpSimResults";
+import { loadConsensusCardForGame } from "@/lib/predict/consensus";
 import { resolveDisplayStadium } from "@/lib/constants/stadiums";
 
 
@@ -134,32 +134,11 @@ export default async function AiWinnerRevealPage({
       }))
     : [];
 
-  // 1000판 시뮬레이션 결과 및 라인업 패치
-  const simResult = await getSimResultByGameId(supabase, params.gameId, gameRow.game_date);
-  const sim: BpSimResultRow | null = simResult.ok ? simResult.row : null;
-
-  type RecentBatter = { order: number; name: string; position: string | null };
-  async function fetchLineup(teamId: string, sourceDate: string | null) {
-    if (!sourceDate) return null;
-    const { data } = await supabase
-      .from("bp_team_recent_lineups")
-      .select("batting")
-      .eq("team_id", teamId)
-      .eq("game_date", sourceDate)
-      .maybeSingle();
-    const batting = (data?.batting ?? null) as RecentBatter[] | null;
-    if (!batting || batting.length === 0) return null;
-    return [...batting]
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      .map((b) => ({ order: b.order, name: b.name, position: b.position }));
-  }
-
-  const [homeLineup, awayLineup] = sim
-    ? await Promise.all([
-        fetchLineup(sim.home_team_id, sim.lineup_source_home),
-        fetchLineup(sim.away_team_id, sim.lineup_source_away)
-      ])
-    : [null, null];
+  // 종합분석 탭 데이터 (기존 1000판 시뮬 탭 대체) — 발행 게이트와 동일하게,
+  // 3개 AI 예측 공개 전에는 픽 노출 방지를 위해 null.
+  const consensusCard = predictionsPublished
+    ? await loadConsensusCardForGame(gameRow.game_date, params.gameId).catch(() => null)
+    : null;
 
   const isToday = gameRow.game_date === today;
 
@@ -182,9 +161,7 @@ export default async function AiWinnerRevealPage({
       isToday={isToday}
       isFuture={isFuture}
       selectedDate={gameRow.game_date}
-      sim={sim}
-      homeLineup={homeLineup}
-      awayLineup={awayLineup}
+      consensusCard={consensusCard}
     />
   );
 }

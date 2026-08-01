@@ -74,6 +74,15 @@ function shrunkReliability(correct: number, total: number): number {
   return (correct + 5.5) / (total + 10);
 }
 
+/** AI 예측 상세 화면의 "종합분석" 탭용 — 해당 경기 1건의 종합 카드. */
+export async function loadConsensusCardForGame(
+  selectedDate: string,
+  gameId: string
+): Promise<ConsensusGameCard | null> {
+  const data = await loadConsensusPageData(selectedDate);
+  return data.cards.find((c) => c.gameId === gameId) ?? null;
+}
+
 export async function loadConsensusPageData(selectedDate: string): Promise<ConsensusPageData> {
   const client = createSupabaseCacheClient(60);
 

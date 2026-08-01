@@ -48,7 +48,8 @@ function PickChips({ picks }: { picks: ProviderPick[] }) {
   );
 }
 
-function GameCard({ card }: { card: ConsensusGameCard }) {
+/** 경기 1건 종합 카드 — 종합분석 목록 + AI 예측 상세의 "종합분석" 탭에서 공용. */
+export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
   const [open, setOpen] = useState(false);
   const home = getTeam(card.homeTeamId);
   const away = getTeam(card.awayTeamId);
@@ -263,7 +264,7 @@ export function ConsensusScreen({ data, prevDate, nextDate, isToday }: Props) {
               이 날짜에는 경기가 없습니다
             </div>
           ) : (
-            data.cards.map((card) => <GameCard key={card.gameId} card={card} />)
+            data.cards.map((card) => <ConsensusGameCardView key={card.gameId} card={card} />)
           )}
         </div>
 
