@@ -187,6 +187,122 @@ for (const teamId of allTeamIds) {
   console.log(`  ${teamId.padEnd(8)} (${arr.length}명) avg=${avgAvg.toFixed(3)} obp=${avgObp.toFixed(3)} slg=${avgSlg.toFixed(3)} iso=${avgIso.toFixed(3)} k%=${(avgK*100).toFixed(1)}`);
 }
 
+// --- 5.1) 선발 최근 3등판 폼 (bp_pitcher_game_logs) — 시즌 스탯보다 현재 폼 우선 ---
+console.log("\n## 선발 최근 3등판 (최신순: 날짜 vs상대 이닝 자책 탈삼진 볼넷)");
+for (const g of games) {
+  for (const [teamId, name] of [[g.away_team_id, g.away_starter], [g.home_team_id, g.home_starter]]) {
+    if (!name) continue;
+    const { data: logs } = await sb
+      .from("bp_pitcher_game_logs")
+      .select("game_date, opponent_team_id, outs, earned_runs, strikeouts, walks_hbp, pitches")
+      .eq("team_id", teamId)
+      .eq("pitcher_name", name)
+      .eq("pitcher_order", "1")
+      .order("game_date", { ascending: false })
+      .limit(3);
+    if (!logs?.length) { console.log(`  ${teamId}/${name}: 선발 로그 없음 (신규/이적 가능성)`); continue; }
+    const line = logs
+      .map((l) => `${l.game_date.slice(5)} vs${l.opponent_team_id} ${(l.outs / 3).toFixed(1)}이닝 ${l.earned_runs}자책 K${l.strikeouts} BB${l.walks_hbp}`)
+      .join(" | ");
+    console.log(`  ${teamId}/${name}: ${line}`);
+  }
+}
+
+// --- 5.2) 팀 타격 최근 5경기 (bp_team_game_stats) — 경기별 득점·홈런·삼진·실책(수비) ---
+console.log("\n## 팀 타격/수비 최근 5경기 (득점·홈런·삼진·실책 합계)");
+{
+  const teamIds = Array.from(new Set(games.flatMap((g) => [g.home_team_id, g.away_team_id])));
+  for (const teamId of teamIds) {
+    const { data: rows } = await sb
+      .from("bp_team_game_stats")
+      .select("game_date, runs, homers, strikeouts, errors")
+      .eq("team_id", teamId)
+      .lt("game_date", KST_TODAY)
+      .order("game_date", { ascending: false })
+      .limit(5);
+    if (!rows?.length) continue;
+    const sum = (k) => rows.reduce((s, r) => s + (r[k] ?? 0), 0);
+    const perGame = rows.map((r) => r.runs).reverse().join("-");
+    console.log(`  ${teamId.padEnd(8)} 득점 ${sum("runs")} (${perGame}) | 홈런 ${sum("homers")} | 삼진 ${sum("strikeouts")} | 실책 ${sum("errors")}`);
+  }
+}
+
+// --- 5.3) 시즌 상대전적 + 홈/원정 스플릿 (games) ---
+console.log("\n## 시즌 상대전적 · 홈/원정 성적");
+for (const g of games) {
+  const { data: h2h } = await sb
+    .from("games")
+    .select("home_team_id, away_team_id, home_score, away_score")
+    .lt("game_date", KST_TODAY)
+    .not("home_score", "is", null)
+    .or(
+      `and(home_team_id.eq.${g.home_team_id},away_team_id.eq.${g.away_team_id}),and(home_team_id.eq.${g.away_team_id},away_team_id.eq.${g.home_team_id})`
+    );
+  let homeWins = 0, awayWins = 0, draws = 0;
+  for (const m of h2h ?? []) {
+    if (m.home_score === m.away_score) { draws++; continue; }
+    const winner = m.home_score > m.away_score ? m.home_team_id : m.away_team_id;
+    if (winner === g.home_team_id) homeWins++;
+    else awayWins++;
+  }
+  // 홈팀의 홈 성적 / 원정팀의 원정 성적
+  const homeRecord = { w: 0, l: 0 };
+  const awayRecord = { w: 0, l: 0 };
+  const { data: homeGames } = await sb
+    .from("games").select("home_score, away_score")
+    .eq("home_team_id", g.home_team_id).lt("game_date", KST_TODAY).not("home_score", "is", null);
+  for (const m of homeGames ?? []) {
+    if (m.home_score > m.away_score) homeRecord.w++;
+    else if (m.home_score < m.away_score) homeRecord.l++;
+  }
+  const { data: awayGames } = await sb
+    .from("games").select("home_score, away_score")
+    .eq("away_team_id", g.away_team_id).lt("game_date", KST_TODAY).not("home_score", "is", null);
+  for (const m of awayGames ?? []) {
+    if (m.away_score > m.home_score) awayRecord.w++;
+    else if (m.away_score < m.home_score) awayRecord.l++;
+  }
+  console.log(
+    `  ${g.away_team_id}@${g.home_team_id}: 상대전적 ${g.home_team_id} ${homeWins}승 ${draws}무 ${awayWins}패` +
+    ` | ${g.home_team_id} 홈 ${homeRecord.w}승${homeRecord.l}패 · ${g.away_team_id} 원정 ${awayRecord.w}승${awayRecord.l}패`
+  );
+}
+
+// --- 5.4) 주축 이탈 감지 — 오늘 선발 + 최근 라인업 주축이 최근 3경기 연속 제외면 경고 + 뉴스 검색 ---
+console.log("\n## 주축 이탈 감지 (최근 3경기 라인업 연속 제외자 → 뉴스 검색)");
+{
+  const teamIds = Array.from(new Set(games.flatMap((g) => [g.home_team_id, g.away_team_id])));
+  for (const teamId of teamIds) {
+    const { data: lus } = await sb
+      .from("bp_team_recent_lineups")
+      .select("game_date, batting")
+      .eq("team_id", teamId)
+      .order("game_date", { ascending: false })
+      .limit(8);
+    const rows = (lus ?? []).filter((r) => (r.batting ?? []).length >= 9);
+    if (rows.length < 5) continue;
+    const recent3 = rows.slice(0, 3).map((r) => new Set(r.batting.map((b) => b.name)));
+    const older = rows.slice(3);
+    // 이전 5경기 중 3회 이상 나왔는데 최근 3경기 전부 빠진 선수 = 이탈 의심
+    const counts = new Map();
+    for (const r of older) for (const b of r.batting) counts.set(b.name, (counts.get(b.name) ?? 0) + 1);
+    const missing = [...counts.entries()]
+      .filter(([name, c]) => c >= 3 && recent3.every((s) => !s.has(name)))
+      .map(([name]) => name);
+    if (missing.length === 0) continue;
+    for (const name of missing) {
+      const { data: news } = await sb
+        .from("bp_news")
+        .select("title, published_at")
+        .ilike("title", `%${name}%`)
+        .order("published_at", { ascending: false })
+        .limit(2);
+      const headline = news?.[0] ? `${news[0].published_at?.slice(5, 10)} ${news[0].title.slice(0, 40)}` : "관련 뉴스 없음";
+      console.log(`  ⚠ ${teamId}/${name}: 최근 3경기 연속 제외 | ${headline}`);
+    }
+  }
+}
+
 // --- 5.5) 불펜 데일리 (최근10 불펜성적 + 피로도) ---
 console.log("\n## 팀별 불펜 상태 (bp_team_bullpen_daily 최신)");
 {
