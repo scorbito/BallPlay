@@ -57,6 +57,8 @@ export type ConsensusGameCard = {
   awayBullpen: TeamBullpenLine | null;
   /** 피로 경고 문구 (팀명 포함, 조건 충족 시만) */
   fatigueFlags: string[];
+  /** 작성형 종합분석 리포트 (bp_ai_consensus_daily). 없으면 화면이 자동 요약으로 폴백. */
+  analysis: string | null;
   actualHomeScore: number | null;
   actualAwayScore: number | null;
   gameStatus: string;
@@ -89,7 +91,7 @@ export async function loadConsensusCardForGame(
 export async function loadConsensusPageData(selectedDate: string): Promise<ConsensusPageData> {
   const client = createSupabaseCacheClient(60);
 
-  const [games, predsResult, gradedResult, bullpenResult, recentGamesResult] = await Promise.all([
+  const [games, predsResult, gradedResult, bullpenResult, recentGamesResult, analysisResult] = await Promise.all([
     listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
     listAiPredictionResultsForDate(client, selectedDate),
     client.from("bp_ai_predictions").select("ai_provider,is_correct").not("is_correct", "is", null),
@@ -105,8 +107,15 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
       .lt("game_date", selectedDate)
       .not("home_score", "is", null)
       .order("game_date", { ascending: false })
-      .limit(140)
+      .limit(140),
+    // 작성형 종합분석 리포트 — 테이블 미생성(42P01) 등 오류 시 data=null 로 조용히 폴백.
+    client.from("bp_ai_consensus_daily").select("game_id, analysis").eq("game_date", selectedDate)
   ]);
+
+  const analysisByGame = new Map<string, string>();
+  for (const row of analysisResult.data ?? []) {
+    if (typeof row.analysis === "string" && row.analysis.length > 0) analysisByGame.set(row.game_id, row.analysis);
+  }
 
   // provider 신뢰도
   const record: Record<string, { o: number; t: number }> = {};
@@ -241,6 +250,7 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
       homeBullpen: homeBp,
       awayBullpen: awayBp,
       fatigueFlags,
+      analysis: analysisByGame.get(g.id) ?? null,
       actualHomeScore: g.homeScore ?? null,
       actualAwayScore: g.awayScore ?? null,
       gameStatus: g.status ?? "scheduled"

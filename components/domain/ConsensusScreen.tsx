@@ -31,16 +31,16 @@ function formLabel(form: { wins: number; losses: number; draws: number } | null)
   return `${form.wins}승${form.losses}패${form.draws > 0 ? `${form.draws}무` : ""}`;
 }
 
-/** 종합분석 요약문 자동 생성 — 픽 구도(만장일치/갈림) + 불펜·폼·피로 데이터에서 조립.
- *  "왜 이 확률인지"를 리포트 톤으로 2~4문장. */
+/** 종합분석 요약문 자동 생성 — 픽 구도(만장일치/갈림) + AI 근거 요약 + 카테고리별 데이터 우위. */
 function buildConsensusSummary(card: ConsensusGameCard): string | null {
   if (!card.consensusTeamId || card.consensusProb === null || card.picks.length < 3) return null;
-  const prob = Math.round(card.consensusProb * 100);
   const sentences: string[] = [];
 
-  // 1) 픽 구도
+  // 1) 픽 구도 + AI 근거 요약
   if (card.unanimous) {
     sentences.push(`세 AI가 모두 ${teamName(card.consensusTeamId)}의 승리를 예상한 만장일치 카드입니다.`);
+    const factors = card.picks.map((p) => p.keyFactor).filter(Boolean).slice(0, 2);
+    if (factors.length > 0) sentences.push(`근거로는 '${factors.join("', '")}' 등이 꼽혔습니다.`);
   } else {
     const sideA = card.picks.filter((p) => p.teamId === card.consensusTeamId);
     const sideB = card.picks.filter((p) => p.teamId !== card.consensusTeamId);
@@ -49,34 +49,55 @@ function buildConsensusSummary(card: ConsensusGameCard): string | null {
       sentences.push(
         `${label(sideA)}는 ${teamName(sideA[0].teamId)}, ${label(sideB)}는 ${teamName(sideB[0].teamId)}를 골라 의견이 갈린 격전지입니다.`
       );
+      const fA = sideA[0]?.keyFactor;
+      const fB = sideB[0]?.keyFactor;
+      if (fA && fB) {
+        sentences.push(
+          `${teamName(sideA[0].teamId)} 쪽은 '${fA}'를, ${teamName(sideB[0].teamId)} 쪽은 '${fB}'를 근거로 들었습니다.`
+        );
+      }
     }
   }
 
-  // 2) 데이터 방향 — 불펜(최근10 ERA 낮은 쪽)·폼(승-패 차 큰 쪽)
-  const bullpenLean =
-    card.homeBullpen?.recent10Era != null && card.awayBullpen?.recent10Era != null
-      ? card.homeBullpen.recent10Era < card.awayBullpen.recent10Era
-        ? card.homeTeamId
-        : card.awayTeamId
-      : null;
-  const formScore = (f: { wins: number; losses: number } | null) => (f ? f.wins - f.losses : null);
-  const hs = formScore(card.homeForm);
-  const as = formScore(card.awayForm);
-  const formLean = hs != null && as != null && hs !== as ? (hs > as ? card.homeTeamId : card.awayTeamId) : null;
-  const bullpenNums =
-    card.homeBullpen?.recent10Era != null && card.awayBullpen?.recent10Era != null
-      ? `${card.awayBullpen.recent10Era} 대 ${card.homeBullpen.recent10Era}`
-      : null;
-  if (bullpenLean && formLean) {
-    if (bullpenLean === formLean) {
-      sentences.push(`정밀 데이터는 불펜 최근 10경기(${bullpenNums})와 최근 폼 모두 ${teamName(bullpenLean)} 우위를 가리킵니다.`);
-    } else {
-      sentences.push(
-        `정밀 데이터는 불펜에선 ${teamName(bullpenLean)}, 최근 폼에선 ${teamName(formLean)}이 앞서 팽팽합니다.`
-      );
+  // 2) 데이터 분석 — 카테고리별 우위 팀 (선발 ERA·타선 최근10 득점·불펜 최근10 ERA·최근 폼)
+  const leads: Array<{ label: string; team: string }> = [];
+  if (card.homeStarterEra != null && card.awayStarterEra != null && card.homeStarterEra !== card.awayStarterEra) {
+    leads.push({ label: "선발", team: card.homeStarterEra < card.awayStarterEra ? card.homeTeamId : card.awayTeamId });
+  }
+  if (card.homeForm && card.awayForm && card.homeForm.runsScored !== card.awayForm.runsScored) {
+    leads.push({
+      label: "타선 화력",
+      team: card.homeForm.runsScored > card.awayForm.runsScored ? card.homeTeamId : card.awayTeamId
+    });
+  }
+  if (
+    card.homeBullpen?.recent10Era != null &&
+    card.awayBullpen?.recent10Era != null &&
+    card.homeBullpen.recent10Era !== card.awayBullpen.recent10Era
+  ) {
+    leads.push({
+      label: "불펜",
+      team: card.homeBullpen.recent10Era < card.awayBullpen.recent10Era ? card.homeTeamId : card.awayTeamId
+    });
+  }
+  {
+    const score = (f: { wins: number; losses: number } | null) => (f ? f.wins - f.losses : null);
+    const hs = score(card.homeForm);
+    const as = score(card.awayForm);
+    if (hs != null && as != null && hs !== as) {
+      leads.push({ label: "최근 폼", team: hs > as ? card.homeTeamId : card.awayTeamId });
     }
-  } else if (bullpenLean) {
-    sentences.push(`불펜 최근 10경기(${bullpenNums})는 ${teamName(bullpenLean)} 우위입니다.`);
+  }
+  if (leads.length > 0) {
+    const byTeam = new Map<string, string[]>();
+    for (const l of leads) byTeam.set(l.team, [...(byTeam.get(l.team) ?? []), l.label]);
+    if (byTeam.size === 1) {
+      const [[team, labels]] = Array.from(byTeam.entries());
+      sentences.push(`데이터에서는 ${labels.join("·")} 모두 ${teamName(team)}가 앞섭니다.`);
+    } else {
+      const parts = Array.from(byTeam.entries()).map(([team, labels]) => `${labels.join("·")}은 ${teamName(team)}`);
+      sentences.push(`데이터에서는 ${parts.join(", ")}가 앞서 지표가 갈립니다.`);
+    }
   }
 
   // 3) 피로 변수
@@ -91,14 +112,6 @@ function buildConsensusSummary(card: ConsensusGameCard): string | null {
     sentences.push(`불펜 피로 변수(${flagText})도 있습니다.`);
   }
 
-  // 4) 확률 근거
-  if (card.unanimous) {
-    sentences.push(`만장일치 카드는 그동안 적중률이 높았던 만큼 ${prob}%의 고신뢰로 봅니다.`);
-  } else {
-    sentences.push(
-      `의견이 갈린 경기는 그동안 다수 의견의 적중률이 낮았던 만큼, 과신하지 않고 ${prob}%의 박빙으로 봅니다.`
-    );
-  }
   return sentences.join(" ");
 }
 
@@ -196,8 +209,12 @@ export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
         </div>
       )}
 
-      {/* 종합분석 요약 — 왜 이 확률인지 리포트 톤으로 */}
-      {summary ? (
+      {/* 종합분석 리포트 — 작성형(bp_ai_consensus_daily) 우선, 없으면 자동 요약 폴백 */}
+      {card.analysis ? (
+        <p className="mb-3 whitespace-pre-line rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600">
+          {card.analysis}
+        </p>
+      ) : summary ? (
         <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600">
           {summary}
         </p>
