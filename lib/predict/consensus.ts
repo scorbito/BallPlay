@@ -92,7 +92,9 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
   const client = createSupabaseCacheClient(60);
 
   const [games, predsResult, gradedResult, bullpenResult, recentGamesResult, analysisResult] = await Promise.all([
-    listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
+    // ⚠️ 캐시 클라이언트 필수 — 기본 admin 클라이언트는 no-store fetch 라 ISR 라우트
+    // (/predict/ai-winner/[gameId], revalidate=60) 의 정적 렌더를 깨서 500 을 유발한다.
+    listGamesFromDb({ from: selectedDate, to: selectedDate }, client).catch(() => []),
     listAiPredictionResultsForDate(client, selectedDate),
     client.from("bp_ai_predictions").select("ai_provider,is_correct").not("is_correct", "is", null),
     client
