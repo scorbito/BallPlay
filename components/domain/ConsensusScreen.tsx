@@ -211,11 +211,11 @@ export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
 
       {/* 종합분석 리포트 — 작성형(bp_ai_consensus_daily) 우선, 없으면 자동 요약 폴백 */}
       {card.analysis ? (
-        <p className="mb-3 whitespace-pre-line rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600">
+        <p className="mb-3 whitespace-pre-line rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600">
           {card.analysis}
         </p>
       ) : summary ? (
-        <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600">
+        <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600">
           {summary}
         </p>
       ) : null}
