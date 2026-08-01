@@ -130,6 +130,11 @@ export function judgeName(
   return { correct: Boolean(hit), player: hit ?? null };
 }
 
+/** 격자 지문 — 저장된 진행 상태가 이 판의 것인지 확인하는 데 쓴다. */
+export function boardKeyOf(board: GridBoard): string {
+  return `${board.rows.map((a) => a.teamId).join(",")}|${board.cols.map((a) => a.teamId).join(",")}`;
+}
+
 export function cellAxes(board: GridBoard, index: CellIndex): { row: GridAxis; col: GridAxis } {
   return { row: board.rows[Math.floor(index / 3)], col: board.cols[index % 3] };
 }

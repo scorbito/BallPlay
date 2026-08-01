@@ -17,6 +17,14 @@ export type GridFilled = {
 export type GridProgress = {
   /** KST 날짜. 다르면 폐기하고 새 판을 시작한다. */
   date: string;
+  /**
+   * 그날 격자의 지문(행·열 팀 id).
+   *
+   * 격자 생성 기준을 바꾸면 같은 날짜라도 판이 달라진다. filled 는 칸 번호로만
+   * 기록되므로, 지문을 확인하지 않으면 예전 판에서 채운 칸이 새 판의 엉뚱한 자리에
+   * 붙는다. 다르면 진행 상태를 폐기한다.
+   */
+  boardKey: string;
   /** 맞힌 칸 */
   filled: GridFilled[];
   /** 사용한 시도 수(오답 포함) */
@@ -65,10 +73,12 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
-/** 해당 날짜의 진행 상태. 날짜가 다르면 null(새 판). */
-export function loadProgress(dateISO: string): GridProgress | null {
+/** 해당 날짜·해당 격자의 진행 상태. 날짜나 격자가 다르면 null(새 판). */
+export function loadProgress(dateISO: string, boardKey: string): GridProgress | null {
   const saved = readJson<GridProgress>(PROGRESS_KEY);
   if (!saved || saved.date !== dateISO) return null;
+  // boardKey 가 없는 예전 저장본은 어느 판이었는지 알 수 없으므로 폐기한다.
+  if (saved.boardKey !== boardKey) return null;
   if (!Array.isArray(saved.filled) || !Array.isArray(saved.usedNames)) return null;
   // hintedCells 는 나중에 추가된 필드 — 이전 판이 남아 있어도 깨지지 않게 보정한다.
   return { ...saved, hintedCells: Array.isArray(saved.hintedCells) ? saved.hintedCells : [] };

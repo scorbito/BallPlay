@@ -1,6 +1,6 @@
 "use client";
 
-// 그리드 게임 "9칸을 채워라!" — 하루 한 판, 9번의 기회.
+// 그리드 게임 "9칸을 채워라!" — 하루 한 판.
 //
 // 워들과 같은 구조다. 서버 호출이 없다 — 격자는 커밋된 스냅샷을 날짜 시드로 생성하고
 // 진행 상태·통계는 localStorage 에 둔다. 덕분에 페이지가 정적으로 유지된다.
@@ -18,6 +18,7 @@ import {
   CELL_COUNT,
   MAX_GUESSES,
   MAX_HINTS,
+  boardKeyOf,
   cellAxes,
   countAnswers,
   hintFor,
@@ -64,7 +65,9 @@ export function GridScreen() {
   useEffect(() => {
     const today = kstDateString();
     setDateISO(today);
-    const saved = loadProgress(today);
+    // 저장된 진행 상태는 날짜와 격자 지문이 모두 같을 때만 복원한다.
+    const todayBoard = getBoardForDate(today);
+    const saved = todayBoard ? loadProgress(today, boardKeyOf(todayBoard)) : null;
     if (saved) {
       setDailyFilled(saved.filled);
       setDailyUsed(saved.used);
@@ -136,6 +139,7 @@ export function GridScreen() {
           if (dateISO) {
             saveProgress({
               date: dateISO,
+              boardKey: boardKeyOf(board),
               filled: nextFilled,
               used: nextUsed,
               usedNames: nextFilled.map((f) => f.name),
@@ -167,6 +171,7 @@ export function GridScreen() {
         if (dateISO) {
           saveProgress({
             date: dateISO,
+            boardKey: boardKeyOf(board),
             filled,
             used: nextUsed,
             usedNames,
@@ -183,17 +188,25 @@ export function GridScreen() {
 
   /** 초성 힌트 열기. 기회는 소모하지 않고 판당 MAX_HINTS 번으로 제한한다. */
   const handleHint = useCallback(() => {
-    if (openCell === null || hintsLeft <= 0 || hinted.includes(openCell)) return;
+    if (!board || openCell === null || hintsLeft <= 0 || hinted.includes(openCell)) return;
     const next = [...hinted, openCell];
     if (isDaily) {
       setDailyHinted(next);
       if (dateISO) {
-        saveProgress({ date: dateISO, filled, used, usedNames, hintedCells: next, done: false });
+        saveProgress({
+          date: dateISO,
+          boardKey: boardKeyOf(board),
+          filled,
+          used,
+          usedNames,
+          hintedCells: next,
+          done: false
+        });
       }
     } else {
       setPracticeHinted(next);
     }
-  }, [openCell, hintsLeft, hinted, isDaily, dateISO, filled, used, usedNames]);
+  }, [board, openCell, hintsLeft, hinted, isDaily, dateISO, filled, used, usedNames]);
 
   const startPractice = useCallback(() => {
     setPracticeBoard(getRandomBoard());
