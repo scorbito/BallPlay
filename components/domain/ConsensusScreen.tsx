@@ -31,6 +31,20 @@ function formLabel(form: { wins: number; losses: number; draws: number } | null)
   return `${form.wins}승${form.losses}패${form.draws > 0 ? `${form.draws}무` : ""}`;
 }
 
+/** 리포트 본문의 **강조** 마커를 <strong> 으로 렌더 — 굵은 부분만 읽어도 결론이 잡히는 스킴 경로. */
+function renderEmphasis(text: string) {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={i} className="font-bold text-slate-800">
+        {part}
+      </strong>
+    ) : (
+      part
+    )
+  );
+}
+
 /** 종합분석 요약문 자동 생성 — 픽 구도(만장일치/갈림) + AI 근거 요약 + 카테고리별 데이터 우위. */
 function buildConsensusSummary(card: ConsensusGameCard): string | null {
   if (!card.consensusTeamId || card.consensusProb === null || card.picks.length < 3) return null;
@@ -212,7 +226,7 @@ export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
       {/* 종합분석 리포트 — 작성형(bp_ai_consensus_daily) 우선, 없으면 자동 요약 폴백 */}
       {card.analysis ? (
         <p className="mb-3 whitespace-pre-line rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600">
-          {card.analysis}
+          {renderEmphasis(card.analysis)}
         </p>
       ) : summary ? (
         <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600">
