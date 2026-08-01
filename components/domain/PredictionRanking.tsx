@@ -2,7 +2,7 @@
 
 // 적중률 랭킹 — 주간(화~일, 기본) / 전체(시즌) 탭. 둘 다 서버에서 prefetch 받아 전환만.
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Trophy } from "lucide-react";
 import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredictions";
 
@@ -10,13 +10,21 @@ type Tab = "week" | "season";
 
 type Props = {
   weeklyRows: PredictionRankingRow[];
+  /** 예측왕 자격 기준선 — 이 경기 수 미만은 자격 미달(하단 배치 + 구분선). */
+  weeklyQualifyBar?: number;
   seasonRows: PredictionRankingRow[];
   currentUserId: string | null;
 };
 
-export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Props) {
+export function PredictionRanking({ weeklyRows, weeklyQualifyBar = 0, seasonRows, currentUserId }: Props) {
   const [tab, setTab] = useState<Tab>("week");
   const rows = tab === "week" ? weeklyRows : seasonRows;
+
+  // 주간 탭에서만: 자격선 미달 첫 행 위치 → 구분선 삽입.
+  const showQualifyGate = tab === "week" && weeklyQualifyBar > 0;
+  const firstBelowBarIdx = showQualifyGate
+    ? rows.findIndex((r) => r.isAi !== true && r.total < weeklyQualifyBar)
+    : -1;
 
   return (
     <section className="predict-rank" aria-label="적중률 랭킹">
@@ -61,19 +69,27 @@ export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Pro
         </p>
       ) : (
         <ol className="predict-rank-list">
-          {rows.map((row) => {
+          {rows.map((row, index) => {
             const isAi = row.isAi === true;
             const isMe = !isAi && currentUserId !== null && row.user_id === currentUserId;
             const ratePct = Math.round(row.rate * 100);
+            const belowBar = showQualifyGate && !isAi && row.total < weeklyQualifyBar;
             const rankBadgeClass =
               row.rank === 1 ? "predict-rank-num-gold"
               : row.rank === 2 ? "predict-rank-num-silver"
               : row.rank === 3 ? "predict-rank-num-bronze"
               : "";
+            const gate =
+              index === firstBelowBarIdx ? (
+                <li className="predict-rank-gate" aria-hidden>
+                  예측왕 자격 기준 미달 · {weeklyQualifyBar}경기 이상 예측 필요
+                </li>
+              ) : null;
             return (
+              <Fragment key={row.user_id}>
+                {gate}
               <li
-                key={row.user_id}
-                className={`predict-rank-row ${isMe ? "is-me" : ""} ${isAi ? `is-ai is-ai-${row.aiProvider ?? ""}` : ""}`}
+                className={`predict-rank-row ${isMe ? "is-me" : ""} ${isAi ? `is-ai is-ai-${row.aiProvider ?? ""}` : ""} ${belowBar ? "is-below-bar" : ""}`}
               >
                 <span className={`predict-rank-num ${rankBadgeClass}`}>{row.rank}</span>
                 <span className="predict-rank-nick">
@@ -86,6 +102,7 @@ export function PredictionRanking({ weeklyRows, seasonRows, currentUserId }: Pro
                   <span className="predict-rank-stats-detail">{row.correct}/{row.total}</span>
                 </span>
               </li>
+              </Fragment>
             );
           })}
         </ol>

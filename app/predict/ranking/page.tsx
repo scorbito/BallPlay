@@ -26,13 +26,35 @@ function kstWeekStartTuesday(): string {
   return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default async function PredictionRankingPage() {
   const supabase = createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   // 적중률 랭킹은 누구나 열람 가능(보기 무료). 비로그인은 본인 행 하이라이트만 없음.
 
   const weekStart = kstWeekStartTuesday();
+  const weekEnd = addDays(weekStart, 5); // 화 + 5 = 일
   const adminClient = createSupabaseAdminClient();
+
+  // 이번 주 경기(취소 제외)로 예측왕 "자격 기준선" 계산.
+  //   자격선 = 최종 자격 경기수(ceil(주간경기 × 2/3)) − 아직 안 끝난 경기 수.
+  //   = "지금까지 예측 + 남은 경기 다 예측해도 최종 기준에 못 미치면 자격 불가"의 경계.
+  //   예) 30경기·최종 20, 토요일(일요일 5경기 남음) → 20 − 5 = 15경기.
+  const { data: weekGameRows } = await adminClient
+    .from("games")
+    .select("status")
+    .gte("game_date", weekStart)
+    .lte("game_date", weekEnd)
+    .neq("status", "canceled");
+  const scheduledCount = weekGameRows?.length ?? 0;
+  const remainingCount = (weekGameRows ?? []).filter((g) => g.status !== "finished").length;
+  const weeklyThreshold = scheduledCount > 0 ? Math.max(1, Math.ceil((scheduledCount * 2) / 3)) : 0;
+  const weeklyQualifyBar = Math.max(0, weeklyThreshold - remainingCount);
 
   // 주간(화~일, 우선 노출) + 전체(시즌) + 이번 주 AI별 적중률.
   const [weeklyResult, seasonResult, aiResult] = await Promise.all([
@@ -74,20 +96,23 @@ export default async function PredictionRankingPage() {
         }))
     : [];
 
-  const weeklyRanking = [...weeklyUsers, ...aiRows]
-    // 적중률 동률이면 AI를 위로(벤치마크 강조) → 그 다음 경기수 많은 순.
-    .sort(
-      (a, b) =>
-        b.rate - a.rate ||
-        (a.isAi === b.isAi ? 0 : a.isAi ? -1 : 1) ||
-        b.total - a.total
-    )
-    .map((row, index) => ({ ...row, rank: index + 1 }));
+  // 적중률 동률이면 AI를 위로(벤치마크 강조) → 그 다음 경기수 많은 순.
+  const byRate = (a: PredictionRankingRow, b: PredictionRankingRow) =>
+    b.rate - a.rate ||
+    (a.isAi === b.isAi ? 0 : a.isAi ? -1 : 1) ||
+    b.total - a.total;
+
+  // 예측왕 자격 가능자(AI 포함)를 위로, 자격선 미달자는 아래로.
+  //   미달자도 목록엔 남겨 자기 순위를 확인할 수 있게 하되, 자격 가능자 하단에 배치.
+  const eligible = [...weeklyUsers.filter((u) => u.total >= weeklyQualifyBar), ...aiRows].sort(byRate);
+  const ineligible = weeklyUsers.filter((u) => u.total < weeklyQualifyBar).sort(byRate);
+  const weeklyRanking = [...eligible, ...ineligible].map((row, index) => ({ ...row, rank: index + 1 }));
 
   return (
     <RankingScreen
       currentUserId={user?.id ?? null}
       weeklyRanking={weeklyRanking}
+      weeklyQualifyBar={weeklyQualifyBar}
       seasonRanking={seasonResult.ok ? seasonResult.rows : []}
     />
   );

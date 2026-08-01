@@ -12,14 +12,17 @@ type Props = {
   // 비로그인이면 null — 랭킹은 누구나 열람, 본인 행 하이라이트만 생략.
   currentUserId: string | null;
   weeklyRanking: PredictionRankingRow[];
+  /** 예측왕 자격 기준선(이 경기 수 미만은 자격 미달로 하단 배치). */
+  weeklyQualifyBar?: number;
   seasonRanking: PredictionRankingRow[];
 };
 
-export function RankingScreen({ currentUserId, weeklyRanking, seasonRanking }: Props) {
+export function RankingScreen({ currentUserId, weeklyRanking, weeklyQualifyBar = 0, seasonRanking }: Props) {
   return (
     <AppShell activeTab="home" title="적중률 랭킹" theme="light" backHref="/predict/winner" wide>
       <PredictionRanking
         weeklyRows={weeklyRanking}
+        weeklyQualifyBar={weeklyQualifyBar}
         seasonRows={seasonRanking}
         currentUserId={currentUserId}
       />
