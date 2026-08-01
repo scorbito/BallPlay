@@ -187,6 +187,26 @@ for (const teamId of allTeamIds) {
   console.log(`  ${teamId.padEnd(8)} (${arr.length}명) avg=${avgAvg.toFixed(3)} obp=${avgObp.toFixed(3)} slg=${avgSlg.toFixed(3)} iso=${avgIso.toFixed(3)} k%=${(avgK*100).toFixed(1)}`);
 }
 
+// --- 5.5) 불펜 데일리 (최근10 불펜성적 + 피로도) ---
+console.log("\n## 팀별 불펜 상태 (bp_team_bullpen_daily 최신)");
+{
+  const { data: bp } = await sb
+    .from("bp_team_bullpen_daily")
+    .select("*")
+    .order("snapshot_date", { ascending: false })
+    .limit(20);
+  const seen = new Set();
+  for (const r of bp ?? []) {
+    if (seen.has(r.team_id)) continue;
+    seen.add(r.team_id);
+    console.log(
+      `  ${r.team_id.padEnd(8)} [${r.snapshot_date}] 불펜 최근10 ERA ${r.recent10_era} WHIP ${r.recent10_whip}` +
+      ` | 종반실점/G ${r.late_runs_allowed_per_game} | 3일 투구수 ${r.pitches_last_3_days}` +
+      ` | 연투 ${r.back_to_back_pitchers}명 | 어제 25구+ ${r.high_usage_yesterday}명`
+    );
+  }
+}
+
 // --- 6) 최근 24h 뉴스 (팀 키워드 매칭) ---
 console.log("\n## 최근 24h 뉴스 (팀명 매칭, 최대 8건)");
 const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

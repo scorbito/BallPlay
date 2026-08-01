@@ -161,10 +161,11 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        id: "sim-1000",
-        href: "/predict/sim-1000",
-        title: "1000판 시뮬",
-        description: "오늘 경기 1000판 결과",
+        // 1000판 시뮬 메뉴 자리 대체 (2026-08-01). /predict/sim-1000 라우트 자체는 유지.
+        id: "consensus",
+        href: "/predict/consensus",
+        title: "종합분석·예측",
+        description: "3AI 종합픽 + 데이터",
         icon: BarChart3,
         iconImage: "/icons/menu/sim-1000.png",
         available: true
@@ -614,7 +615,7 @@ export function HomeScreen() {
         //   섹션(카테고리)은 categoryOfCard 로 유지되므로 탭 필터는 그대로,
         //   전체 화면에서만 원하는 자리에 놓는다. [placeAfter card id]
         const FLAT_PLACEMENT: Array<{ id: string; after: string }> = [
-          { id: "sim-1000", after: "news" } // 1000판: 예측 탭 소속 + 전체에선 야구 뉴스 뒤
+          { id: "consensus", after: "news" } // 종합분석: 예측 탭 소속 + 전체에선 야구 뉴스 뒤
         ];
         FLAT_PLACEMENT.forEach(({ id, after }) => {
           const idx = bottomCards.findIndex((c) => c.id === id);
