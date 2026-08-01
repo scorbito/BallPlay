@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronLeft, ChevronRight, Sparkles, Swords } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Swords } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
@@ -32,25 +31,80 @@ function formLabel(form: { wins: number; losses: number; draws: number } | null)
   return `${form.wins}승${form.losses}패${form.draws > 0 ? `${form.draws}무` : ""}`;
 }
 
-function PickChips({ picks }: { picks: ProviderPick[] }) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      {picks.map((p) => (
-        <span key={p.provider} className="inline-flex items-center gap-1 text-xs font-bold">
-          <span className={PROVIDER_COLOR[p.provider] ?? "text-slate-500"}>{PROVIDER_LABEL[p.provider] ?? p.provider}</span>
-          <span className="text-slate-700">{teamName(p.teamId)}</span>
-          {p.isCorrect !== null ? (
-            <span className={p.isCorrect ? "text-emerald-600" : "text-rose-500"}>{p.isCorrect ? "✓" : "✗"}</span>
-          ) : null}
-        </span>
-      ))}
-    </div>
-  );
+/** 종합분석 요약문 자동 생성 — 픽 구도(만장일치/갈림) + 불펜·폼·피로 데이터에서 조립.
+ *  "왜 이 확률인지"를 리포트 톤으로 2~4문장. */
+function buildConsensusSummary(card: ConsensusGameCard): string | null {
+  if (!card.consensusTeamId || card.consensusProb === null || card.picks.length < 3) return null;
+  const prob = Math.round(card.consensusProb * 100);
+  const sentences: string[] = [];
+
+  // 1) 픽 구도
+  if (card.unanimous) {
+    sentences.push(`세 AI가 모두 ${teamName(card.consensusTeamId)}의 승리를 예상한 만장일치 카드입니다.`);
+  } else {
+    const sideA = card.picks.filter((p) => p.teamId === card.consensusTeamId);
+    const sideB = card.picks.filter((p) => p.teamId !== card.consensusTeamId);
+    const label = (ps: ProviderPick[]) => ps.map((p) => PROVIDER_LABEL[p.provider] ?? p.provider).join("·");
+    if (sideB.length > 0) {
+      sentences.push(
+        `${label(sideA)}는 ${teamName(sideA[0].teamId)}, ${label(sideB)}는 ${teamName(sideB[0].teamId)}를 골라 의견이 갈린 격전지입니다.`
+      );
+    }
+  }
+
+  // 2) 데이터 방향 — 불펜(최근10 ERA 낮은 쪽)·폼(승-패 차 큰 쪽)
+  const bullpenLean =
+    card.homeBullpen?.recent10Era != null && card.awayBullpen?.recent10Era != null
+      ? card.homeBullpen.recent10Era < card.awayBullpen.recent10Era
+        ? card.homeTeamId
+        : card.awayTeamId
+      : null;
+  const formScore = (f: { wins: number; losses: number } | null) => (f ? f.wins - f.losses : null);
+  const hs = formScore(card.homeForm);
+  const as = formScore(card.awayForm);
+  const formLean = hs != null && as != null && hs !== as ? (hs > as ? card.homeTeamId : card.awayTeamId) : null;
+  const bullpenNums =
+    card.homeBullpen?.recent10Era != null && card.awayBullpen?.recent10Era != null
+      ? `${card.awayBullpen.recent10Era} 대 ${card.homeBullpen.recent10Era}`
+      : null;
+  if (bullpenLean && formLean) {
+    if (bullpenLean === formLean) {
+      sentences.push(`정밀 데이터는 불펜 최근 10경기(${bullpenNums})와 최근 폼 모두 ${teamName(bullpenLean)} 우위를 가리킵니다.`);
+    } else {
+      sentences.push(
+        `정밀 데이터는 불펜에선 ${teamName(bullpenLean)}, 최근 폼에선 ${teamName(formLean)}이 앞서 팽팽합니다.`
+      );
+    }
+  } else if (bullpenLean) {
+    sentences.push(`불펜 최근 10경기(${bullpenNums})는 ${teamName(bullpenLean)} 우위입니다.`);
+  }
+
+  // 3) 피로 변수
+  if (card.fatigueFlags.length > 0) {
+    const flagText = card.fatigueFlags
+      .slice(0, 2)
+      .map((flag) => {
+        const [teamId, label] = flag.split(":");
+        return `${teamName(teamId)} ${label}`;
+      })
+      .join(", ");
+    sentences.push(`불펜 피로 변수(${flagText})도 있습니다.`);
+  }
+
+  // 4) 확률 근거
+  if (card.unanimous) {
+    sentences.push(`만장일치 카드는 그동안 적중률이 높았던 만큼 ${prob}%의 고신뢰로 봅니다.`);
+  } else {
+    sentences.push(
+      `의견이 갈린 경기는 그동안 다수 의견의 적중률이 낮았던 만큼, 과신하지 않고 ${prob}%의 박빙으로 봅니다.`
+    );
+  }
+  return sentences.join(" ");
 }
 
 /** 경기 1건 종합 카드 — 종합분석 목록 + AI 예측 상세의 "종합분석" 탭에서 공용. */
 export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
-  const [open, setOpen] = useState(false);
+  const summary = buildConsensusSummary(card);
   const home = getTeam(card.homeTeamId);
   const away = getTeam(card.awayTeamId);
   const finished = card.gameStatus === "finished" && card.actualHomeScore !== null && card.actualAwayScore !== null;
@@ -142,10 +196,12 @@ export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
         </div>
       )}
 
-      {/* 3AI 한줄 */}
-      <div className="mb-3">
-        <PickChips picks={card.picks} />
-      </div>
+      {/* 종합분석 요약 — 왜 이 확률인지 리포트 톤으로 */}
+      {summary ? (
+        <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600">
+          {summary}
+        </p>
+      ) : null}
 
       {/* 데이터 포인트 (핵심만) */}
       <div className="space-y-1 text-xs text-slate-600">
@@ -179,26 +235,22 @@ export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
         ) : null}
       </div>
 
-      {/* 상세 펼치기 — 각 AI 근거 */}
+      {/* AI별 근거 — 항상 펼침 */}
       {card.picks.length > 0 ? (
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border border-slate-100 py-1.5 text-[11px] font-bold text-slate-400"
-        >
-          AI별 근거 {open ? "접기" : "보기"}
-          <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
-      ) : null}
-      {open ? (
-        <ul className="mt-2 space-y-1.5 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+        <ul className="mt-3 space-y-1.5 rounded-lg border border-slate-100 p-3 text-xs text-slate-600">
           {card.picks.map((p) => (
             <li key={p.provider}>
               <span className={`font-extrabold ${PROVIDER_COLOR[p.provider] ?? ""}`}>
                 {PROVIDER_LABEL[p.provider]}
               </span>{" "}
               <span className="font-bold text-slate-700">{teamName(p.teamId)}</span>{" "}
-              <span className="text-slate-400">({p.confidence})</span> — {p.keyFactor}
+              <span className="text-slate-400">({p.confidence})</span>
+              {p.isCorrect !== null ? (
+                <span className={`ml-1 font-extrabold ${p.isCorrect ? "text-emerald-600" : "text-rose-500"}`}>
+                  {p.isCorrect ? "✓" : "✗"}
+                </span>
+              ) : null}{" "}
+              — {p.keyFactor}
             </li>
           ))}
         </ul>
