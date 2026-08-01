@@ -43,6 +43,9 @@ export type ConsensusGameCard = {
   awayTeamId: string;
   homeStarter: string | null;
   awayStarter: string | null;
+  /** 선발 시즌 ERA (스냅샷 최신값). 새 외국인 등 기록 없으면 null. */
+  homeStarterEra: number | null;
+  awayStarterEra: number | null;
   picks: ProviderPick[];
   /** 3개 미만이면 null — 종합픽 미산출 */
   consensusTeamId: string | null;
@@ -149,6 +152,27 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
     });
   }
 
+  // 선발 시즌 ERA — 스냅샷 최신값 (이름 매칭, 새 외국인 등 미등록은 null)
+  const starterEra = new Map<string, number>();
+  const starterNames = Array.from(
+    new Set(games.flatMap((g) => [g.homeStarter, g.awayStarter]).filter((n): n is string => Boolean(n)))
+  );
+  if (starterNames.length > 0) {
+    const orFilter = starterNames.map((n) => `sim_payload->>name.eq.${n}`).join(",");
+    const { data: pitcherRows } = await client
+      .from("bp_player_stats_snapshots")
+      .select("snapshot_date, sim_payload")
+      .eq("kind", "pitcher")
+      .or(orFilter)
+      .order("snapshot_date", { ascending: false })
+      .limit(120);
+    for (const row of pitcherRows ?? []) {
+      const name = row.sim_payload?.name as string | undefined;
+      const era = row.sim_payload?.era;
+      if (name && !starterEra.has(name) && typeof era === "number") starterEra.set(name, era);
+    }
+  }
+
   // 게임별 픽 취합
   const predRows: BpAiPredictionResultRow[] = predsResult.ok ? predsResult.rows : [];
   const picksByGame = new Map<string, ProviderPick[]>();
@@ -206,6 +230,8 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
       awayTeamId: g.awayTeamId,
       homeStarter: g.homeStarter ?? null,
       awayStarter: g.awayStarter ?? null,
+      homeStarterEra: g.homeStarter ? starterEra.get(g.homeStarter) ?? null : null,
+      awayStarterEra: g.awayStarter ? starterEra.get(g.awayStarter) ?? null : null,
       picks,
       consensusTeamId,
       consensusProb,

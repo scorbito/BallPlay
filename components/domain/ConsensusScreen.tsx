@@ -205,6 +205,29 @@ export function ConsensusGameCardView({ card }: { card: ConsensusGameCard }) {
 
       {/* 데이터 포인트 (핵심만) */}
       <div className="space-y-1 text-xs text-slate-600">
+        {card.homeStarter || card.awayStarter ? (
+          <div>
+            <span className="font-bold text-slate-400">선발</span> {card.awayStarter ?? "-"}{" "}
+            {card.awayStarterEra != null ? card.awayStarterEra.toFixed(2) : "-"} · {card.homeStarter ?? "-"}{" "}
+            {card.homeStarterEra != null ? card.homeStarterEra.toFixed(2) : "-"}
+            {card.homeStarterEra != null && card.awayStarterEra != null && card.homeStarterEra !== card.awayStarterEra ? (
+              <span className="ml-1 font-extrabold text-slate-800">
+                → {teamName(card.homeStarterEra < card.awayStarterEra ? card.homeTeamId : card.awayTeamId)} 우위
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        {card.homeForm && card.awayForm ? (
+          <div>
+            <span className="font-bold text-slate-400">타선 최근10 득점</span> {teamName(card.awayTeamId)}{" "}
+            {card.awayForm.runsScored} · {teamName(card.homeTeamId)} {card.homeForm.runsScored}
+            {card.homeForm.runsScored !== card.awayForm.runsScored ? (
+              <span className="ml-1 font-extrabold text-slate-800">
+                → {teamName(card.homeForm.runsScored > card.awayForm.runsScored ? card.homeTeamId : card.awayTeamId)} 우위
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         {bullpenLine ? (
           <div>
             <span className="font-bold text-slate-400">불펜 최근10</span>{" "}
