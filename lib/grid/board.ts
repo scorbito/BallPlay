@@ -4,6 +4,7 @@
 // 이라 조건 축 없이도 4200개 판이 전부 성립한다. 조건 축(좌완·데뷔연도 등)은
 // 나중에 CellAxis 를 확장해 얹는다.
 
+import { getChoseong } from "@/lib/wordle/jamo";
 import { GRID_TEAMS, TEAM_BIT, type GridTeamId } from "./teams";
 import { getAllPlayers, findPlayersByName, type GridPlayer } from "./pool";
 
@@ -18,26 +19,53 @@ export type GridBoard = {
 export type CellIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export const CELL_COUNT = 9;
-/** 총 시도 횟수 — 정답 9칸에 오답 여유 없이 딱 9번(원작과 동일). */
-export const MAX_GUESSES = 9;
+/**
+ * 총 시도 횟수.
+ *
+ * 원작은 9칸에 9번이라 한 번만 틀려도 만점이 불가능한데, KBO 는 MLB 만큼 이적 이력이
+ * 회자되지 않아 그대로 가져오니 너무 빡빡했다. 오답 3번의 여유를 준다.
+ */
+export const MAX_GUESSES = 12;
 
-/** 하루 격자의 셀당 최소 정답 수. 이 밑으로 내려가면 "아는 사람만 아는" 칸이 된다. */
+/** 판당 쓸 수 있는 초성 힌트 수. */
+export const MAX_HINTS = 3;
+
+/** 셀당 최소 정답 수. 이 밑으로 내려가면 "아는 사람만 아는" 칸이 된다. */
 const MIN_ANSWERS_PER_CELL = 10;
 
+/**
+ * 셀당 최소 "알 만한" 정답 수.
+ *
+ * 정답이 많아도 전부 저니맨이면 떠올릴 수가 없다. 실측하니 KT×NC 처럼 총 정답이
+ * 17명인데 10시즌 이상 뛴 선수는 3명뿐인 조합이 있었다. 인지도 필터를 따로 걸어
+ * 셀마다 기억할 만한 이름이 최소 5명은 있게 만든다.
+ */
+const MIN_FAMOUS_PER_CELL = 5;
+
+/**
+ * 인지도 프록시 — 오래 뛰었고 최근 활동한 선수는 팬이 기억할 확률이 높다.
+ * 성적 데이터가 없으므로(수집 대상이 연도·팀뿐) 출장 시즌 수로 대신한다.
+ */
+function isFamous(player: GridPlayer): boolean {
+  return player.seasons >= 10 && player.last >= 2011;
+}
+
 // ── 팀 조합별 정답 수 사전 계산 ──
-// 3408명을 한 번만 훑는다. 판 생성 때마다 다시 세면 리롤마다 전체 스캔이 된다.
+// 3408명을 한 번만 훑는다. 판 생성 때마다 다시 세면 조합마다 전체 스캔이 된다.
 const pairCounts = new Map<string, number>();
+const famousCounts = new Map<string, number>();
 {
-  const players = getAllPlayers();
-  for (const player of players) {
+  for (const player of getAllPlayers()) {
     const owned: number[] = [];
     for (let i = 0; i < GRID_TEAMS.length; i++) {
       if (player.mask & (1 << i)) owned.push(i);
     }
+    const famous = isFamous(player);
     for (let i = 0; i < owned.length; i++) {
       for (let j = i + 1; j < owned.length; j++) {
         const key = `${owned[i]}|${owned[j]}`;
         pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1);
+        if (famous) famousCounts.set(key, (famousCounts.get(key) ?? 0) + 1);
       }
     }
   }
@@ -49,10 +77,36 @@ function pairKey(a: GridTeamId, b: GridTeamId): string {
   return ia < ib ? `${ia}|${ib}` : `${ib}|${ia}`;
 }
 
-/** 해당 셀의 정답 후보 수. 판 생성 검증과 정답 공개 시 "N명 중 1명" 표시에 쓴다. */
+/** 해당 셀의 정답 후보 수. 판 생성 검증과 "후보 N명" 표시에 쓴다. */
 export function countAnswers(row: GridAxis, col: GridAxis): number {
   if (row.teamId === col.teamId) return 0;
   return pairCounts.get(pairKey(row.teamId, col.teamId)) ?? 0;
+}
+
+/** 해당 셀의 "알 만한" 정답 수. 판 생성 기준. */
+function countFamous(row: GridAxis, col: GridAxis): number {
+  if (row.teamId === col.teamId) return 0;
+  return famousCounts.get(pairKey(row.teamId, col.teamId)) ?? 0;
+}
+
+/**
+ * 초성 힌트 — 그 칸 정답 중 가장 알 만한 한 명의 초성.
+ *
+ * 그리드가 워들보다 어려운 근본 이유는 단서가 0인 상태에서 이름을 "떠올려야" 하기
+ * 때문이다. 초성을 주면 회상(recall)이 재인(recognition)으로 바뀌어 난이도가 크게 내려간다.
+ * 다른 정답을 넣어도 정답 처리되므로 힌트가 답을 하나로 못박지는 않는다.
+ */
+export function hintFor(row: GridAxis, col: GridAxis, excludeNames: readonly string[] = []): string | null {
+  // 이미 다른 칸에 쓴 선수는 뺀다. 한 선수는 한 칸에만 쓸 수 있어서, 안 빼면
+  // 여러 팀을 돌아다닌 선수(예: 노경은)가 여러 칸의 힌트로 겹쳐 죽은 힌트가 된다.
+  const used = new Set(excludeNames);
+  const candidates = getAllPlayers().filter((p) => !used.has(p.name) && playerSatisfies(p, row, col));
+  if (candidates.length === 0) return null;
+  // 오래 뛰었고 최근일수록 먼저. 동률이면 이름순으로 고정해 힌트가 매번 같게 한다.
+  const best = candidates.sort(
+    (a, b) => b.seasons - a.seasons || b.last - a.last || a.name.localeCompare(b.name, "ko")
+  )[0];
+  return getChoseong(best.name);
 }
 
 /** 선수가 이 셀의 정답인지. */
@@ -122,7 +176,7 @@ function combinations3<T>(items: readonly T[]): T[][] {
  *
  * 조합 수가 120 × 35 = 4200 개뿐이라 모듈 로드 시 한 번 계산해도 부담이 없다.
  */
-function enumerateBoards(minAnswers: number): GridBoard[] {
+function enumerateBoards(minAnswers: number, minFamous: number): GridBoard[] {
   const boards: GridBoard[] = [];
   for (const rowTeams of combinations3(GRID_TEAMS)) {
     const rest = GRID_TEAMS.filter((t) => !rowTeams.includes(t));
@@ -130,7 +184,9 @@ function enumerateBoards(minAnswers: number): GridBoard[] {
       let ok = true;
       for (const r of rowTeams) {
         for (const c of colTeams) {
-          if (countAnswers({ kind: "team", teamId: r }, { kind: "team", teamId: c }) < minAnswers) {
+          const row = { kind: "team", teamId: r } as const;
+          const col = { kind: "team", teamId: c } as const;
+          if (countAnswers(row, col) < minAnswers || countFamous(row, col) < minFamous) {
             ok = false;
             break;
           }
@@ -159,9 +215,16 @@ function enumerateBoards(minAnswers: number): GridBoard[] {
  */
 const BOARD_SEQUENCE: GridBoard[] = (() => {
   const rand = mulberry32(0x5eed_9c41);
-  // 기준을 통과하는 판이 없을 리 없지만, 데이터가 깨져도 화면은 띄워야 한다.
-  for (const threshold of [MIN_ANSWERS_PER_CELL, Math.floor(MIN_ANSWERS_PER_CELL / 2), 1]) {
-    const boards = enumerateBoards(threshold);
+  // 기준을 통과하는 판이 없을 리 없지만(실측 2,730개 = 7.5년치), 데이터가 깨져도
+  // 화면은 띄워야 하므로 단계적으로 기준을 낮춘다.
+  const tiers: [number, number][] = [
+    [MIN_ANSWERS_PER_CELL, MIN_FAMOUS_PER_CELL],
+    [MIN_ANSWERS_PER_CELL, 2],
+    [5, 0],
+    [1, 0]
+  ];
+  for (const [minAnswers, minFamous] of tiers) {
+    const boards = enumerateBoards(minAnswers, minFamous);
     if (boards.length > 0) return shuffled(boards, rand);
   }
   return [];

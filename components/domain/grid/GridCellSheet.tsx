@@ -7,7 +7,7 @@
 // 입력 단계에서 강제된다. 다만 그리드는 은퇴 선수까지 3400명이라 목록을 더 길게 준다.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { Lightbulb, Search } from "lucide-react";
 import { ModalShell } from "@/components/common/ModalShell";
 import { TeamLogo } from "@/components/common/TeamLogo";
 import { getTeam } from "@/lib/constants/teams";
@@ -23,13 +23,32 @@ type Props = {
   col: GridAxis;
   /** 남은 시도 수 — 시트 안에서도 보여야 함부로 찍지 않는다. */
   remaining: number;
+  /** 이 칸의 정답 후보 수 */
+  poolSize: number;
+  /** 이미 연 초성 힌트. 없으면 null. */
+  hint: string | null;
+  /** 남은 힌트 수 */
+  hintsLeft: number;
   /** 이미 쓴 이름 — 같은 선수를 두 칸에 못 쓴다. */
   usedNames: string[];
+  onHint: () => void;
   onClose: () => void;
   onSubmit: (name: string) => void;
 };
 
-export function GridCellSheet({ open, row, col, remaining, usedNames, onClose, onSubmit }: Props) {
+export function GridCellSheet({
+  open,
+  row,
+  col,
+  remaining,
+  poolSize,
+  hint,
+  hintsLeft,
+  usedNames,
+  onHint,
+  onClose,
+  onSubmit
+}: Props) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const used = useMemo(() => new Set(usedNames), [usedNames]);
@@ -88,8 +107,29 @@ export function GridCellSheet({ open, row, col, remaining, usedNames, onClose, o
               </span>
             ) : null}
           </p>
-          <p className="grid-sheet-remaining">남은 기회 {remaining}</p>
+          <p className="grid-sheet-remaining">
+            남은 기회 {remaining} · 이 칸 후보 {poolSize}명
+          </p>
         </header>
+
+        {/* 초성 힌트 — 떠올리기(recall)를 알아보기(recognition)로 바꾸는 장치.
+            기회를 소모하지 않으므로 막혔을 때 부담 없이 쓸 수 있다. */}
+        {hint ? (
+          <p className="grid-sheet-hint-open">
+            <span className="grid-sheet-hint-label">초성</span>
+            <strong>{hint}</strong>
+          </p>
+        ) : (
+          <button
+            type="button"
+            className="grid-sheet-hint-btn"
+            onClick={onHint}
+            disabled={hintsLeft <= 0}
+          >
+            <Lightbulb size={14} aria-hidden />
+            {hintsLeft > 0 ? `초성 힌트 보기 (${hintsLeft}번 남음)` : "힌트를 모두 썼어요"}
+          </button>
+        )}
 
         <div className="grid-sheet-field">
           <Search size={15} aria-hidden />

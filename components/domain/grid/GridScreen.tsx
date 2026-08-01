@@ -17,8 +17,10 @@ import { getTeam } from "@/lib/constants/teams";
 import {
   CELL_COUNT,
   MAX_GUESSES,
+  MAX_HINTS,
   cellAxes,
   countAnswers,
+  hintFor,
   judgeName,
   type CellIndex,
   type GridBoard
@@ -45,6 +47,7 @@ export function GridScreen() {
   const [dateISO, setDateISO] = useState<string | null>(null);
   const [dailyFilled, setDailyFilled] = useState<GridFilled[]>([]);
   const [dailyUsed, setDailyUsed] = useState(0);
+  const [dailyHinted, setDailyHinted] = useState<number[]>([]);
   const [stats, setStats] = useState<GridStats | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [openCell, setOpenCell] = useState<CellIndex | null>(null);
@@ -56,6 +59,7 @@ export function GridScreen() {
   const [practiceBoard, setPracticeBoard] = useState<GridBoard | null>(null);
   const [practiceFilled, setPracticeFilled] = useState<GridFilled[]>([]);
   const [practiceUsed, setPracticeUsed] = useState(0);
+  const [practiceHinted, setPracticeHinted] = useState<number[]>([]);
 
   useEffect(() => {
     const today = kstDateString();
@@ -64,6 +68,7 @@ export function GridScreen() {
     if (saved) {
       setDailyFilled(saved.filled);
       setDailyUsed(saved.used);
+      setDailyHinted(saved.hintedCells);
     }
     setStats(loadStats());
   }, []);
@@ -76,8 +81,27 @@ export function GridScreen() {
 
   const filled = isDaily ? dailyFilled : practiceFilled;
   const used = isDaily ? dailyUsed : practiceUsed;
+  const hinted = isDaily ? dailyHinted : practiceHinted;
   const remaining = MAX_GUESSES - used;
+  const hintsLeft = MAX_HINTS - hinted.length;
   const finished = filled.length === CELL_COUNT || remaining <= 0;
+
+  /**
+   * 셀별 초성 힌트 — 이미 연 칸만 값을 준다.
+   * 채운 이름을 제외해 다시 계산하므로, 힌트로 가리키던 선수를 다른 칸에 써버려도
+   * 남은 정답 쪽으로 힌트가 옮겨간다.
+   */
+  const hintByCell = useMemo(() => {
+    const map = new Map<number, string>();
+    if (!board) return map;
+    const usedSoFar = filled.map((f) => f.name);
+    for (const cell of hinted) {
+      const { row, col } = cellAxes(board, cell as CellIndex);
+      const value = hintFor(row, col, usedSoFar);
+      if (value) map.set(cell, value);
+    }
+    return map;
+  }, [board, hinted, filled]);
 
   const filledByCell = useMemo(() => {
     const map = new Map<number, GridFilled>();
@@ -115,6 +139,7 @@ export function GridScreen() {
               filled: nextFilled,
               used: nextUsed,
               usedNames: nextFilled.map((f) => f.name),
+              hintedCells: hinted,
               done: nextFilled.length === CELL_COUNT || MAX_GUESSES - nextUsed <= 0
             });
           }
@@ -145,6 +170,7 @@ export function GridScreen() {
             filled,
             used: nextUsed,
             usedNames,
+            hintedCells: hinted,
             done: MAX_GUESSES - nextUsed <= 0
           });
         }
@@ -152,13 +178,28 @@ export function GridScreen() {
         setPracticeUsed(nextUsed);
       }
     },
-    [board, openCell, finished, used, filled, isDaily, dateISO, usedNames, showToast]
+    [board, openCell, finished, used, filled, hinted, isDaily, dateISO, usedNames, showToast]
   );
+
+  /** 초성 힌트 열기. 기회는 소모하지 않고 판당 MAX_HINTS 번으로 제한한다. */
+  const handleHint = useCallback(() => {
+    if (openCell === null || hintsLeft <= 0 || hinted.includes(openCell)) return;
+    const next = [...hinted, openCell];
+    if (isDaily) {
+      setDailyHinted(next);
+      if (dateISO) {
+        saveProgress({ date: dateISO, filled, used, usedNames, hintedCells: next, done: false });
+      }
+    } else {
+      setPracticeHinted(next);
+    }
+  }, [openCell, hintsLeft, hinted, isDaily, dateISO, filled, used, usedNames]);
 
   const startPractice = useCallback(() => {
     setPracticeBoard(getRandomBoard());
     setPracticeFilled([]);
     setPracticeUsed(0);
+    setPracticeHinted([]);
     setMode("practice");
   }, []);
 
@@ -285,9 +326,20 @@ export function GridScreen() {
                         ) : finished ? (
                           <span className="grid-cell-pool">정답 {pool}명</span>
                         ) : (
-                          <span className="grid-cell-plus" aria-hidden>
-                            +
-                          </span>
+                          <>
+                            {/* 열어둔 초성 힌트는 칸에 남긴다 — 시트를 닫아도 다시
+                                열어보지 않게. 힌트가 없으면 + 로 빈 칸임을 알린다. */}
+                            {hintByCell.has(index) ? (
+                              <span className="grid-cell-hint">{hintByCell.get(index)}</span>
+                            ) : (
+                              <span className="grid-cell-plus" aria-hidden>
+                                +
+                              </span>
+                            )}
+                            {/* 진행 중에도 후보 수를 보여준다. 어느 칸이 쉬운지 알면
+                                순서를 고를 수 있어 막막함이 크게 준다. */}
+                            <span className="grid-cell-pool">후보 {pool}명</span>
+                          </>
                         )}
                       </button>
                     );
@@ -330,7 +382,11 @@ export function GridScreen() {
             row={cellAxes(board, openCell).row}
             col={cellAxes(board, openCell).col}
             remaining={remaining}
+            poolSize={countAnswers(cellAxes(board, openCell).row, cellAxes(board, openCell).col)}
+            hint={hintByCell.get(openCell) ?? null}
+            hintsLeft={hintsLeft}
             usedNames={usedNames}
+            onHint={handleHint}
             onClose={() => setOpenCell(null)}
             onSubmit={handleSubmit}
           />
@@ -343,7 +399,12 @@ export function GridScreen() {
               경기에 나온 선수</strong>를 넣습니다.
             </p>
             <ul>
-              <li>기회는 9번. 틀려도 1회가 사용돼요.</li>
+              <li>기회는 {MAX_GUESSES}번. 틀려도 1회가 사용돼요.</li>
+              <li>
+                막히면 <strong>초성 힌트</strong>를 쓰세요. 판당 {MAX_HINTS}번까지 쓸 수 있고 기회는
+                줄지 않아요.
+              </li>
+              <li>칸에 적힌 &ldquo;후보 N명&rdquo;은 그 칸의 정답이 몇 명인지예요. 많은 칸부터 채우면 쉬워요.</li>
               <li>같은 선수는 두 칸에 쓸 수 없어요.</li>
               <li>1982년부터 지금까지 뛴 선수 {getPlayerCount().toLocaleString()}명이 정답 후보예요. 은퇴 선수도 포함됩니다.</li>
               <li>

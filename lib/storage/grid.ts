@@ -23,6 +23,8 @@ export type GridProgress = {
   used: number;
   /** 이미 쓴 이름 — 같은 선수 재사용 금지 */
   usedNames: string[];
+  /** 초성 힌트를 연 셀 인덱스 */
+  hintedCells: number[];
   done: boolean;
 };
 
@@ -68,7 +70,8 @@ export function loadProgress(dateISO: string): GridProgress | null {
   const saved = readJson<GridProgress>(PROGRESS_KEY);
   if (!saved || saved.date !== dateISO) return null;
   if (!Array.isArray(saved.filled) || !Array.isArray(saved.usedNames)) return null;
-  return saved;
+  // hintedCells 는 나중에 추가된 필드 — 이전 판이 남아 있어도 깨지지 않게 보정한다.
+  return { ...saved, hintedCells: Array.isArray(saved.hintedCells) ? saved.hintedCells : [] };
 }
 
 export function saveProgress(progress: GridProgress): void {
