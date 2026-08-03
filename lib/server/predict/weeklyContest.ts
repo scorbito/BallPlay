@@ -214,6 +214,31 @@ export async function computeWeeklyContest(
   };
 }
 
+/**
+ * 그 주 당첨자 전원에게 쿠폰이 전달됐는지 여부.
+ * 사이트 쿠폰함 지급(bp_coupons.source = predict-king-<주시작일>) + 외부 지급 표시를 합쳐 판정한다.
+ * 공개 페이지 문구 전환용 — 불리언만 쓰고 user_id 는 렌더하지 않는다.
+ */
+export async function isWeekFullyIssued(client: SupabaseClient, draw: EventDraw): Promise<boolean> {
+  const expectedIds = [
+    ...(draw.winnerUserId ? [draw.winnerUserId] : []),
+    ...draw.couponWinners.map((w) => w.userId)
+  ];
+  if (expectedIds.length === 0) return false;
+
+  const { data, error } = await client
+    .from("bp_coupons")
+    .select("user_id")
+    .eq("source", `predict-king-${draw.weekStartDate}`);
+  if (error) return false; // 조회 실패 시 "전달 예정" 문구 유지 — 잘못된 완료 표시보다 안전.
+
+  const delivered = new Set<string>([
+    ...(data ?? []).map((r: { user_id: string }) => String(r.user_id)),
+    ...draw.couponIssuedExternal
+  ]);
+  return expectedIds.every((id) => delivered.has(id));
+}
+
 export async function listEventDraws(client: SupabaseClient): Promise<EventDraw[]> {
   const { data, error } = await client
     .from("bp_predict_event_draws")

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Trophy, Ticket } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { createSupabaseCacheClient } from "@/lib/supabase/server";
-import { listEventDraws, type EventDraw } from "@/lib/server/predict/weeklyContest";
+import { listEventDraws, isWeekFullyIssued, type EventDraw } from "@/lib/server/predict/weeklyContest";
 
 export const revalidate = 300;
 
@@ -22,6 +22,8 @@ export default async function PredictKingWinnersPage() {
   // 실제로 추첨된 주(당첨자 있음)만.
   const drawn = draws.filter((d) => d.winnerUserId || d.couponWinners.length > 0);
   const latest = drawn[0] ?? null;
+  // 쿠폰이 전부 전달됐으면 안내 문구를 "전달 예정" → "지급 완료"로 전환.
+  const issued = latest ? await isWeekFullyIssued(supabase, latest) : false;
 
   return (
     <AppShell activeTab="home" title="주간 예측왕 당첨자" theme="light" backHref="/">
@@ -79,11 +81,20 @@ export default async function PredictKingWinnersPage() {
 
             {/* 쿠폰 전달 안내 + 쿠폰함 바로가기 (공지와 동일 내용) */}
             <div className="winners-notice">
-              <h2>🎟 쿠폰 전달 안내</h2>
+              <h2>{issued ? "✅ 쿠폰 지급 완료" : "🎟 쿠폰 전달 안내"}</h2>
               <ul>
-                <li>쿠폰은 늦어도 이번 주 수요일 전까지 <strong>설정 &gt; 내 쿠폰함</strong>으로 보내드립니다.</li>
-                <li>도착하면 홈 알림과 설정 탭 배지로 알려드려요.</li>
-                <li>내 쿠폰함에서 언제든 확인하고 이미지로 저장할 수 있어요.</li>
+                {issued ? (
+                  <>
+                    <li>당첨자 전원에게 쿠폰을 보내드렸어요. <strong>설정 &gt; 내 쿠폰함</strong>에서 확인하세요.</li>
+                    <li>내 쿠폰함에서 언제든 확인하고 이미지로 저장할 수 있어요.</li>
+                  </>
+                ) : (
+                  <>
+                    <li>쿠폰은 늦어도 이번 주 수요일 전까지 <strong>설정 &gt; 내 쿠폰함</strong>으로 보내드립니다.</li>
+                    <li>도착하면 홈 알림과 설정 탭 배지로 알려드려요.</li>
+                    <li>내 쿠폰함에서 언제든 확인하고 이미지로 저장할 수 있어요.</li>
+                  </>
+                )}
               </ul>
               <Link href="/my/coupons" className="event-cta" prefetch={false}>
                 내 쿠폰함 열기
