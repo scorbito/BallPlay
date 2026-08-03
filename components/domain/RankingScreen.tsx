@@ -7,6 +7,7 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { PredictionRanking } from "@/components/domain/PredictionRanking";
 import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredictions";
+import type { HallOfFameEntry } from "@/lib/server/predict/weeklyContest";
 
 type Props = {
   // 비로그인이면 null — 랭킹은 누구나 열람, 본인 행 하이라이트만 생략.
@@ -15,15 +16,24 @@ type Props = {
   /** 예측왕 자격 기준선(이 경기 수 미만은 자격 미달로 하단 배치). */
   weeklyQualifyBar?: number;
   seasonRanking: PredictionRankingRow[];
+  /** 역대 예측왕(마감된 주) — 명예의 전당 탭. */
+  hallOfFame?: HallOfFameEntry[];
 };
 
-export function RankingScreen({ currentUserId, weeklyRanking, weeklyQualifyBar = 0, seasonRanking }: Props) {
+export function RankingScreen({
+  currentUserId,
+  weeklyRanking,
+  weeklyQualifyBar = 0,
+  seasonRanking,
+  hallOfFame = []
+}: Props) {
   return (
     <AppShell activeTab="home" title="적중률 랭킹" theme="light" backHref="/predict/winner" wide>
       <PredictionRanking
         weeklyRows={weeklyRanking}
         weeklyQualifyBar={weeklyQualifyBar}
         seasonRows={seasonRanking}
+        hallOfFame={hallOfFame}
         currentUserId={currentUserId}
       />
     </AppShell>

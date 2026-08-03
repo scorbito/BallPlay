@@ -214,6 +214,48 @@ export async function computeWeeklyContest(
   };
 }
 
+/** 명예의 전당 1행 — 예측왕이 나온 주만. 클라이언트로 넘기므로 user_id 는 담지 않는다. */
+export type HallOfFameEntry = {
+  weekStartDate: string;
+  weekEndDate: string;
+  /** 오래된 주부터 1, 2, 3... (제N대) */
+  ordinal: number;
+  nickname: string | null;
+  /** 같은 사람의 누적 우승 횟수 */
+  winCount: number;
+  total: number | null;
+  rate: number | null;
+};
+
+/**
+ * 추첨 이력 → 명예의 전당 목록(최신순). 예측왕이 없는 주(AI 승)는 제외.
+ * 서수는 오래된 주부터, 누적 우승 횟수는 winner_user_id 기준으로 센다.
+ */
+export function buildHallOfFame(draws: EventDraw[]): HallOfFameEntry[] {
+  const winnerWeeks = draws.filter((d) => d.winnerUserId);
+
+  const ascending = [...winnerWeeks].sort((a, b) =>
+    a.weekStartDate < b.weekStartDate ? -1 : a.weekStartDate > b.weekStartDate ? 1 : 0
+  );
+  const winCount = new Map<string, number>();
+  const ordinalOf = new Map<string, number>();
+  ascending.forEach((d, i) => {
+    const id = d.winnerUserId as string;
+    winCount.set(id, (winCount.get(id) ?? 0) + 1);
+    ordinalOf.set(d.weekStartDate, i + 1);
+  });
+
+  return [...ascending].reverse().map((d) => ({
+    weekStartDate: d.weekStartDate,
+    weekEndDate: d.weekEndDate,
+    ordinal: ordinalOf.get(d.weekStartDate) ?? 0,
+    nickname: d.winnerNickname,
+    winCount: winCount.get(d.winnerUserId as string) ?? 1,
+    total: d.winnerTotal,
+    rate: d.winnerRate
+  }));
+}
+
 /**
  * 그 주 당첨자 전원에게 쿠폰이 전달됐는지 여부.
  * 사이트 쿠폰함 지급(bp_coupons.source = predict-king-<주시작일>) + 외부 지급 표시를 합쳐 판정한다.

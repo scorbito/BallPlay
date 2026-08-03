@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Crown, Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { createSupabaseCacheClient } from "@/lib/supabase/server";
-import { listEventDraws, type EventDraw } from "@/lib/server/predict/weeklyContest";
+import { listEventDraws, buildHallOfFame, type EventDraw } from "@/lib/server/predict/weeklyContest";
 
 export const revalidate = 300;
 
@@ -16,35 +16,12 @@ function mmdd(iso: string): string {
   return `${Number(m)}/${Number(d)}`;
 }
 
-type HofEntry = EventDraw & { ordinal: number; winCount: number };
-
 export default async function HallOfFamePage() {
   const supabase = createSupabaseCacheClient(300);
   const draws = await listEventDraws(supabase).catch(() => [] as EventDraw[]);
 
-  // 예측왕(메인 당첨자)이 있는 주만. AI가 이긴 주(당첨자 없음)는 제외.
-  const winnerWeeks = draws.filter((d) => d.winnerUserId);
-
-  // 오래된 주부터 "제N대" 서수 부여 + 유저별 누적 우승 횟수 집계.
-  const ascending = [...winnerWeeks].sort((a, b) =>
-    a.weekStartDate < b.weekStartDate ? -1 : a.weekStartDate > b.weekStartDate ? 1 : 0
-  );
-  const winCount = new Map<string, number>();
-  for (const d of ascending) {
-    const id = d.winnerUserId as string;
-    winCount.set(id, (winCount.get(id) ?? 0) + 1);
-  }
-  const ordinalOf = new Map<string, number>();
-  ascending.forEach((d, i) => ordinalOf.set(d.weekStartDate, i + 1));
-
-  // 화면은 최신순.
-  const entries: HofEntry[] = [...winnerWeeks]
-    .sort((a, b) => (a.weekStartDate < b.weekStartDate ? 1 : a.weekStartDate > b.weekStartDate ? -1 : 0))
-    .map((d) => ({
-      ...d,
-      ordinal: ordinalOf.get(d.weekStartDate) ?? 0,
-      winCount: winCount.get(d.winnerUserId as string) ?? 1
-    }));
+  // 서수·누적 우승 집계는 적중률 랭킹 탭과 공유(최신순 반환).
+  const entries = buildHallOfFame(draws);
 
   return (
     <AppShell activeTab="home" title="예측왕 명예의 전당" theme="light" backHref="/event/winners">
@@ -67,14 +44,12 @@ export default async function HallOfFamePage() {
                 </div>
                 <div className="hof-card-body">
                   <div className="hof-card-name-row">
-                    <strong className="hof-card-name">{e.winnerNickname ?? "익명"}</strong>
+                    <strong className="hof-card-name">{e.nickname ?? "익명"}</strong>
                     {e.winCount > 1 ? <span className="hof-card-wins">🏆 {e.winCount}회 우승</span> : null}
                   </div>
                   <span className="hof-card-meta">
                     {mmdd(e.weekStartDate)}~{mmdd(e.weekEndDate)}
-                    {e.winnerTotal && e.winnerRate !== null
-                      ? ` · ${e.winnerTotal}경기 · ${Math.round(e.winnerRate * 100)}% 적중`
-                      : ""}
+                    {e.total && e.rate !== null ? ` · ${e.total}경기 · ${Math.round(e.rate * 100)}% 적중` : ""}
                   </span>
                 </div>
               </div>

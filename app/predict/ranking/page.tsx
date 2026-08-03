@@ -9,6 +9,7 @@ import {
   type PredictionRankingRow
 } from "@/lib/supabase/query-parts/bpPredictions";
 import { getAiByProviderStats } from "@/lib/supabase/query-parts/bpAiPredictions";
+import { listEventDraws, buildHallOfFame, type EventDraw } from "@/lib/server/predict/weeklyContest";
 
 const AI_LABEL: Record<string, string> = { gpt: "GPT", gemini: "Gemini", claude: "Claude" };
 
@@ -56,8 +57,8 @@ export default async function PredictionRankingPage() {
   const weeklyThreshold = scheduledCount > 0 ? Math.max(1, Math.ceil((scheduledCount * 2) / 3)) : 0;
   const weeklyQualifyBar = Math.max(0, weeklyThreshold - remainingCount);
 
-  // 주간(화~일, 우선 노출) + 전체(시즌) + 이번 주 AI별 적중률.
-  const [weeklyResult, seasonResult, aiResult] = await Promise.all([
+  // 주간(화~일, 우선 노출) + 전체(시즌) + 이번 주 AI별 적중률 + 역대 예측왕.
+  const [weeklyResult, seasonResult, aiResult, draws] = await Promise.all([
     // 주간은 매주 리셋되고 이벤트 대상이라 전원 노출 — 자기 순위를 항상 확인할 수 있게.
     getWeeklyPredictionRanking(adminClient, {
       weekStartISO: weekStart,
@@ -74,7 +75,9 @@ export default async function PredictionRankingPage() {
       // RPC의 p_limit은 Postgres int → MAX_SAFE_INTEGER를 넘기면 out of range 에러.
       limit: NO_LIMIT
     }),
-    getAiByProviderStats(adminClient, weekStart)
+    getAiByProviderStats(adminClient, weekStart),
+    // 명예의 전당 탭 — 마감된 주의 예측왕 기록. 실패해도 랭킹은 그대로 보여준다.
+    listEventDraws(adminClient).catch(() => [] as EventDraw[])
   ]);
 
   // 주간 랭킹에 3개 AI를 각각 기준 행으로 끼워 넣어 적중률순으로 정렬.
@@ -114,6 +117,7 @@ export default async function PredictionRankingPage() {
       weeklyRanking={weeklyRanking}
       weeklyQualifyBar={weeklyQualifyBar}
       seasonRanking={seasonResult.ok ? seasonResult.rows : []}
+      hallOfFame={buildHallOfFame(draws)}
     />
   );
 }

@@ -5,18 +5,32 @@
 import { Fragment, useState } from "react";
 import { Trophy } from "lucide-react";
 import type { PredictionRankingRow } from "@/lib/supabase/query-parts/bpPredictions";
+import type { HallOfFameEntry } from "@/lib/server/predict/weeklyContest";
 
-type Tab = "week" | "season";
+type Tab = "week" | "season" | "hof";
 
 type Props = {
   weeklyRows: PredictionRankingRow[];
   /** 예측왕 자격 기준선 — 이 경기 수 미만은 자격 미달(하단 배치 + 구분선). */
   weeklyQualifyBar?: number;
   seasonRows: PredictionRankingRow[];
+  /** 역대 예측왕 — 마감된 주의 기록이라 경쟁 랭킹과 섞지 않고 별도 탭으로. */
+  hallOfFame?: HallOfFameEntry[];
   currentUserId: string | null;
 };
 
-export function PredictionRanking({ weeklyRows, weeklyQualifyBar = 0, seasonRows, currentUserId }: Props) {
+function mmdd(iso: string): string {
+  const [, m, d] = iso.split("-");
+  return `${Number(m)}/${Number(d)}`;
+}
+
+export function PredictionRanking({
+  weeklyRows,
+  weeklyQualifyBar = 0,
+  seasonRows,
+  hallOfFame = [],
+  currentUserId
+}: Props) {
   const [tab, setTab] = useState<Tab>("week");
   const rows = tab === "week" ? weeklyRows : seasonRows;
 
@@ -36,7 +50,9 @@ export function PredictionRanking({ weeklyRows, weeklyQualifyBar = 0, seasonRows
         <p className="predict-rank-sub">
           {tab === "week"
             ? "최소 5경기 예측 · 채점된 경기만 집계"
-            : "최소 10경기 예측 · 최근 14일 내 참여자 · 채점된 경기만 집계"}
+            : tab === "season"
+              ? "최소 10경기 예측 · 최근 14일 내 참여자 · 채점된 경기만 집계"
+              : "매주 승리팀 예측왕에 오른 분들의 기록"}
         </p>
       </header>
 
@@ -59,9 +75,43 @@ export function PredictionRanking({ weeklyRows, weeklyQualifyBar = 0, seasonRows
         >
           전체
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "hof"}
+          className={`predict-rank-tab ${tab === "hof" ? "is-active" : ""}`}
+          onClick={() => setTab("hof")}
+        >
+          명예의 전당
+        </button>
       </div>
 
-      {rows.length === 0 ? (
+      {tab === "hof" ? (
+        hallOfFame.length === 0 ? (
+          <p className="predict-rank-empty">
+            아직 등재된 예측왕이 없어요. 첫 예측왕이 나오면 이곳에 새겨집니다.
+          </p>
+        ) : (
+          <ol className="predict-rank-list">
+            {hallOfFame.map((e) => (
+              <li key={e.weekStartDate} className="predict-rank-row is-hof">
+                <span className="predict-rank-ordinal">제{e.ordinal}대</span>
+                <span className="predict-rank-hof-nick">
+                  <strong>{e.nickname ?? "익명"}</strong>
+                  {e.winCount > 1 ? <span className="predict-rank-wins">🏆 {e.winCount}회</span> : null}
+                  <span className="predict-rank-hof-week">
+                    {mmdd(e.weekStartDate)}–{mmdd(e.weekEndDate)}
+                  </span>
+                </span>
+                <span className="predict-rank-stats">
+                  {e.rate !== null ? <strong>{Math.round(e.rate * 100)}%</strong> : <strong>—</strong>}
+                  {e.total ? <span className="predict-rank-stats-detail">{e.total}경기</span> : null}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )
+      ) : rows.length === 0 ? (
         <p className="predict-rank-empty">
           {tab === "week"
             ? "이번 주 아직 5경기 이상 예측한 사용자가 없어요. 첫 도전자가 되어보세요."
