@@ -344,6 +344,9 @@
 }
 .phone-frame-light .hof-hero-icon {
   color: #eab308;
+  /* Tailwind preflight 가 svg 를 display:block 으로 만들어 text-align:center 가 안 먹는다 → auto 마진으로 중앙. */
+  display: block;
+  margin: 0 auto;
 }
 .phone-frame-light .hof-hero h1 {
   margin: 6px 0 4px;
