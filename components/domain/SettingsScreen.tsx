@@ -7,6 +7,9 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/common/Button";
 import { ModalShell } from "@/components/common/ModalShell";
 import { InstallAppModal } from "@/components/domain/InstallAppModal";
+import { TeamSelectModal } from "@/components/domain/modals/TeamSelectModal";
+import { TeamBadge } from "@/components/common/TeamBadge";
+import { getTeam } from "@/lib/constants/teams";
 import { useInstallPrompt } from "@/lib/hooks/useInstallPrompt";
 import { TierBadge } from "@/components/common/TierBadge";
 import { signOutAction } from "@/lib/actions/auth";
@@ -23,6 +26,7 @@ import {
 } from "@/lib/push/clientPush";
 
 const NICKNAME_MAX = 16;
+const BIO_MAX = 150;
 
 function formatAccountLabel(info: AuthAccountInfo | null | undefined): { label: string; provider: string } | null {
   if (!info || info.isAnonymous) return null;
@@ -46,10 +50,55 @@ type SettingsScreenProps = {
 };
 
 export function SettingsScreen({ accountInfo = null, isAdmin = false, couponUnseen = 0 }: SettingsScreenProps) {
-  const { isAnonymous, profile, showToast } = useAppState();
+  const { isAnonymous, profile, showToast, updateProfile } = useAppState();
   const { isStandalone } = useInstallPrompt();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [installModalOpen, setInstallModalOpen] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [savingTeam, setSavingTeam] = useState(false);
+
+  // 응원팀 변경 — 서버(공유 profiles, 오늘은 승요와 동기화) + 로컬 상태 동시 갱신.
+  const handleSelectTeam = async (teamId: string) => {
+    if (savingTeam || teamId === profile.mainTeamId) {
+      setTeamModalOpen(false);
+      return;
+    }
+    setSavingTeam(true);
+    try {
+      await updateProfileAction({ mainTeamId: teamId });
+      updateProfile({ mainTeamId: teamId });
+      showToast("응원팀을 변경했어요.");
+      setTeamModalOpen(false);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "응원팀 변경에 실패했어요.");
+    } finally {
+      setSavingTeam(false);
+    }
+  };
+
+  // 소개글(bio) — 서버 150자 제한·줄바꿈 제거. 저장 시 공유 프로필 + 로컬 갱신.
+  const [bioDraft, setBioDraft] = useState(profile?.bio ?? "");
+  const [savingBio, setSavingBio] = useState(false);
+  const [bioSavedAt, setBioSavedAt] = useState<number | null>(null);
+  useEffect(() => {
+    setBioDraft(profile?.bio ?? "");
+  }, [profile?.bio]);
+  const bioTrimmed = bioDraft.trim();
+  const bioDirty = bioTrimmed !== (profile?.bio ?? "");
+  const handleSaveBio = async () => {
+    if (!bioDirty || savingBio || isAnonymous) return;
+    setSavingBio(true);
+    try {
+      await updateProfileAction({ bio: bioTrimmed });
+      updateProfile({ bio: bioTrimmed.length > 0 ? bioTrimmed : null });
+      setBioSavedAt(Date.now());
+      window.setTimeout(() => setBioSavedAt(null), 1800);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "소개 저장에 실패했어요.");
+    } finally {
+      setSavingBio(false);
+    }
+  };
   const accountLabel = formatAccountLabel(accountInfo);
 
   // 푸시 알림 토글 — 실제 구독 상태와 연동.
@@ -211,6 +260,50 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false, couponUnse
         )}
       </section>
 
+      {/* 소개 — 프로필 모달에 표시되는 한 줄 소개(bio). */}
+      <section className="settings-nickname-section" aria-label="소개">
+        <header className="settings-section-head">
+          <UserCircle size={14} /> 소개
+        </header>
+        <textarea
+          className="settings-bio-input"
+          value={bioDraft}
+          placeholder={isAnonymous ? "로그인하면 작성 가능" : "나를 한 줄로 소개해보세요"}
+          maxLength={BIO_MAX}
+          rows={2}
+          disabled={isAnonymous || savingBio}
+          onChange={(e) => setBioDraft(e.target.value.slice(0, BIO_MAX))}
+        />
+        <div className="settings-bio-actions">
+          <span className="settings-bio-count">{bioDraft.length}/{BIO_MAX}</span>
+          <button
+            type="button"
+            className="settings-nickname-save"
+            disabled={!bioDirty || savingBio || isAnonymous}
+            onClick={handleSaveBio}
+          >
+            {savingBio ? (
+              <Loader2 size={14} className="settings-nickname-spin" />
+            ) : bioSavedAt ? (
+              <Check size={14} />
+            ) : null}
+            <span>{savingBio ? "저장 중" : bioSavedAt ? "저장됨" : "저장"}</span>
+          </button>
+        </div>
+      </section>
+
+      {/* 응원팀 — 모달로 선택. 변경 시 공유 프로필(오늘은 승요와 동기화) 갱신. */}
+      <section className="settings-nickname-section" aria-label="응원팀">
+        <header className="settings-section-head">
+          <UserCircle size={14} /> 응원팀
+        </header>
+        <button type="button" className="settings-team-row" onClick={() => setTeamModalOpen(true)}>
+          <TeamBadge teamId={profile.mainTeamId} size="sm" />
+          <span className="settings-team-name">{getTeam(profile.mainTeamId).shortName}</span>
+          <span className="settings-team-change">변경 &rsaquo;</span>
+        </button>
+      </section>
+
       {/* 내 쿠폰함 — 당첨 쿠폰 보관·열람. 안 본 쿠폰 있으면 NEW 배지. */}
       <section className="menu-list settings-list settings-list-secondary" aria-label="쿠폰">
         <Link className="settings-row" href="/my/coupons" prefetch={false}>
@@ -343,6 +436,13 @@ export function SettingsScreen({ accountInfo = null, isAdmin = false, couponUnse
         </form>
       </ModalShell>
       <InstallAppModal open={installModalOpen} onClose={() => setInstallModalOpen(false)} />
+      <TeamSelectModal
+        open={teamModalOpen}
+        onClose={() => setTeamModalOpen(false)}
+        currentTeamId={profile.mainTeamId}
+        onSelect={handleSelectTeam}
+        saving={savingTeam}
+      />
     </AppShell>
   );
 }

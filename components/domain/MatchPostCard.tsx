@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Heart, MessageCircle, MoreHorizontal, Trash2, Check } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
@@ -19,6 +19,13 @@ import type { MatchPost, MatchPostComment } from "@/lib/types/domain";
 import { useRouter } from "next/navigation";
 import { MATCH_POST_EMOTION_META } from "@/lib/constants/matchPostEmotion";
 
+function findKnownTeam(teamId: string) {
+  try {
+    return getTeam(teamId);
+  } catch {
+    return null;
+  }
+}
 type MatchPostCardProps = {
   post: MatchPost;
   currentUserId: string | null;
@@ -36,6 +43,17 @@ export function MatchPostCard({ post, currentUserId, onToggleLike, onClickGameFi
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  // 더보기 메뉴 — 바깥 클릭/터치 시 닫힘 (마우스 벗어남은 메뉴 onMouseLeave로 처리).
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [menuOpen]);
 
   // 댓글 펼치기/접기 (목록 안에서 토글)
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -106,10 +124,11 @@ export function MatchPostCard({ post, currentUserId, onToggleLike, onClickGameFi
   };
 
   const isOwner = Boolean(currentUserId && post.userId === currentUserId);
+  const isFreePost = post.postType === "free";
   const emotion = MATCH_POST_EMOTION_META[post.emotionTag];
 
-  const homeTeam = post.game.homeTeamId ? getTeam(post.game.homeTeamId) : null;
-  const awayTeam = post.game.awayTeamId ? getTeam(post.game.awayTeamId) : null;
+  const homeTeam = post.game.homeTeamId ? findKnownTeam(post.game.homeTeamId) : null;
+  const awayTeam = post.game.awayTeamId ? findKnownTeam(post.game.awayTeamId) : null;
 
   // 경기 날짜를 M/D로 축약 (예: "2026-05-13" → "5/13")
   const dateLabel = (() => {
@@ -203,7 +222,7 @@ export function MatchPostCard({ post, currentUserId, onToggleLike, onClickGameFi
         <div className="match-post-header-right">
           {post.authorTeamId ? <TeamBadge teamId={post.authorTeamId} size="sm" /> : null}
           {isOwner ? (
-            <div className="match-post-more">
+            <div className="match-post-more" ref={moreRef}>
               <button
                 type="button"
                 className="icon-button"
@@ -231,41 +250,21 @@ export function MatchPostCard({ post, currentUserId, onToggleLike, onClickGameFi
         </div>
       </header>
 
-      {onClickGameFilter ? (
-        <button
-          type="button"
-          className="match-post-game-context"
-          onClick={onClickGameFilter}
-          aria-label="이 경기 글만 보기"
-        >
+      {isFreePost ? (
+        post.title ? <h2 className="match-post-title">{post.title}</h2> : null
+      ) : onClickGameFilter ? (
+        <button type="button" className="match-post-game-context" onClick={onClickGameFilter} aria-label="이 경기 글만 보기">
           <span className="match-post-score">{scoreLabel}</span>
-          {post.game.currentStatus === "canceled" ? (
-            <span className="match-post-canceled-badge">경기 취소됨</span>
-          ) : null}
-          <span
-            className="match-post-emotion-emoji"
-            title={emotion.label}
-            aria-label={`감정 태그: ${emotion.label}`}
-          >
-            {emotion.emoji}
-          </span>
+          {post.game.currentStatus === "canceled" ? <span className="match-post-canceled-badge">경기 취소됨</span> : null}
+          <span className="match-post-emotion-emoji" title={emotion.label} aria-label={`감정 태그: ${emotion.label}`}>{emotion.emoji}</span>
         </button>
       ) : (
         <div className="match-post-game-context match-post-game-context-static">
           <span className="match-post-score">{scoreLabel}</span>
-          {post.game.currentStatus === "canceled" ? (
-            <span className="match-post-canceled-badge">경기 취소됨</span>
-          ) : null}
-          <span
-            className="match-post-emotion-emoji"
-            title={emotion.label}
-            aria-label={`감정 태그: ${emotion.label}`}
-          >
-            {emotion.emoji}
-          </span>
+          {post.game.currentStatus === "canceled" ? <span className="match-post-canceled-badge">경기 취소됨</span> : null}
+          <span className="match-post-emotion-emoji" title={emotion.label} aria-label={`감정 태그: ${emotion.label}`}>{emotion.emoji}</span>
         </div>
       )}
-
       <div className="match-post-link">
         <p className="match-post-body">{post.body}</p>
 
@@ -334,7 +333,7 @@ export function MatchPostCard({ post, currentUserId, onToggleLike, onClickGameFi
 
       <ModalShell
         open={confirmOpen}
-        title="경기톡 삭제"
+        title={isFreePost ? "자유글 삭제" : "경기톡 삭제"}
         onClose={() => !deleting && setConfirmOpen(false)}
         panelClassName="dark-confirm-panel"
       >

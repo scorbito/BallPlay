@@ -333,6 +333,60 @@
   color: var(--bp-text-muted);
 }
 
+/* 소개(bio) 입력 */
+.phone-frame-light .settings-bio-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  background: var(--bp-card);
+  color: var(--bp-text);
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+.phone-frame-light .settings-bio-input:focus {
+  outline: none;
+  border-color: var(--bp-accent);
+}
+.phone-frame-light .settings-bio-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.phone-frame-light .settings-bio-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+}
+
+/* 응원팀 선택 행 */
+.phone-frame-light .settings-team-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bp-card);
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.phone-frame-light .settings-team-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bp-text);
+}
+.phone-frame-light .settings-team-change {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-accent);
+  white-space: nowrap;
+}
+
 /* 내 쿠폰함 등 NEW 배지 */
 .phone-frame-light .settings-new-badge {
   display: inline-block;

@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import {
   listSimResultsForDate,
@@ -7,12 +7,12 @@ import {
   type BpSimResultRow,
   type Sim1000AccuracyStats
 } from "@/lib/supabase/query-parts/bpSimResults";
-import { getUserTierByIdentity } from "@/lib/auth/userTier";
-import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { Sim1000ListScreen, type Sim1000GameCard } from "@/components/domain/Sim1000ListScreen";
 
 
-export const dynamic = "force-dynamic";
+// 시뮬 수치는 유저 무관 공개 데이터 → 쿠키리스 캐시 클라이언트 + 60초 캐시로 서버 CPU 절감.
+// (운영자 "다시 돌리기"는 로컬 npm 수동 워크플로라 이 페이지엔 admin 분기 불필요.)
+export const revalidate = 60;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -35,11 +35,8 @@ export default async function Sim1000ListPage({
   const today = kstToday();
   const explicitDate = searchParams.date && DATE_RE.test(searchParams.date) ? searchParams.date : null;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseCacheClient(60);
 
-  // 운영자(admin) 여부 — "다시 돌리기" 버튼 노출 분기용. 일반 사용자는 false.
-  const userTier = await getUserTierByIdentity(supabase, getRequestIdentity());
-  const isAdmin = userTier.tier === "admin";
   const latestResult = explicitDate
     ? null
     : await listSimResultDates(supabase, { limit: 1 });

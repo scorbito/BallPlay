@@ -137,6 +137,7 @@ export async function createMatchPostAction(input: CreateMatchPostInput): Promis
     .from("match_posts")
     .insert({
       user_id: authData.user.id,
+      post_type: "match_talk",
       game_id: input.gameId,
       body,
       photo_url: input.photoUrl ?? null,
@@ -156,6 +157,44 @@ export async function createMatchPostAction(input: CreateMatchPostInput): Promis
   return { id: inserted.id };
 }
 
+export type CreateFreePostInput = {
+  title: string;
+  body: string;
+  photoUrl?: string | null;
+};
+
+export async function createFreePostAction(input: CreateFreePostInput): Promise<{ id: string }> {
+  const ssr = createSupabaseServerClient();
+  const { data: authData, error: authError } = await ssr.auth.getUser();
+  if (authError || !authData.user) throw new Error("로그인이 필요합니다.");
+
+  const title = input.title.trim();
+  const body = input.body.trim();
+  if (!title) throw new Error("제목을 입력해주세요.");
+  if (title.length > 80) throw new Error("제목은 80자 이내로 작성해주세요.");
+  if (!body) throw new Error("내용을 입력해주세요.");
+  if (body.length > 1000) throw new Error("내용은 1000자 이내로 작성해주세요.");
+
+  const admin = createSupabaseAdminClient();
+  const { data: inserted, error } = await admin
+    .from("match_posts")
+    .insert({
+      user_id: authData.user.id,
+      post_type: "free",
+      title,
+      game_id: null,
+      body,
+      photo_url: input.photoUrl ?? null,
+      emotion_tag: "cheer",
+      status_at_post: "scheduled"
+    })
+    .select("id")
+    .single();
+
+  if (error || !inserted) throw new Error(`자유글 저장 실패: ${error?.message ?? "unknown"}`);
+  revalidatePath("/community");
+  return { id: inserted.id };
+}
 export async function listMatchPostsAction(params: ListMatchPostsParams = {}): Promise<MatchPost[]> {
   return listMatchPostsFromDb(params);
 }
@@ -163,7 +202,7 @@ export async function listMatchPostsAction(params: ListMatchPostsParams = {}): P
 export async function loadMoreMatchPostsAction(
   cursor: string,
   limit = 20,
-  filters: Pick<ListMatchPostsParams, "gameId" | "date"> = {}
+  filters: Pick<ListMatchPostsParams, "gameId" | "date" | "postType"> = {}
 ): Promise<MatchPost[]> {
   return listMatchPostsFromDb({ cursor, limit, ...filters });
 }

@@ -1,0 +1,328 @@
+/* 커뮤니티 글쓰기(경기톡·자유) 모달 — 라이트 테마로 오버라이드.
+   dark-match-talk.css 의 다크 톤 composer 스타일을 지금 디자인(라이트 + 핑크 액센트)에 맞춤.
+   모달은 phone-frame 밖 포털이라 var(--bp-*) 대신 명시 색상 사용. */
+
+.match-talk-modal-panel {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+}
+.match-talk-modal-panel .modal-header {
+  background: #ffffff;
+  border-bottom: 1px solid #eef1f5;
+  color: #0f172a;
+}
+.match-talk-modal-panel .modal-header strong {
+  color: #0f172a;
+}
+.match-talk-modal-panel .modal-close {
+  color: #64748b;
+}
+.match-talk-modal-panel .modal-body {
+  background: #ffffff;
+}
+
+/* 라벨 · 보조 텍스트 */
+.match-talk-modal-panel .composer-label {
+  color: #475569;
+}
+.match-talk-modal-panel .composer-loading,
+.match-talk-modal-panel .composer-empty,
+.match-talk-modal-panel .composer-counter,
+.match-talk-modal-panel .composer-count,
+.match-talk-modal-panel .composer-hint,
+.match-talk-modal-panel .composer-date-weekday {
+  color: #94a3b8;
+}
+
+/* 날짜 칩 */
+.match-talk-modal-panel .composer-date-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+.match-talk-modal-panel .composer-date-chip-active,
+.match-talk-modal-panel .composer-date-chip-active .composer-date-weekday {
+  background: #e84a8a;
+  border-color: #e84a8a;
+  color: #ffffff;
+}
+
+/* 경기 칩 */
+.match-talk-modal-panel .composer-game-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+.match-talk-modal-panel .composer-game-chip-active {
+  background: rgba(232, 74, 138, 0.1);
+  border-color: rgba(232, 74, 138, 0.55);
+}
+
+/* 입력 · 본문 */
+.match-talk-modal-panel .composer-input,
+.match-talk-modal-panel .composer-textarea {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+.match-talk-modal-panel .composer-input::placeholder,
+.match-talk-modal-panel .composer-textarea::placeholder {
+  color: #94a3b8;
+}
+.match-talk-modal-panel .composer-input:focus,
+.match-talk-modal-panel .composer-textarea:focus {
+  outline: none;
+  border-color: rgba(232, 74, 138, 0.6);
+}
+
+/* 자유글 본문 1000자 → 입력창도 키움 (자유 컴포저 전용, id로 한정) */
+.match-talk-modal-panel #free-post-body {
+  min-height: 200px;
+}
+
+/* 감정 태그 칩 */
+.match-talk-modal-panel .composer-emotion-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+.match-talk-modal-panel .composer-emotion-chip-active {
+  background: rgba(232, 74, 138, 0.12);
+  border-color: rgba(232, 74, 138, 0.6);
+  color: #0f172a;
+}
+
+/* 사진 첨부 */
+.match-talk-modal-panel .composer-photo-pick,
+.match-talk-modal-panel .composer-photo-picker {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  color: #475569;
+}
+/* 사진 추가 버튼 — 경기톡(.composer-photo-pick)·자유(.composer-photo-picker) 공통.
+   풀너비 + 아이콘·텍스트 중앙정렬 드롭존으로 통일. */
+.match-talk-modal-panel .composer-photo-pick,
+.match-talk-modal-panel .composer-photo-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.match-talk-modal-panel .composer-photo-frame {
+  background: #eef1f5;
+}
+.match-talk-modal-panel .composer-photo-remove {
+  border: 1px solid #e2e8f0;
+  color: #dc2626;
+}
+
+/* 하단 액션 */
+.match-talk-modal-panel .composer-cancel {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+
+/* 응원팀 선택 모달 그리드 */
+.match-talk-modal-panel .team-select-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.match-talk-modal-panel .team-select-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.match-talk-modal-panel .team-select-chip-active {
+  background: rgba(232, 74, 138, 0.1);
+  border-color: #e84a8a;
+  color: #0f172a;
+}
+
+/* 등록/올리기 버튼 — 포털이라 .phone-frame-light 핑크가 안 먹어 기본(주황)으로 뜸 → 핑크로 */
+.match-talk-modal-panel .button.button-primary {
+  background: #e84a8a;
+  color: #ffffff;
+}
+.match-talk-modal-panel .button.button-primary:disabled {
+  background: #f3b4cf;
+}
+.match-talk-modal-panel .match-talk-submit {
+  width: 100%;
+}
+
+/* 라이브 스코어 박제 미리보기 */
+.match-talk-modal-panel .composer-live-preview {
+  background: rgba(232, 74, 138, 0.07);
+  border: 1px solid rgba(232, 74, 138, 0.28);
+}
+.match-talk-modal-panel .composer-live-preview-label {
+  color: #e84a8a;
+}
+.match-talk-modal-panel .composer-live-preview-source,
+.match-talk-modal-panel .composer-live-preview-muted,
+.match-talk-modal-panel .composer-live-preview-hint {
+  color: #94a3b8;
+}
+.match-talk-modal-panel .composer-live-preview-text {
+  color: #0f172a;
+}
+
+/* ── 경기톡 타임라인 라이트 전환 (dark-match-talk-timeline.css 오버라이드) ──
+   타임라인 클래스가 전부 무스코프 다크라, 라이트 페이지 한정으로 덮어씀. */
+.phone-frame-light .match-talk-timeline-game::before {
+  background: #e2e8f0;
+}
+.phone-frame-light .match-talk-timeline-game-title {
+  color: #0f172a;
+}
+.phone-frame-light .match-talk-timeline-status {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+.phone-frame-light .match-talk-timeline-dot {
+  background: #e84a8a;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(232, 74, 138, 0.35);
+}
+.phone-frame-light .match-talk-timeline-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.phone-frame-light .match-talk-timeline-avatar-initial {
+  background: #eef1f5;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+.phone-frame-light .match-talk-timeline-name-row {
+  color: #0f172a;
+}
+.phone-frame-light .match-talk-timeline-body {
+  color: #334155;
+}
+.phone-frame-light .match-talk-timeline-photo-badge {
+  background: rgba(232, 74, 138, 0.1);
+  border: 1px solid rgba(232, 74, 138, 0.28);
+  color: #e84a8a;
+}
+.phone-frame-light .match-talk-timeline-photo-thumb {
+  background: #eef1f5;
+  border: 1px solid #e2e8f0;
+}
+.phone-frame-light .match-talk-timeline-emotion {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+.phone-frame-light .match-talk-timeline-action.active {
+  color: #e84a8a;
+}
+.phone-frame-light .match-talk-timeline-delete:hover {
+  background: rgba(232, 74, 138, 0.1);
+  color: #e84a8a;
+}
+
+/* ── 커뮤니티 설명 텍스트 크기 (라이트 스코프 없어 기본 ~16px로 커 보이던 것 축소) ── */
+.phone-frame-light .match-talk-intro-title {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bp-text-secondary);
+  line-height: 1.4;
+}
+.phone-frame-light .match-talk-filter-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bp-text-muted);
+  line-height: 1.4;
+}
+
+/* ── 게시글 더보기(...) 메뉴 라이트 (dark-match-talk.css가 .phone-frame-dark 스코프라 라이트엔 미적용) ── */
+.phone-frame-light .match-post-more {
+  position: relative;
+}
+.phone-frame-light .match-post-more > .icon-button {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--bp-text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.phone-frame-light .match-post-more > .icon-button:hover {
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--bp-text);
+}
+.phone-frame-light .match-post-more-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 104px;
+  z-index: 5;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+.phone-frame-light .match-post-more-menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.phone-frame-light .match-post-more-menu button:hover {
+  background: #fef2f2;
+}
+
+/* ── 커뮤니티 툴바(필터/뷰 칩) + 글쓰기 버튼 라이트/핑크 ── */
+.phone-frame-light .community-write-button {
+  background: #e84a8a;
+  color: #ffffff;
+}
+.phone-frame-light .filter-chips .chip {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+.phone-frame-light .filter-chips .chip:hover {
+  background: #eef1f5;
+}
+.phone-frame-light .filter-chips .chip-active {
+  background: #e84a8a;
+  border-color: #e84a8a;
+  color: #ffffff;
+}

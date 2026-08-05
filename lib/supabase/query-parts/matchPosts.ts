@@ -1,6 +1,7 @@
 import type {
   MatchPost,
   MatchPostComment,
+  CommunityPostType,
   MatchPostEmotionTag,
   MatchPostStatusSnapshot
 } from "@/lib/types/domain";
@@ -9,7 +10,9 @@ import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/sup
 type MatchPostRow = {
   id: string;
   user_id: string;
-  game_id: string;
+  post_type: CommunityPostType;
+  title: string | null;
+  game_id: string | null;
   body: string;
   photo_url: string | null;
   emotion_tag: MatchPostEmotionTag;
@@ -54,6 +57,7 @@ async function getCurrentUserId(): Promise<string | null> {
 }
 
 export type ListMatchPostsParams = {
+  postType?: CommunityPostType;
   /** YYYY-MM-DD — 해당 날짜의 경기들만 */
   date?: string;
   /** 특정 경기 1개 */
@@ -75,10 +79,12 @@ export async function listMatchPostsFromDb(params: ListMatchPostsParams = {}): P
 
   let query = admin
     .from("match_posts")
-    .select("id,user_id,game_id,body,photo_url,emotion_tag,score_home_at_post,score_away_at_post,inning_at_post,status_at_post,created_at")
+    .select("id,user_id,post_type,title,game_id,body,photo_url,emotion_tag,score_home_at_post,score_away_at_post,inning_at_post,status_at_post,created_at")
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  query = query.eq("post_type", params.postType ?? "match_talk");
 
   if (params.cursor) {
     query = query.lt("created_at", params.cursor);
@@ -110,7 +116,8 @@ export async function listMatchPostsFromDb(params: ListMatchPostsParams = {}): P
   if (!rows || rows.length === 0) return [];
 
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-  const gameIds = Array.from(new Set(rows.map((r) => r.game_id)));
+  const gameIds = Array.from(new Set(rows.flatMap((r) => r.game_id ? [r.game_id] : [])));
+  const safeGameIds = gameIds.length > 0 ? gameIds : ["__none__"];
   const postIds = rows.map((r) => r.id);
 
   const [
@@ -127,7 +134,7 @@ export async function listMatchPostsFromDb(params: ListMatchPostsParams = {}): P
       .returns<ProfileRow[]>(),
     admin.from("games")
       .select("id,game_date,stadium,home_team_id,away_team_id,status")
-      .in("id", gameIds)
+      .in("id", safeGameIds)
       .returns<GameRow[]>(),
     admin.from("match_post_likes")
       .select("match_post_id")
@@ -144,7 +151,7 @@ export async function listMatchPostsFromDb(params: ListMatchPostsParams = {}): P
     admin.from("attendances")
       .select("user_id,game_id")
       .in("user_id", userIds)
-      .in("game_id", gameIds)
+      .in("game_id", safeGameIds)
   ]);
 
   // 작성자 필터(응원팀): 프로필 조인 후 클라이언트 사이드 필터
@@ -167,10 +174,12 @@ export async function listMatchPostsFromDb(params: ListMatchPostsParams = {}): P
 
   let mapped: MatchPost[] = rows.map((row) => {
     const profile = profilesById.get(row.user_id);
-    const game = gamesById.get(row.game_id);
+    const game = row.game_id ? gamesById.get(row.game_id) : undefined;
     return {
       id: row.id,
       userId: row.user_id,
+      postType: row.post_type,
+      title: row.title,
       gameId: row.game_id,
       body: row.body,
       photoUrl: row.photo_url,
@@ -209,7 +218,7 @@ export async function getMatchPostByIdFromDb(id: string): Promise<MatchPost | nu
   const admin = createSupabaseAdminClient();
   const { data: row, error } = await admin
     .from("match_posts")
-    .select("id,user_id,game_id,body,photo_url,emotion_tag,score_home_at_post,score_away_at_post,inning_at_post,status_at_post,created_at")
+    .select("id,user_id,post_type,title,game_id,body,photo_url,emotion_tag,score_home_at_post,score_away_at_post,inning_at_post,status_at_post,created_at")
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle<MatchPostRow>();
@@ -232,7 +241,7 @@ export async function getMatchPostByIdFromDb(id: string): Promise<MatchPost | nu
       .maybeSingle<ProfileRow>(),
     admin.from("games")
       .select("id,game_date,stadium,home_team_id,away_team_id,status")
-      .eq("id", row.game_id)
+      .eq("id", row.game_id ?? "__none__")
       .maybeSingle<GameRow>(),
     admin.from("match_post_likes")
       .select("user_id", { count: "exact", head: true })
@@ -252,6 +261,8 @@ export async function getMatchPostByIdFromDb(id: string): Promise<MatchPost | nu
   return {
     id: row.id,
     userId: row.user_id,
+    postType: row.post_type,
+    title: row.title,
     gameId: row.game_id,
     body: row.body,
     photoUrl: row.photo_url,

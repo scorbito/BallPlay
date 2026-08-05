@@ -29,6 +29,7 @@ import "@/styles/dark-share.css";
 import "@/styles/dark-review-detail.css";
 import "@/styles/dark-match-talk.css";
 import "@/styles/dark-match-talk-timeline.css";
+import "@/styles/light-community-composer.css";
 import "@/styles/dark-friends-settings.css";
 import "@/styles/dark-onboarding.css";
 import "@/styles/dark-login.css";

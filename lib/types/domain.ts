@@ -48,11 +48,14 @@ export type Notice = {
 
 export type MatchPostEmotionTag = "cheer" | "support" | "anger" | "anxiety";
 export type MatchPostStatusSnapshot = "scheduled" | "in_progress" | "finished";
+export type CommunityPostType = "free" | "match_talk";
 
 export type MatchPost = {
   id: string;
   userId: string;
-  gameId: string;
+  postType: CommunityPostType;
+  title: string | null;
+  gameId: string | null;
   body: string;
   photoUrl: string | null;
   emotionTag: MatchPostEmotionTag;

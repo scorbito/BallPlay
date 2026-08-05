@@ -5,6 +5,7 @@ import { LayoutList, PenLine, Rows3 } from "lucide-react";
 import { MatchPostCard } from "@/components/domain/MatchPostCard";
 import { MatchTalkTimeline } from "@/components/domain/MatchTalkTimeline";
 import { MatchTalkComposerModal } from "@/components/domain/modals/MatchTalkComposerModal";
+import { FreePostComposerModal } from "@/components/domain/modals/FreePostComposerModal";
 import { ProfileModal, useProfileModal } from "@/components/domain/modals/ProfileModal";
 import {
   getGameContextAction,
@@ -16,7 +17,7 @@ import {
 } from "@/lib/actions/matchTalk";
 import { getTeam } from "@/lib/constants/teams";
 import { useAppState } from "@/lib/state/AppState";
-import type { MatchPost } from "@/lib/types/domain";
+import type { CommunityPostType, MatchPost } from "@/lib/types/domain";
 import { getThisWeekRangeKst } from "@/lib/utils/matchTalkWeek";
 
 const PAGE_SIZE = 20;
@@ -26,6 +27,7 @@ type MatchTalkFeedProps = {
   currentUserId: string | null;
   initialGameId?: string;
   initialDate?: string;
+  postType?: CommunityPostType;
 };
 
 type MatchTalkViewMode = "card" | "timeline";
@@ -34,9 +36,11 @@ export function MatchTalkFeed({
   initialPosts,
   currentUserId,
   initialGameId,
-  initialDate
+  initialDate,
+  postType = "match_talk"
 }: MatchTalkFeedProps) {
   const { showToast } = useAppState();
+  const isMatchTalk = postType === "match_talk";
   const profileModal = useProfileModal();
   const [feed, setFeed] = useState<MatchPost[]>(initialPosts);
   const [hasMore, setHasMore] = useState(initialPosts.length === PAGE_SIZE);
@@ -49,8 +53,8 @@ export function MatchTalkFeed({
   const skipFirstFilterFetchRef = useRef(true);
 
   const activeFilters = useMemo(
-    () => ({ gameId: gameFilter, date: gameFilter ? undefined : dateFilter }),
-    [gameFilter, dateFilter]
+    () => ({ postType, gameId: gameFilter, date: gameFilter ? undefined : dateFilter }),
+    [postType, gameFilter, dateFilter]
   );
   const isFiltered = Boolean(activeFilters.gameId || activeFilters.date);
 
@@ -198,7 +202,7 @@ export function MatchTalkFeed({
   const handlePostCreated = async (newPostId: string) => {
     try {
       const fresh = await getMatchPostByIdAction(newPostId);
-      if (!fresh) return;
+      if (!fresh || fresh.postType !== postType) return;
       if (gameFilter && fresh.gameId !== gameFilter) return;
       if (dateFilter && fresh.game.date !== dateFilter) return;
 
@@ -224,6 +228,7 @@ export function MatchTalkFeed({
   };
 
   const emptyMessage = (() => {
+    if (!isMatchTalk) return "아직 자유글이 없어요. 첫 글을 남겨보세요.";
     if (gameFilter) {
       return isFilteredGameWritable
         ? "이 경기의 글이 아직 없어요. 첫 글을 남겨보세요."
@@ -253,8 +258,7 @@ export function MatchTalkFeed({
             </>
           ) : (
             <div className="match-talk-intro">
-              <p className="match-talk-intro-title">경기 흐름에 맞춰 자유롭게 이야기해요.</p>
-              <p className="match-talk-filter-hint">날짜나 경기를 선택하면 타임라인으로도 볼 수 있어요.</p>
+              {isMatchTalk ? <><p className="match-talk-intro-title">경기 흐름에 맞춰 자유롭게 이야기해요.</p><p className="match-talk-filter-hint">날짜나 경기를 선택하면 타임라인으로도 볼 수 있어요.</p></> : <><p className="match-talk-intro-title">야구 이야기, 질문, 응원을 자유롭게 나눠보세요.</p><p className="match-talk-filter-hint">자유글은 제목과 내용으로 작성할 수 있어요.</p></>}
             </div>
           )}
         </div>
@@ -306,7 +310,7 @@ export function MatchTalkFeed({
               post={post}
               currentUserId={currentUserId}
               onToggleLike={() => handleToggleLike(post.id)}
-              onClickGameFilter={() => handleGameFilter(post.gameId)}
+              onClickGameFilter={isMatchTalk && post.gameId ? () => handleGameFilter(post.gameId!) : undefined}
               onDeleted={handlePostDeleted}
               onAuthorClick={profileModal.openProfile}
             />
@@ -321,12 +325,12 @@ export function MatchTalkFeed({
         ) : null}
       </div>
 
-      <MatchTalkComposerModal
+      {isMatchTalk ? <MatchTalkComposerModal
         open={composerOpen}
         onClose={() => setComposerOpen(false)}
         onCreated={handlePostCreated}
         initialGameId={gameFilter}
-      />
+      /> : <FreePostComposerModal open={composerOpen} onClose={() => setComposerOpen(false)} onCreated={handlePostCreated} />}
       <ProfileModal {...profileModal.modalProps} />
     </>
   );

@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { type LucideIcon } from "lucide-react";
 import { AiChatSheet } from "@/components/domain/AiChatSheet";
 
-type TabId = "home" | "ai" | "schedule" | "settings";
+type TabId = "home" | "ai" | "community" | "settings";
 
 type BottomTabsProps = {
   activeTab: TabId | (string & {});
@@ -15,7 +16,8 @@ type BottomTabsProps = {
 type TabDef = {
   id: TabId;
   label: string;
-  iconSrc: string;
+  iconSrc?: string;
+  icon?: LucideIcon;
   href: string;
   disabled?: boolean;
   badge?: string;
@@ -24,7 +26,7 @@ type TabDef = {
 const tabs: readonly TabDef[] = [
   { id: "home", label: "홈", iconSrc: "/icons/tabs/home.png", href: "/" },
   { id: "ai", label: "AI 예측", iconSrc: "/icons/menu/ai-prediction.png", href: "/predict/ai-winner" },
-  { id: "schedule", label: "일정", iconSrc: "/icons/menu/schedule.png", href: "/schedule" },
+  { id: "community", label: "커뮤니티", iconSrc: "/icons/menu/community-nav-icon-fans.png", href: "/community" },
   { id: "settings", label: "설정", iconSrc: "/icons/header/settings.png", href: "/my/settings" }
 ] as const;
 
@@ -68,7 +70,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
                 role="link"
               >
                 <span className="tab-item-icon">
-                  <Image src={tab.iconSrc} alt="" width={32} height={32} />
+                  {tab.icon ? <tab.icon size={28} strokeWidth={2.2} /> : <Image src={tab.iconSrc ?? ""} alt="" width={32} height={32} />}
                 </span>
                 <span>{tab.label}</span>
                 {tab.badge ? <span className="tab-item-badge">{tab.badge}</span> : null}
@@ -119,7 +121,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
               prefetch={false}
             >
               <span className="tab-item-icon">
-                <Image src={tab.iconSrc} alt="" width={32} height={32} priority={isActive} />
+                {tab.icon ? <tab.icon size={28} strokeWidth={2.2} /> : <Image src={tab.iconSrc ?? ""} alt="" width={32} height={32} priority={isActive} />}
               </span>
               <span>{tab.label}</span>
             </Link>
