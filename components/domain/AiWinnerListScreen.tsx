@@ -550,19 +550,20 @@ export function AiWinnerListScreen({
                 //   4) 그 외 (예측 없는데 09시 지남) → "예측 준비 중"
                 // 소프트 게이트: 잠겼으면 픽 데이터가 아예 없으니(predictions=[]) 모든 예측 상태를
                 // 끄고 로그인 유도만 표시. 매치업·점수(종료경기)는 위에서 그대로 노출됨.
-                const showLoginGate = locked;
-                const showLocked = !locked && isBeforePublish && !hasPredictions;
-                const showOpenTeaser = !locked && hasPredictions && !finished && !effectiveSeen;
-                const showOpenRevealed = !locked && hasPredictions && !finished && effectiveSeen;
-                const showFinishedTeaser = !locked && finished && hasPredictions && !effectiveSeen;
-                const showFinishedRevealed = !locked && finished && effectiveSeen;
+                const isPlayablePredictionGame = !isCanceled;
+                const showLoginGate = isPlayablePredictionGame && locked;
+                const showLocked = isPlayablePredictionGame && !locked && isBeforePublish && !hasPredictions;
+                const showOpenTeaser = isPlayablePredictionGame && !locked && hasPredictions && !finished && !effectiveSeen;
+                const showOpenRevealed = isPlayablePredictionGame && !locked && hasPredictions && !finished && effectiveSeen;
+                const showFinishedTeaser = isPlayablePredictionGame && !locked && finished && hasPredictions && !effectiveSeen;
+                const showFinishedRevealed = isPlayablePredictionGame && !locked && finished && effectiveSeen;
                 // "예측 준비 중"은 오늘만 의미 있음. 과거 날짜(우천취소·예측 누락 등)에선
                 // 별도 메시지 없이 카드를 그대로 둔다 — 결과(점수) 만 보이거나 빈 카드.
-                const showPending = !locked && isToday
+                const showPending = isPlayablePredictionGame && !locked && isToday
                   && !showLocked && !showOpenTeaser && !showOpenRevealed
                   && !showFinishedTeaser && !showFinishedRevealed && !finished;
                 // 빈 종료 경기 (예측 없음 + finished) — 점수만 표시
-                const showFinishedNoPredict = finished && !hasPredictions;
+                const showFinishedNoPredict = isPlayablePredictionGame && finished && !hasPredictions;
 
                 // 점수는 실제 점수가 있을 때만 표시 (과거 날짜라도 sync 누락이면 0-0 가짜 점수 방지).
                 // AI 예측의 적중 여부만 teaser 로 가린다.
@@ -706,7 +707,7 @@ export function AiWinnerListScreen({
                         로그인하고 결과 보기
                         <ArrowRight size={12} strokeWidth={2.5} />
                       </Link>
-                    ) : hasPredictions ? (
+                    ) : !isCanceled && hasPredictions ? (
                       <div className="ai-winner-card-actions">
                         <Link
                           href={`/predict/ai-winner/${g.id}`}
