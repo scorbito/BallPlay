@@ -26,7 +26,7 @@ type TabDef = {
 const tabs: readonly TabDef[] = [
   { id: "home", label: "홈", iconSrc: "/icons/tabs/home.png", href: "/" },
   { id: "ai", label: "AI 예측", iconSrc: "/icons/menu/ai-prediction.png", href: "/predict/ai-winner" },
-  { id: "community", label: "커뮤니티", iconSrc: "/icons/menu/community-nav-icon-fans.png", href: "/community" },
+  { id: "community", label: "커뮤니티", iconSrc: "/icons/menu/community-nav-icon-fans.png", href: "/community", badge: "NEW" },
   { id: "settings", label: "설정", iconSrc: "/icons/header/settings.png", href: "/my/settings" }
 ] as const;
 
@@ -103,7 +103,6 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
                 }}
                 aria-pressed={chatOpen}
               >
-                <span className="tab-item-badge tab-item-badge-new">NEW</span>
                 <span className="tab-item-icon tab-item-icon-chatbot">
                   <Image src="/icons/menu/chatbot.png" alt="" width={32} height={32} priority={isActive} />
                 </span>
@@ -120,6 +119,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
               onClick={markPending}
               prefetch={false}
             >
+              {tab.badge ? <span className="tab-item-badge tab-item-badge-new">{tab.badge}</span> : null}
               <span className="tab-item-icon">
                 {tab.icon ? <tab.icon size={28} strokeWidth={2.2} /> : <Image src={tab.iconSrc ?? ""} alt="" width={32} height={32} priority={isActive} />}
               </span>
