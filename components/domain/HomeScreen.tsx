@@ -349,16 +349,14 @@ const sections: HomeSection[] = [
         badge: "NEW"
       },
       {
-        // 운영자 테스트 중. 공개 시 adminOnly 를 지우고
-        // app/play/grid/page.tsx 의 티어 게이트도 함께 걷어낸다.
         id: "grid",
         href: "/play/grid",
-        title: "9칸을 채워라!",
+        title: "퍼펙트 그리드",
         description: "두 팀을 모두 거친 선수 찾기",
         icon: Grid3X3,
+        iconImage: "/icons/menu/perfect-grid-icon-players.png",
         available: true,
-        badge: "테스트",
-        adminOnly: true
+        badge: "NEW"
       }
     ]
   },

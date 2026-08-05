@@ -1,6 +1,6 @@
 "use client";
 
-// 그리드 게임 "9칸을 채워라!" — 하루 한 판.
+// Perfect Grid daily game.
 //
 // 워들과 같은 구조다. 서버 호출이 없다 — 격자는 커밋된 스냅샷을 날짜 시드로 생성하고
 // 진행 상태·통계는 localStorage 에 둔다. 덕분에 페이지가 정적으로 유지된다.
@@ -225,7 +225,7 @@ export function GridScreen() {
       lines.push(line);
     }
     const text = [
-      `9칸을 채워라! ${dateISO ?? ""}`.trim(),
+      `퍼펙트 그리드 ${dateISO ?? ""}`.trim(),
       `${filled.length}/9칸 · 시도 ${used}회`,
       ...lines,
       "https://ballnori.com/play/grid"
@@ -251,7 +251,7 @@ export function GridScreen() {
     // 스코프돼 있어 빠뜨리면 스타일이 통째로 죽는다(워들과 동일한 구조).
     <AppShell
       activeTab="home"
-      title="9칸을 채워라!"
+      title="퍼펙트 그리드"
       theme="light"
       backHref="/"
       headerAction={
