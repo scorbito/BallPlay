@@ -3,10 +3,15 @@
 // 미니게임은 localStorage 우선 원칙이라 DB를 쓰지 않는다. 키 접두사는 기존 관례인
 // "ballplay:" 를 따른다.
 
-import { MAX_ATTEMPTS } from "@/lib/wordle/daily";
+import { MAX_ATTEMPTS, type WordleDifficulty } from "@/lib/wordle/daily";
 
 const PROGRESS_KEY = "ballplay:wordle:progress";
 const STATS_KEY = "ballplay:wordle:stats";
+
+// 난이도별 진행 분리 — 초급은 기존 키 그대로(하위호환), 고급만 접미사.
+function progressKey(difficulty: WordleDifficulty): string {
+  return difficulty === "advanced" ? `${PROGRESS_KEY}:advanced` : PROGRESS_KEY;
+}
 
 export type WordleStatus = "playing" | "won" | "lost";
 
@@ -56,16 +61,16 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
-/** 해당 날짜의 진행 상태. 날짜가 다르면 null(새 판). */
-export function loadProgress(dateISO: string): WordleProgress | null {
-  const saved = readJson<WordleProgress>(PROGRESS_KEY);
+/** 해당 날짜·난이도의 진행 상태. 날짜가 다르면 null(새 판). */
+export function loadProgress(dateISO: string, difficulty: WordleDifficulty = "beginner"): WordleProgress | null {
+  const saved = readJson<WordleProgress>(progressKey(difficulty));
   if (!saved || saved.date !== dateISO) return null;
   if (!Array.isArray(saved.guesses)) return null;
   return saved;
 }
 
-export function saveProgress(progress: WordleProgress): void {
-  writeJson(PROGRESS_KEY, progress);
+export function saveProgress(progress: WordleProgress, difficulty: WordleDifficulty = "beginner"): void {
+  writeJson(progressKey(difficulty), progress);
 }
 
 export function loadStats(): WordleStats {

@@ -11,13 +11,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { getTeam } from "@/lib/constants/teams";
-import { searchPlayers, type WordlePlayer } from "@/lib/wordle/pool";
+import { getGuessablePlayers, searchPlayers, type WordlePlayer } from "@/lib/wordle/pool";
 
 type Props = {
   disabled?: boolean;
   /** 이미 추측한 이름 — 목록에서 흐리게 처리하고 선택을 막는다. */
   usedNames: string[];
   onPick: (player: WordlePlayer) => void;
+  /** 고급 모드 — 자동완성 목록을 숨기고 이름을 정확히 입력해 제출한다. */
+  advanced?: boolean;
 };
 
 // 실측(898명 기준): 목록 5개로도 초성 패턴 331개 중 289개(87%)를 이미 "전부" 보여준다.
@@ -25,23 +27,44 @@ type Props = {
 // (난이도를 실제로 결정하는 건 초성 정보 — 초성 3자를 알면 정답 후보가 평균 1.59명이다.)
 const RESULT_LIMIT = 8;
 
-export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Props) {
+export function WordlePlayerSearch({ disabled = false, usedNames, onPick, advanced = false }: Props) {
   const [query, setQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const used = useMemo(() => new Set(usedNames), [usedNames]);
 
-  const matches = useMemo(() => searchPlayers(query, RESULT_LIMIT), [query]);
+  const matches = useMemo(() => (advanced ? [] : searchPlayers(query, RESULT_LIMIT)), [query, advanced]);
 
   // 판이 끝나면 입력창을 비운다.
   useEffect(() => {
-    if (disabled) setQuery("");
+    if (disabled) {
+      setQuery("");
+      setError(null);
+    }
   }, [disabled]);
 
   const handlePick = (player: WordlePlayer) => {
     if (used.has(player.name)) return;
     onPick(player);
     setQuery("");
+    setError(null);
     inputRef.current?.focus();
+  };
+
+  // 고급 — 자동완성 없이 이름 정확히 입력해 제출.
+  const submitAdvanced = () => {
+    const name = query.trim();
+    if (!name) return;
+    const exact = getGuessablePlayers().find((p) => p.name === name);
+    if (!exact) {
+      setError("없는 선수예요. 이름을 정확히 입력해 주세요.");
+      return;
+    }
+    if (used.has(exact.name)) {
+      setError("이미 추측한 선수예요.");
+      return;
+    }
+    handlePick(exact);
   };
 
   return (
@@ -52,8 +75,19 @@ export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Prop
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={disabled ? "오늘 문제는 끝났어요" : "선수 이름 검색 (초성도 돼요)"}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            if (error) setError(null);
+          }}
+          onKeyDown={(event) => {
+            if (advanced && event.key === "Enter") {
+              event.preventDefault();
+              submitAdvanced();
+            }
+          }}
+          placeholder={
+            disabled ? "오늘 문제는 끝났어요" : advanced ? "선수 이름을 정확히 입력 (자동완성 없음)" : "선수 이름 검색 (초성도 돼요)"
+          }
           disabled={disabled}
           // 모바일에서 자동 대문자·자동완성이 한글 입력을 방해하지 않도록.
           autoComplete="off"
@@ -61,9 +95,16 @@ export function WordlePlayerSearch({ disabled = false, usedNames, onPick }: Prop
           spellCheck={false}
           aria-label="선수 이름 검색"
         />
+        {advanced && !disabled ? (
+          <button type="button" className="wordle-search-submit" onClick={submitAdvanced} disabled={!query.trim()}>
+            확인
+          </button>
+        ) : null}
       </div>
 
-      {!disabled && query.trim() ? (
+      {advanced ? (
+        error ? <p className="wordle-search-error">{error}</p> : null
+      ) : !disabled && query.trim() ? (
         <ul className="wordle-search-list" aria-label="검색 결과">
           {matches.length === 0 ? (
             <li className="wordle-search-empty">해당하는 선수가 없어요</li>

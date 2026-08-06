@@ -19,7 +19,8 @@ import {
   getAnswerForDate,
   getAnswerPoolSize,
   getRandomAnswer,
-  kstDateString
+  kstDateString,
+  type WordleDifficulty
 } from "@/lib/wordle/daily";
 import { buildJamoStatus, judgeGuess, type GuessResult } from "@/lib/wordle/judge";
 import { getGuessablePlayers, type WordlePlayer } from "@/lib/wordle/pool";
@@ -52,6 +53,9 @@ export function WordleScreen() {
   const [dailyGuesses, setDailyGuesses] = useState<string[]>([]);
   const [stats, setStats] = useState<WordleStats | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  // 난이도 — 초급(힌트 O)·고급(자동완성·자모 X, 별도 정답). 선택은 기기에 기억.
+  const [difficulty, setDifficulty] = useState<WordleDifficulty>("beginner");
+  const isAdvanced = difficulty === "advanced";
 
   // ── 연습 모드 ──
   // 공식 문제는 하루 1판(공유·streak·누적통계의 근거). 연습은 랜덤 정답으로 무제한이고
@@ -64,7 +68,7 @@ export function WordleScreen() {
   // 이번 세션에 이미 나온 정답 — 연달아 같은 선수가 나오지 않게.
   const [practiceSeen, setPracticeSeen] = useState<string[]>([]);
 
-  const dailyAnswer = useMemo(() => (dateISO ? getAnswerForDate(dateISO) : null), [dateISO]);
+  const dailyAnswer = useMemo(() => (dateISO ? getAnswerForDate(dateISO, difficulty) : null), [dateISO, difficulty]);
 
   const isDaily = mode === "daily";
   const answer = isDaily ? dailyAnswer : practiceAnswer;
@@ -72,12 +76,22 @@ export function WordleScreen() {
 
   // 최초 마운트 — 오늘 날짜 확정 + 저장된 진행 상태 복원.
   useEffect(() => {
-    const today = kstDateString();
-    setDateISO(today);
-    const saved = loadProgress(today);
-    setDailyGuesses(saved?.guesses ?? []);
+    setDateISO(kstDateString());
+    let saved: WordleDifficulty = "beginner";
+    try {
+      if (window.localStorage.getItem("ballplay:wordle:difficulty") === "advanced") saved = "advanced";
+    } catch {
+      /* localStorage 접근 실패 무시 */
+    }
+    setDifficulty(saved);
     setStats(loadStats());
   }, []);
+
+  // 날짜·난이도별 진행 복원 — 난이도 토글 시 해당 판의 저장된 진행으로 교체.
+  useEffect(() => {
+    if (!dateISO) return;
+    setDailyGuesses(loadProgress(dateISO, difficulty)?.guesses ?? []);
+  }, [dateISO, difficulty]);
 
   const results = useMemo<GuessResult[]>(() => {
     if (!answer) return [];
@@ -166,7 +180,7 @@ export function WordleScreen() {
           date: dateISO,
           guesses: nextGuesses,
           status: isSolved ? "won" : nextGuesses.length >= MAX_ATTEMPTS ? "lost" : "playing"
-        });
+        }, difficulty);
         return;
       }
 
@@ -179,8 +193,17 @@ export function WordleScreen() {
         }));
       }
     },
-    [answer, finished, guesses, isDaily, dateISO]
+    [answer, finished, guesses, isDaily, dateISO, difficulty]
   );
+
+  const changeDifficulty = useCallback((next: WordleDifficulty) => {
+    setDifficulty(next);
+    try {
+      window.localStorage.setItem("ballplay:wordle:difficulty", next);
+    } catch {
+      /* 무시 */
+    }
+  }, []);
 
   const startPractice = useCallback(() => {
     const exclude = [...practiceSeen];
@@ -226,6 +249,28 @@ export function WordleScreen() {
       }
     >
       <div className="wordle-screen">
+        {isDaily ? (
+          <div className="wordle-difficulty" role="tablist" aria-label="난이도">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!isAdvanced}
+              className={!isAdvanced ? "wordle-diff-btn is-active" : "wordle-diff-btn"}
+              onClick={() => changeDifficulty("beginner")}
+            >
+              초급
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isAdvanced}
+              className={isAdvanced ? "wordle-diff-btn is-active" : "wordle-diff-btn"}
+              onClick={() => changeDifficulty("advanced")}
+            >
+              고급
+            </button>
+          </div>
+        ) : null}
         <header className="wordle-head">
           <p className="wordle-head-date">
             {isDaily ? (
@@ -290,7 +335,7 @@ export function WordleScreen() {
 
             {/* 첫 수 유도 — 워들에서 첫 추측은 정답을 노리는 게 아니라 단서를 뽑는
                 프로브인데, 처음 접하는 사람은 그걸 모르고 빈 격자 앞에서 멈춘다. */}
-            {!finished && results.length === 0 ? (
+            {!finished && results.length === 0 && !isAdvanced ? (
               <section className="wordle-starters" aria-label="첫 추측 추천">
                 {/* 안내 문구는 정적이라 첫 페인트부터 보인다. 추천 칩은 날짜가 확정된
                     뒤에 채워지므로 자리만 미리 잡아 레이아웃이 밀리지 않게 한다. */}
@@ -315,7 +360,7 @@ export function WordleScreen() {
             ) : null}
 
             {!finished ? (
-              <WordlePlayerSearch usedNames={guesses} onPick={handlePick} />
+              <WordlePlayerSearch usedNames={guesses} onPick={handlePick} advanced={isAdvanced} />
             ) : null}
 
             {answer && finished ? (
@@ -333,7 +378,7 @@ export function WordleScreen() {
               />
             ) : null}
 
-            <WordleJamoPanel status={jamoStatus} />
+            {isAdvanced ? null : <WordleJamoPanel status={jamoStatus} />}
           </>
         )}
       </div>

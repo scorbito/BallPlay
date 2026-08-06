@@ -66,11 +66,28 @@ export function dayIndexFor(dateISO: string): number {
 }
 
 /** 해당 날짜의 정답 선수. 정답 풀이 비었으면 null. */
-export function getAnswerForDate(dateISO: string): WordlePlayer | null {
+/** 난이도 — 초급(힌트 있음)·고급(자동완성·자모 없음). 고급은 같은 날 다른 정답. */
+export type WordleDifficulty = "beginner" | "advanced";
+
+// 고급 정답 오프셋 — 같은 날 초급과 다른 선수가 나오도록 일자 인덱스에 더한다.
+// 풀 크기와 서로소가 아니어도 아래 collision 가드(+1)로 항상 초급과 달라진다.
+const ADVANCED_OFFSET = 3137;
+
+export function getAnswerForDate(
+  dateISO: string,
+  difficulty: WordleDifficulty = "beginner"
+): WordlePlayer | null {
   if (ENCODED_ANSWERS.length === 0) return null;
-  const index = dayIndexFor(dateISO);
+  const len = ENCODED_ANSWERS.length;
+  const base = dayIndexFor(dateISO);
   // 음수(서비스 시작 전 날짜)도 항상 유효한 인덱스로 접히도록 정규화.
-  const normalized = ((index % ENCODED_ANSWERS.length) + ENCODED_ANSWERS.length) % ENCODED_ANSWERS.length;
+  const beginnerNorm = ((base % len) + len) % len;
+  let normalized = beginnerNorm;
+  if (difficulty === "advanced") {
+    normalized = (((base + ADVANCED_OFFSET) % len) + len) % len;
+    // 오프셋이 풀 크기의 배수라 우연히 초급과 같아지면 한 칸 밀어 항상 다르게.
+    if (normalized === beginnerNorm) normalized = (normalized + 1) % len;
+  }
   try {
     return findPlayerById(decodeId(ENCODED_ANSWERS[normalized]));
   } catch {

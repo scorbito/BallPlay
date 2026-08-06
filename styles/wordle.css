@@ -43,6 +43,52 @@
 }
 
 /* ── 헤더 ── */
+/* 난이도 토글 (초급/고급) */
+.phone-frame-light .wordle-difficulty {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.phone-frame-light .wordle-diff-btn {
+  flex: 1;
+  padding: 9px 0;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 999px;
+  background: var(--bp-card);
+  color: var(--bp-text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.phone-frame-light .wordle-diff-btn.is-active {
+  background: var(--bp-accent);
+  border-color: var(--bp-accent);
+  color: #ffffff;
+}
+
+/* 고급 입력 — 확인 버튼 + 에러 문구 */
+.phone-frame-light .wordle-search-submit {
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--bp-accent);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.phone-frame-light .wordle-search-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.phone-frame-light .wordle-search-error {
+  margin: 6px 2px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
 .phone-frame-light .wordle-head {
   display: flex;
   flex-direction: column;
