@@ -15,6 +15,8 @@ type Props = {
   weeklyRanking: PredictionRankingRow[];
   /** 예측왕 자격 기준선(이 경기 수 미만은 자격 미달로 하단 배치). */
   weeklyQualifyBar?: number;
+  /** 회차가 연장된 주의 안내 문구. 평소에는 null. */
+  weeklyPeriodNote?: string | null;
   seasonRanking: PredictionRankingRow[];
   /** 역대 예측왕(마감된 주) — 명예의 전당 탭. */
   hallOfFame?: HallOfFameEntry[];
@@ -24,6 +26,7 @@ export function RankingScreen({
   currentUserId,
   weeklyRanking,
   weeklyQualifyBar = 0,
+  weeklyPeriodNote = null,
   seasonRanking,
   hallOfFame = []
 }: Props) {
@@ -32,6 +35,7 @@ export function RankingScreen({
       <PredictionRanking
         weeklyRows={weeklyRanking}
         weeklyQualifyBar={weeklyQualifyBar}
+        weeklyPeriodNote={weeklyPeriodNote}
         seasonRows={seasonRanking}
         hallOfFame={hallOfFame}
         currentUserId={currentUserId}

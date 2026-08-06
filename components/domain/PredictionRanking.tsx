@@ -13,6 +13,8 @@ type Props = {
   weeklyRows: PredictionRankingRow[];
   /** 예측왕 자격 기준선 — 이 경기 수 미만은 자격 미달(하단 배치 + 구분선). */
   weeklyQualifyBar?: number;
+  /** 회차가 연장된 주의 안내 문구. 평소에는 null. */
+  weeklyPeriodNote?: string | null;
   seasonRows: PredictionRankingRow[];
   /** 역대 예측왕 — 마감된 주의 기록이라 경쟁 랭킹과 섞지 않고 별도 탭으로. */
   hallOfFame?: HallOfFameEntry[];
@@ -27,6 +29,7 @@ function mmdd(iso: string): string {
 export function PredictionRanking({
   weeklyRows,
   weeklyQualifyBar = 0,
+  weeklyPeriodNote = null,
   seasonRows,
   hallOfFame = [],
   currentUserId
@@ -54,6 +57,9 @@ export function PredictionRanking({
               ? "최소 10경기 예측 · 최근 14일 내 참여자 · 채점된 경기만 집계"
               : "매주 승리팀 예측왕에 오른 분들의 기록"}
         </p>
+        {tab === "week" && weeklyPeriodNote ? (
+          <p className="predict-rank-sub">{weeklyPeriodNote}</p>
+        ) : null}
       </header>
 
       <div className="predict-rank-tabs" role="tablist">

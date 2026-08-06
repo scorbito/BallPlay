@@ -9,7 +9,14 @@ import {
   type PredictionRankingRow
 } from "@/lib/supabase/query-parts/bpPredictions";
 import { getAiByProviderStats } from "@/lib/supabase/query-parts/bpAiPredictions";
-import { listEventDraws, buildHallOfFame, type EventDraw } from "@/lib/server/predict/weeklyContest";
+import {
+  contestWeekEnd,
+  contestWeekStart,
+  isExtendedContestWeek,
+  listEventDraws,
+  buildHallOfFame,
+  type EventDraw
+} from "@/lib/server/predict/weeklyContest";
 
 const AI_LABEL: Record<string, string> = { gpt: "GPT", gemini: "Gemini", claude: "Claude" };
 
@@ -18,19 +25,9 @@ const NO_LIMIT = 2147483647;
 
 export const dynamic = "force-dynamic";
 
-// KBO prediction week starts on Tuesday and shows the current in-progress week.
-function kstWeekStartTuesday(): string {
-  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const dow = kst.getDay(); // 0=Sun .. 6=Sat
-  const daysSinceTue = (dow - 2 + 7) % 7;
-  kst.setDate(kst.getDate() - daysSinceTue);
-  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
-}
-
-function addDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00`);
-  d.setDate(d.getDate() + days);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function mmdd(iso: string): string {
+  const [, m, d] = iso.split("-");
+  return `${Number(m)}/${Number(d)}`;
 }
 
 export default async function PredictionRankingPage() {
@@ -38,8 +35,12 @@ export default async function PredictionRankingPage() {
   const { data: { user } } = await supabase.auth.getUser();
   // 적중률 랭킹은 누구나 열람 가능(보기 무료). 비로그인은 본인 행 하이라이트만 없음.
 
-  const weekStart = kstWeekStartTuesday();
-  const weekEnd = addDays(weekStart, 5); // 화 + 5 = 일
+  // 이벤트 회차 기준(화~일). 대량 취소로 연장된 회차면 종료일이 다음 주 일요일이 된다.
+  const weekStart = contestWeekStart();
+  const weekEnd = contestWeekEnd(weekStart);
+  const weeklyPeriodNote = isExtendedContestWeek(weekStart)
+    ? `경기 취소로 이번 회차는 ${mmdd(weekStart)}에서 ${mmdd(weekEnd)}까지 합산해 추첨합니다`
+    : null;
   const adminClient = createSupabaseAdminClient();
 
   // 이번 주 경기(취소 제외)로 예측왕 "자격 기준선" 계산.
@@ -116,6 +117,7 @@ export default async function PredictionRankingPage() {
       currentUserId={user?.id ?? null}
       weeklyRanking={weeklyRanking}
       weeklyQualifyBar={weeklyQualifyBar}
+      weeklyPeriodNote={weeklyPeriodNote}
       seasonRanking={seasonResult.ok ? seasonResult.rows : []}
       hallOfFame={buildHallOfFame(draws)}
     />

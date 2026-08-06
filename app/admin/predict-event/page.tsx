@@ -6,7 +6,8 @@ import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/sup
 import {
   addDays,
   computeWeeklyContest,
-  kstWeekStartTuesday,
+  contestWeekEnd,
+  contestWeekStart,
   listEventDraws
 } from "@/lib/server/predict/weeklyContest";
 import { PredictEventDrawPanel } from "@/components/domain/admin/PredictEventDrawPanel";
@@ -27,16 +28,17 @@ export default async function PredictEventAdminPage({
 
   const admin = createSupabaseAdminClient();
 
-  const currentWeek = kstWeekStartTuesday();
-  // 기본값: 이번 주(현재 주 화요일). 지난주 추첨은 '이전 주'로 이동. ?week 지정 시 그 주의 화요일.
+  const currentWeek = contestWeekStart();
+  // 기본값: 이번 회차(현재 주 화요일). 지난주 추첨은 '이전 주'로 이동. ?week 지정 시 그 날짜가 속한 회차.
   const weekStart =
     searchParams.week && DATE_RE.test(searchParams.week)
-      ? kstWeekStartTuesday(searchParams.week)
+      ? contestWeekStart(searchParams.week)
       : currentWeek;
 
-  const prevWeek = addDays(weekStart, -7);
-  const nextWeekCandidate = addDays(weekStart, 7);
-  // 현재 주 이후(미래)는 막는다.
+  // 연장 회차는 2주를 한 회차로 묶으므로 종료일 다음 화요일로 건너뛴다.
+  const prevWeek = contestWeekStart(addDays(weekStart, -7));
+  const nextWeekCandidate = addDays(contestWeekEnd(weekStart), 2);
+  // 현재 회차 이후(미래)는 막는다.
   const nextWeek = nextWeekCandidate > currentWeek ? null : nextWeekCandidate;
 
   const [contest, draws] = await Promise.all([

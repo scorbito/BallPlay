@@ -10,6 +10,7 @@ import {
 } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { listAiWeeklySeriesForWeek } from "@/lib/supabase/query-parts/bpAiWeeklySeriesPredictions";
 import { AiWinnerListScreen, type AiWinnerGame } from "@/components/domain/AiWinnerListScreen";
+import { contestWeekStart } from "@/lib/server/predict/weeklyContest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // AI 예측 리스트 — 정적/ISR 캐시 대상. 날짜는 URL(쿼리 X, 경로 O)로 받아 라우트별 캐시.
@@ -36,15 +37,6 @@ function addDays(dateISO: string, days: number): string {
 function isMonday(dateISO: string): boolean {
   const [year, month, day] = dateISO.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 1;
-}
-
-// KBO 주간(화요일 시작) — 오늘이 속한 주의 화요일 ISO. 월요일이면 직전 주 화요일.
-function kstWeekStartTuesday(): string {
-  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const dow = kst.getDay(); // 0=일 .. 6=토
-  const daysSinceTue = (dow - 2 + 7) % 7;
-  kst.setDate(kst.getDate() - daysSinceTue);
-  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
 function listMondaysBetween(fromISO: string, toISO: string): string[] {
@@ -175,7 +167,7 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
 
   const [predictionsResult, stats] = await Promise.all([
     listAiPredictionResultsForDate(supabase, selectedDate),
-    getCachedAiStats(kstWeekStartTuesday())
+    getCachedAiStats(contestWeekStart())
   ]);
 
   const predictionsByGameId = new Map<string, BpAiPredictionResultRow[]>();

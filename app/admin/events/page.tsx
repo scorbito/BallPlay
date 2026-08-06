@@ -8,7 +8,7 @@ import { getUserTierByIdentity } from "@/lib/auth/userTier";
 import { getRequestIdentity } from "@/lib/auth/requestUser";
 import { getPointBalance } from "@/lib/server/points";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { addDays, kstWeekStartTuesday } from "@/lib/server/predict/weeklyContest";
+import { addDays, contestWeekStart } from "@/lib/server/predict/weeklyContest";
 
 // bp_events 기반 행동 집계·퀴즈·가을야구 섹션은 Vercel Analytics 와 중복이라 제거(2026-07-27).
 // 여기서는 Vercel Analytics 에 없는 "승리팀 예측 참여"만 집계한다.
@@ -88,7 +88,7 @@ export default async function AdminEventsPage() {
   if (!userId) notFound();
 
   const adminClient = createSupabaseAdminClient();
-  const predWeekStart = kstWeekStartTuesday();
+  const predWeekStart = contestWeekStart();
   const predLastWeekStart = addDays(predWeekStart, -7);
 
   const [myBpBalance, predictionRows] = await Promise.all([

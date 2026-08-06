@@ -86,6 +86,39 @@ export function kstWeekStartTuesday(refISO?: string): string {
   return `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}`;
 }
 
+/**
+ * 대량 취소(폭염·우천 등)로 한 주 표본이 너무 적을 때 두 주를 한 회차로 합친다.
+ *   key   = 합쳐진 회차의 시작 화요일
+ *   value = 그 회차의 마지막 일요일(연장된 종료일)
+ * 흡수된 주(예: 2026-08-11)는 새 회차를 시작하지 않고 key 회차에 합산된다.
+ */
+const EXTENDED_CONTEST_WEEKS: Record<string, string> = {
+  // 폭염으로 2026-08-05 ~ 08-09 전 경기 취소 → 08-04(3경기)만 성립. 다음 주까지 합산 후 추첨.
+  "2026-08-04": "2026-08-16"
+};
+
+/** 회차 종료일(일요일). 연장 회차면 연장된 종료일을 돌려준다. */
+export function contestWeekEnd(weekStartISO: string): string {
+  return EXTENDED_CONTEST_WEEKS[weekStartISO] ?? addDays(weekStartISO, 5);
+}
+
+/**
+ * 주어진 날짜(미지정 시 오늘 KST)가 속한 "이벤트 회차"의 시작 화요일.
+ * 연장 회차 구간에 들어가는 주는 원 회차 시작일로 되돌린다.
+ */
+export function contestWeekStart(refISO?: string): string {
+  const raw = kstWeekStartTuesday(refISO);
+  for (const [start, end] of Object.entries(EXTENDED_CONTEST_WEEKS)) {
+    if (raw > start && raw <= end) return start;
+  }
+  return raw;
+}
+
+/** 이 회차가 연장 회차인지. 안내 문구 분기용. */
+export function isExtendedContestWeek(weekStartISO: string): boolean {
+  return weekStartISO in EXTENDED_CONTEST_WEEKS;
+}
+
 // 익명계정 제외 — 로그인 계정 id만 남긴다. 함수 에러 시 안전하게 빈 집합(추첨 0명)으로.
 async function filterLoggedIn(client: SupabaseClient, ids: string[]): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
@@ -98,7 +131,7 @@ export async function computeWeeklyContest(
   client: SupabaseClient,
   weekStartISO: string
 ): Promise<WeeklyContest> {
-  const weekEndISO = addDays(weekStartISO, 5); // 화 + 5 = 일
+  const weekEndISO = contestWeekEnd(weekStartISO); // 기본 화 + 5 = 일, 연장 회차면 연장 종료일
 
   // 1) 그 주 경기 수 (취소 제외)
   const { count } = await client

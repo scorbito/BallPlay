@@ -66,7 +66,7 @@ export async function runDailySimAndUpsert(
   }
 
   // 취소된 경기는 제외 (cron 핸들러는 status 필터 없었지만 spec 에 명시 → admin 양쪽 동일하게 적용).
-  const rows = ((games ?? []) as GameRow[]).filter((g) => g.status !== "cancelled");
+  const rows = ((games ?? []) as GameRow[]).filter((g) => g.status !== "canceled");
 
   const results: DailySimPerGameResult[] = [];
 

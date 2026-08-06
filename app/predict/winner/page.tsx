@@ -11,6 +11,7 @@ import {
   listMyPredictionResultsForDate,
   type BpPredictionResultRow
 } from "@/lib/supabase/query-parts/bpPredictions";
+import { contestWeekStart } from "@/lib/server/predict/weeklyContest";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +26,6 @@ function addDays(dateISO: string, days: number): string {
   const d = new Date(dateISO + "T00:00:00");
   d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-// KBO prediction week starts on Tuesday and shows the current in-progress week.
-function kstWeekStartTuesday(): string {
-  const kst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const dow = kst.getDay(); // 0=Sun .. 6=Sat
-  const daysSinceTue = (dow - 2 + 7) % 7;
-  kst.setDate(kst.getDate() - daysSinceTue);
-  return `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 }
 
 export default async function WinnerPredictPage({
@@ -106,7 +98,7 @@ export default async function WinnerPredictPage({
     const [predictionsResult, dateStatsResult, weekStatsResult, allTimeStatsResult] = await Promise.all([
       listMyPredictionResultsForDate(supabase, user.id, selectedDate),
       getMyPredictionStats(supabase, user.id, { dateISO: selectedDate }),
-      getMyPredictionStats(supabase, user.id, { sinceISO: kstWeekStartTuesday() }),
+      getMyPredictionStats(supabase, user.id, { sinceISO: contestWeekStart() }),
       getMyPredictionStats(supabase, user.id)
     ]);
     if (predictionsResult.ok) {
@@ -120,7 +112,7 @@ export default async function WinnerPredictPage({
   }
 
   // 이번 주 AI 3개 평균 적중률 — 나 vs AI 대결 표시용. (공개 집계라 admin 클라이언트로 조회)
-  const aiWeeklyResult = await getAiOverallStats(createSupabaseAdminClient(), kstWeekStartTuesday()).catch(() => null);
+  const aiWeeklyResult = await getAiOverallStats(createSupabaseAdminClient(), contestWeekStart()).catch(() => null);
   const aiWeeklyAccuracy = aiWeeklyResult && aiWeeklyResult.ok ? aiWeeklyResult.stats.accuracy : null;
 
   // 경기별 AI 픽 — 유저 클라이언트로 조회해 published_at RLS를 그대로 태운다.
