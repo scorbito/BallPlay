@@ -3,6 +3,7 @@ import type { Team, TeamStanding } from "@/lib/types/domain";
 import type { GameRecord } from "@/lib/types/api-contracts";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { resolveDisplayStadium } from "@/lib/constants/stadiums";
+import { isAllGamesCanceledDate } from "@/lib/utils/cancellationReason";
 
 function toTeam(row: {
   id: string;
@@ -140,7 +141,14 @@ export async function listGamesFromDb(
   // select에 변수 문자열을 넘기면 Supabase는 row 타입을 추론 못해 GenericStringError로 떨어짐.
   // unknown 거쳐 우리가 아는 row 타입으로 캐스팅.
   const rows = (data ?? []) as unknown as Parameters<typeof toGame>[0][];
-  return rows.map(toGame);
+  // 폭염 휴장처럼 취소가 확정됐는데 KBO 데이터엔 아직 scheduled 로 남아 있는 날짜를 보정.
+  // 여기서 한 번 정규화하면 AI 예측·승리팀 예측·일정 등 status 를 보는 모든 화면이 함께 맞는다.
+  // (동기화는 KBO 응답을 그대로 쓰므로 DB 값은 건드리지 않고 읽는 시점에만 덮는다.)
+  return rows.map((row) =>
+    row.status !== "finished" && isAllGamesCanceledDate(row.game_date)
+      ? toGame({ ...row, status: "canceled" })
+      : toGame(row)
+  );
 }
 
 export async function listStandingsFromDb(season: number, client?: SupabaseClient): Promise<TeamStanding[]> {

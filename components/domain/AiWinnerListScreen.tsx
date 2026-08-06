@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Bot, ChevronLeft, ChevronRight, Lock, Trophy, Wand2 } from "lucide-react";
+import { ArrowRight, Bot, ChevronLeft, ChevronRight, CloudRain, Lock, ThermometerSun, Trophy, Wand2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
+import { cancellationReasonFor } from "@/lib/utils/cancellationReason";
 import { trackEvent } from "@/lib/analytics/events";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import type { GameStatus } from "@/lib/types/api-contracts";
@@ -314,6 +315,8 @@ export function AiWinnerListScreen({
   for (const p of weeklyProviderStats) weeklyProviderByName.set(p.ai_provider, p);
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.
   const loginHref = `/login?next=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`;
+  // 취소 사유는 날짜 단위라 카드마다 계산하지 않고 한 번만.
+  const canceledReason = cancellationReasonFor(selectedDate);
   // 클라이언트 hydration 후 게이트 계산 (SSR 미스매치 회피)
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
@@ -618,11 +621,16 @@ export function AiWinnerListScreen({
                       ) : null}
                     </div>
 
-                    {/* 우천취소·일정변경 등으로 경기 자체가 없어진 경우 — 적중 판정 불가.
+                    {/* 우천·폭염 취소, 일정변경 등으로 경기 자체가 없어진 경우 — 적중 판정 불가.
                         AI 예측 픽은 그대로 표시(있으면), 적중/실패만 자연 미표시. */}
                     {isCanceled ? (
                       <div className="ai-winner-canceled-banner">
-                        🌧 경기 취소 · 적중 판정 없음
+                        {canceledReason.icon === "heat" ? (
+                          <ThermometerSun size={13} strokeWidth={2.5} />
+                        ) : (
+                          <CloudRain size={13} strokeWidth={2.5} />
+                        )}
+                        {canceledReason.label}취소 · 적중 판정 없음
                       </div>
                     ) : null}
 
