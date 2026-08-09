@@ -19,6 +19,8 @@ export type AnalyticsEventName =
   | "quiz_completed"
   /** 선수명 워들 한 판 종료. properties: date, solved, attempts */
   | "wordle_completed"
+  /** 닮은 선수 찾기 결과 확인. properties: player, team, sync_rate (사진은 전송하지 않는다) */
+  | "face_match_completed"
   | "video_submitted"
   | "point_earned"
   | "point_spent";

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>[PoC] 닮은 KBO 선수 찾기</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --line: #262b36;
+    --fg: #e7eaf0; --muted: #98a2b3; --accent: #4f9cf9; --ok: #37c26b; --warn: #f5a524; --bad: #f0596a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; background: var(--bg); color: var(--fg);
+         font: 14px/1.6 -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+           padding: 16px; margin-bottom: 16px; max-width: 900px; }
+  .panel h2 { font-size: 14px; margin: 0 0 12px; color: var(--accent); }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+           padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  button:disabled { background: #2c3340; color: var(--muted); cursor: not-allowed; }
+  button.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .log { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted);
+         white-space: pre-wrap; margin-top: 12px; max-height: 220px; overflow-y: auto; }
+  .bar { height: 6px; background: #2c3340; border-radius: 3px; overflow: hidden; margin-top: 12px; }
+  .bar > div { height: 100%; background: var(--accent); width: 0%; transition: width .2s; }
+  .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+  .card { background: #12151b; border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center; }
+  .card.top { border-color: var(--accent); }
+  .card img { width: 94px; height: 118px; object-fit: cover; border-radius: 6px; background: #222; }
+  .card .name { font-weight: 700; margin-top: 8px; }
+  .card .meta { color: var(--muted); font-size: 12px; }
+  .card .score { font-family: ui-monospace, monospace; margin-top: 6px; font-size: 13px; }
+  .preview { display: flex; gap: 16px; align-items: flex-start; margin-top: 12px; }
+  .preview img, .preview canvas { max-width: 220px; border-radius: 8px; border: 1px solid var(--line); }
+  .stat { display: inline-block; margin-right: 16px; }
+  .stat b { color: var(--fg); }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+  input[type=file] { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>[PoC] 닮은 KBO 선수 찾기</h1>
+<div class="sub">
+  KBO 공식 프로필 사진(94×118)으로 얼굴 임베딩 품질이 실용 수준인지 검증합니다.
+  모든 처리는 브라우저에서만 이뤄지며 업로드 사진은 서버로 전송되지 않습니다.
+</div>
+
+<div class="panel">
+  <h2>1단계 · 선수 임베딩 구축</h2>
+  <div class="row">
+    <button id="btnBuild">임베딩 만들기</button>
+    <button id="btnExport" class="ghost" disabled>embeddings.bin 내려받기</button>
+    <label class="row" style="gap:6px; color:var(--muted); font-size:13px;">
+      <input type="checkbox" id="chkUpscale" checked /> 3배 업스케일 후 검출
+    </label>
+  </div>
+  <div class="bar"><div id="progress"></div></div>
+  <div class="log" id="buildLog">대기 중…</div>
+</div>
+
+<div class="panel">
+  <h2>2단계 · 내 사진으로 테스트</h2>
+  <div class="row">
+    <input type="file" id="fileInput" accept="image/*" disabled />
+    <span style="color:var(--muted); font-size:12px;">임베딩 구축 후 활성화됩니다</span>
+  </div>
+  <div class="preview" id="preview"></div>
+  <div class="results" id="results"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js"></script>
+<script>
+const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model";
+const DIM = 128; // faceRecognitionNet descriptor 차원
+
+const $ = (id) => document.getElementById(id);
+const buildLog = $("buildLog");
+let logLines = [];
+function log(msg) {
+  logLines.push(msg);
+  if (logLines.length > 400) logLines = logLines.slice(-400);
+  buildLog.textContent = logLines.join("\n");
+  buildLog.scrollTop = buildLog.scrollHeight;
+}
+
+let players = [];      // players.json
+let embedded = [];     // { idx, descriptor: Float32Array } — 검출 성공분만
+let modelsReady = false;
+
+async function loadModels() {
+  if (modelsReady) return;
+  log("모델 로딩 중…");
+  await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+  modelsReady = true;
+  log("모델 로딩 완료");
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("이미지 로드 실패: " + src));
+    img.src = src;
+  });
+}
+
+/** 저해상도 프로필 사진은 업스케일해야 검출률이 오른다. */
+function upscale(img, factor) {
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth * factor;
+  c.height = img.naturalHeight * factor;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
+async function describe(input, minConfidence) {
+  const det = await faceapi
+    .detectSingleFace(input, new faceapi.SsdMobilenetv1Options({ minConfidence }))
+    .withFaceLandmarks()
+    .withFaceDescriptor();
+  return det ? det.descriptor : null;
+}
+
+function l2normalize(v) {
+  let s = 0;
+  for (let i = 0; i < v.length; i++) s += v[i] * v[i];
+  const n = Math.sqrt(s) || 1;
+  const out = new Float32Array(v.length);
+  for (let i = 0; i < v.length; i++) out[i] = v[i] / n;
+  return out;
+}
+
+$("btnBuild").addEventListener("click", async () => {
+  $("btnBuild").disabled = true;
+  try {
+    await loadModels();
+    log("선수 목록 로딩 중…");
+    players = await (await fetch("./players.json")).json();
+    log(`선수 ${players.length}명`);
+
+    const factor = $("chkUpscale").checked ? 3 : 1;
+    embedded = [];
+    const failed = [];
+    const t0 = performance.now();
+
+    for (let i = 0; i < players.length; i++) {
+      const p = players[i];
+      try {
+        const img = await loadImage(`./photos/${p.id}.jpg`);
+        const input = factor > 1 ? upscale(img, factor) : img;
+        // 프로필 사진은 정면·단색배경이라 임계값을 낮춰도 오검출이 적다.
+        let desc = await describe(input, 0.3);
+        if (!desc) desc = await describe(input, 0.1); // 2차 완화 재시도
+        if (desc) embedded.push({ idx: i, descriptor: l2normalize(desc) });
+        else failed.push(p.name);
+      } catch (e) {
+        failed.push(p.name + "(로드실패)");
+      }
+      if (i % 10 === 0 || i === players.length - 1) {
+        const pct = ((i + 1) / players.length) * 100;
+        $("progress").style.width = pct.toFixed(1) + "%";
+        log(`진행 ${i + 1}/${players.length} · 성공 ${embedded.length} · 실패 ${failed.length}`);
+      }
+    }
+
+    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+    const rate = ((embedded.length / players.length) * 100).toFixed(1);
+    log(`\n=== 구축 완료 (${secs}s) ===`);
+    log(`검출 성공률: ${rate}% (${embedded.length}/${players.length})`);
+    if (failed.length) log(`검출 실패: ${failed.slice(0, 30).join(", ")}${failed.length > 30 ? ` 외 ${failed.length - 30}명` : ""}`);
+
+    $("fileInput").disabled = false;
+    $("btnExport").disabled = false;
+  } catch (err) {
+    log("오류: " + err.message);
+  } finally {
+    $("btnBuild").disabled = false;
+  }
+});
+
+/** embeddings.bin(Float32) + embedded-players.json(같은 순서) 내보내기 */
+$("btnExport").addEventListener("click", () => {
+  const buf = new Float32Array(embedded.length * DIM);
+  embedded.forEach((e, i) => buf.set(e.descriptor, i * DIM));
+  download(new Blob([buf.buffer]), "embeddings.bin");
+  const meta = embedded.map((e) => players[e.idx]);
+  download(new Blob([JSON.stringify(meta, null, 2)], { type: "application/json" }), "embedded-players.json");
+  log(`내보내기: ${embedded.length}개 × ${DIM}차원 = ${(buf.byteLength / 1024).toFixed(0)}KB`);
+});
+
+function download(blob, filename) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+$("fileInput").addEventListener("change", async (ev) => {
+  const file = ev.target.files?.[0];
+  if (!file) return;
+  const preview = $("preview");
+  const results = $("results");
+  preview.innerHTML = "";
+  results.innerHTML = "";
+
+  const url = URL.createObjectURL(file);
+  const img = await loadImage(url);
+  preview.innerHTML = `<div><div style="color:var(--muted);font-size:12px;margin-bottom:6px">내 사진</div></div>`;
+  preview.firstChild.appendChild(img);
+
+  const t0 = performance.now();
+  let desc = await describe(img, 0.4);
+  if (!desc) desc = await describe(img, 0.15);
+  if (!desc) {
+    preview.insertAdjacentHTML("beforeend", `<div class="bad">얼굴을 찾지 못했습니다. 정면 사진으로 다시 시도해 주세요.</div>`);
+    return;
+  }
+  const q = l2normalize(desc);
+
+  // 939건 전수 내적 — 인덱스 없이도 1ms 미만
+  const scored = embedded.map((e) => {
+    let dot = 0;
+    for (let d = 0; d < DIM; d++) dot += q[d] * e.descriptor[d];
+    return { p: players[e.idx], sim: dot };
+  });
+  scored.sort((a, b) => b.sim - a.sim);
+  const ms = (performance.now() - t0).toFixed(0);
+
+  const top = scored.slice(0, 8);
+  preview.insertAdjacentHTML("beforeend",
+    `<div style="font-size:13px">
+       <div class="stat">비교 대상 <b>${embedded.length}명</b></div>
+       <div class="stat">소요 <b>${ms}ms</b></div>
+       <div class="stat">1위 유사도 <b>${top[0].sim.toFixed(3)}</b></div>
+     </div>`);
+
+  results.innerHTML = top.map((s, i) => `
+    <div class="card ${i === 0 ? "top" : ""}">
+      <img src="./photos/${s.p.id}.jpg" alt="" />
+      <div class="name">${s.p.name}</div>
+      <div class="meta">${s.p.teamName} · ${s.p.pos ?? ""}</div>
+      <div class="score ${s.sim > 0.5 ? "ok" : s.sim > 0.38 ? "warn" : "bad"}">${s.sim.toFixed(3)}</div>
+    </div>
+  `).join("");
+});
+</script>
+</body>
+</html>

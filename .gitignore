@@ -26,6 +26,9 @@ coverage/
 data/ground*.png
 data/ground*.jpg
 
+# [PoC] 닮은 선수 찾기 — KBO 원본 프로필 사진(임베딩 추출용 중간 산출물, 재배포 금지)
+public/poc-face/photos/
+
 
 .vercel
 .env*.local
@@ -43,3 +46,6 @@ scripts/
 # 그리드 게임 데이터 — 시즌 종료 시 재수집해야 하므로 추적 대상.
 !/scripts/scrape-kbo-careers.mjs
 !/scripts/build-grid-data.mjs
+# 닮은 선수 찾기 임베딩 파이프라인 — 로스터·시즌이 바뀌면 재실행해야 하므로 추적 대상.
+!/scripts/poc-face-fetch-photos.mjs
+!/scripts/poc-face-fill-photo-year.mjs
