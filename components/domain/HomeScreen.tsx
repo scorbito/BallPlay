@@ -113,7 +113,7 @@ type HomeSection = {
  * 졸업한 메뉴는 원래 카테고리에 그대로 남아 있으므로 옮길 것이 없다.
  * 유저도 "새 기능은 저 자리"를 한 번 학습하면 이후 교체가 예상 범위 안이 된다.
  */
-const HERO_CARD_IDS: readonly string[] = ["ai-predict", "ai-battle", "face"];
+const HERO_CARD_IDS: readonly string[] = ["ai-predict", "ai-battle", "wordle"];
 
 const sections: HomeSection[] = [
   {
@@ -337,7 +337,8 @@ const sections: HomeSection[] = [
         available: true
       },
       {
-        // 히어로 3번(신규 슬롯)에서 졸업. 카테고리 소속은 원래부터 여기라 옮길 것이 없다.
+        // 현재 히어로 3번(신규 슬롯)에 배치돼 있지만 카테고리 소속은 여기다.
+        // "콘텐츠" 칩에서 정상적으로 찾을 수 있고, 신규 슬롯에서 졸업하면 이 자리에 남는다.
         id: "wordle",
         href: "/play/wordle",
         title: "오늘의 선수를 맞혀라!",
@@ -359,11 +360,11 @@ const sections: HomeSection[] = [
         badge: "NEW"
       },
       {
-        // 현재 히어로 3번(신규 슬롯)에 배치돼 있지만 카테고리 소속은 여기다.
-        // "콘텐츠" 칩에서 정상적으로 찾을 수 있고, 신규 슬롯에서 졸업하면 이 자리에 남는다.
+        // 카테고리는 "콘텐츠"(미니게임). 전체 목록에서의 위치는 FLAT_PLACEMENT 에서
+        // 승리팀 예측 뒤로 올린다 — 카테고리와 순서는 서로 무관하다.
         id: "face",
         href: "/play/face",
-        // 히어로 카드 폭이 좁아 "나와 / 닮은 / 선수는?" 세 줄로 끊긴다. "나와"와 "닮은" 사이를
+        // 카드 폭이 좁아 "나와 / 닮은 / 선수는?" 세 줄로 끊긴다. "나와"와 "닮은" 사이를
         // 줄바꿈 없는 공백(U+00A0)으로 묶어 "나와 닮은 / 선수는?" 두 줄이 되게 한다.
         title: "나와 닮은 선수는?",
         description: "사진 속 얼굴과 가장 닮은 선수",
@@ -627,7 +628,8 @@ export function HomeScreen() {
         //   섹션(카테고리)은 categoryOfCard 로 유지되므로 탭 필터는 그대로,
         //   전체 화면에서만 원하는 자리에 놓는다. [placeAfter card id]
         const FLAT_PLACEMENT: Array<{ id: string; after: string }> = [
-          { id: "sim-1000", after: "news" } // 1000판: 예측 탭 소속 + 전체에선 야구 뉴스 뒤
+          { id: "sim-1000", after: "news" }, // 1000판: 예측 탭 소속 + 전체에선 야구 뉴스 뒤
+          { id: "face", after: "winner-predict" } // 닮은 선수: 콘텐츠 탭 소속 + 전체에선 승리팀 예측 뒤
         ];
         FLAT_PLACEMENT.forEach(({ id, after }) => {
           const idx = bottomCards.findIndex((c) => c.id === id);
