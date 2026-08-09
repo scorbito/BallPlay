@@ -17,7 +17,7 @@ import { ModalShell } from "@/components/common/ModalShell";
 import { useAppState } from "@/lib/state/AppState";
 import { trackEvent } from "@/lib/analytics/events";
 import { teams as KBO_TEAMS } from "@/lib/constants/teams";
-import { describeFace, loadImageFromFile } from "@/lib/face/detector";
+import { describeFace, loadFaceApi, loadImageFromFile } from "@/lib/face/detector";
 import {
   findTopMatches,
   kboPlayerPhotoUrl,
@@ -91,6 +91,17 @@ export function FaceMatchScreen() {
     };
   }, []);
 
+  /**
+   * 진입하자마자 모델(약 12MB)과 선수 인덱스를 받기 시작한다.
+   * 이 페이지는 게임 전용이라 들어온 사람은 대부분 사진을 올린다. 사진을 고른 뒤에
+   * 받기 시작하면 그 시간이 고스란히 대기로 보이므로, 화면을 보는 동안 미리 당겨둔다.
+   * 실패해도 여기서 처리하지 않는다 — 분석 시점에 다시 시도하고 거기서 오류를 보여준다.
+   */
+  useEffect(() => {
+    void loadFaceApi().catch(() => {});
+    void loadFaceIndex().catch(() => {});
+  }, []);
+
   const handleFile = useCallback(
     async (file: File) => {
       if (objectUrlRef.current) {
@@ -134,6 +145,16 @@ export function FaceMatchScreen() {
     },
     []
   );
+
+  /**
+   * 진입 시 프리로드가 네트워크 문제로 실패했을 수 있으므로 여기서 한 번 더 건다.
+   * 유저가 앨범에서 사진을 고르는 몇 초를 마저 활용하는 재시도 지점이다.
+   * loadFaceApi 는 내부적으로 캐시되므로 성공해 있으면 아무 일도 하지 않는다.
+   */
+  const openPicker = useCallback(() => {
+    void loadFaceApi().catch(() => {});
+    fileInputRef.current?.click();
+  }, []);
 
   const onPick = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,7 +218,7 @@ export function FaceMatchScreen() {
             </p>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={openPicker}
               className="mt-6 w-full rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition active:scale-[0.99]"
             >
               사진 선택하기
@@ -220,7 +241,7 @@ export function FaceMatchScreen() {
             <p className="text-sm leading-relaxed text-slate-600">{errorText}</p>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={openPicker}
               className="mt-5 w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white"
             >
               다른 사진으로 시도
@@ -330,7 +351,7 @@ export function FaceMatchScreen() {
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={openPicker}
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700"
               >
                 <RefreshCw className="h-4 w-4" />
