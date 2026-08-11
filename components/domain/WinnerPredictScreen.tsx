@@ -50,6 +50,16 @@ export type WinnerPredictGame = {
 
 type Stats = { total: number; correct: number; pending: number };
 
+const EMPTY_STATS: Stats = { total: 0, correct: 0, pending: 0 };
+
+/** 클라 하이드레이션으로 채우는 내 픽의 판정/잠금 필드 (공개 셸엔 없음). */
+type MyPickData = {
+  isJudged: boolean;
+  isCorrect: boolean | null;
+  lockedAt: string | null;
+  actualWinnerTeamId: string | null;
+};
+
 /** 경기별 AI 다수결 요약 — 공개된(published_at 지난) 예측만 집계된다. */
 export type AiGamePick = {
   gameId: string;
@@ -150,12 +160,8 @@ type Props = {
   prevDateISO: string | null;
   /** 다음 경기일 (없으면 null — 화살표 숨김) */
   nextDateISO: string | null;
+  /** 공개 셸 경기 목록 — 유저 필드(내 픽·판정)는 클라에서 하이드레이션한다. */
   games: WinnerPredictGame[];
-  /** 선택된 날짜 기준 적중률 (어제로 가면 어제 통계) */
-  dateStats: Stats;
-  /** 이번 주(화~일) 누적 적중률 */
-  weekStats: Stats;
-  allTimeStats: Stats;
   /** 이번 주 AI 3개 평균 적중률(0~100). 집계 전이면 null. — 나 vs AI 대결 표시용 */
   aiWeeklyAccuracy: number | null;
   /** 선택 날짜의 경기별 AI 다수결. 예측이 없는 경기는 배열에서 빠진다. */
@@ -203,10 +209,7 @@ export function WinnerPredictScreen({
   canEditFuture,
   prevDateISO,
   nextDateISO,
-  games,
-  dateStats,
-  weekStats,
-  allTimeStats,
+  games: shellGames,
   aiWeeklyAccuracy,
   aiPicks
 }: Props) {
@@ -220,9 +223,79 @@ export function WinnerPredictScreen({
 
   const [predictions, setPredictions] = useState<Record<string, string | null>>(() => {
     const init: Record<string, string | null> = {};
-    for (const g of games) init[g.id] = g.predictedWinnerTeamId;
+    for (const g of shellGames) init[g.id] = g.predictedWinnerTeamId;
     return init;
   });
+
+  // ── 유저 데이터 하이드레이션 ──
+  // 페이지는 공개 셸(ISR 캐시)만 렌더하고, 내 픽·내 적중률은 여기서 /api/predict/winner/my 로 채운다.
+  const [myPicks, setMyPicks] = useState<Record<string, MyPickData>>({});
+  const [statsData, setStatsData] = useState<{ date: Stats; week: Stats; all: Stats }>({
+    date: EMPTY_STATS,
+    week: EMPTY_STATS,
+    all: EMPTY_STATS
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/predict/winner/my?date=${selectedDateISO}`);
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          picks?: Array<
+            { gameId: string; predictedWinnerTeamId: string | null } & MyPickData
+          >;
+          dateStats?: Stats;
+          weekStats?: Stats;
+          allTimeStats?: Stats;
+        };
+        if (cancelled) return;
+        const picks = data.picks ?? [];
+        // 내가 이미 선택 중인(미제출) 픽은 덮지 않고, 서버에 있는 픽만 채운다.
+        setPredictions((prev) => {
+          const next = { ...prev };
+          for (const p of picks) {
+            if (next[p.gameId] == null) next[p.gameId] = p.predictedWinnerTeamId;
+          }
+          return next;
+        });
+        const pm: Record<string, MyPickData> = {};
+        for (const p of picks) {
+          pm[p.gameId] = {
+            isJudged: p.isJudged,
+            isCorrect: p.isCorrect,
+            lockedAt: p.lockedAt,
+            actualWinnerTeamId: p.actualWinnerTeamId
+          };
+        }
+        setMyPicks(pm);
+        setStatsData({
+          date: data.dateStats ?? EMPTY_STATS,
+          week: data.weekStats ?? EMPTY_STATS,
+          all: data.allTimeStats ?? EMPTY_STATS
+        });
+      } catch {
+        // 실패해도 공개 화면은 성립 — 내 픽·통계만 안 뜰 뿐.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDateISO]);
+
+  // 공개 셸 + 내 픽 병합 = 렌더용 games. 기존 렌더 본문은 game.isJudged/isCorrect 를 그대로 읽는다.
+  const games = useMemo(
+    () =>
+      shellGames.map((g) => {
+        const mp = myPicks[g.id];
+        return mp ? { ...g, ...mp } : g;
+      }),
+    [shellGames, myPicks]
+  );
+  const dateStats = statsData.date;
+  const weekStats = statsData.week;
+  const allTimeStats = statsData.all;
 
   const [saving, startSaving] = useTransition();
   // 규칙 안내 — 상시 문구로 두면 세 번째 방문부터 아무도 안 읽어서 헤더 ⓘ로 접었다.
@@ -499,7 +572,7 @@ export function WinnerPredictScreen({
       {/* ── 비로그인 상시 안내 — 이벤트 진행 중 + 게스트일 때만. 모달은 1회지만 이 띠는 계속 노출 ── */}
       {WEEKLY_EVENT_ACTIVE && isGuest ? (
         <Link
-          href={`/login?next=${encodeURIComponent(`/predict/winner?date=${selectedDateISO}`)}`}
+          href={`/login?next=${encodeURIComponent(`/predict/winner/date/${selectedDateISO}`)}`}
           className="predict-guest-banner"
           prefetch={false}
         >
@@ -541,7 +614,7 @@ export function WinnerPredictScreen({
       <header className="predict-day-header">
         {prevDateISO ? (
           <Link
-            href={`/predict/winner?date=${prevDateISO}`}
+            href={`/predict/winner/date/${prevDateISO}`}
             className="predict-day-nav"
             aria-label="이전 경기일"
             prefetch
@@ -577,7 +650,7 @@ export function WinnerPredictScreen({
         )}
         {nextDateISO ? (
           <Link
-            href={`/predict/winner?date=${nextDateISO}`}
+            href={`/predict/winner/date/${nextDateISO}`}
             className="predict-day-nav"
             aria-label="다음 경기일"
             prefetch
@@ -1040,7 +1113,7 @@ export function WinnerPredictScreen({
               다음에
             </button>
             <Link
-              href={`/login?next=${encodeURIComponent(`/predict/winner?date=${selectedDateISO}`)}`}
+              href={`/login?next=${encodeURIComponent(`/predict/winner/date/${selectedDateISO}`)}`}
               className="lineup-confirm-destruct"
               style={{ textDecoration: "none", textAlign: "center" }}
               prefetch={false}
