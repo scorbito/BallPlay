@@ -571,6 +571,16 @@
   }
 }
 
+/* 4열 컴팩트 메뉴 배지(NEW 등): 타일 좌상단 고정이면 넓은 화면에서 셀이 커질수록
+   가운데 정렬된 아이콘과 벌어진다. 셀 가운데(=아이콘) 기준으로 잡아 화면 폭과 무관하게
+   항상 아이콘 위 가운데에 붙게 한다. left+margin-left 라 float(translateY) 애니메이션과 무충돌. */
+.phone-frame-light .play-hub-flexible-grid .play-hub-card-badge {
+  left: 50%;
+  right: auto;
+  margin-left: -18px; /* NEW 배지 폭의 절반 ≈ 가운데 정렬 */
+  top: 0;
+}
+
 /* ── 외부 서비스 추천 배너 ── */
 /* 히어로 ~ 일반 메뉴 사이 승부예측 배너 광고 — 히어로 하단에 딱 붙이도록 위 gap 상쇄 */
 .phone-frame-light .play-hub-predict-banner {
