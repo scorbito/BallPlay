@@ -105,7 +105,7 @@ export function Sim1000ListScreen({
   locked = false
 }: Props) {
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 시뮬 결과로 복귀.
-  const loginHref = `/login?next=${encodeURIComponent(`/predict/sim-1000?date=${selectedDate}`)}`;
+  const loginHref = `/login?next=${encodeURIComponent(`/predict/sim-1000/date/${selectedDate}`)}`;
 
   // 홈 펄스 뱃지 해제 — 오늘자 시뮬 결과가 있는 페이지에 진입하면 viewed 마킹.
   useEffect(() => {
@@ -175,7 +175,7 @@ export function Sim1000ListScreen({
         <nav className="sim1000-date-nav" aria-label="날짜 선택">
           {prevDate ? (
             <Link
-              href={`/predict/sim-1000?date=${prevDate}`}
+              href={`/predict/sim-1000/date/${prevDate}`}
               className="sim1000-date-nav-btn"
               aria-label="이전 시뮬 날짜"
               prefetch={false}
@@ -195,7 +195,7 @@ export function Sim1000ListScreen({
           </div>
           {nextDate ? (
             <Link
-              href={`/predict/sim-1000?date=${nextDate}`}
+              href={`/predict/sim-1000/date/${nextDate}`}
               className="sim1000-date-nav-btn"
               aria-label="다음 시뮬 날짜"
               prefetch={false}

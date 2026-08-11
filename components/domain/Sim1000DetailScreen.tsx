@@ -421,7 +421,7 @@ export function Sim1000DetailScreen({ game, sim, homeLineup, awayLineup }: Props
     <AppShell
       activeTab="home"
       title="1000판 시뮬 결과"
-      backHref={`/predict/sim-1000?date=${game.gameDate}`}
+      backHref={`/predict/sim-1000/date/${game.gameDate}`}
       theme="light"
       wide
     >

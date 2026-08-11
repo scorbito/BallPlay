@@ -327,7 +327,7 @@ export function ConsensusScreen({ data, prevDate, nextDate, isToday }: Props) {
         {/* 날짜 내비 */}
         <div className="mb-3 flex items-center justify-center gap-4 pt-2">
           {prevDate ? (
-            <Link href={`/predict/consensus?date=${prevDate}`} className="rounded-full p-1 text-slate-400">
+            <Link href={`/predict/consensus/date/${prevDate}`} className="rounded-full p-1 text-slate-400">
               <ChevronLeft className="h-5 w-5" />
             </Link>
           ) : (
@@ -341,7 +341,7 @@ export function ConsensusScreen({ data, prevDate, nextDate, isToday }: Props) {
             </div>
           </div>
           {nextDate ? (
-            <Link href={`/predict/consensus?date=${nextDate}`} className="rounded-full p-1 text-slate-400">
+            <Link href={`/predict/consensus/date/${nextDate}`} className="rounded-full p-1 text-slate-400">
               <ChevronRight className="h-5 w-5" />
             </Link>
           ) : (
