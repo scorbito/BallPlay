@@ -75,7 +75,37 @@ export function FreePostComposerModal({ open, onClose, onCreated }: FreePostComp
         </div>
         <div className="composer-section">
           <label className="composer-label">사진</label>
-          {photoUrl ? <div className="composer-photo-preview"><Image src={photoUrl} alt="첨부 사진" fill sizes="320px" /><button type="button" onClick={() => setPhotoUrl(null)} aria-label="사진 삭제"><Trash2 size={16} /></button></div> : <label className="composer-photo-picker"><ImagePlus size={18} /><span>{uploading ? "업로드 중..." : "사진 추가"}</span><input type="file" accept="image/*" hidden disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void handlePhoto(file); event.currentTarget.value = ""; }} /></label>}
+          {photoUrl ? (
+            <div className="composer-photo-preview">
+              <div className="composer-photo-frame">
+                <Image src={photoUrl} alt="첨부 사진" fill sizes="320px" style={{ objectFit: "cover" }} />
+              </div>
+              <button
+                type="button"
+                className="composer-photo-remove"
+                onClick={() => setPhotoUrl(null)}
+                aria-label="사진 삭제"
+              >
+                <Trash2 size={16} /> 제거
+              </button>
+            </div>
+          ) : (
+            <label className="composer-photo-picker">
+              <ImagePlus size={18} />
+              <span>{uploading ? "업로드 중..." : "사진 추가"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                disabled={uploading}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void handlePhoto(file);
+                  event.currentTarget.value = "";
+                }}
+              />
+            </label>
+          )}
         </div>
         <Button type="button" className="match-talk-submit" onClick={() => void submit()} disabled={submitting || uploading}>{submitting ? "등록 중..." : "등록하기"}</Button>
       </div>
