@@ -111,12 +111,21 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
       .order("game_date", { ascending: false })
       .limit(140),
     // 작성형 종합분석 리포트 — 테이블 미생성(42P01) 등 오류 시 data=null 로 조용히 폴백.
-    client.from("bp_ai_consensus_daily").select("game_id, analysis").eq("game_date", selectedDate)
+    client
+      .from("bp_ai_consensus_daily")
+      .select("game_id, analysis, pick_team_id, probability")
+      .eq("game_date", selectedDate)
   ]);
 
   const analysisByGame = new Map<string, string>();
+  // 리포트 창이 저장한 종합픽·확률 — 화면 재계산보다 우선한다 (계산식 개정이 리포트 쪽에서 일어남).
+  const reportPickByGame = new Map<string, { teamId: string; prob: number }>();
   for (const row of analysisResult.data ?? []) {
     if (typeof row.analysis === "string" && row.analysis.length > 0) analysisByGame.set(row.game_id, row.analysis);
+    const prob = Number(row.probability);
+    if (row.pick_team_id && Number.isFinite(prob) && prob > 0) {
+      reportPickByGame.set(row.game_id, { teamId: row.pick_team_id, prob });
+    }
   }
 
   // provider 신뢰도
@@ -205,9 +214,13 @@ export async function loadConsensusPageData(selectedDate: string): Promise<Conse
     );
     const unanimous = picks.length > 0 && new Set(picks.map((p) => p.teamId)).size === 1;
 
-    let consensusTeamId: string | null = null;
-    let consensusProb: number | null = null;
-    if (picks.length >= 3) {
+    // 종합픽·확률: 리포트 창이 bp_ai_consensus_daily 에 저장한 값을 우선 사용.
+    // (확신도 혼합·라이브 판정 신뢰도 등 계산식 개정은 consensus-pick.mjs 쪽에서 관리)
+    // 리포트 미작성일 때만 구식 재계산으로 폴백.
+    const reportPick = reportPickByGame.get(g.id) ?? null;
+    let consensusTeamId: string | null = reportPick?.teamId ?? null;
+    let consensusProb: number | null = reportPick?.prob ?? null;
+    if (!reportPick && picks.length >= 3) {
       let odds = 1; // 홈팀 기준
       for (const p of picks) {
         const base = reliability[p.provider] ?? 0.55;
