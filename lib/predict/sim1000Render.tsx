@@ -47,7 +47,7 @@ export async function renderSim1000(explicitDate: string | null) {
   // listGamesFromDb 는 admin client (선발 컬럼 포함) — 매치업 시각·구장 보강용.
   const [simResult, gamesForDate, datesResult, accuracyResult] = await Promise.all([
     listSimResultsForDate(supabase, selectedDate),
-    listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []),
+    listGamesFromDb({ from: selectedDate, to: selectedDate }, supabase).catch(() => []),
     // 시뮬 결과가 존재하는 날짜 목록 — prev/next 화살표 자동 스킵용. ±30일 윈도우.
     listSimResultDates(supabase, { from: addDays(selectedDate, -30), to: addDays(selectedDate, 30) }),
     // 시즌 누적 적중률 (live 집계) — 상단 헤더 카드용.

@@ -10,7 +10,7 @@ import {
   type AiGamePick,
   type WinnerPredictGame
 } from "@/components/domain/WinnerPredictScreen";
-import { createSupabaseCacheClient, createSupabaseAdminClient } from "@/lib/supabase/server";
+import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { getAiOverallStats, listAiPredictionsForDate } from "@/lib/supabase/query-parts/bpAiPredictions";
 import { listGamesFromDb } from "@/lib/supabase/queries";
 import { contestWeekStart } from "@/lib/server/predict/weeklyContest";
@@ -35,14 +35,18 @@ function addDays(dateISO: string, days: number): string {
 /** explicitDate=null 이면 오늘(경기 없으면 다음 경기일로 자동 이동)을 보여준다. */
 export async function renderWinner(explicitDate: string | null) {
   const today = kstToday();
+  // 캐시(쿠키리스) 클라이언트 — listGamesFromDb 는 기본이 admin(no-store)이라 이걸 넘겨야
+  // 이 쿼리의 fetch 가 라우트를 동적 강제하지 않고 ISR 캐시가 유지된다.
+  const cache = createSupabaseCacheClient(60);
 
   let selectedDate = explicitDate ?? today;
-  let gamesResult = await listGamesFromDb({ from: selectedDate, to: selectedDate }).catch(() => []);
+  let gamesResult = await listGamesFromDb({ from: selectedDate, to: selectedDate }, cache).catch(() => []);
 
   // 오늘 이후 가장 이른 경기일(=다음 경기일). 자동 이동 + 다음 경기 예측 개방 판정에 공용.
-  const afterToday = await listGamesFromDb({ from: addDays(today, 1), to: addDays(today, 14) }).catch(
-    () => []
-  );
+  const afterToday = await listGamesFromDb(
+    { from: addDays(today, 1), to: addDays(today, 14) },
+    cache
+  ).catch(() => []);
   const nextGameDate = afterToday.length > 0 ? afterToday[0].date : null;
 
   // 오늘 진입인데 경기 자체가 없음 → 다음 경기일로 자동 이동.
@@ -53,8 +57,8 @@ export async function renderWinner(explicitDate: string | null) {
 
   // 인접 경기일 탐색 — prev/next 화살표가 경기 없는 날을 자동 스킵. ±14일 윈도우.
   const [prevLookback, nextLookahead] = await Promise.all([
-    listGamesFromDb({ from: addDays(selectedDate, -14), to: addDays(selectedDate, -1) }).catch(() => []),
-    listGamesFromDb({ from: addDays(selectedDate, 1), to: addDays(selectedDate, 14) }).catch(() => [])
+    listGamesFromDb({ from: addDays(selectedDate, -14), to: addDays(selectedDate, -1) }, cache).catch(() => []),
+    listGamesFromDb({ from: addDays(selectedDate, 1), to: addDays(selectedDate, 14) }, cache).catch(() => [])
   ]);
   const prevDate = prevLookback.length > 0 ? prevLookback[prevLookback.length - 1].date : null;
   const nextDate = nextLookahead.length > 0 ? nextLookahead[0].date : null;
@@ -64,19 +68,17 @@ export async function renderWinner(explicitDate: string | null) {
   // 미래 예측은 "다음 경기일 하나만, 오늘 경기가 모두 끝났을 때(또는 휴식일)" 허용.
   let canEditFuture = false;
   if (isFuture && selectedDate === nextGameDate) {
-    const todayGames = await listGamesFromDb({ from: today, to: today }).catch(() => []);
+    const todayGames = await listGamesFromDb({ from: today, to: today }, cache).catch(() => []);
     canEditFuture = todayGames.every((g) => g.status === "finished" || g.status === "canceled");
   }
 
-  // 이번 주 AI 3개 평균 적중률 — 공개 집계(과거 판정 결과)라 admin 클라이언트로 조회해도 무방.
-  const aiWeeklyResult = await getAiOverallStats(createSupabaseAdminClient(), contestWeekStart()).catch(
-    () => null
-  );
+  // 이번 주 AI 3개 평균 적중률 — 공개 집계(과거 판정 결과). 캐시 클라이언트로 조회해
+  // no-store fetch 가 ISR 을 깨지 않게 한다(admin 은 no-store).
+  const aiWeeklyResult = await getAiOverallStats(cache, contestWeekStart()).catch(() => null);
   const aiWeeklyAccuracy = aiWeeklyResult && aiWeeklyResult.ok ? aiWeeklyResult.stats.accuracy : null;
 
   // 경기별 AI 픽 — 캐시(anon) 클라이언트로 조회해 published_at RLS 를 그대로 태운다.
   //   (공개 전 예측이 새어나가면 안 되므로 admin 클라이언트를 쓰지 않는다. anon 은 RLS 로 published 만 봄.)
-  const cache = createSupabaseCacheClient(60);
   const aiPicksResult = await listAiPredictionsForDate(cache, selectedDate).catch(() => null);
   const aiPicks: AiGamePick[] = [];
   if (aiPicksResult && aiPicksResult.ok) {
