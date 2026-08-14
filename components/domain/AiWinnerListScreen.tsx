@@ -727,7 +727,7 @@ export function AiWinnerListScreen({
                         </Link>
                         {finished ? (
                           <Link
-                            href={`/daily-report?date=${selectedDate}&focus=${g.id}&backHref=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`}
+                            href={`/daily-report/date/${selectedDate}?focus=${g.id}&backHref=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`}
                             className="ai-winner-card-cta ai-winner-card-cta-report"
                             prefetch={false}
                           >

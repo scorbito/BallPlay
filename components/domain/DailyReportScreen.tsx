@@ -29,8 +29,6 @@ type DailyReportScreenProps = {
   isNoGames?: boolean;
   isFailed?: boolean;
   isNoReport?: boolean;
-  focus?: string;
-  backHref?: string;
   reportPublishedAt?: string | null;
 };
 
@@ -55,10 +53,17 @@ export function DailyReportScreen({
   isNoGames = false,
   isFailed: initialIsFailed = false,
   isNoReport: initialIsNoReport = false,
-  focus,
-  backHref,
   reportPublishedAt = null
 }: DailyReportScreenProps) {
+  // focus(펼칠 경기)·backHref 는 페이지가 ISR 캐시라 서버에서 안 읽는다. 클라에서 쿼리스트링으로 읽음.
+  //   useSearchParams 대신 window.location.search — Suspense 경계 없이 본문 정적 프리렌더 유지.
+  const [focus, setFocus] = useState<string | undefined>();
+  const [backHref, setBackHref] = useState<string | undefined>();
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    setFocus(p.get("focus") ?? undefined);
+    setBackHref(p.get("backHref") ?? undefined);
+  }, []);
   const [activeTab, setActiveTab] = useState<"brief" | "games">("brief");
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
   
@@ -95,14 +100,14 @@ export function DailyReportScreen({
   // 이전 날짜 이동 (1일 차감)
   const handlePrevDay = () => {
     const prevDate = offsetDateStr(reportDate, -1);
-    router.push(`/daily-report?date=${prevDate}`);
+    router.push(`/daily-report/date/${prevDate}`);
     setExpandedGame(null);
   };
 
   // 다음 날짜 이동 (1일 가산)
   const handleNextDay = () => {
     const nextDate = offsetDateStr(reportDate, 1);
-    router.push(`/daily-report?date=${nextDate}`);
+    router.push(`/daily-report/date/${nextDate}`);
     setExpandedGame(null);
   };
 

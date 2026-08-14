@@ -104,7 +104,7 @@ export async function answerAiChat(question: string, history: AiChatHistoryMessa
     answer: "지금은 AI 승리팀 예측, 경기 일정/결과, 일일 리포트, 선수 스탯 질문에 답변할 수 있습니다.",
     actions: [
       { label: "오늘 AI 예측 보기", href: `/predict/ai-winner/date/${dateISO}` },
-      { label: "일일 리포트 보기", href: `/daily-report?date=${dateISO}` }
+      { label: "일일 리포트 보기", href: `/daily-report/date/${dateISO}` }
     ]
   };
 }
@@ -188,7 +188,7 @@ async function answerDailyReport(question: string, dateISO: string, history: AiC
     return {
       intent: "daily_report",
       answer: `${dateISO} 기준으로 발행된 일일 리포트를 찾지 못했습니다.`,
-      actions: [{ label: "일일 리포트 보기", href: `/daily-report?date=${dateISO}` }]
+      actions: [{ label: "일일 리포트 보기", href: `/daily-report/date/${dateISO}` }]
     };
   }
 
@@ -211,7 +211,7 @@ async function answerDailyReport(question: string, dateISO: string, history: AiC
   return {
     intent: "daily_report",
     answer,
-    actions: [{ label: "일일 리포트 자세히 보기", href: `/daily-report?date=${reportRow.report_date}` }]
+    actions: [{ label: "일일 리포트 자세히 보기", href: `/daily-report/date/${reportRow.report_date}` }]
   };
 }
 

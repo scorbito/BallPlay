@@ -264,7 +264,7 @@ export function AiWinnerRevealScreen({
         {/* ── 돌려보기 / 경기 리포트 버튼 ── */}
         {finished ? (
           <Link
-            href={`/daily-report?date=${game.gameDate}&focus=${gameId}&backHref=${encodeURIComponent(`/predict/ai-winner/${gameId}`)}`}
+            href={`/daily-report/date/${game.gameDate}?focus=${gameId}&backHref=${encodeURIComponent(`/predict/ai-winner/${gameId}`)}`}
             className="ai-reveal-report-btn"
           >
             경기 분석 리포트 보기
