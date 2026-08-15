@@ -164,14 +164,4 @@ export function kboPlayerUrl(player: FacePlayer): string {
   return `https://www.koreabaseball.com/Record/Player/${path}/Basic.aspx?playerId=${player.id}`;
 }
 
-/**
- * KBO 공식 프로필 사진 주소(94×118).
- *
- * 우리 서버에 복제하지 않고 KBO CDN을 그대로 참조한다(인라인 링크). 사진 파일을 내려받아
- * 재배포하는 것과 달리 원본 서버가 전송 주체로 남는다. 핫링크 차단·Referer 검사가 없고
- * Access-Control-Allow-Origin 도 열려 있다.
- */
-export function kboPlayerPhotoUrl(player: FacePlayer): string {
-  const year = player.y ?? 2026;
-  return `https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/person/middle/${year}/${player.id}.jpg`;
-}
+// 프로필 사진 주소는 lib/kbo/playerPhoto.ts 로 옮겼다(워들 결과 화면과 공용).

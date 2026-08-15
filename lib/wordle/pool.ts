@@ -15,6 +15,11 @@ export type WordlePlayer = {
   teamId: string;
   posGroup: PositionGroup;
   jersey: number;
+  /** KBO playerId — 정답 공개 시 프로필 사진 주소를 만드는 데 쓴다.
+   *  scripts/wordle-fill-player-id.mjs 로 채우며, 매칭 실패한 소수는 없을 수 있다. */
+  pid?: string;
+  /** 사진이 존재하는 시즌. 정답 풀만 확인해 채운다. */
+  py?: number;
 };
 
 const PLAYERS = (guessableData as { players: WordlePlayer[] }).players;

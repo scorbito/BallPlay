@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { Copy, Check, RotateCcw, CalendarDays } from "lucide-react";
 import { TeamBadge } from "@/components/common/TeamBadge";
+import { KboPlayerPhoto } from "@/components/common/KboPlayerPhoto";
 import { getTeam } from "@/lib/constants/teams";
 import { MAX_ATTEMPTS } from "@/lib/wordle/daily";
 import type { WordlePlayer } from "@/lib/wordle/pool";
@@ -74,7 +75,17 @@ export function WordleResultSheet({
       </p>
       <p className="wordle-result-comment">{commentFor(solved, attempts)}</p>
 
+      {/* 정답이 밝혀진 뒤에만 얼굴을 공개한다 — 이름만으로는 "아 그 선수" 하고 넘어가는데,
+          얼굴이 뜨면 확인 욕구가 채워지고 실패했을 때도 다음 판 동기가 된다.
+          원본이 94×118이라 그보다 키우지 않는다. */}
       <div className="wordle-result-answer">
+        <KboPlayerPhoto
+          playerId={answer.pid}
+          name={answer.name}
+          teamId={answer.teamId}
+          year={answer.py}
+          className="wordle-result-answer-photo"
+        />
         <TeamBadge teamId={answer.teamId} size="md" />
         <div className="wordle-result-answer-text">
           <strong>{answer.name}</strong>

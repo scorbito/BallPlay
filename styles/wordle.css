@@ -632,6 +632,16 @@
   border: 1px solid var(--bp-line-soft);
 }
 
+/* 정답 선수 프로필 사진 — KBO 원본이 94×118이라 그보다 키우면 뭉갠다.
+   3:4 비율을 유지하고 shrink 를 막아 이름이 길어져도 찌그러지지 않게 한다. */
+.phone-frame-light .wordle-result-answer-photo {
+  width: 48px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  font-size: 18px;
+}
+
 .phone-frame-light .wordle-result-answer-text {
   display: flex;
   flex-direction: column;

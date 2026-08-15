@@ -14,13 +14,13 @@ import Image from "next/image";
 import { Info, RefreshCw, Share2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
+import { KboPlayerPhoto } from "@/components/common/KboPlayerPhoto";
 import { useAppState } from "@/lib/state/AppState";
 import { trackEvent } from "@/lib/analytics/events";
 import { teams as KBO_TEAMS } from "@/lib/constants/teams";
 import { describeFace, loadFaceApi, loadImageFromFile } from "@/lib/face/detector";
 import {
   findTopMatches,
-  kboPlayerPhotoUrl,
   kboPlayerUrl,
   l2normalize,
   loadFaceIndex,
@@ -39,35 +39,15 @@ function teamShortName(teamId: string): string {
   return KBO_TEAMS.find((item) => item.id === teamId)?.shortName ?? teamId.toUpperCase();
 }
 
-/**
- * KBO 공식 프로필 사진. CDN을 그대로 참조하므로(인라인 링크) 우리 서버에 사본이 남지 않는다.
- * 원본이 94×118이라 표시 크기를 그 이상으로 키우지 않는다 — 늘리면 뭉개져서 비교가 어려워진다.
- * CDN이 막히거나 사진이 없으면 팀 컬러 이니셜로 폴백.
- */
+/** 원본이 94×118이라 표시 크기를 그 이상으로 키우지 않는다 — 늘리면 뭉개져서 비교가 어려워진다. */
 function PlayerPhoto({ player, className = "" }: { player: FacePlayer; className?: string }) {
-  const [failed, setFailed] = useState(false);
-  const color = teamColor(player.team);
-
-  if (failed) {
-    return (
-      <div
-        className={`grid place-items-center text-xl font-extrabold text-white ${className}`}
-        style={{ backgroundColor: color }}
-      >
-        {player.name.slice(0, 1)}
-      </div>
-    );
-  }
-
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- 외부 CDN 인라인 링크. next/image 로 감싸면 우리 서버를 경유해 사본이 생긴다.
-    <img
-      src={kboPlayerPhotoUrl(player)}
-      alt={`${player.name} 프로필 사진`}
-      loading="lazy"
-      onError={() => setFailed(true)}
-      className={`object-cover ${className}`}
-      style={{ backgroundColor: `${color}14` }}
+    <KboPlayerPhoto
+      playerId={player.id}
+      name={player.name}
+      teamId={player.team}
+      year={player.y}
+      className={className}
     />
   );
 }
@@ -382,7 +362,13 @@ export function FaceMatchScreen() {
         />
       </div>
 
-      <ModalShell open={helpOpen} onClose={() => setHelpOpen(false)} title="나와 닮은 선수는?">
+      {/* 워들 게임방법과 같은 중앙 정렬 패널 — 하단 시트보다 읽기 흐름이 자연스럽다. */}
+      <ModalShell
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        title="나와 닮은 선수는?"
+        panelClassName="lineup-confirm-modal-panel"
+      >
         <div className="space-y-3 text-sm leading-relaxed text-slate-600">
           <p>
             올린 사진에서 얼굴 특징을 숫자로 바꾼 뒤, 미리 준비해 둔 KBO 1군 주력 선수 205명의 특징과
