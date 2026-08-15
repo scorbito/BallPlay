@@ -158,7 +158,6 @@ export async function createMatchPostAction(input: CreateMatchPostInput): Promis
 }
 
 export type CreateFreePostInput = {
-  title: string;
   body: string;
   photoUrl?: string | null;
 };
@@ -168,10 +167,8 @@ export async function createFreePostAction(input: CreateFreePostInput): Promise<
   const { data: authData, error: authError } = await ssr.auth.getUser();
   if (authError || !authData.user) throw new Error("로그인이 필요합니다.");
 
-  const title = input.title.trim();
+  // 제목 없는 SNS 형식 — 내용만 작성. 표시는 body 우선.
   const body = input.body.trim();
-  if (!title) throw new Error("제목을 입력해주세요.");
-  if (title.length > 80) throw new Error("제목은 80자 이내로 작성해주세요.");
   if (!body) throw new Error("내용을 입력해주세요.");
   if (body.length > 1000) throw new Error("내용은 1000자 이내로 작성해주세요.");
 
@@ -181,7 +178,7 @@ export async function createFreePostAction(input: CreateFreePostInput): Promise<
     .insert({
       user_id: authData.user.id,
       post_type: "free",
-      title,
+      title: null,
       game_id: null,
       body,
       photo_url: input.photoUrl ?? null,

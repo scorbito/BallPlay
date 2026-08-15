@@ -9,7 +9,6 @@ import { createFreePostAction } from "@/lib/actions/matchTalk";
 import { useAppState } from "@/lib/state/AppState";
 import { uploadUserFile } from "@/lib/supabase/storage-client";
 
-const MAX_TITLE = 80;
 const MAX_BODY = 1000;
 
 type FreePostComposerModalProps = {
@@ -20,7 +19,6 @@ type FreePostComposerModalProps = {
 
 export function FreePostComposerModal({ open, onClose, onCreated }: FreePostComposerModalProps) {
   const { showToast } = useAppState();
-  const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -28,7 +26,6 @@ export function FreePostComposerModal({ open, onClose, onCreated }: FreePostComp
 
   useEffect(() => {
     if (open) return;
-    setTitle("");
     setBody("");
     setPhotoUrl(null);
   }, [open]);
@@ -45,11 +42,10 @@ export function FreePostComposerModal({ open, onClose, onCreated }: FreePostComp
   };
 
   const submit = async () => {
-    if (!title.trim()) return showToast("제목을 입력해주세요.");
     if (!body.trim()) return showToast("내용을 입력해주세요.");
     setSubmitting(true);
     try {
-      const result = await createFreePostAction({ title, body, photoUrl });
+      const result = await createFreePostAction({ body, photoUrl });
       showToast("자유글을 올렸어요.");
       onCreated?.(result.id);
       onClose();
@@ -64,13 +60,7 @@ export function FreePostComposerModal({ open, onClose, onCreated }: FreePostComp
     <ModalShell open={open} title="자유글 작성" onClose={() => !submitting && onClose()} panelClassName="match-talk-modal-panel">
       <div className="match-talk-composer">
         <div className="composer-section">
-          <label className="composer-label" htmlFor="free-post-title">제목</label>
-          <input id="free-post-title" className="composer-input" value={title} maxLength={MAX_TITLE} onChange={(event) => setTitle(event.target.value)} placeholder="제목을 입력해주세요." />
-          <span className="composer-count">{title.length}/{MAX_TITLE}</span>
-        </div>
-        <div className="composer-section">
-          <label className="composer-label" htmlFor="free-post-body">내용</label>
-          <textarea id="free-post-body" className="composer-textarea" value={body} maxLength={MAX_BODY} onChange={(event) => setBody(event.target.value)} placeholder="야구 이야기, 질문, 응원을 자유롭게 남겨보세요." />
+          <textarea id="free-post-body" className="composer-textarea" value={body} maxLength={MAX_BODY} onChange={(event) => setBody(event.target.value)} placeholder="야구 이야기, 질문, 응원을 자유롭게 남겨보세요." aria-label="내용" autoFocus />
           <span className="composer-count">{body.length}/{MAX_BODY}</span>
         </div>
         <div className="composer-section">
