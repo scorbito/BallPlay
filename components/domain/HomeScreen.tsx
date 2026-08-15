@@ -169,6 +169,17 @@ const sections: HomeSection[] = [
         icon: BarChart3,
         iconImage: "/icons/menu/sim-1000.png",
         available: true
+      },
+      {
+        id: "lineup-predict",
+        href: "/play/lineup-predict",
+        title: "라인업 예측",
+        description: "선발 9명과 타순 맞히기",
+        // icon 은 iconImage 로드 실패 시를 위한 폴백.
+        icon: ClipboardCheck,
+        iconImage: "/icons/menu/lineup-predict.png",
+        available: true,
+        badge: "NEW"
       }
     ]
   },
@@ -629,7 +640,9 @@ export function HomeScreen() {
         //   전체 화면에서만 원하는 자리에 놓는다. [placeAfter card id]
         const FLAT_PLACEMENT: Array<{ id: string; after: string }> = [
           { id: "sim-1000", after: "news" }, // 1000판: 예측 탭 소속 + 전체에선 야구 뉴스 뒤
-          { id: "face", after: "winner-predict" } // 닮은 선수: 콘텐츠 탭 소속 + 전체에선 승리팀 예측 뒤
+          { id: "face", after: "winner-predict" }, // 닮은 선수: 콘텐츠 탭 소속 + 전체에선 승리팀 예측 뒤
+          { id: "lineup-predict", after: "face" }, // 라인업 예측: 예측 탭 소속 + 전체에선 닮은 선수 뒤
+          { id: "grid", after: "lineup-predict" } // 퍼펙트 그리드: 콘텐츠 탭 소속 + 전체에선 라인업 예측 뒤
         ];
         FLAT_PLACEMENT.forEach(({ id, after }) => {
           const idx = bottomCards.findIndex((c) => c.id === id);

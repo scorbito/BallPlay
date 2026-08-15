@@ -405,7 +405,14 @@ export function GridScreen() {
           />
         ) : null}
 
-        <ModalShell open={helpOpen} onClose={() => setHelpOpen(false)} closeOnBackdrop title="게임 방법">
+        {/* 워들 게임방법과 같은 중앙 정렬 패널 — 읽는 안내문은 하단 시트보다 가운데가 자연스럽다. */}
+        <ModalShell
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
+          closeOnBackdrop
+          title="게임 방법"
+          panelClassName="lineup-confirm-modal-panel"
+        >
           <div className="grid-help">
             <p>
               가로줄과 세로줄에 팀이 하나씩 있어요. 각 칸에는 <strong>두 팀에서 모두 1군
