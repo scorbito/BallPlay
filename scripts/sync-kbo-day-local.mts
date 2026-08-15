@@ -9,6 +9,7 @@
 //   8. verify daily report is cached (manual agent-authored report; no AI API call here)
 //   9. generate and cache tomorrow's 1000-game simulations
 //  10. on Sundays, verify the just-finished week's weekly report is cached
+//  11. check official KBO player movement list and refresh local rosters when changed
 //
 // Usage:
 //   npm run sync:kbo-day
@@ -24,6 +25,7 @@
 //   npm run sync:kbo-day -- 2026-06-16 --skip-pitcher-logs
 //   npm run sync:kbo-day -- 2026-06-16 --skip-sim1000
 //   npm run sync:kbo-day -- 2026-06-16 --skip-weekly
+//   npm run sync:kbo-day -- 2026-06-16 --skip-player-movements
 //   npm run sync:kbo-day -- 2026-06-21 --force-weekly   (run weekly report for that date's week regardless of weekday)
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -104,7 +106,7 @@ async function getSim1000ExistingState(admin: SupabaseClient, gameDate: string) 
       .from("games")
       .select("id", { count: "exact", head: true })
       .eq("game_date", gameDate)
-      .neq("status", "cancelled"),
+      .neq("status", "canceled"),
     admin
       .from("bp_sim_results")
       .select("game_id", { count: "exact", head: true })
@@ -134,6 +136,7 @@ const skipStandings = args.includes("--skip-standings");
 const skipSchedule = args.includes("--skip-schedule");
 const skipSim1000 = args.includes("--skip-sim1000");
 const skipWeekly = args.includes("--skip-weekly");
+const skipPlayerMovements = args.includes("--skip-player-movements");
 const forceWeekly = args.includes("--force-weekly");
 const scheduleFrom = addDays(targetDate, -1);
 const scheduleTo = addDays(targetDate, 30);
@@ -150,8 +153,17 @@ if (!force && existsSync(completionMarkerPath)) {
 
 loadLocalEnv();
 
+const [{ createSupabaseAdminClient }, { syncPlayerMovementsForDate }] = await Promise.all([
+  import("@/lib/supabase/server"),
+  import("@/lib/server/kbo/syncPlayerMovements")
+]);
+
+const admin = createSupabaseAdminClient();
+const season = Number(targetDate.slice(0, 4));
+
+console.log(`[sync:kbo-day] start date=${targetDate}`);
+
 const [
-  { createSupabaseAdminClient },
   { syncGamesInRange },
   { syncLineupsForDate },
   { syncTeamGameStatsForDate },
@@ -162,9 +174,9 @@ const [
   { upsertRecent10TopPlayers },
   { listGamesFromDb },
   { runDailySimAndUpsert },
-  { getMondayOfDate, formatWeekName }
+  { getMondayOfDate, formatWeekName },
+  { scorePendingLineupPredictions }
 ] = await Promise.all([
-  import("@/lib/supabase/server"),
   import("@/lib/server/kbo/syncGames"),
   import("@/lib/server/kbo/syncLineups"),
   import("@/lib/server/kbo/syncTeamGameStats"),
@@ -175,16 +187,12 @@ const [
   import("@/lib/server/recent10/upsertTopPlayers"),
   import("@/lib/supabase/query-parts/core"),
   import("@/lib/server/sim/runDailySimAndUpsert"),
-  import("@/lib/server/kbo/weeklyReport")
+  import("@/lib/server/kbo/weeklyReport"),
+  import("@/lib/server/lineupPredict/scoreBatch")
 ]);
 
-const admin = createSupabaseAdminClient();
-const season = Number(targetDate.slice(0, 4));
-
-console.log(`[sync:kbo-day] start date=${targetDate}`);
-
 if (!skipGames) {
-  console.log("[sync:kbo-day] 1/7 games");
+  console.log("[sync:kbo-day] 1/11 games");
   const gameResults = await syncGamesInRange(targetDate, targetDate, { delayMs: 200 });
   const gameTotals = gameResults.reduce(
     (acc, result) => ({
@@ -195,11 +203,11 @@ if (!skipGames) {
   );
   console.log("[sync:kbo-day] games", JSON.stringify({ totals: gameTotals, results: gameResults }, null, 2));
 } else {
-  console.log("[sync:kbo-day] 1/7 games skipped");
+  console.log("[sync:kbo-day] 1/11 games skipped");
 }
 
 if (!skipSchedule) {
-  console.log(`[sync:kbo-day] 2/7 upcoming schedule ${scheduleFrom}..${scheduleTo}`);
+  console.log(`[sync:kbo-day] 2/11 upcoming schedule ${scheduleFrom}..${scheduleTo}`);
   const scheduleResults = await syncGamesInRange(scheduleFrom, scheduleTo, { delayMs: 200 });
   const scheduleTotals = scheduleResults.reduce(
     (acc, result) => ({
@@ -210,7 +218,7 @@ if (!skipSchedule) {
   );
   console.log("[sync:kbo-day] schedule", JSON.stringify({ totals: scheduleTotals, results: scheduleResults }, null, 2));
 } else {
-  console.log("[sync:kbo-day] 2/7 upcoming schedule skipped");
+  console.log("[sync:kbo-day] 2/11 upcoming schedule skipped");
 }
 
 const targetGames = await listGamesFromDb({ from: targetDate, to: targetDate });
@@ -221,36 +229,47 @@ if (targetGames.length === 0) {
   blockingIssues.push(`unfinished games remain: ${unfinishedGames.length}/${targetGames.length}`);
 }
 if (!skipLineups) {
-  console.log("[sync:kbo-day] 3/9 lineups");
+  console.log("[sync:kbo-day] 3/11 lineups");
   const lineups = await syncLineupsForDate(targetDate);
   console.log("[sync:kbo-day] lineups", JSON.stringify(lineups, null, 2));
   if (lineups.errors.length > 0) {
     blockingIssues.push(`lineups errors: ${lineups.errors.length}`);
   }
+
+  // 라인업이 들어온 직후에 유저의 라인업 예측을 채점한다. 실제 라인업이 없는 건은
+  // 그대로 남겨두고 다음 실행 때 다시 잡으므로 여러 번 돌려도 안전하다.
+  const scored = await scorePendingLineupPredictions(admin, targetDate);
+  console.log(
+    `[sync:kbo-day] 3/11 lineup predictions scored=${scored.scored} pending=${scored.pending}`
+  );
+  if (scored.errors.length > 0) {
+    // 채점 실패는 재실행으로 복구되므로 완료 마커를 막지 않는다.
+    console.warn("[sync:kbo-day] lineup prediction scoring errors", scored.errors);
+  }
 } else {
-  console.log("[sync:kbo-day] 3/9 lineups skipped");
+  console.log("[sync:kbo-day] 3/11 lineups skipped");
 }
 
 if (!skipTeamStats) {
-  console.log("[sync:kbo-day] 4/9 team game stats");
+  console.log("[sync:kbo-day] 4/11 team game stats");
   const teamStats = await syncTeamGameStatsForDate(targetDate, { gameDelayMs: 2500 });
   console.log("[sync:kbo-day] team game stats", JSON.stringify(teamStats, null, 2));
   if (teamStats.errors.length > 0) {
     blockingIssues.push(`team game stats errors: ${teamStats.errors.length}`);
   }
 } else {
-  console.log("[sync:kbo-day] 4/9 team game stats skipped");
+  console.log("[sync:kbo-day] 4/11 team game stats skipped");
 }
 
 if (!skipPitcherLogs && !skipTeamStats) {
-  console.log("[sync:kbo-day] 5/9 pitcher game logs");
+  console.log("[sync:kbo-day] 5/11 pitcher game logs");
   const pitcherLogs = await backfillPitcherGameLogsFromTeamStats(targetDate, targetDate);
   console.log("[sync:kbo-day] pitcher game logs", JSON.stringify(pitcherLogs, null, 2));
   if (pitcherLogs.sourceRows === 0) {
     blockingIssues.push("pitcher game logs source rows: 0");
   }
 } else {
-  console.log("[sync:kbo-day] 5/9 pitcher game logs skipped");
+  console.log("[sync:kbo-day] 5/11 pitcher game logs skipped");
 }
 
 // The snapshot is for tomorrow's AI prediction. It is refreshed after pitcher logs are finalized.
@@ -263,15 +282,15 @@ if (!skipPitcherLogs && !skipTeamStats) {
 }
 
 if (!skipStandings) {
-  console.log("[sync:kbo-day] 6/9 standings");
+  console.log("[sync:kbo-day] 6/11 standings");
   const standings = await syncStandings(season);
   console.log("[sync:kbo-day] standings", JSON.stringify(standings, null, 2));
 } else {
-  console.log("[sync:kbo-day] 6/9 standings skipped");
+  console.log("[sync:kbo-day] 6/11 standings skipped");
 }
 
 if (!skipStats) {
-  console.log("[sync:kbo-day] 7/9 stats snapshot");
+  console.log("[sync:kbo-day] 7/11 stats snapshot");
   if (!force && await hasStatsSnapshot(admin, targetDate)) {
     console.log(`[sync:kbo-day] stats skipped: snapshot already exists for ${targetDate}`);
   } else {
@@ -284,11 +303,11 @@ if (!skipStats) {
     console.log("[sync:kbo-day] recent10", JSON.stringify(recent10, null, 2));
   }
 } else {
-  console.log("[sync:kbo-day] 7/9 stats snapshot skipped");
+  console.log("[sync:kbo-day] 7/11 stats snapshot skipped");
 }
 
 if (!skipReport) {
-  console.log("[sync:kbo-day] 8/9 daily report");
+  console.log("[sync:kbo-day] 8/11 daily report");
 
   const games = await listGamesFromDb({ from: targetDate, to: targetDate });
   if (games.length === 0) {
@@ -311,11 +330,11 @@ if (!skipReport) {
     }
   }
 } else {
-  console.log("[sync:kbo-day] 8/9 daily report skipped");
+  console.log("[sync:kbo-day] 8/11 daily report skipped");
 }
 
 if (!skipSim1000) {
-  console.log(`[sync:kbo-day] 9/9 sim-1000 date=${sim1000Date}`);
+  console.log(`[sync:kbo-day] 9/11 sim-1000 date=${sim1000Date}`);
   const existingSim = await getSim1000ExistingState(admin, sim1000Date);
 
   if (existingSim.gameCount === 0) {
@@ -355,7 +374,7 @@ if (!skipSim1000) {
     );
   }
 } else {
-  console.log("[sync:kbo-day] 9/9 sim-1000 skipped");
+  console.log("[sync:kbo-day] 9/11 sim-1000 skipped");
 }
 
 if (!skipWeekly) {
@@ -365,7 +384,7 @@ if (!skipWeekly) {
 
   if (targetDow !== 0 && !forceWeekly) {
     console.log(
-      `[sync:kbo-day] 10/10 weekly report skipped: ${targetDate} is not Sunday (week completes Sun). Use --force-weekly to override.`
+      `[sync:kbo-day] 10/11 weekly report skipped: ${targetDate} is not Sunday (week completes Sun). Use --force-weekly to override.`
     );
   } else {
     const { data: existingWeekly } = await admin
@@ -376,17 +395,42 @@ if (!skipWeekly) {
 
     if (existingWeekly && !force && !forceWeekly) {
       console.log(
-        `[sync:kbo-day] 10/10 weekly report skipped: already cached for week ${weekMon}. Use --force-weekly to regenerate.`
+        `[sync:kbo-day] 10/11 weekly report skipped: already cached for week ${weekMon}. Use --force-weekly to regenerate.`
       );
     } else {
-      console.log(`[sync:kbo-day] 10/10 weekly report week=${weekMon} (${formatWeekName(weekMon)})`);
+      console.log(`[sync:kbo-day] 10/11 weekly report week=${weekMon} (${formatWeekName(weekMon)})`);
       console.log(
         `[sync:kbo-day] weekly report pending: run npm run report:weekly:upsert -- ${weekMon} <rankings.json>`
       );
     }
   }
 } else {
-  console.log("[sync:kbo-day] 10/10 weekly report skipped");
+  console.log("[sync:kbo-day] 10/11 weekly report skipped");
+}
+
+if (!skipPlayerMovements) {
+  console.log("[sync:kbo-day] 11/11 player movements");
+  const movements = await syncPlayerMovementsForDate(targetDate);
+  console.log(
+    "[sync:kbo-day] player movements",
+    JSON.stringify(
+      {
+        targetDate: movements.targetDate,
+        checked: movements.checked,
+        movements: movements.movements,
+        rosterRefresh: {
+          attempted: movements.rosterRefresh.attempted,
+          skippedReason: movements.rosterRefresh.skippedReason,
+          stdoutTail: movements.rosterRefresh.stdout.split(/\r?\n/).filter(Boolean).slice(-8),
+          stderr: movements.rosterRefresh.stderr
+        }
+      },
+      null,
+      2
+    )
+  );
+} else {
+  console.log("[sync:kbo-day] 11/11 player movements skipped");
 }
 
 if (blockingIssues.length > 0) {

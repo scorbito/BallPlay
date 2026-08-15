@@ -49,3 +49,7 @@ scripts/
 # 닮은 선수 찾기 임베딩 파이프라인 — 로스터·시즌이 바뀌면 재실행해야 하므로 추적 대상.
 !/scripts/poc-face-fetch-photos.mjs
 !/scripts/poc-face-fill-photo-year.mjs
+# 워들 정답 선수 사진용 playerId 매핑 — 로스터 갱신 시 재실행.
+!/scripts/wordle-fill-player-id.mjs
+# 라인업 예측 채점 보정 — 평소엔 sync:kbo-day 가 자동 처리하고, 놓친 건만 수동 실행.
+!/scripts/score-lineup-predictions.mts

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { formatHandBadge, getPoolGroupLabel, type Player } from "@/lib/types/lineup";
 
 type LineupPoolCardProps = {
@@ -7,6 +8,8 @@ type LineupPoolCardProps = {
   isLocked: boolean;
   onAddPlayer: (player: Player) => void;
   onLockedClick: () => void;
+  /** 헤더 우측 액션(예: 최근 라인업 불러오기). 넘기지 않으면 아무것도 렌더하지 않는다. */
+  headerAction?: ReactNode;
 };
 
 /** 대기 선수 풀 카드 — 모드(타자/투수)에 따라 풀이 달라짐 */
@@ -14,7 +17,8 @@ export function LineupPoolCard({
   poolPlayers,
   isLocked,
   onAddPlayer,
-  onLockedClick
+  onLockedClick,
+  headerAction
 }: LineupPoolCardProps) {
   return (
     <section
@@ -25,6 +29,7 @@ export function LineupPoolCard({
       <div className="lineup-section-head">
         <strong>대기</strong>
         <span className="lineup-section-count">{poolPlayers.length}</span>
+        {headerAction}
       </div>
       {poolPlayers.length === 0 ? (
         <p className="lineup-pool-empty">전원 출장 중</p>
