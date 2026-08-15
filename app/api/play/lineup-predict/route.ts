@@ -49,6 +49,8 @@ async function withScoreDetail(client: SupabaseClient, rows: LineupPredictionRow
       teamId: r.team_id,
       hitCount: r.hit_count ?? 0,
       exactCount: r.exact_count ?? 0,
+      // 지표 도입 전 채점분은 null — 화면에서 수비 항목을 감춘다.
+      positionCount: r.position_count,
       // 실제 라인업이 지워졌다면 상세 없이 숫자만 보여준다.
       detail: actual ? scoreLineupPrediction(r.picks ?? [], actual).detail : null
     };

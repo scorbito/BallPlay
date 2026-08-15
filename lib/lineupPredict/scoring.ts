@@ -22,6 +22,12 @@ export type LineupPick = {
 export type LineupScore = {
   hitCount: number;
   exactCount: number;
+  /**
+   * 수비 위치까지 맞은 수(0~9) — 보너스 지표다.
+   * 지명타자나 좌익/우익 같은 자리는 감독이 상대 선발에 따라 수시로 바꿔서
+   * 맞히기가 매우 어렵다. 그래서 메인 지표(적중)와 분리해 덤으로 둔다.
+   */
+  positionCount: number;
   /** 타순별 판정 — 결과 화면에서 자리마다 표시한다. */
   detail: Array<{
     order: number;
@@ -30,6 +36,8 @@ export type LineupScore = {
     result: "exact" | "hit" | "miss";
     /** 실제 그 타순에 나온 선수 (틀렸을 때 보여준다) */
     actualName: string | null;
+    /** 수비 위치까지 맞았는지. 명단에 없는 선수(miss)는 항상 false. */
+    positionCorrect: boolean;
   }>;
 };
 
@@ -47,6 +55,12 @@ export function scoreLineupPrediction(picks: LineupPick[], actual: LineupPick[])
   const actualByOrder = new Map<number, LineupPick>();
   for (const a of actual) actualByOrder.set(a.order, a);
 
+  /** 실제 라인업에서 그 선수가 맡은 수비 위치 — 타순과 무관하게 비교한다. */
+  const actualPositionOf = (pick: LineupPick): string | null => {
+    const found = actual.find((a) => isSamePlayer(a, pick));
+    return found?.position ?? null;
+  };
+
   // 명단 포함 여부는 "한 번만" 인정한다. 같은 선수를 두 자리에 넣어 hit 를
   // 부풀리는 걸 막으려면 매칭된 실제 선수를 소진시켜야 한다.
   const unmatched = [...actual];
@@ -54,6 +68,7 @@ export function scoreLineupPrediction(picks: LineupPick[], actual: LineupPick[])
   const detail: LineupScore["detail"] = [];
   let hitCount = 0;
   let exactCount = 0;
+  let positionCount = 0;
 
   // 1차: 타순까지 일치하는 자리를 먼저 확정한다. 순서를 뒤로 미루면
   // 같은 선수가 다른 자리에서 hit 로 먼저 소진돼 exact 를 놓칠 수 있다.
@@ -69,11 +84,21 @@ export function scoreLineupPrediction(picks: LineupPick[], actual: LineupPick[])
 
   for (const pick of picks) {
     const actualHere = actualByOrder.get(pick.order) ?? null;
+    // 선발에 든 선수만 수비 위치를 따진다. 명단에 없으면 비교할 대상이 없다.
+    const actualPosition = actualPositionOf(pick);
+    const positionCorrect = Boolean(actualPosition && pick.position && actualPosition === pick.position);
 
     if (exactAt.has(pick.order)) {
       exactCount += 1;
       hitCount += 1;
-      detail.push({ order: pick.order, name: pick.name, result: "exact", actualName: actualHere?.name ?? null });
+      if (positionCorrect) positionCount += 1;
+      detail.push({
+        order: pick.order,
+        name: pick.name,
+        result: "exact",
+        actualName: actualHere?.name ?? null,
+        positionCorrect
+      });
       continue;
     }
 
@@ -81,15 +106,28 @@ export function scoreLineupPrediction(picks: LineupPick[], actual: LineupPick[])
     if (idx > -1) {
       unmatched.splice(idx, 1);
       hitCount += 1;
-      detail.push({ order: pick.order, name: pick.name, result: "hit", actualName: actualHere?.name ?? null });
+      if (positionCorrect) positionCount += 1;
+      detail.push({
+        order: pick.order,
+        name: pick.name,
+        result: "hit",
+        actualName: actualHere?.name ?? null,
+        positionCorrect
+      });
       continue;
     }
 
-    detail.push({ order: pick.order, name: pick.name, result: "miss", actualName: actualHere?.name ?? null });
+    detail.push({
+      order: pick.order,
+      name: pick.name,
+      result: "miss",
+      actualName: actualHere?.name ?? null,
+      positionCorrect: false
+    });
   }
 
   detail.sort((a, b) => a.order - b.order);
-  return { hitCount, exactCount, detail };
+  return { hitCount, exactCount, positionCount, detail };
 }
 
 /** 결과 한 줄 요약 — 공유 문구와 결과 화면 헤드라인에 함께 쓴다. */

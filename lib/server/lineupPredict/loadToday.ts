@@ -17,6 +17,8 @@ export type PredictableTeam = {
   stadium: string | null;
   /** 상대 선발투수. 라인업을 예상할 때 좌/우 매치업이 핵심 단서다. */
   opponentStarter: string | null;
+  /** 우리 팀 선발투수. 예측 대상은 아니고(대개 전날 예고된다) 다이아몬드 마운드 표시용. */
+  ownStarter: string | null;
   /** 직전 경기 선발 타순. 없으면 빈 배열(신규 시즌 초 등).
    *  position 은 다이아몬드 초기 배치에 쓴다 — 채점 대상은 아니다. */
   defaultPicks: Array<LineupPick & { position: string | null }>;
@@ -72,6 +74,7 @@ export async function loadPredictableTeams(
         gameTime: time,
         stadium: game.stadium,
         opponentStarter: isHome ? game.away_starter : game.home_starter,
+        ownStarter: isHome ? game.home_starter : game.away_starter,
         defaultPicks: (recent?.batting ?? [])
           .slice(0, 9)
           .map((b) => ({ order: b.order, name: b.name, rosterId: b.rosterId, position: b.position })),

@@ -9,7 +9,7 @@
 // 페이지는 정적이고 유저별 데이터는 /api/play/lineup-predict 에서 클라이언트가 받는다.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Info, Lock } from "lucide-react";
+import { ChevronDown, ChevronRight, Info, Lock, Share2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModalShell } from "@/components/common/ModalShell";
 import { LineupDiamond } from "@/components/domain/LineupDiamond";
@@ -17,6 +17,7 @@ import { BatterSlotList } from "@/components/domain/lineup/BatterSlotList";
 import { LineupPoolCard } from "@/components/domain/lineup/LineupPoolCard";
 import { PositionPickerModal } from "@/components/domain/lineup/modals/PositionPickerModal";
 import { RecentLineupPickerModal } from "@/components/domain/modals/RecentLineupPickerModal";
+import { ShareLineupModal } from "@/components/domain/modals/ShareLineupModal";
 import type { RecentLineupRow } from "@/lib/supabase/query-parts/bpRecentLineups";
 import { useAppState } from "@/lib/state/AppState";
 import { teams as KBO_TEAMS } from "@/lib/constants/teams";
@@ -40,6 +41,7 @@ type PredictableTeam = {
   gameTime: string;
   stadium: string | null;
   opponentStarter: string | null;
+  ownStarter: string | null;
   defaultPicks: Array<LineupPick & { position?: string | null }>;
   defaultFromDate: string | null;
   locked: boolean;
@@ -50,6 +52,7 @@ type ScoreDetailRow = {
   name: string;
   result: "exact" | "hit" | "miss";
   actualName: string | null;
+  positionCorrect: boolean;
 };
 
 type ScoredResult = {
@@ -57,6 +60,8 @@ type ScoredResult = {
   teamId: string;
   hitCount: number;
   exactCount: number;
+  /** 수비 보너스. 지표 도입 전 채점분은 null. */
+  positionCount: number | null;
   detail: ScoreDetailRow[] | null;
 };
 
@@ -161,6 +166,9 @@ export function LineupPredictScreen() {
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const [resultDetail, setResultDetail] = useState<ScoredResult | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
+  /** 제출 직후 공유를 권하는 시트. 제출 흐름이 끝난 순간이 공유 동기가 가장 크다. */
+  const [shareAskOpen, setShareAskOpen] = useState(false);
 
   const selected = useMemo(
     () => data?.teams.find((t) => t.teamId === selectedTeamId) ?? null,
@@ -176,6 +184,36 @@ export function LineupPredictScreen() {
 
   const editor = useLineupEditor({ players: roster, onToast: showToast });
   const { replaceAll, playersById } = editor;
+
+  /**
+   * 다이아몬드에만 얹는 선발투수. 마운드가 비어 있으면 그라운드가 허전하고,
+   * 좌완/우완 정보가 라인업을 짤 때 실제로 쓰인다.
+   * 예측 대상이 아니라 편집용 slots 와 분리해 표시 전용 배열을 따로 만든다.
+   */
+  const starterPlayer = useMemo(() => {
+    if (!selected?.ownStarter) return null;
+    return (
+      getRoster(selected.teamId).find(
+        (p) => p.primaryPosition === "P" && p.name === selected.ownStarter
+      ) ?? null
+    );
+  }, [selected]);
+
+  const diamondSlots = useMemo(() => {
+    if (!starterPlayer) return editor.slots;
+    return [
+      ...editor.slots,
+      // order 는 다이아몬드 렌더에 쓰이지 않는다. 타순 밖 자리라 10을 넣어 구분한다.
+      { order: 10 as LineupOrder, playerId: starterPlayer.id, position: "P" as Position }
+    ];
+  }, [editor.slots, starterPlayer]);
+
+  const diamondPlayersById = useMemo(() => {
+    if (!starterPlayer) return playersById;
+    const next = new Map(playersById);
+    next.set(starterPlayer.id, starterPlayer);
+    return next;
+  }, [playersById, starterPlayer]);
 
   useEffect(() => {
     let alive = true;
@@ -245,6 +283,48 @@ export function LineupPredictScreen() {
     [roster, rosterByName, replaceAll, showToast]
   );
 
+  /**
+   * 결과 공유 — 이미 끝난 경기라 정답을 가리지 않는다.
+   * 타순별 판정을 3열로 묶어 세 줄에 담는다. 아홉 줄로 늘어놓으면 메신저에서 잘린다.
+   */
+  const shareResult = useCallback(
+    async (result: ScoredResult) => {
+      const head = `⚾ ${formatDate(result.gameDate)} ${shortName(result.teamId)} 라인업 예측`;
+      const summary =
+        `선발 ${result.hitCount}명 적중 · 타순 ${result.exactCount}개 정확` +
+        (result.positionCount !== null ? ` · 수비 ${result.positionCount}` : "");
+
+      const mark = (row: ScoreDetailRow) =>
+        row.result === "exact" ? "✅" : row.result === "hit" ? "🟡" : "⬜";
+      const lines: string[] = [];
+      const detail = result.detail ?? [];
+      for (let i = 0; i < detail.length; i += 3) {
+        lines.push(
+          detail
+            .slice(i, i + 3)
+            .map((row) => `${row.order} ${row.name} ${mark(row)}`)
+            .join("   ")
+        );
+      }
+
+      const text = [head, summary, "", ...lines, "", "야구놀이터 → https://ballnori.com/play/lineup-predict"]
+        .join("\n")
+        .trim();
+
+      try {
+        if (navigator.share) {
+          await navigator.share({ text });
+          return;
+        }
+        await navigator.clipboard.writeText(text);
+        showToast("결과를 복사했어요");
+      } catch {
+        /* 사용자가 공유를 취소한 경우 — 조용히 무시 */
+      }
+    },
+    [showToast]
+  );
+
   const submit = useCallback(async () => {
     if (!data || !selected) return;
     const picks = slotsToPicks(editor.slots, playersById);
@@ -268,6 +348,7 @@ export function LineupPredictScreen() {
         prev ? { ...prev, myPrediction: { game_id: selected.gameId, team_id: selected.teamId, picks } } : prev
       );
       showToast("예측을 저장했어요");
+      setShareAskOpen(true);
     } catch {
       showToast("제출에 실패했어요");
     } finally {
@@ -335,6 +416,12 @@ export function LineupPredictScreen() {
                   <span className="block text-sm font-bold text-slate-900">
                     선발 {data.recentResults[0].hitCount}명 적중 · 타순{" "}
                     {data.recentResults[0].exactCount}개 정확
+                    {data.recentResults[0].positionCount !== null && (
+                      <span className="font-medium text-slate-500">
+                        {" "}
+                        · 수비 {data.recentResults[0].positionCount}
+                      </span>
+                    )}
                   </span>
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
@@ -384,8 +471,8 @@ export function LineupPredictScreen() {
                 {/* 수비 위치 — 마커 두 번 탭으로 두 포지션을 맞바꾼다. */}
                 <section className="lineup-diamond-card">
                   <LineupDiamond
-                    slots={editor.slots}
-                    playersById={playersById}
+                    slots={diamondSlots}
+                    playersById={diamondPlayersById}
                     teamColor={teamColorOf(selected.teamId)}
                     selectedPosition={editor.swapSource}
                     onPositionClick={isLocked ? undefined : editor.diamondPositionClick}
@@ -439,9 +526,17 @@ export function LineupPredictScreen() {
                 )}
 
                 {alreadySubmitted && (
-                  <p className="mt-2 text-center text-[11px] text-slate-400">
-                    제출 완료. 경기가 끝나면 결과를 알려드려요.
-                  </p>
+                  <div className="mt-2 flex items-center justify-center gap-2">
+                    <p className="text-[11px] text-slate-400">제출 완료. 경기가 끝나면 결과를 알려드려요.</p>
+                    <button
+                      type="button"
+                      onClick={() => setShareOpen(true)}
+                      className="flex items-center gap-1 text-[11px] font-bold text-slate-600 underline-offset-2 hover:underline"
+                    >
+                      <Share2 className="h-3 w-3" />
+                      공유
+                    </button>
+                  </div>
                 )}
 
                 {/* 지난 예측 결과 — 채점은 경기 종료 후 마감 sync 때 이뤄진다. */}
@@ -516,6 +611,51 @@ export function LineupPredictScreen() {
         />
       )}
 
+      {/* 라인업 분석의 공유 카드를 그대로 쓴다 — 그라운드 배치를 이미지로 그려준다.
+          투수는 예측 대상이 아니라 빈 배열을 넘긴다. */}
+      {selected && (
+        <ShareLineupModal
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          teamId={selected.teamId}
+          mode="batter"
+          slots={editor.slots}
+          pitcherSlots={[]}
+          playersById={playersById}
+        />
+      )}
+
+      <ModalShell
+        open={shareAskOpen}
+        onClose={() => setShareAskOpen(false)}
+        title="예측을 저장했어요"
+        panelClassName="lineup-confirm-modal-panel"
+      >
+        <div className="space-y-4 text-sm text-slate-600">
+          <p>내가 예측한 라인업을 친구들에게 공유해볼까요?</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShareAskOpen(false)}
+              className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600"
+            >
+              나중에
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShareAskOpen(false);
+                setShareOpen(true);
+              }}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2.5 text-sm font-bold text-white"
+            >
+              <Share2 className="h-4 w-4" />
+              공유하기
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+
       <ModalShell
         open={resetConfirmOpen}
         onClose={() => setResetConfirmOpen(false)}
@@ -556,15 +696,21 @@ export function LineupPredictScreen() {
       >
         {resultDetail && (
           <div className="space-y-3">
-            <div className="flex justify-center gap-8 rounded-xl bg-slate-50 py-3 text-center">
+            <div className="flex justify-center gap-7 rounded-xl bg-slate-50 py-3 text-center">
               <div>
                 <p className="text-xl font-extrabold text-slate-900">{resultDetail.hitCount}</p>
                 <p className="text-[11px] text-slate-500">선발 적중</p>
               </div>
               <div>
                 <p className="text-xl font-extrabold text-slate-900">{resultDetail.exactCount}</p>
-                <p className="text-[11px] text-slate-500">타순까지 정확</p>
+                <p className="text-[11px] text-slate-500">타순까지</p>
               </div>
+              {resultDetail.positionCount !== null && (
+                <div>
+                  <p className="text-xl font-extrabold text-slate-500">{resultDetail.positionCount}</p>
+                  <p className="text-[11px] text-slate-400">수비 보너스</p>
+                </div>
+              )}
             </div>
 
             {resultDetail.detail ? (
@@ -580,6 +726,11 @@ export function LineupPredictScreen() {
                     >
                       {row.name}
                     </span>
+                    {row.positionCorrect && (
+                      <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold text-sky-600">
+                        수비
+                      </span>
+                    )}
                     <span className="ml-auto text-[11px]">
                       {row.result === "exact" && <span className="font-bold text-emerald-600">타순까지 정답</span>}
                       {row.result === "hit" && <span className="font-bold text-amber-600">선발에는 포함</span>}
@@ -597,6 +748,15 @@ export function LineupPredictScreen() {
                 이 경기의 실제 라인업 기록을 찾지 못해 상세를 표시할 수 없어요.
               </p>
             )}
+
+            <button
+              type="button"
+              onClick={() => shareResult(resultDetail)}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white active:scale-[0.99]"
+            >
+              <Share2 className="h-4 w-4" />
+              결과 공유하기
+            </button>
           </div>
         )}
       </ModalShell>

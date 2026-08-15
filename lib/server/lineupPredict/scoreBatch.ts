@@ -67,6 +67,7 @@ export async function scorePendingLineupPredictions(
       .update({
         hit_count: score.hitCount,
         exact_count: score.exactCount,
+        position_count: score.positionCount,
         scored_at: now,
         updated_at: now
       })

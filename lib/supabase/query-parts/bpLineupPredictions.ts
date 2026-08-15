@@ -15,6 +15,8 @@ export type LineupPredictionRow = {
   picks: LineupPick[];
   hit_count: number | null;
   exact_count: number | null;
+  /** 수비 위치 보너스. 이 지표 도입 전에 채점된 행은 null 이다. */
+  position_count: number | null;
   scored_at: string | null;
   created_at: string;
   updated_at: string;
