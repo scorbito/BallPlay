@@ -15,9 +15,11 @@ const PUBLIC_CACHE_HEADERS = {
 export async function GET() {
   const admin = createSupabaseAdminClient();
 
+  // 확정 발표된 주만 노출 — 관리자가 "당첨자 확정"을 누른 주(published_at)만.
   const { data: draw } = await admin
     .from("bp_predict_event_draws")
     .select("week_start_date, week_end_date, winner_nickname, winner_user_id, coupon_winners")
+    .not("published_at", "is", null)
     .order("week_start_date", { ascending: false })
     .limit(1)
     .maybeSingle();

@@ -77,8 +77,8 @@ export default async function PredictionRankingPage() {
       limit: NO_LIMIT
     }),
     getAiByProviderStats(adminClient, weekStart),
-    // 명예의 전당 탭 — 마감된 주의 예측왕 기록. 실패해도 랭킹은 그대로 보여준다.
-    listEventDraws(adminClient).catch(() => [] as EventDraw[])
+    // 명예의 전당 탭 — 확정 발표된 주의 예측왕만. 실패해도 랭킹은 그대로 보여준다.
+    listEventDraws(adminClient, { publishedOnly: true }).catch(() => [] as EventDraw[])
   ]);
 
   // 주간 랭킹에 3개 AI를 각각 기준 행으로 끼워 넣어 적중률순으로 정렬.

@@ -18,7 +18,7 @@ function mmdd(iso: string): string {
 
 export default async function HallOfFamePage() {
   const supabase = createSupabaseCacheClient(300);
-  const draws = await listEventDraws(supabase).catch(() => [] as EventDraw[]);
+  const draws = await listEventDraws(supabase, { publishedOnly: true }).catch(() => [] as EventDraw[]);
 
   // 서수·누적 우승 집계는 적중률 랭킹 탭과 공유(최신순 반환).
   const entries = buildHallOfFame(draws);

@@ -5,6 +5,8 @@ import Link from "next/link";
 import {
   drawWeeklyEventWinnerAction,
   drawCouponWinnersAction,
+  confirmEventDrawAction,
+  unpublishEventDrawAction,
   type DrawWinnerResult,
   type DrawCouponResult
 } from "@/lib/actions/predictEvent";
@@ -58,6 +60,24 @@ export function PredictEventDrawPanel({
   const [result, setResult] = useState<DrawWinnerResult | null>(null);
   const [couponPending, startCouponTransition] = useTransition();
   const [couponResult, setCouponResult] = useState<DrawCouponResult | null>(null);
+  const [publishPending, startPublishTransition] = useTransition();
+  const [publishError, setPublishError] = useState<string | null>(null);
+
+  const runConfirm = () => {
+    setPublishError(null);
+    startPublishTransition(async () => {
+      const res = await confirmEventDrawAction(weekStartISO);
+      if (!res.ok) setPublishError(res.error);
+    });
+  };
+
+  const runUnpublish = () => {
+    setPublishError(null);
+    startPublishTransition(async () => {
+      const res = await unpublishEventDrawAction(weekStartISO);
+      if (!res.ok) setPublishError(res.error);
+    });
+  };
 
   const runDraw = () => {
     setResult(null);
@@ -218,6 +238,72 @@ export function PredictEventDrawPanel({
           )
         ) : null}
       </div>
+
+      {/* ── 당첨자 확정(공개) — 추첨만으론 공개 안 되고, 확정을 눌러야 발표 페이지에 올라간다 ── */}
+      {existingDraw && (existingDraw.winnerUserId || existingDraw.couponWinners.length > 0) ? (
+        <div
+          style={{
+            ...box,
+            background: existingDraw.publishedAt ? "#ecfdf5" : "#fff7ed",
+            borderColor: existingDraw.publishedAt ? "#a7f3d0" : "#fed7aa"
+          }}
+        >
+          <div style={{ fontWeight: 800, marginBottom: 6, color: existingDraw.publishedAt ? "#059669" : "#c2410c" }}>
+            {existingDraw.publishedAt ? "✅ 확정됨 — 당첨자 페이지 공개 중" : "⚠️ 미확정 — 아직 공개되지 않음"}
+          </div>
+          {existingDraw.publishedAt ? (
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>
+              확정 시각: {new Date(existingDraw.publishedAt).toLocaleString("ko-KR")}
+            </div>
+          ) : (
+            <div style={{ fontSize: 13, color: "#475569", marginBottom: 10 }}>
+              추첨 결과는 저장됐지만 공개 페이지엔 안 보입니다. 확정하면 발표됩니다.
+            </div>
+          )}
+          {publishError ? (
+            <div style={{ color: "#dc2626", fontWeight: 700, marginBottom: 8 }}>{publishError}</div>
+          ) : null}
+          {existingDraw.publishedAt ? (
+            <button
+              type="button"
+              onClick={runUnpublish}
+              disabled={publishPending}
+              style={{
+                width: "100%",
+                padding: "10px 16px",
+                borderRadius: 12,
+                border: "1px solid #cbd5e1",
+                background: "#fff",
+                color: "#475569",
+                fontWeight: 800,
+                fontSize: 14,
+                cursor: "pointer"
+              }}
+            >
+              {publishPending ? "처리 중..." : "확정 취소 (공개 내리기)"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={runConfirm}
+              disabled={publishPending}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: 12,
+                border: 0,
+                background: "#059669",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: 15,
+                cursor: "pointer"
+              }}
+            >
+              {publishPending ? "확정 중..." : "당첨자 확정하고 공개하기"}
+            </button>
+          )}
+        </div>
+      ) : null}
 
       {/* 자격자 명단 */}
       <div style={box}>

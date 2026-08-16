@@ -57,6 +57,8 @@ export type EventDraw = {
   /** 외부(카톡/이메일)로 이미 지급 완료 처리한 당첨자 user_id 목록 (패널 표시용). */
   couponIssuedExternal: string[];
   drawnAt: string;
+  /** 관리자가 "당첨자 확정"을 누른 시각. null 이면 미확정 → 공개 페이지에 노출 안 됨. */
+  publishedAt: string | null;
 };
 
 /** 쿠폰(참여 보상) 추첨 풀 최소 예측 경기 수. */
@@ -314,15 +316,33 @@ export async function isWeekFullyIssued(client: SupabaseClient, draw: EventDraw)
   return expectedIds.every((id) => delivered.has(id));
 }
 
-export async function listEventDraws(client: SupabaseClient): Promise<EventDraw[]> {
-  const { data, error } = await client
+const EVENT_DRAW_BASE_COLS =
+  "week_start_date,week_end_date,game_count,threshold,ai_avg_accuracy,qualifier_count,participant_count,winner_user_id,winner_nickname,winner_total,winner_rate,coupon_winners,coupon_issued_external,drawn_at";
+
+export async function listEventDraws(
+  client: SupabaseClient,
+  opts?: { publishedOnly?: boolean }
+): Promise<EventDraw[]> {
+  let query = client
     .from("bp_predict_event_draws")
-    .select(
-      "week_start_date,week_end_date,game_count,threshold,ai_avg_accuracy,qualifier_count,participant_count,winner_user_id,winner_nickname,winner_total,winner_rate,coupon_winners,coupon_issued_external,drawn_at"
-    )
+    .select(`${EVENT_DRAW_BASE_COLS},published_at`)
     .order("week_start_date", { ascending: false });
-  if (error) return [];
-  return (data ?? []).map((r: Record<string, unknown>) => ({
+  // 공개 페이지는 확정(published_at)된 주만. 관리자는 전체(미확정 포함).
+  if (opts?.publishedOnly) query = query.not("published_at", "is", null);
+  const { data, error } = await query;
+  let rows: Record<string, unknown>[] = (data ?? []) as Record<string, unknown>[];
+  if (error) {
+    // published_at 컬럼 미적용(add-bp-predict-event-draws-published.sql 실행 전) 폴백.
+    //   publishedOnly 면 아직 확정분이 없는 것과 동일 → 빈 목록(공개 노출 안 함).
+    if (opts?.publishedOnly) return [];
+    const fallback = await client
+      .from("bp_predict_event_draws")
+      .select(EVENT_DRAW_BASE_COLS)
+      .order("week_start_date", { ascending: false });
+    if (fallback.error) return [];
+    rows = (fallback.data ?? []) as Record<string, unknown>[];
+  }
+  return rows.map((r) => ({
     weekStartDate: String(r.week_start_date),
     weekEndDate: String(r.week_end_date),
     gameCount: Number(r.game_count ?? 0),
@@ -338,6 +358,7 @@ export async function listEventDraws(client: SupabaseClient): Promise<EventDraw[
     couponIssuedExternal: Array.isArray(r.coupon_issued_external)
       ? (r.coupon_issued_external as unknown[]).map((v) => String(v))
       : [],
-    drawnAt: String(r.drawn_at)
+    drawnAt: String(r.drawn_at),
+    publishedAt: r.published_at ? String(r.published_at) : null
   }));
 }

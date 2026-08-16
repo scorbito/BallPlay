@@ -69,7 +69,9 @@ export async function drawWeeklyEventWinnerAction(weekStartISO: string): Promise
           winner_correct: winner.correct,
           winner_rate: winner.rate,
           drawn_by: adminUserId,
-          drawn_at: new Date().toISOString()
+          drawn_at: new Date().toISOString(),
+          // 추첨/재추첨은 항상 "미확정"으로 — 관리자가 확정을 눌러야 공개된다.
+          published_at: null
         },
         { onConflict: "week_start_date" }
       );
@@ -134,7 +136,9 @@ export async function drawCouponWinnersAction(weekStartISO: string): Promise<Dra
           participant_count: contest.participantCount,
           coupon_winners: winners,
           drawn_by: adminUserId,
-          drawn_at: new Date().toISOString()
+          drawn_at: new Date().toISOString(),
+          // 쿠폰 재추첨도 미확정으로 되돌린다 — 확정을 다시 눌러야 공개.
+          published_at: null
         },
         { onConflict: "week_start_date" }
       );
@@ -144,5 +148,63 @@ export async function drawCouponWinnersAction(weekStartISO: string): Promise<Dra
     return { ok: true, winners, participantCount: contest.participantCount };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "쿠폰 추첨에 실패했습니다." };
+  }
+}
+
+export type PublishResult = { ok: true; publishedAt: string } | { ok: false; error: string };
+
+/**
+ * 당첨자 확정 → 공개. published_at 을 채워 공개 페이지(/event/winners·명예의 전당·홈 스트립)에 노출한다.
+ * 추첨만으로는 공개되지 않고, 이 버튼을 눌러야 발표된다.
+ */
+export async function confirmEventDrawAction(weekStartISO: string): Promise<PublishResult> {
+  try {
+    await requireAdminUserId();
+    const admin = createSupabaseAdminClient();
+
+    // 당첨자(메인 또는 쿠폰)가 있어야 확정 가능.
+    const { data: row } = await admin
+      .from("bp_predict_event_draws")
+      .select("winner_user_id,coupon_winners")
+      .eq("week_start_date", weekStartISO)
+      .maybeSingle();
+    if (!row) return { ok: false, error: "먼저 추첨을 진행해주세요." };
+    const hasWinner =
+      Boolean(row.winner_user_id) || (Array.isArray(row.coupon_winners) && row.coupon_winners.length > 0);
+    if (!hasWinner) return { ok: false, error: "당첨자가 없습니다. 먼저 추첨해주세요." };
+
+    const publishedAt = new Date().toISOString();
+    const { error } = await admin
+      .from("bp_predict_event_draws")
+      .update({ published_at: publishedAt })
+      .eq("week_start_date", weekStartISO);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath("/admin/predict-event");
+    revalidatePath("/event/winners");
+    revalidatePath("/event/hall-of-fame");
+    return { ok: true, publishedAt };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "확정에 실패했습니다." };
+  }
+}
+
+/** 확정 취소 → 공개 페이지에서 다시 숨김(published_at = null). */
+export async function unpublishEventDrawAction(weekStartISO: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUserId();
+    const admin = createSupabaseAdminClient();
+    const { error } = await admin
+      .from("bp_predict_event_draws")
+      .update({ published_at: null })
+      .eq("week_start_date", weekStartISO);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath("/admin/predict-event");
+    revalidatePath("/event/winners");
+    revalidatePath("/event/hall-of-fame");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "확정 취소에 실패했습니다." };
   }
 }

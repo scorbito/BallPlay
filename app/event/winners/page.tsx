@@ -18,7 +18,7 @@ function mmdd(iso: string): string {
 
 export default async function PredictKingWinnersPage() {
   const supabase = createSupabaseCacheClient(300);
-  const draws = await listEventDraws(supabase).catch(() => [] as EventDraw[]);
+  const draws = await listEventDraws(supabase, { publishedOnly: true }).catch(() => [] as EventDraw[]);
   // 실제로 추첨된 주(당첨자 있음)만.
   const drawn = draws.filter((d) => d.winnerUserId || d.couponWinners.length > 0);
   const latest = drawn[0] ?? null;
