@@ -16,6 +16,9 @@ export const dynamic = "force-dynamic";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** 다음 경기일을 찾을 때 며칠까지 앞을 볼지. 월요일 휴식일·올스타 브레이크를 넘길 만큼. */
+const LOOKAHEAD_DAYS = 7;
+
 /** KST 오늘 날짜. 서버 타임존과 무관하게 계산한다. */
 function todayKST(): string {
   return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -76,16 +79,22 @@ export async function GET(req: NextRequest) {
   let teams = await load(date);
   if (!teams) return NextResponse.json({ error: "경기 정보를 불러오지 못했습니다." }, { status: 500 });
 
-  // 날짜를 지정하지 않았는데 오늘 경기가 전부 마감(또는 없음)이면 다음 날로 넘긴다.
+  // 날짜를 지정하지 않았는데 오늘 경기가 전부 마감(또는 없음)이면 다음 경기일로 넘긴다.
   // 저녁 경기가 시작된 뒤 들어온 유저에게 빈 화면만 보여주지 않기 위해서다.
+  //
+  // 하루만 보면 안 된다 — 월요일은 정기 휴식일이라 경기가 아예 없고, 우천 취소나
+  // 올스타 브레이크로 며칠씩 비기도 한다. 다음 경기가 나올 때까지 찾는다.
   if (!dateParam && teams.every((t) => t.locked)) {
-    const next = new Date(`${date}T00:00:00Z`);
-    next.setUTCDate(next.getUTCDate() + 1);
-    const nextDate = next.toISOString().slice(0, 10);
-    const nextTeams = await load(nextDate);
-    if (nextTeams && nextTeams.some((t) => !t.locked)) {
-      date = nextDate;
-      teams = nextTeams;
+    const cursor = new Date(`${date}T00:00:00Z`);
+    for (let i = 0; i < LOOKAHEAD_DAYS; i += 1) {
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+      const nextDate = cursor.toISOString().slice(0, 10);
+      const nextTeams = await load(nextDate);
+      if (nextTeams && nextTeams.some((t) => !t.locked)) {
+        date = nextDate;
+        teams = nextTeams;
+        break;
+      }
     }
   }
 
