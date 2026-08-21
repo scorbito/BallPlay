@@ -982,15 +982,16 @@ export function WinnerPredictScreen({
                         {users ? (
                           <span className="predict-row-ai-users">
                             <Users size={12} aria-hidden />
+                            {/* 카드 팀 순서(원정 왼쪽 · 홈 오른쪽)와 동일하게 원정 먼저. */}
                             <span className="predict-row-ai-votes">유저</span>
-                            <span className="predict-row-ai-team">
-                              {getTeam(game.homeTeamId).shortName}
-                            </span>
-                            <span className="predict-row-ai-votes">{users.homeCount}명 :</span>
                             <span className="predict-row-ai-team">
                               {getTeam(game.awayTeamId).shortName}
                             </span>
-                            <span className="predict-row-ai-votes">{users.awayCount}명</span>
+                            <span className="predict-row-ai-votes">{users.awayCount}명 :</span>
+                            <span className="predict-row-ai-team">
+                              {getTeam(game.homeTeamId).shortName}
+                            </span>
+                            <span className="predict-row-ai-votes">{users.homeCount}명</span>
                           </span>
                         ) : null}
                         <span className="predict-row-ai-trail">
