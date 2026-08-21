@@ -12,6 +12,8 @@ export type RawGame = {
   awayScore: number | null;
   status: "scheduled" | "in_progress" | "finished" | "canceled";
   innings: number | null;
+  /** 진행 중 경기의 초(top)/말(bottom). 그 외(예정·종료)엔 null. */
+  inningHalf: "top" | "bottom" | null;
   // KBO 공식 응답에 같이 오는 선발 투수 이름. 미발표 시 null.
   // 필드명은 KBO ASMX 응답 컨벤션 따라 여러 candidate를 fallback으로 try.
   homeStarter: string | null;
@@ -122,6 +124,9 @@ export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
           : status === "in_progress" && inningRaw > 0
             ? inningRaw
             : null,
+      // GAME_TB_SC: "T"(초/top) · "B"(말/bottom). 진행 중일 때만 의미.
+      inningHalf:
+        status === "in_progress" ? (String(g.GAME_TB_SC ?? "T") === "B" ? "bottom" : "top") : null,
       homeStarter: homeStarterRaw || null,
       awayStarter: awayStarterRaw || null
     });
@@ -169,11 +174,13 @@ export async function fetchNaverGames(date: KboDateInput): Promise<RawGame[]> {
       ? parseInt($row.find(".num_lft").text().trim() || "0", 10)
       : null;
 
-    // "3회초", "5회말" 등에서 회차 추출
+    // "3회초", "5회말" 등에서 회차·초말 추출
     let liveInnings: number | null = null;
+    let liveHalf: "top" | "bottom" | null = null;
     if (status === "in_progress") {
       const inningMatch = stateText.match(/(\d+)\s*회/);
       if (inningMatch) liveInnings = parseInt(inningMatch[1], 10);
+      liveHalf = stateText.includes("말") ? "bottom" : "top";
     }
 
     games.push({
@@ -187,6 +194,7 @@ export async function fetchNaverGames(date: KboDateInput): Promise<RawGame[]> {
       awayScore,
       status,
       innings: status === "finished" ? 9 : liveInnings,
+      inningHalf: liveHalf,
       // Naver HTML엔 선발 안 노출. KBO API 폴백으로만 가능 → null.
       homeStarter: null,
       awayStarter: null

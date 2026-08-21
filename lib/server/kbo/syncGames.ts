@@ -24,6 +24,7 @@ function toRow(game: RawGame) {
     away_score: game.awayScore,
     status: game.status,
     innings: game.innings,
+    inning_half: game.inningHalf,
     home_starter: game.homeStarter,
     away_starter: game.awayStarter,
     starter_fetched_at: new Date().toISOString()
@@ -87,6 +88,7 @@ export async function syncGamesForDate(date: KboDateInput): Promise<SyncResult> 
       away_score: row.away_score,
       status: row.status,
       innings: row.innings,
+      inning_half: row.inning_half,
       starter_fetched_at: new Date().toISOString()
     };
     if (isKnownStadium(row.stadium)) payload.stadium = row.stadium;

@@ -34,6 +34,7 @@ function toGame(row: {
   away_score: number | null;
   status: GameRecord["status"];
   innings: number | null;
+  inning_half?: string | null;
   home_starter?: string | null;
   away_starter?: string | null;
 }): GameRecord {
@@ -48,6 +49,7 @@ function toGame(row: {
     awayScore: row.away_score ?? undefined,
     status: row.status,
     innings: row.innings,
+    inningHalf: row.inning_half === "top" || row.inning_half === "bottom" ? row.inning_half : null,
     homeStarter: row.home_starter ?? null,
     awayStarter: row.away_starter ?? null
   };
@@ -106,7 +108,8 @@ export async function listGamesFromDb(
   // 선발 컬럼 포함 select — add-games-starters.sql 적용 전이면 42703(undefined_column)으로 실패하므로
   // 그 경우 기본 컬럼만으로 fallback. SQL 적용 후엔 fallback 분기 안 탐.
   const baseCols = "id,game_date,game_time,stadium,home_team_id,away_team_id,home_score,away_score,status,innings";
-  const withStarterCols = `${baseCols},home_starter,away_starter`;
+  // inning_half·선발 컬럼 포함. 컬럼 미적용 시 42703 → baseCols 로 fallback(inning_half=null).
+  const withStarterCols = `${baseCols},inning_half,home_starter,away_starter`;
 
   const runQuery = async (cols: string) => {
     let q = supabase

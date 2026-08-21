@@ -35,6 +35,9 @@ export type AiWinnerGame = {
   homeScore: number | null;
   awayScore: number | null;
   status: GameStatus;
+  /** 진행 중 경기의 현재 이닝 숫자·초말 (라이브). 그 외 null. */
+  innings: number | null;
+  inningHalf: "top" | "bottom" | null;
   predictions: BpAiPredictionRow[];
 };
 
@@ -575,12 +578,28 @@ export function AiWinnerListScreen({
                 // AI 예측의 적중 여부만 teaser 로 가린다.
                 const showScoreInline = g.homeScore !== null && g.awayScore !== null;
                 const timeLabel = formatGameTime(g.gameTime);
+                // 경기전 / 진행 중 이닝(N회초·말) / 경기종료.
+                const liveStatusLabel =
+                  g.status === "in_progress"
+                    ? g.innings
+                      ? `${g.innings}회${g.inningHalf === "bottom" ? "말" : "초"}`
+                      : "진행 중"
+                    : g.status === "finished"
+                      ? "경기종료"
+                      : g.status === "canceled"
+                        ? null
+                        : "경기전";
 
                 return (
                   <li key={g.id} className="ai-winner-game-card">
                     <div className="ai-winner-game-row">
                       <header className="ai-winner-game-head">
                         {timeLabel ? <span className="ai-winner-game-time">{timeLabel}</span> : null}
+                        {liveStatusLabel ? (
+                          <span className={`ai-winner-game-status ai-winner-game-status-${g.status}`}>
+                            {liveStatusLabel}
+                          </span>
+                        ) : null}
                         {shouldShowStadium(g.stadium) ? (
                           <span className="ai-winner-game-stadium">{g.stadium}</span>
                         ) : null}

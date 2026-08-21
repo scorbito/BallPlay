@@ -48,7 +48,9 @@ export async function GET(req: NextRequest) {
     id: g.id,
     homeScore: g.homeScore ?? null,
     awayScore: g.awayScore ?? null,
-    status: g.status
+    status: g.status,
+    innings: g.innings ?? null,
+    inningHalf: g.inningHalf ?? null
   }));
   const allFinished =
     payload.length > 0 && payload.every((g) => g.status === "finished" || g.status === "canceled");

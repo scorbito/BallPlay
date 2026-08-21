@@ -10,7 +10,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type LiveFields = { homeScore: number | null; awayScore: number | null; status: string };
-type LiveResponse = { games?: Array<{ id: string } & LiveFields> };
+type LiveGame = { id: string } & LiveFields & {
+  innings?: number | null;
+  inningHalf?: "top" | "bottom" | null;
+};
+type LiveResponse = { games?: LiveGame[] };
 
 const CLIENT_THROTTLE_MS = 60_000;
 const POLL_MS = 60_000;
@@ -50,7 +54,14 @@ export function useLiveGames<T extends { id: string } & LiveFields>(
         prev.map((g) => {
           const live = byId.get(g.id);
           return live
-            ? ({ ...g, homeScore: live.homeScore, awayScore: live.awayScore, status: live.status } as T)
+            ? ({
+                ...g,
+                homeScore: live.homeScore,
+                awayScore: live.awayScore,
+                status: live.status,
+                innings: live.innings ?? null,
+                inningHalf: live.inningHalf ?? null
+              } as T)
             : g;
         })
       );

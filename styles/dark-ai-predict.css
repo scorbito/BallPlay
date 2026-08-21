@@ -339,6 +339,30 @@
   color: var(--bp-text-muted);
 }
 
+/* 경기 상태 칩 — 경기전 / N회초·말(진행중) / 경기종료 */
+.phone-frame-light .ai-winner-game-status {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  line-height: 1.4;
+  background: rgba(20, 30, 50, 0.06);
+  color: var(--bp-text-secondary);
+}
+.phone-frame-light .ai-winner-game-status-in_progress {
+  background: #fee2e2;
+  color: #dc2626;
+  animation: ai-winner-live-pulse 1.6s ease-in-out infinite;
+}
+.phone-frame-light .ai-winner-game-status-finished {
+  background: rgba(20, 30, 50, 0.08);
+  color: var(--bp-text-muted);
+}
+@keyframes ai-winner-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
 /* 팀 블록 내부도 1fr · auto · 1fr 로 — 홈팀은 우측 정렬, vs 가운데, 어웨이팀은 좌측 정렬.
    팀명 길이가 달라도 vs 는 항상 팀 블록 정중앙. */
 .phone-frame-light .ai-winner-game-teams {

@@ -181,12 +181,17 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
 
   // 공개 게이트: 그 날의 모든 경기가 3개 AI 예측을 다 갖추면 공개. (운영자 발행 전 미리보기 없음)
   const AI_PROVIDER_COUNT = 3;
-  const predictionsPublished =
+  const allAiReady =
     gamesForDate.length > 0 &&
     gamesForDate.every((g) => {
       const ps = predictionsByGameId.get(g.id) ?? [];
       return new Set(ps.map((p) => p.ai_provider)).size >= AI_PROVIDER_COUNT;
     });
+  // 경기가 시작(진행중/종료)되면 3개 AI 대기와 무관하게 자동으로 공개한다.
+  const anyGameStarted = gamesForDate.some(
+    (g) => g.status === "in_progress" || g.status === "finished"
+  );
+  const predictionsPublished = allAiReady || anyGameStarted;
 
   const gameCards: AiWinnerGame[] = gamesForDate.map((g) => {
     const rawPredictions = predictionsByGameId.get(g.id) ?? [];
@@ -217,6 +222,8 @@ export async function renderAiWinnerList(explicitDateParam: string | null) {
       homeScore: g.homeScore ?? null,
       awayScore: g.awayScore ?? null,
       status: g.status,
+      innings: g.innings ?? null,
+      inningHalf: g.inningHalf ?? null,
       predictions: enriched
     };
   });
