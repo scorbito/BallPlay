@@ -598,8 +598,9 @@ export function AiWinnerListScreen({
 
                 return (
                   <li key={g.id} className="ai-winner-game-card">
-                    <header className="ai-winner-game-head">
-                      <span className="ai-winner-game-head-left">
+                    <div className="ai-winner-game-row">
+                      {/* 왼쪽: 상태/시간 (하나만) */}
+                      <header className="ai-winner-game-head">
                         {liveStatusLabel ? (
                           <span className={`ai-winner-game-status ai-winner-game-status-${g.status}`}>
                             {liveStatusLabel}
@@ -607,14 +608,7 @@ export function AiWinnerListScreen({
                         ) : timeLabel ? (
                           <span className="ai-winner-game-time">{timeLabel}</span>
                         ) : null}
-                      </span>
-                      {shouldShowStadium(g.stadium) ? (
-                        <span className="ai-winner-game-stadium">{g.stadium}</span>
-                      ) : null}
-                    </header>
-
-                    <div className="ai-winner-game-row">
-                      <span aria-hidden />
+                      </header>
                       <div className="ai-winner-game-teams">
                         {/* 홈팀 — 뱃지 · 팀명 · 점수(있을 때) */}
                         <div className="ai-winner-team">
@@ -650,6 +644,9 @@ export function AiWinnerListScreen({
                               }%`
                             : `${home.shortName} ${summary.homePct}%`}
                         </span>
+                      ) : shouldShowStadium(g.stadium) ? (
+                        // 오른쪽 끝: 의견 요약이 없을 때만 구장 표시 (한 줄, 공간 낭비 없음)
+                        <span className="ai-winner-game-stadium">{g.stadium}</span>
                       ) : null}
                     </div>
 
