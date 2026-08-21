@@ -10,6 +10,7 @@ import { TeamBadge } from "@/components/common/TeamBadge";
 import { getTeam } from "@/lib/constants/teams";
 import { cancellationReasonFor } from "@/lib/utils/cancellationReason";
 import { trackEvent } from "@/lib/analytics/events";
+import { useLiveGames } from "@/lib/hooks/useLiveGames";
 import { VirtualMatchButton } from "@/components/domain/stadium/VirtualMatchButton";
 import type { GameStatus } from "@/lib/types/api-contracts";
 import aiClaudeSrc from "@/data/Images/ai_claude.png";
@@ -303,7 +304,7 @@ export function AiWinnerListScreen({
   published,
   showWeeklyPreview = false,
   weeklySeries = [],
-  games,
+  games: gamesProp,
   nextGameDate,
   overallStats,
   providerStats,
@@ -311,6 +312,8 @@ export function AiWinnerListScreen({
   weeklyProviderStats,
   locked = false
 }: Props) {
+  // 오늘 경기는 보는 동안 라이브 스코어로 갱신(진행 중일 때만). 나머지 렌더는 games 를 그대로 사용.
+  const games = useLiveGames(selectedDate, gamesProp, isToday);
   const weeklyProviderByName = new Map<AiProvider, AiProviderStats>();
   for (const p of weeklyProviderStats) weeklyProviderByName.set(p.ai_provider, p);
   // 로그인 유도 링크 — 로그인 후 현재 날짜의 AI 예측으로 복귀.

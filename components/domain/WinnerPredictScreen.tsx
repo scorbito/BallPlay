@@ -8,6 +8,7 @@
 // 디자인: 일정 페이지처럼 컴팩트한 1줄 행 — 5경기가 한 화면에 다 보이도록.
 
 import { Fragment, useCallback, useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
+import { useLiveGames } from "@/lib/hooks/useLiveGames";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Bot, Check, ChevronLeft, ChevronRight, Crown, Info, Play, Timer, Users, X } from "lucide-react";
@@ -284,14 +285,17 @@ export function WinnerPredictScreen({
     };
   }, [selectedDateISO]);
 
+  // 오늘 경기는 사용자가 보는 동안 라이브 스코어로 갱신(진행 중일 때만, 전 경기 종료 시 중단).
+  const liveShellGames = useLiveGames(selectedDateISO, shellGames, isToday);
+
   // 공개 셸 + 내 픽 병합 = 렌더용 games. 기존 렌더 본문은 game.isJudged/isCorrect 를 그대로 읽는다.
   const games = useMemo(
     () =>
-      shellGames.map((g) => {
+      liveShellGames.map((g) => {
         const mp = myPicks[g.id];
         return mp ? { ...g, ...mp } : g;
       }),
-    [shellGames, myPicks]
+    [liveShellGames, myPicks]
   );
   const dateStats = statsData.date;
   const weekStats = statsData.week;
