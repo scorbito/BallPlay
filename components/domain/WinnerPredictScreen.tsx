@@ -97,6 +97,8 @@ type UserPickSummary = {
   majorityTeamId: string | null;
   /** 다수 선택 비율(%) */
   majorityPct: number;
+  /** 다수 선택 팀 인원수 */
+  majorityCount: number;
 };
 
 /** 홈/원정 픽 수만으로 다수 요약. 표본이 적으면 null → 화면에서 유저 파트를 생략. */
@@ -110,10 +112,11 @@ function summarizeUserPicks(
   const away = tally.teams[awayTeamId] ?? 0;
   const total = home + away;
   if (total < MIN_TALLY_SAMPLE) return null;
-  if (home === away) return { majorityTeamId: null, majorityPct: 50 };
+  if (home === away) return { majorityTeamId: null, majorityPct: 50, majorityCount: home };
   return {
     majorityTeamId: home > away ? homeTeamId : awayTeamId,
-    majorityPct: Math.round((Math.max(home, away) / total) * 100)
+    majorityPct: Math.round((Math.max(home, away) / total) * 100),
+    majorityCount: Math.max(home, away)
   };
 }
 
@@ -978,9 +981,14 @@ export function WinnerPredictScreen({
                                 : "유저 50:50"}
                             </span>
                             {users.majorityTeamId ? (
-                              <span className="predict-row-ai-team">
-                                {getTeam(users.majorityTeamId).shortName}
-                              </span>
+                              <>
+                                <span className="predict-row-ai-team">
+                                  {getTeam(users.majorityTeamId).shortName}
+                                </span>
+                                <span className="predict-row-ai-votes">
+                                  ({users.majorityCount}명)
+                                </span>
+                              </>
                             ) : null}
                           </span>
                         ) : null}
