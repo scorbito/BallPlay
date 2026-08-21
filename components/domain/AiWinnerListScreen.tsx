@@ -586,7 +586,7 @@ export function AiWinnerListScreen({
                 // AI 예측의 적중 여부만 teaser 로 가린다.
                 const showScoreInline = g.homeScore !== null && g.awayScore !== null;
                 const timeLabel = formatGameTime(g.gameTime);
-                // 경기전 / 진행 중 이닝(N회초·말) / 경기종료.
+                // 하나만 표시 — 경기전: 시간 / 진행 중: N회초·말 / 종료: 경기종료. (시간과 상태 동시 노출 금지)
                 const liveStatusLabel =
                   g.status === "in_progress"
                     ? g.innings
@@ -594,19 +594,18 @@ export function AiWinnerListScreen({
                       : "진행 중"
                     : g.status === "finished"
                       ? "경기종료"
-                      : g.status === "canceled"
-                        ? null
-                        : "경기전";
+                      : null; // 예정·취소 → 시간(또는 없음)
 
                 return (
                   <li key={g.id} className="ai-winner-game-card">
                     <header className="ai-winner-game-head">
                       <span className="ai-winner-game-head-left">
-                        {timeLabel ? <span className="ai-winner-game-time">{timeLabel}</span> : null}
                         {liveStatusLabel ? (
                           <span className={`ai-winner-game-status ai-winner-game-status-${g.status}`}>
                             {liveStatusLabel}
                           </span>
+                        ) : timeLabel ? (
+                          <span className="ai-winner-game-time">{timeLabel}</span>
                         ) : null}
                       </span>
                       {shouldShowStadium(g.stadium) ? (

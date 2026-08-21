@@ -805,22 +805,24 @@ export function WinnerPredictScreen({
                         {resultLabel}
                       </span>
                     ) : (
-                      <>
-                        <span className="predict-row-time">{shortTime(game.gameTime)}</span>
-                        <span className={`predict-row-status predict-row-status-${statusKind}${statusExtra}`}>
-                          {statusKind === "in_progress"
-                            ? game.innings
-                              ? `${game.innings}회${game.inningHalf === "bottom" ? "말" : "초"}`
-                              : "진행중"
-                            : game.status === "finished"
-                            ? "경기종료"
-                            : game.status === "canceled"
-                            ? "취소"
-                            : isSoon
-                            ? `${Math.max(1, Math.ceil((remainMs as number) / 60_000))}분`
-                            : "예정"}
+                      // 하나만 표시 — 경기전: 시간 / 진행 중: N회초·말 / 종료: 경기종료.
+                      statusKind === "in_progress" ? (
+                        <span className={`predict-row-status predict-row-status-in_progress${statusExtra}`}>
+                          {game.innings
+                            ? `${game.innings}회${game.inningHalf === "bottom" ? "말" : "초"}`
+                            : "진행중"}
                         </span>
-                      </>
+                      ) : game.status === "finished" ? (
+                        <span className="predict-row-status predict-row-status-finished">경기종료</span>
+                      ) : game.status === "canceled" ? (
+                        <span className="predict-row-status predict-row-status-canceled">취소</span>
+                      ) : isSoon ? (
+                        <span className={`predict-row-status predict-row-status-scheduled${statusExtra}`}>
+                          {Math.max(1, Math.ceil((remainMs as number) / 60_000))}분
+                        </span>
+                      ) : (
+                        <span className="predict-row-time">{shortTime(game.gameTime)}</span>
+                      )
                     )}
                   </span>
 
