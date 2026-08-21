@@ -336,9 +336,13 @@
 }
 
 .phone-frame-light .ai-winner-game-stadium {
+  /* head 밖(col3)으로 나오면서 head 의 폰트 상속(12px·700)을 잃어 → 명시 지정. */
+  font-size: 12px;
+  font-weight: 700;
   color: var(--bp-text-muted);
   justify-self: end;
   text-align: right;
+  white-space: nowrap;
 }
 
 /* 경기 상태 칩 — 경기전 / N회초·말(진행중) / 경기종료 */
