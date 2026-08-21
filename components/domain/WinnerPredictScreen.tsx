@@ -87,10 +87,9 @@ function hexToRgba(hex: string, alpha: number): string {
 /** 경기별 유저 픽 집계 응답(/api/predict/winner/pick-tallies). */
 type PickTally = { total: number; teams: Record<string, number> };
 
-/** 이 표본 미만이면 비율을 아예 안 보여준다. 3명 중 2명을 "67%"로 쓰면 숫자가 거짓말을 한다.
- *  실측(2026-07): 경기당 픽이 당일 34~36건, 며칠 전 날짜는 17~20건.
- *  20으로 잡으면 과거 날짜 대부분이 가려져 히스토리를 훑을 때 들쭉날쭉해 보이므로 10으로 둔다. */
-const MIN_TALLY_SAMPLE = 10;
+/** 이 표본 미만이면 유저 집계를 숨긴다. 이제 비율(%)이 아니라 실제 인원수를 보여주므로
+ *  표본이 적어도 거짓말이 아니다 → 1명이라도 있으면 표시(0명일 때만 숨김). */
+const MIN_TALLY_SAMPLE = 1;
 
 type UserPickSummary = {
   /** 다수 선택 팀. 동수면 null */
