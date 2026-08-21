@@ -548,7 +548,15 @@ export function AiWinnerListScreen({
                 // ⚠️ 미스터리 연출은 "오늘 첫 reveal"에만 의미 있음. 과거 날짜 경기는
                 //    적중 결과 확인이 목적이므로 무조건 펼친 상태로 노출.
                 const hasSeenReveal = seenIds.has(g.id);
-                const effectiveSeen = hasSeenReveal || (!isToday && !isFuture) || allTodayFinished;
+                // 경기가 시작(진행중)되거나 종료되면 미스터리 연출을 끄고 픽·결과를 자동 노출한다.
+                // (예전엔 그날 "전 경기 종료" 때만 자동 공개라, 한 경기라도 진행 중이면 이미 끝난
+                //  경기도 "결과 보기"로 잠겨 있었다.)
+                const effectiveSeen =
+                  hasSeenReveal ||
+                  (!isToday && !isFuture) ||
+                  allTodayFinished ||
+                  finished ||
+                  g.status === "in_progress";
 
                 // 카드 상태:
                 //   1) 09시 전 + 예측 없음 → 잠금 카운트다운
@@ -592,19 +600,22 @@ export function AiWinnerListScreen({
 
                 return (
                   <li key={g.id} className="ai-winner-game-card">
-                    <div className="ai-winner-game-row">
-                      <header className="ai-winner-game-head">
+                    <header className="ai-winner-game-head">
+                      <span className="ai-winner-game-head-left">
                         {timeLabel ? <span className="ai-winner-game-time">{timeLabel}</span> : null}
                         {liveStatusLabel ? (
                           <span className={`ai-winner-game-status ai-winner-game-status-${g.status}`}>
                             {liveStatusLabel}
                           </span>
                         ) : null}
-                        {shouldShowStadium(g.stadium) ? (
-                          <span className="ai-winner-game-stadium">{g.stadium}</span>
-                        ) : null}
-                      </header>
+                      </span>
+                      {shouldShowStadium(g.stadium) ? (
+                        <span className="ai-winner-game-stadium">{g.stadium}</span>
+                      ) : null}
+                    </header>
 
+                    <div className="ai-winner-game-row">
+                      <span aria-hidden />
                       <div className="ai-winner-game-teams">
                         {/* 홈팀 — 뱃지 · 팀명 · 점수(있을 때) */}
                         <div className="ai-winner-team">

@@ -122,6 +122,8 @@ export async function renderWinner(explicitDate: string | null) {
     homeScore: g.homeScore ?? null,
     awayScore: g.awayScore ?? null,
     status: g.status,
+    innings: g.innings ?? null,
+    inningHalf: g.inningHalf ?? null,
     homeStarter: g.homeStarter ?? null,
     awayStarter: g.awayStarter ?? null,
     predictedWinnerTeamId: null,

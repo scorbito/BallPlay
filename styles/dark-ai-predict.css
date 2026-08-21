@@ -322,12 +322,19 @@
 .phone-frame-light .ai-winner-game-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
   color: var(--bp-text-secondary);
-  flex-shrink: 0;
   white-space: nowrap;
+}
+/* 시간·상태 칩은 왼쪽 묶음, 구장은 오른쪽 끝(space-between). */
+.phone-frame-light .ai-winner-game-head-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
 .phone-frame-light .ai-winner-game-time {

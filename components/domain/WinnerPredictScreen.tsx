@@ -39,6 +39,9 @@ export type WinnerPredictGame = {
   homeScore: number | null;
   awayScore: number | null;
   status: "scheduled" | "in_progress" | "finished" | "canceled";
+  /** 진행 중 경기의 현재 이닝·초말 (라이브). 그 외 null. */
+  innings: number | null;
+  inningHalf: "top" | "bottom" | null;
   /** 선발 투수 이름 — KBO 미발표 시 null */
   homeStarter: string | null;
   awayStarter: string | null;
@@ -358,10 +361,12 @@ export function WinnerPredictScreen({
   //   - 오늘 픽 직후(결과 없음) → 정적
   //   - 다음날 들어와서 결과 확인 → 전체 stagger + 펄스
   //   - 픽 없는 일반 경기 둘러보기 → 정적
-  const hasAnyJudgedPick = useMemo(
-    () => games.some((g) => predictions[g.id] && g.isJudged),
-    [games, predictions]
-  );
+  // 결과 애니메이션은 그날 "모든 경기가 종료"됐을 때만 (한 경기만 끝나선 안 됨).
+  const hasAnyJudgedPick = useMemo(() => {
+    const allGamesDone =
+      games.length > 0 && games.every((g) => g.status === "finished" || g.status === "canceled");
+    return allGamesDone && games.some((g) => predictions[g.id] && g.isJudged);
+  }, [games, predictions]);
 
   // ── 유저 픽 집계 ──
   // 공개 조건(픽했거나 이미 시작·종료)을 만족하는 경기가 하나라도 있을 때만 가져온다.
@@ -803,14 +808,14 @@ export function WinnerPredictScreen({
                       <>
                         <span className="predict-row-time">{shortTime(game.gameTime)}</span>
                         <span className={`predict-row-status predict-row-status-${statusKind}${statusExtra}`}>
-                          {game.status === "in_progress"
-                            ? "진행중"
+                          {statusKind === "in_progress"
+                            ? game.innings
+                              ? `${game.innings}회${game.inningHalf === "bottom" ? "말" : "초"}`
+                              : "진행중"
                             : game.status === "finished"
-                            ? "종료"
+                            ? "경기종료"
                             : game.status === "canceled"
                             ? "취소"
-                            : started
-                            ? "마감"
                             : isSoon
                             ? `${Math.max(1, Math.ceil((remainMs as number) / 60_000))}분`
                             : "예정"}
