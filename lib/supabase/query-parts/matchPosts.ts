@@ -51,9 +51,14 @@ function getTimeAgo(createdAt: string) {
 }
 
 async function getCurrentUserId(): Promise<string | null> {
-  const supabase = createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
+  // 세션 토큰 오차(예: "JWT issued at future")로 auth.getUser 가 실패해도 비로그인으로 취급.
+  try {
+    const supabase = createSupabaseServerClient();
+    const { data } = await supabase.auth.getUser();
+    return data.user?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export type ListMatchPostsParams = {
