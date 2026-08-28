@@ -25,6 +25,48 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, willReload: false };
   }
 
+  // ChunkLoadError 는 라우터 이동/동적 import 중에 나서 React ErrorBoundary 밖(전역 error/
+  // unhandledrejection)으로 샌다. 배포 직후 옛 청크가 사라져 발생하므로 1회 자동 새로고침으로 복구.
+  private onGlobalError = (message: string) => {
+    if (!/ChunkLoadError|Loading chunk [\w-]+ failed|Loading CSS chunk/i.test(message)) return;
+    this.reloadOnce(false);
+  };
+  private handleError = (e: ErrorEvent) =>
+    this.onGlobalError(e.message || String((e.error as Error | undefined)?.message ?? ""));
+  private handleRejection = (e: PromiseRejectionEvent) => {
+    const r = e.reason as { name?: string; message?: string } | string | undefined;
+    this.onGlobalError(typeof r === "string" ? r : `${r?.name ?? ""} ${r?.message ?? ""}`);
+  };
+
+  componentDidMount() {
+    if (typeof window === "undefined") return;
+    window.addEventListener("error", this.handleError);
+    window.addEventListener("unhandledrejection", this.handleRejection);
+  }
+
+  componentWillUnmount() {
+    if (typeof window === "undefined") return;
+    window.removeEventListener("error", this.handleError);
+    window.removeEventListener("unhandledrejection", this.handleRejection);
+  }
+
+  /** 쿨다운 안에서 1회만 새로고침 (무한루프 방지). updateState=true 면 스플래시 표시. */
+  private reloadOnce(updateState: boolean) {
+    if (typeof window === "undefined") return;
+    try {
+      const lastReload = Number(window.sessionStorage.getItem(RELOAD_KEY) ?? "0");
+      if (Date.now() - lastReload < RELOAD_COOLDOWN_MS) {
+        if (updateState) this.setState({ willReload: false });
+        return;
+      }
+      window.sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+    } catch {
+      // sessionStorage 차단 — 그래도 한 번은 시도.
+    }
+    if (updateState) this.setState({ willReload: true });
+    window.setTimeout(() => window.location.reload(), 100);
+  }
+
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("[ErrorBoundary]", error, info);
 
@@ -46,23 +88,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
       })
     }).catch(() => {});
 
-    try {
-      const lastReload = Number(window.sessionStorage.getItem(RELOAD_KEY) ?? "0");
-      const elapsed = Date.now() - lastReload;
-      if (elapsed < RELOAD_COOLDOWN_MS) {
-        // 최근에 이미 reload했는데 또 에러 → 진짜 코드 버그일 수 있음, 더 이상 reload 안 함.
-        this.setState({ willReload: false });
-        return;
-      }
-      window.sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
-    } catch {
-      // sessionStorage 차단 환경 — 그래도 한 번은 reload 시도.
-    }
-
-    this.setState({ willReload: true });
-    window.setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    // 최근에 이미 reload했는데 또 에러 → 진짜 코드 버그일 수 있어 더 이상 reload 안 함(쿨다운).
+    this.reloadOnce(true);
   }
 
   render() {
