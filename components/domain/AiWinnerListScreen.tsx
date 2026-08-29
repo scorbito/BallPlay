@@ -581,6 +581,8 @@ export function AiWinnerListScreen({
                   && !showFinishedTeaser && !showFinishedRevealed && !finished;
                 // 빈 종료 경기 (예측 없음 + finished) — 점수만 표시
                 const showFinishedNoPredict = isPlayablePredictionGame && finished && !hasPredictions;
+                // 취소 경기도 AI 픽은 볼 수 있게 (적중/실패 판정만 없음).
+                const showCanceledPicks = isCanceled && hasPredictions;
 
                 // 점수는 실제 점수가 있을 때만 표시 (과거 날짜라도 sync 누락이면 0-0 가짜 점수 방지).
                 // AI 예측의 적중 여부만 teaser 로 가린다.
@@ -660,6 +662,26 @@ export function AiWinnerListScreen({
                           <CloudRain size={13} strokeWidth={2.5} />
                         )}
                         {canceledReason.label}취소 · 적중 판정 없음
+                      </div>
+                    ) : null}
+
+                    {/* 취소 경기 — AI별 픽만 표시(적중/실패 판정 없음). */}
+                    {showCanceledPicks ? (
+                      <div className="ai-winner-picks">
+                        {orderedPredictions.map((p) => (
+                          <span
+                            key={p.id}
+                            className={`ai-winner-pick ai-winner-pick-${p.ai_provider}`}
+                          >
+                            <span className="ai-winner-pick-ai">{AI_LABEL[p.ai_provider]}</span>
+                            <span className="ai-winner-pick-team">
+                              <TeamBadge teamId={p.predicted_winner_team_id} size="sm" />
+                              <span className="ai-winner-pick-team-name">
+                                {getTeam(p.predicted_winner_team_id).shortName}
+                              </span>
+                            </span>
+                          </span>
+                        ))}
                       </div>
                     ) : null}
 
@@ -744,7 +766,7 @@ export function AiWinnerListScreen({
                         로그인하고 결과 보기
                         <ArrowRight size={12} strokeWidth={2.5} />
                       </Link>
-                    ) : !isCanceled && hasPredictions ? (
+                    ) : hasPredictions ? (
                       <div className="ai-winner-card-actions">
                         <Link
                           href={`/predict/ai-winner/${g.id}`}
@@ -754,7 +776,8 @@ export function AiWinnerListScreen({
                           결과 보기
                           <ArrowRight size={12} strokeWidth={2.5} />
                         </Link>
-                        {finished ? (
+                        {/* 취소 경기는 리포트·시뮬 없음 → '결과 보기'만. */}
+                        {isCanceled ? null : finished ? (
                           <Link
                             href={`/daily-report/date/${selectedDate}?focus=${g.id}&backHref=${encodeURIComponent(`/predict/ai-winner/date/${selectedDate}`)}`}
                             className="ai-winner-card-cta ai-winner-card-cta-report"
