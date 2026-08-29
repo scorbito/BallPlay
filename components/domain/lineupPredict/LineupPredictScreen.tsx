@@ -347,7 +347,7 @@ export function LineupPredictScreen() {
       setData((prev) =>
         prev ? { ...prev, myPrediction: { game_id: selected.gameId, team_id: selected.teamId, picks } } : prev
       );
-      showToast("예측을 저장했어요");
+      // 토스트는 생략 — 바로 뜨는 공유 모달이 "예측을 저장했어요"를 이미 안내한다(중복 제거).
       setShareAskOpen(true);
     } catch {
       showToast("제출에 실패했어요");
