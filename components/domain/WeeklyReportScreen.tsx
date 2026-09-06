@@ -40,6 +40,9 @@ function offsetDays(dateStr: string, days: number): string {
 export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, isPending = false }: WeeklyReportScreenProps) {
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const router = useRouter();
+  const sortedRankings = [...initialRankings].sort(
+    (a, b) => a.weeklyRank - b.weeklyRank || b.winRate - a.winRate || a.teamName.localeCompare(b.teamName, "ko")
+  );
 
   // 아코디언 토글
   const toggleExpand = (teamCode: string) => {
@@ -149,7 +152,7 @@ export function WeeklyReportScreen({ initialRankings, weekName, currentWeekMon, 
             </div>
           ) : (
             <div className="weekly-accordion-list">
-              {initialRankings.map((team) => {
+              {sortedRankings.map((team) => {
                 const isExpanded = expandedTeam === team.teamCode;
                 const seriesList = [team.series1, team.series2].filter(
                   (series): series is NonNullable<typeof series> => Boolean(series) && !series.hidden
