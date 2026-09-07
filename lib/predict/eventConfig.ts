@@ -3,4 +3,5 @@
 // 이 값을 끄면 이벤트 유도 UI(홈 배너 · EVENT 뱃지 · 나 vs AI 대결 섹션 ·
 // 예측 후 로그인 유도 모달 · 이벤트 페이지)가 숨겨진다.
 // 이미 발표된 "당첨자 발표"(배너·공지·당첨 모달·경품 문의)는 이 플래그와 무관하게 유지된다.
-export const WEEKLY_EVENT_ACTIVE = true;
+// 2026-09-03 이벤트 유도 배너 내림(이벤트 종료). 당첨자 스트립은 자체 API로 계속 노출.
+export const WEEKLY_EVENT_ACTIVE = false;

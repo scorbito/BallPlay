@@ -750,8 +750,9 @@ export function HomeScreen() {
           </footer>
         );
 
-        // 지난주 예측왕 스트립 — 이벤트 진행 중일 때만, 배너 바로 아래.
-        const winnerStripNode = WEEKLY_EVENT_ACTIVE ? <LatestWinnerStrip key="winner-strip" /> : null;
+        // 지난주 예측왕 스트립 — 당첨자 발표는 이벤트 종료 후에도 유지한다.
+        // 노출 여부는 스트립이 자체 API(show 플래그)로 판단하므로 이벤트 플래그와 무관.
+        const winnerStripNode = <LatestWinnerStrip key="winner-strip" />;
 
         return [heroNode, predictBannerNode, winnerStripNode, bottomSectionNode, externalBannerNode, footerNode];
       })()}
