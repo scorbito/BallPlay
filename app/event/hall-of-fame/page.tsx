@@ -24,7 +24,7 @@ export default async function HallOfFamePage() {
   const entries = buildHallOfFame(draws);
 
   return (
-    <AppShell activeTab="home" title="예측왕 명예의 전당" theme="light" backHref="/event/winners">
+    <AppShell activeTab="home" title="예측왕 명예의 전당" theme="light" backHref="/">
       <section className="event-screen">
         <div className="hof-hero">
           <Crown size={30} className="hof-hero-icon" />

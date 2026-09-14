@@ -3,6 +3,7 @@ import { ArrowRight, Trophy, Ticket } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { createSupabaseCacheClient } from "@/lib/supabase/server";
 import { listEventDraws, isWeekFullyIssued, type EventDraw } from "@/lib/server/predict/weeklyContest";
+import { LAST_PRIZE_WEEK_START } from "@/lib/predict/eventConfig";
 
 export const revalidate = 300;
 
@@ -19,8 +20,10 @@ function mmdd(iso: string): string {
 export default async function PredictKingWinnersPage() {
   const supabase = createSupabaseCacheClient(300);
   const draws = await listEventDraws(supabase, { publishedOnly: true }).catch(() => [] as EventDraw[]);
-  // 실제로 추첨된 주(당첨자 있음)만.
-  const drawn = draws.filter((d) => d.winnerUserId || d.couponWinners.length > 0);
+  // 실제로 추첨된 주(당첨자 있음)만. 경품 없는 회차(이벤트 종료 후)는 명예의 전당에만 등재.
+  const drawn = draws.filter(
+    (d) => d.weekStartDate <= LAST_PRIZE_WEEK_START && (d.winnerUserId || d.couponWinners.length > 0)
+  );
   const latest = drawn[0] ?? null;
   // 쿠폰이 전부 전달됐으면 안내 문구를 "전달 예정" → "지급 완료"로 전환.
   const issued = latest ? await isWeekFullyIssued(supabase, latest) : false;
