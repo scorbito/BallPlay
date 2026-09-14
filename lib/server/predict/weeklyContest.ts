@@ -316,6 +316,88 @@ export async function isWeekFullyIssued(client: SupabaseClient, draw: EventDraw)
   return expectedIds.every((id) => delivered.has(id));
 }
 
+export type HallOfFameRecordResult =
+  | { status: "recorded"; weekStartISO: string; winnerNickname: string | null; tiedCount: number }
+  | { status: "published-existing"; weekStartISO: string; winnerNickname: string | null }
+  | { status: "skipped"; weekStartISO: string; reason: string };
+
+/**
+ * 경품 없는 회차(이벤트 종료 후) 예측왕 자동 등재 — 관리자 확정 없이 바로 공개.
+ * refISO 기준으로 "이미 끝난" 가장 최근 회차를 대상으로 하며, 이미 공개된 회차는 건드리지 않는다(멱등).
+ * 관리자가 추첨만 해 둔 미확정 행이 있으면 당첨자는 그대로 두고 공개만 한다.
+ */
+export async function recordHallOfFameWeek(
+  client: SupabaseClient,
+  refISO: string,
+  opts: { afterWeekStart: string }
+): Promise<HallOfFameRecordResult> {
+  let weekStartISO = contestWeekStart(refISO);
+  if (contestWeekEnd(weekStartISO) > refISO) weekStartISO = contestWeekStart(addDays(weekStartISO, -1));
+
+  if (weekStartISO <= opts.afterWeekStart) {
+    return { status: "skipped", weekStartISO, reason: "경품 지급 회차 — 관리자 확정으로 처리" };
+  }
+
+  const { data: existing } = await client
+    .from("bp_predict_event_draws")
+    .select("winner_nickname,published_at")
+    .eq("week_start_date", weekStartISO)
+    .maybeSingle();
+  if (existing?.published_at) {
+    return { status: "skipped", weekStartISO, reason: "이미 등재됨" };
+  }
+
+  // 그 주 경기가 전부 끝나야(종료·취소) 적중 판정이 확정된다.
+  const { count: unfinished } = await client
+    .from("games")
+    .select("id", { count: "exact", head: true })
+    .gte("game_date", weekStartISO)
+    .lte("game_date", contestWeekEnd(weekStartISO))
+    .not("status", "in", "(finished,canceled)");
+  if ((unfinished ?? 0) > 0) {
+    return { status: "skipped", weekStartISO, reason: `미종료 경기 ${unfinished}개` };
+  }
+
+  const publishedAt = new Date().toISOString();
+  if (existing) {
+    const { error } = await client
+      .from("bp_predict_event_draws")
+      .update({ published_at: publishedAt })
+      .eq("week_start_date", weekStartISO);
+    if (error) throw new Error(error.message);
+    return { status: "published-existing", weekStartISO, winnerNickname: existing.winner_nickname ?? null };
+  }
+
+  const contest = await computeWeeklyContest(client, weekStartISO);
+  // 관리자 추첨과 같은 규칙: 적중률 → 게임수 순, 완전 동점이면 그들끼리 추첨. 자격자 없으면 AI 승(당첨자 없음).
+  const top = contest.qualifiers[0] ?? null;
+  const tied = top ? contest.qualifiers.filter((q) => q.rate === top.rate && q.total === top.total) : [];
+  const winner = tied.length > 1 ? tied[Math.floor(Math.random() * tied.length)] : top;
+
+  const { error } = await client.from("bp_predict_event_draws").upsert(
+    {
+      week_start_date: contest.weekStartISO,
+      week_end_date: contest.weekEndISO,
+      game_count: contest.gameCount,
+      threshold: contest.threshold,
+      ai_avg_accuracy: contest.aiAvgAccuracy,
+      qualifier_count: contest.qualifiers.length,
+      participant_count: contest.participantCount,
+      winner_user_id: winner?.userId ?? null,
+      winner_nickname: winner?.nickname ?? null,
+      winner_total: winner?.total ?? null,
+      winner_correct: winner?.correct ?? null,
+      winner_rate: winner?.rate ?? null,
+      drawn_by: null,
+      drawn_at: publishedAt,
+      published_at: publishedAt
+    },
+    { onConflict: "week_start_date" }
+  );
+  if (error) throw new Error(error.message);
+  return { status: "recorded", weekStartISO, winnerNickname: winner?.nickname ?? null, tiedCount: tied.length };
+}
+
 const EVENT_DRAW_BASE_COLS =
   "week_start_date,week_end_date,game_count,threshold,ai_avg_accuracy,qualifier_count,participant_count,winner_user_id,winner_nickname,winner_total,winner_rate,coupon_winners,coupon_issued_external,drawn_at";
 

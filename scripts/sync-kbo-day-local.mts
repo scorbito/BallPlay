@@ -9,6 +9,7 @@
 //   8. verify daily report is cached (manual agent-authored report; no AI API call here)
 //   9. generate and cache tomorrow's 1000-game simulations
 //  10. on Sundays, verify the just-finished week's weekly report is cached
+//      + record the just-finished contest week's 예측왕 to the hall of fame (post-event weeks, idempotent)
 //  11. check official KBO player movement list and refresh local rosters when changed
 //
 // Usage:
@@ -406,6 +407,20 @@ if (!skipWeekly) {
   }
 } else {
   console.log("[sync:kbo-day] 10/11 weekly report skipped");
+}
+
+if (!skipWeekly) {
+  // 이벤트 종료 후 회차의 예측왕을 명예의 전당에 자동 등재 (이미 등재된 회차는 건너뜀).
+  try {
+    const [{ recordHallOfFameWeek }, { LAST_PRIZE_WEEK_START }] = await Promise.all([
+      import("@/lib/server/predict/weeklyContest"),
+      import("@/lib/predict/eventConfig")
+    ]);
+    const hof = await recordHallOfFameWeek(admin, targetDate, { afterWeekStart: LAST_PRIZE_WEEK_START });
+    console.log("[sync:kbo-day] hall of fame", JSON.stringify(hof));
+  } catch (error) {
+    console.warn("[sync:kbo-day] hall of fame failed (non-blocking)", error);
+  }
 }
 
 if (!skipPlayerMovements) {
