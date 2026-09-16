@@ -251,6 +251,17 @@ export function ScheduleScreen({ games = [] }: ScheduleScreenProps) {
       if (s.draws > 0) parts.push(`${s.draws}무`);
       return { kind: "ongoing" as const, label: parts.join(" ") };
     }
+    // 1~2경기 일정은 시리즈 표현 대신 단순 승/패 결과로 표시한다.
+    if (s.totalGames < 3) {
+      if (s.totalGames === 1) {
+        if (s.myWins > s.myLosses) return { kind: "winning" as const, label: "승" };
+        if (s.myLosses > s.myWins) return { kind: "losing" as const, label: "패" };
+        return { kind: "split" as const, label: "무" };
+      }
+      if (s.myWins > s.myLosses) return { kind: "winning" as const, label: `${s.myWins}:${s.myLosses} 승` };
+      if (s.myLosses > s.myWins) return { kind: "losing" as const, label: `${s.myWins}:${s.myLosses} 패` };
+      return { kind: "split" as const, label: `${s.myWins}:${s.myLosses} 무` };
+    }
     if (s.myWins === s.totalGames && s.myLosses === 0) {
       return { kind: "sweep_w" as const, label: `${s.myWins}:0 스윕` };
     }
