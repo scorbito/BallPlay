@@ -329,13 +329,18 @@ export type HallOfFameRecordResult =
 export async function recordHallOfFameWeek(
   client: SupabaseClient,
   refISO: string,
-  opts: { afterWeekStart: string }
+  opts: { afterWeekStart: string; lastWeekStart?: string }
 ): Promise<HallOfFameRecordResult> {
   let weekStartISO = contestWeekStart(refISO);
   if (contestWeekEnd(weekStartISO) > refISO) weekStartISO = contestWeekStart(addDays(weekStartISO, -1));
 
   if (weekStartISO <= opts.afterWeekStart) {
     return { status: "skipped", weekStartISO, reason: "경품 지급 회차 — 관리자 확정으로 처리" };
+  }
+
+  // 정규시즌 종료 이후(포스트시즌) 회차는 표본이 너무 적어 등재하지 않는다.
+  if (opts.lastWeekStart && weekStartISO > opts.lastWeekStart) {
+    return { status: "skipped", weekStartISO, reason: "정규시즌 종료 이후 회차" };
   }
 
   const { data: existing } = await client

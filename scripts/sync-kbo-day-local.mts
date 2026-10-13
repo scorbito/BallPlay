@@ -412,11 +412,14 @@ if (!skipWeekly) {
 if (!skipWeekly) {
   // 이벤트 종료 후 회차의 예측왕을 명예의 전당에 자동 등재 (이미 등재된 회차는 건너뜀).
   try {
-    const [{ recordHallOfFameWeek }, { LAST_PRIZE_WEEK_START }] = await Promise.all([
+    const [{ recordHallOfFameWeek }, { LAST_PRIZE_WEEK_START, HALL_OF_FAME_LAST_WEEK_START }] = await Promise.all([
       import("@/lib/server/predict/weeklyContest"),
       import("@/lib/predict/eventConfig")
     ]);
-    const hof = await recordHallOfFameWeek(admin, targetDate, { afterWeekStart: LAST_PRIZE_WEEK_START });
+    const hof = await recordHallOfFameWeek(admin, targetDate, {
+      afterWeekStart: LAST_PRIZE_WEEK_START,
+      lastWeekStart: HALL_OF_FAME_LAST_WEEK_START
+    });
     console.log("[sync:kbo-day] hall of fame", JSON.stringify(hof));
   } catch (error) {
     console.warn("[sync:kbo-day] hall of fame failed (non-blocking)", error);
