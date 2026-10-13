@@ -47,8 +47,23 @@ function mapStatus(stateCode: string, stateName: string, isCancelled: boolean): 
   return "scheduled";
 }
 
-/** KBO 공식 API 1순위 조회 */
+/**
+ * KBO 시리즈 구분(srId). 정규시즌과 포스트시즌이 서로 다른 값이라 둘 다 조회해야 한다.
+ *   0 = 정규시즌, 4 = 포스트시즌(와일드카드·준PO·PO·한국시리즈)
+ * 포스트시즌 응답 필드는 정규시즌과 동일하고, GAME_SC_NM 으로 "WC1" 같은 시리즈명이 온다.
+ */
+const KBO_SERIES_IDS = ["0", "4"] as const;
+
+/** KBO 공식 API 1순위 조회 — 정규시즌에 경기가 없으면 포스트시즌 시리즈까지 찾는다. */
 export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
+  for (const srId of KBO_SERIES_IDS) {
+    const games = await fetchKboApiGamesBySeries(date, srId);
+    if (games.length > 0) return games;
+  }
+  return [];
+}
+
+async function fetchKboApiGamesBySeries(date: KboDateInput, srId: string): Promise<RawGame[]> {
   const { yyyymmdd, dateStr } = formatKboDate(date);
 
   // KBO ASMX 웹서비스는 GET 거부 → POST + form-encoded만 응답.
@@ -56,7 +71,7 @@ export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
   const url = "https://www.koreabaseball.com/ws/Main.asmx/GetKboGameList";
   const body = new URLSearchParams({
     leId: "1",
-    srId: "0",
+    srId,
     date: yyyymmdd
   });
   const response = await fetch(url, {
