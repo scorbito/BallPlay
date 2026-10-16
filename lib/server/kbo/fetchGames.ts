@@ -48,11 +48,12 @@ function mapStatus(stateCode: string, stateName: string, isCancelled: boolean): 
 }
 
 /**
- * KBO 시리즈 구분(srId). 정규시즌과 포스트시즌이 서로 다른 값이라 둘 다 조회해야 한다.
- *   0 = 정규시즌, 4 = 포스트시즌(와일드카드·준PO·PO·한국시리즈)
- * 포스트시즌 응답 필드는 정규시즌과 동일하고, GAME_SC_NM 으로 "WC1" 같은 시리즈명이 온다.
+ * KBO 시리즈 구분(srId). 포스트시즌은 시리즈마다 값이 달라 전부 훑어야 한다.
+ *   0 = 정규시즌, 3 = 준플레이오프, 4 = 와일드카드, 5·7 = 플레이오프·한국시리즈(추정)
+ * 응답 필드는 모두 동일하고, GAME_SC_NM 으로 "WC1" "준PO1" 같은 시리즈명이 온다.
+ * 정규시즌 중에는 첫 조회(0)에서 바로 끝나므로 추가 호출이 생기지 않는다.
  */
-const KBO_SERIES_IDS = ["0", "4"] as const;
+const KBO_SERIES_IDS = ["0", "3", "4", "5", "7"] as const;
 
 /** KBO 공식 API 1순위 조회 — 정규시즌에 경기가 없으면 포스트시즌 시리즈까지 찾는다. */
 export async function fetchKboApiGames(date: KboDateInput): Promise<RawGame[]> {
